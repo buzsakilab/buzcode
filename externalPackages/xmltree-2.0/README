@@ -1,0 +1,80 @@
+ XMLTree: XML Toolbox For MATLAB (v2.0)
+ ======================================
+
+ Release 2.0, 2015/08/14
+ Written by:  Guillaume Flandin <Guillaume@artefact.tk>
+ Website: <http://www.artefact.tk/software/matlab/xml/>
+			 
+ INTRODUCTION
+ ============
+ 
+ XMLTree is an XML toolbox for MATLAB (version 5.3 or later).
+ This package consists of a class xmltree, of XML-files examples
+ and of 3 scripts of demonstrations.
+
+ This toolbox contains an XML 1.0 processor (or parser), which aims
+ to be fully conforming. It is currently not a validating processor.
+ See http://www.w3.org/TR/REC-xml <http://www.w3.org/TR/REC-xml>
+ for details on XML.
+
+ This processor is encapsulated in a MATLAB class allowing for the
+ manipulation of an XMLTree object through an object oriented way.
+ Several functions have been designed for this purpose.
+
+ If you do not wish to use the whole class but are solely interested
+ in the XML parser, then you can only use functions that are in the
+ private folder of the class @xmltree/private: xml_parser.m and a
+ compiled version of xml_findstr.m.
+
+ Suggestions for improvement and fixes are always welcome, although no 
+ guarantee is made whether and when they will be implemented.
+
+ INSTALLATION
+ ============
+ 
+ 1) Download <xmltree.zip> from here:
+ 
+    <http://www.artefact.tk/software/matlab/xml/>
+
+ 2) Extract files from the zip archive:
+ 
+    >> unzip xmltree.zip
+
+ 3) Add the new path to MATLAB (assuming you extracted the toolbox
+    in '/home/guillaume/Documents/MATLAB/'):
+
+    >> addpath('/home/guillaume/Documents/MATLAB/xmltree/');
+    
+    Note that the directory @xmltree doesn't need to be added in MATLAB 
+    path, since it's a class directory. 
+
+ 4) XMLTree package uses one MEX-file for the parsing of XML data: 
+    this MEX-file is provided for Windows, Linux and Mac platforms.
+    If you need to compile it for your own architecture, the command is:
+
+    >> cd /home/guillaume/Documents/MATLAB/@xmltree/private/
+    >> mex -O xml_findstr.c
+
+    If never this compiled function doesn't work or behaves badly, 
+    comment the line #define __HACK_MXCHAR__ at the beginning of the 
+    file, and compile it again.
+
+ TUTORIAL
+ ========
+ 
+ Look at the examples scripts (xmldemo*.m) for a walkthrough of how
+ to use the xmltree class:
+
+ >> xmldemo1
+ >> xmldemo2
+ >> xmldemo3
+
+ LICENSE
+ =======
+
+ Please refer to the file "LICENSE" for the terms.
+
+ -------------------------------------------------------------------------------
+ MATLAB is a Registered Trademark of The Mathworks, Inc.
+ 
+ Copyright (C) 2002-2015 Guillaume Flandin <Guillaume@artefact.tk>
