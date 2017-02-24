@@ -64,10 +64,10 @@ while step
                 rgxRefract = FractionRogueSpk(rgx,tR,tC);
                 rgyRefract = FractionRogueSpk(rgy,tR,tC);
                 %Common inter-spike intervals
-                Icsi = icsi(rgx,rgy);
+                icsi = calc_icsi(rgx,rgy);
                 
                 %compute some statistics
-                [h px py] =  IcsiStat(rgx,rgy,Icsi,tR,tC,.05);
+                [h px py] =  IcsiStat(rgx,rgy,icsi,tR,tC,.05);
                 temp = corrcoef(mean(fet(clu==cluIx(x),:)),mean(fet(clu==cluIx(y),:)));
                 cor = temp(2);
 

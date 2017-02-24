@@ -51,7 +51,7 @@ for ii=1:length(t)
     Sy(ii) = sqrt((Mxy*My)/(Mxy+My))*(Fxy-Fy);    
 end
 
-f = (tR-tC)/(tMax-tC);
+f =(tR-tC)/(tMax-tC);
 px = P(max(Sx),f);
 py = P(max(Sy),f);
 
