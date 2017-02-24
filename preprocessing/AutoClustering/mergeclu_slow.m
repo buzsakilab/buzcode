@@ -1,5 +1,6 @@
-function [clu mergehistory] = mergeclu_slow(clu,res,fet,tR,tC,rogueSpk2Merge)
+function [clu mergehistory] = mergeclu_slow(clu,res,fet,tR,tC,rogueSpk2Merge,samplingRate)
 
+% updated 2017/02/24 by David Tingley
 
 %Parameters
 % Maximal fraction of rogue spike in a merged cluster
@@ -55,8 +56,8 @@ while step
             x=Z(ii,1);
             y=Z(ii,2);
             if any(T==x) && any(T==y) 
-                rgx = double(res(clu==cluIx(x)))./20000;
-                rgy = double(res(clu==cluIx(y)))./20000;
+                rgx = double(res(clu==cluIx(x)))./samplingRate;
+                rgy = double(res(clu==cluIx(y)))./samplingRate;
                 %Compute the fraction of rogue spike fxy (fcorr is not
                 %used)
                 [fxy fcorr] = crossrefract(rgx,rgy,tR,tC);

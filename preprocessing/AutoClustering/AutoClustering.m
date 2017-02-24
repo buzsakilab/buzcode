@@ -58,6 +58,7 @@ else
     dim = zeros(length(elec),1);
 end
 
+samplingRate = 20000;
 % Load spike waveforms? Used for detection of electrical artifacts
 loadspk = 1;
 % Refractory period in msec
@@ -101,7 +102,7 @@ if length(elec)>1
 else
     % Load fet, clu, res, and waveforms
     fprintf('Sorting electrode %i of %s\n',elec,fbasename)
-    if ~exist([fbasename '_sh' num2str(elec) '.res.' num2str(elec)]) & ~exist([fbasename '.res.' num2str(elec)])
+    if 1 %~exist([fbasename '_sh' num2str(elec) '.res.' num2str(elec)]) & ~exist([fbasename '.res.' num2str(elec)])
         if exist([fbasename '_sh' num2str(elec) '.kwik']) > 0
             tkwik = fullfile(pwd,[fbasename '_sh' num2str(elec) '.kwik']);
             cd ..; basepath = pwd; cd(num2str(elec));
@@ -144,7 +145,7 @@ else
     meanPw = [];
 
     for ii=1:length(cluster_names)
-        rg = double(res(clu==cluster_names(ii)))./20000;
+        rg = double(res(clu==cluster_names(ii)))./samplingRate;
         if loadspk
             m = squeeze(mean(wav(clu==cluster_names(ii),:,:)));
             y = pdist(m,'euclidean')./max(sqrt(sum(m.^2,2)));
@@ -194,7 +195,7 @@ else
             m = squeeze(mean(wav(clu==cluster_names(i),:,:)));
             plot(m'); title(['Deviation from mean wf: ' num2str(devFromMean(i))])
             subplot(2,2,2)
-            rg = double(res(clu==cluster_names(i)))./20000;
+            rg = double(res(clu==cluster_names(i)))./samplingRate;
             dt = diff(rg);
             hist(dt(dt<.1),1000); title(['Fraction Rogue: ' num2str(fractRogue(i))]);
             subplot(2,2,3)
@@ -240,7 +241,7 @@ else
  
     % Here we select only clusters that correspond to putative units and that
     % have at least 20 spikes (otherwise errormatrix calculation fails)
-    goodCluIx = ismember(clu,find(cluster_names < 1000 & h>20));
+    goodCluIx = ismember(clu,find(cluster_names < 1000 & h>20)); 
     goodCluIx(noiseIx) = 0;
     
     % if there is anything to compare...
