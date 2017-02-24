@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of triggeredDataMat</title>
+  <meta name="keywords" content="triggeredDataMat">
+  <meta name="description" content="Returns a event-by-events matrix of Data component triggered on a reference (TODO!)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; triggeredDataMat.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>triggeredDataMat
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Returns a event-by-events matrix of Data component triggered on a reference (TODO!)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function M = triggeredDataMat(tsa, t, nbBins,varargin); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Returns a event-by-events matrix of Data component triggered on a reference (TODO!) 
+      
+      USAGE:
+      M = triggeredDataMat(tsa,evt,nbB)
+      
+      INPUTS:
+      tsa - a tsd
+      evt -  time of triggers
+      nbB - nb of timestamps before and after (i.e. a total of 2*N+1 bins)
+      
+      OUTPUT:
+      M - a matrix length(T) x (2*N+1) of event-by-events Data cmponent
+
+  TODO: debug &amp; rewrite this really bad code</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>	Returns Data of a TSD object</li><li><a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>	Returns TSD timestamps</li><li><a href="Restrict.html" class="code" title="function [R, il] = Restrict(tsa, varargin)">Restrict</a>	Restrict TSD to a new timestamp</li><li><a href="find.html" class="code" title="function O = find(tsa, find_string)">find</a>	Selects points in a TSD object based on conditions</li><li><a href="length.html" class="code" title="function l = length(tsa)">length</a>	Returns number of elements in tsa (overoads length function)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function M = triggeredDataMat(tsa, t, nbBins,varargin);</a>
+0002 
+0003 <span class="comment">%  Returns a event-by-events matrix of Data component triggered on a reference (TODO!)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      M = triggeredDataMat(tsa,evt,nbB)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      INPUTS:</span>
+0009 <span class="comment">%      tsa - a tsd</span>
+0010 <span class="comment">%      evt -  time of triggers</span>
+0011 <span class="comment">%      nbB - nb of timestamps before and after (i.e. a total of 2*N+1 bins)</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%      OUTPUT:</span>
+0014 <span class="comment">%      M - a matrix length(T) x (2*N+1) of event-by-events Data cmponent</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%  TODO: debug &amp; rewrite this really bad code</span>
+0017 
+0018 
+0019 <span class="comment">% copyright (c) 2009 Adrien Peyrache adrien.peyrache@gmail.com</span>
+0020 <span class="comment">% This software is released under the GNU GPL</span>
+0021 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0022 
+0023   
+0024 d = <a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>(tsa);
+0025 rg = <a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa);
+0026 rgR = <a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(<a href="Restrict.html" class="code" title="function [R, il] = Restrict(tsa, varargin)">Restrict</a>(tsa,t));
+0027 ix = <a href="find.html" class="code" title="function O = find(tsa, find_string)">find</a>(ismember(rg,rgR));
+0028 M = [];
+0029 
+0030 lmax = <a href="length.html" class="code" title="function l = length(tsa)">length</a>(d);
+0031 i=1;
+0032 
+0033 <span class="keyword">while</span> i&lt;=<a href="length.html" class="code" title="function l = length(tsa)">length</a>(ix) &amp; (ix(i)+nbBins&lt;lmax)
+0034     <span class="keyword">if</span> (ix(i)-nbBins&gt;1)
+0035         M = [M;d(ix(i)-nbBins:ix(i)+nbBins)'];
+0036     <span class="keyword">end</span>
+0037     i = i+1;
+0038 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

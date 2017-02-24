@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of createdatamatc</title>
+  <meta name="keywords" content="createdatamatc">
+  <meta name="description" content="Helper function to create an event triggered matrix from univariate">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>createdatamatc
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Helper function to create an event triggered matrix from univariate</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function data=createdatamatc(data,E,Fs,win) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Helper function to create an event triggered matrix from univariate
+ continuous data
+ Usage: data=createdatamatc(data,E,Fs,win)
+ Inputs:
+ data   (input time series as a column vector) - required
+ E      (events to use as triggers) - required 
+ Fs     (sampling frequency of data) - required
+ win    (window around triggers to use data matrix -[winl winr]) - required 
+          e.g [1 1] uses a window starting 1 * Fs samples before E and
+              ending 1*Fs samples after E.
+ Note that E, Fs, and win must have consistent units 
+
+ Outputs:
+ data      (event triggered data)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/old/tutorial/significant-spike-field-coherenceMBL2005.html" class="code" title="">significant-spike-field-coherenceMBL2005</a>	</li><li><a href="../../../chronux_2_10/old/tutorial/spike-field-coherenceMBL2005.html" class="code" title="">spike-field-coherenceMBL2005</a>	</li><li><a href="coherencysegc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencysegc(data1,data2,win,params)">coherencysegc</a>	Multi-taper coherency, cross-spectrum and individual spectra with segmenting - continuous process</li><li><a href="mtspecgramtrigc.html" class="code" title="function [S,t,f,Serr]=mtspecgramtrigc(data,E,win,movingwin,params)">mtspecgramtrigc</a>	Multi-taper event triggered time-frequency spectrum - continuous process</li><li><a href="mtspectrum_of_spectrumc.html" class="code" title="function [SS,tau]=mtspectrum_of_spectrumc(data,win,tapers2spec,params)">mtspectrum_of_spectrumc</a>	Multi-taper segmented, second spectrum (spectrum of the log spectrum) for a continuous process</li><li><a href="mtspectrumsegc.html" class="code" title="function [S,f,varS,C,Serr]=mtspectrumsegc(data,win,params,segave)">mtspectrumsegc</a>	Multi-taper segmented spectrum for a univariate continuous process</li><li><a href="mtspectrumtrigc.html" class="code" title="function [S,f,Serr]=mtspectrumtrigc(data,E,win,params)">mtspectrumtrigc</a>	Multi-taper event triggered time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpb(data1,data2,win,params,segave,fscorr)">coherencysegcpb</a>	Multi-taper coherency,cross-spectrum and individual spectra with segmenting</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpt(data1,data2,win,params,segave,fscorr)">coherencysegcpt</a>	Multi-taper coherency,cross-spectrum and individual spectra computed by segmenting</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function data=createdatamatc(data,E,Fs,win)</a>
+0002 <span class="comment">% Helper function to create an event triggered matrix from univariate</span>
+0003 <span class="comment">% continuous data</span>
+0004 <span class="comment">% Usage: data=createdatamatc(data,E,Fs,win)</span>
+0005 <span class="comment">% Inputs:</span>
+0006 <span class="comment">% data   (input time series as a column vector) - required</span>
+0007 <span class="comment">% E      (events to use as triggers) - required</span>
+0008 <span class="comment">% Fs     (sampling frequency of data) - required</span>
+0009 <span class="comment">% win    (window around triggers to use data matrix -[winl winr]) - required</span>
+0010 <span class="comment">%          e.g [1 1] uses a window starting 1 * Fs samples before E and</span>
+0011 <span class="comment">%              ending 1*Fs samples after E.</span>
+0012 <span class="comment">% Note that E, Fs, and win must have consistent units</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Outputs:</span>
+0015 <span class="comment">% data      (event triggered data)</span>
+0016 <span class="comment">%</span>
+0017 <span class="keyword">if</span> nargin &lt; 4; error(<span class="string">'Need all arguments'</span>); <span class="keyword">end</span>;
+0018 NE=length(E);
+0019 nwinl=round(win(1)*Fs);
+0020 nwinr=round(win(2)*Fs);
+0021 nE=floor(E*Fs)+1;
+0022 datatmp=[];
+0023 <span class="keyword">for</span> n=1:NE;
+0024     indx=nE(n)-nwinl:nE(n)+nwinr-1;
+0025     datatmp=[datatmp data(indx)];
+0026 <span class="keyword">end</span>
+0027 data=datatmp;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

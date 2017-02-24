@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of size</title>
+  <meta name="keywords" content="size">
+  <meta name="description" content="Returns size of tsdArray (overlaod of size function)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsdArray</a> &gt; size.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsdArray&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>size
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Returns size of tsdArray (overlaod of size function)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function sz = size(O, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Returns size of tsdArray (overlaod of size function)
+  
+      USAGE:
+      sz = size(O) returns 
+      sz = size(O,i) returns size along the ith dimension</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>	Returns size of tsdArray (overlaod of size function)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="MakeQfromS.html" class="code" title="function Q = MakeQfromS(S,bin,varargin)">MakeQfromS</a>	Spike train binning</li><li><a href="map.html" class="code" title="function SO = map(S, cmd_string, varargin)">map</a>	Applies function on each element of the array</li><li><a href="oneSeries.html" class="code" title="function TSO = oneSeries(S)">oneSeries</a>	Sorts all the points in each element in the tsdArray, and returns a single tsd with all the points</li><li><a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>	Returns size of tsdArray (overlaod of size function)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function sz = size(O, varargin)</a>
+0002 
+0003 <span class="comment">% Returns size of tsdArray (overlaod of size function)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      sz = size(O) returns</span>
+0007 <span class="comment">%      sz = size(O,i) returns size along the ith dimension</span>
+0008 
+0009 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia</span>
+0010 <span class="comment">% This software is released under the GNU GPL</span>
+0011 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0012 
+0013   <span class="keyword">if</span> ~isempty(varargin)
+0014     sz = <a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>(O.C, varargin{:});
+0015   <span class="keyword">else</span>
+0016     sz = <a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>(O.C);
+0017   <span class="keyword">end</span>
+0018</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

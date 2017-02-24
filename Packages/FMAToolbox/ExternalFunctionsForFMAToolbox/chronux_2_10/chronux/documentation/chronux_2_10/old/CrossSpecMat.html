@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of CrossSpecMat</title>
+  <meta name="keywords" content="CrossSpecMat">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html old -->
+<h1>CrossSpecMat
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMat(data,win,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+
+ Multi-taper cross-spectral matrix - another routine, this one allows for multiple trials and channels 
+ but does not do confidence intervals. Also this routine always averages over trials - continuous process
+
+ Usage:
+
+ [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMat(data,win,params)
+ Input: 
+ Note units have to be consistent. See chronux.m for more information.
+       data (in form samples x channels x trials) 
+       win  (duration of non-overlapping window)
+       params: structure with fields tapers, pad, Fs, fpass
+       - optional
+           tapers (precalculated tapers from dpss, or in the form [NW K] e.g [3 5]) -- optional. 
+                                                 If not specified, use [NW K]=[3 5]
+            pad            (padding factor for the FFT) - optional. Defaults to 0.  
+                       e.g. For N = 500, if PAD = 0, we pad the FFT 
+                       to 512 points; if PAD = 2, we pad the FFT
+                       to 2048 points, etc.
+           Fs   (sampling frequency) - optional. Default 1.
+           fpass    (frequency band to be used in the calculation in the form
+                                   [fmin fmax])- optional. 
+                                   Default all frequencies between 0 and Fs/2
+ Output:
+       Sc (cross spectral matrix frequency x channels x channels)
+       Cmat Coherence matrix frequency x channels x channels
+       Ctot Total coherence: SV(1)^2/sum(SV^2) (frequency)
+       Cvec leading Eigenvector (frequency x channels)
+       Cent A different measure of total coherence: GM/AM of SV^2s
+       f (frequencies)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../chronux_2_10/spectral_analysis/continuous/mtfftc.html" class="code" title="function J=mtfftc(data,tapers,nfft,Fs)">mtfftc</a>	Multi-taper fourier transform - continuous data</li><li><a href="../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>	Helper function that gets the frequency grid associated with a given fft based computation</li><li><a href="../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMat(data,win,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Multi-taper cross-spectral matrix - another routine, this one allows for multiple trials and channels</span>
+0005 <span class="comment">% but does not do confidence intervals. Also this routine always averages over trials - continuous process</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Usage:</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMat(data,win,params)</span>
+0010 <span class="comment">% Input:</span>
+0011 <span class="comment">% Note units have to be consistent. See chronux.m for more information.</span>
+0012 <span class="comment">%       data (in form samples x channels x trials)</span>
+0013 <span class="comment">%       win  (duration of non-overlapping window)</span>
+0014 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass</span>
+0015 <span class="comment">%       - optional</span>
+0016 <span class="comment">%           tapers (precalculated tapers from dpss, or in the form [NW K] e.g [3 5]) -- optional.</span>
+0017 <span class="comment">%                                                 If not specified, use [NW K]=[3 5]</span>
+0018 <span class="comment">%            pad            (padding factor for the FFT) - optional. Defaults to 0.</span>
+0019 <span class="comment">%                       e.g. For N = 500, if PAD = 0, we pad the FFT</span>
+0020 <span class="comment">%                       to 512 points; if PAD = 2, we pad the FFT</span>
+0021 <span class="comment">%                       to 2048 points, etc.</span>
+0022 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0023 <span class="comment">%           fpass    (frequency band to be used in the calculation in the form</span>
+0024 <span class="comment">%                                   [fmin fmax])- optional.</span>
+0025 <span class="comment">%                                   Default all frequencies between 0 and Fs/2</span>
+0026 <span class="comment">% Output:</span>
+0027 <span class="comment">%       Sc (cross spectral matrix frequency x channels x channels)</span>
+0028 <span class="comment">%       Cmat Coherence matrix frequency x channels x channels</span>
+0029 <span class="comment">%       Ctot Total coherence: SV(1)^2/sum(SV^2) (frequency)</span>
+0030 <span class="comment">%       Cvec leading Eigenvector (frequency x channels)</span>
+0031 <span class="comment">%       Cent A different measure of total coherence: GM/AM of SV^2s</span>
+0032 <span class="comment">%       f (frequencies)</span>
+0033 d=ndims(data);
+0034 <span class="keyword">if</span> d&lt;2, error(<span class="string">'Need multidimensional array'</span>); <span class="keyword">end</span>
+0035 <span class="keyword">if</span> d==2, [N,C]=size(data); <span class="keyword">end</span>;
+0036 <span class="keyword">if</span> d==3, [N,C,Ntr]=size(data); <span class="keyword">end</span>; 
+0037 <span class="keyword">if</span> nargin &lt; 3; params=[]; <span class="keyword">end</span>;
+0038 [tapers,pad,Fs,fpass,err,trialave,params]=<a href="../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params);
+0039 clear err trialave params
+0040 nwin=round(win*Fs); nfft=2^(nextpow2(nwin)+pad); 
+0041 [f,findx]=<a href="../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>(Fs,nfft,fpass); 
+0042 tapers=<a href="../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(tapers,nwin,Fs); <span class="comment">% check tapers</span>
+0043 Sc=zeros(length(findx),C,C);
+0044 
+0045 Nwins=floor(N/nwin);
+0046 
+0047 <span class="keyword">if</span> d==3, <span class="comment">% If there are multiple trials</span>
+0048 <span class="keyword">for</span> iwin=1:Nwins,
+0049     <span class="keyword">for</span> i=1:Ntr, 
+0050         data1=squeeze(data(1+(iwin-1)*nwin:iwin*nwin,:,i));
+0051         J1=<a href="../../chronux_2_10/spectral_analysis/continuous/mtfftc.html" class="code" title="function J=mtfftc(data,tapers,nfft,Fs)">mtfftc</a>(detrend(data1),tapers,nfft,Fs);
+0052         J1=J1(findx,:,:);
+0053         <span class="keyword">for</span> k=1:C,
+0054             <span class="keyword">for</span> l=1:C,
+0055                 spec=squeeze(mean(conj(J1(:,:,k)).*J1(:,:,l),2)); 
+0056             Sc(:,k,l)=Sc(:,k,l)+spec;
+0057             <span class="keyword">end</span>
+0058         <span class="keyword">end</span>
+0059     <span class="keyword">end</span>
+0060 <span class="keyword">end</span>
+0061 Sc=Sc/(Nwins*Ntr);
+0062 <span class="keyword">end</span>
+0063 
+0064 <span class="keyword">if</span> d==2, <span class="comment">% only one trial</span>
+0065 <span class="keyword">for</span> iwin=1:Nwins,
+0066         data1=squeeze(data(1+(iwin-1)*nwin:iwin*nwin,:));
+0067         J1=<a href="../../chronux_2_10/spectral_analysis/continuous/mtfftc.html" class="code" title="function J=mtfftc(data,tapers,nfft,Fs)">mtfftc</a>(data1,tapers,nfft,Fs);
+0068         J1=J1(findx,:,:);
+0069         <span class="keyword">for</span> k=1:C,
+0070             <span class="keyword">for</span> l=1:C,
+0071             Sc(:,k,l)=Sc(:,k,l)+squeeze(mean(conj(J1(:,:,k)).*J1(:,:,l),2));
+0072             <span class="keyword">end</span>
+0073         <span class="keyword">end</span>
+0074 <span class="keyword">end</span>
+0075 Sc=Sc/Nwins;
+0076 <span class="keyword">end</span>
+0077 
+0078 Cmat=Sc;
+0079 Sdiag=zeros(length(findx),C);
+0080 <span class="keyword">for</span> k=1:C,
+0081     Sdiag(:,k)=squeeze(Sc(:,k,k));
+0082 <span class="keyword">end</span>
+0083 
+0084 <span class="keyword">for</span> k=1:C,
+0085     <span class="keyword">for</span> l=1:C,
+0086         Cmat(:,k,l)=Sc(:,k,l)./sqrt(abs(Sdiag(:,k).*Sdiag(:,l)));
+0087     <span class="keyword">end</span>
+0088 <span class="keyword">end</span>
+0089 
+0090 Ctot=zeros(length(findx),1); Cent=Ctot;
+0091 Cvec=zeros(length(findx),C);
+0092 <span class="keyword">for</span> i=1:length(findx),
+0093     [u s]=svd(squeeze(Sc(i,:,:)));s=diag(s);
+0094     Ctot(i)=s(1).^2/sum(s.^2); Cent(i)=exp(mean(log(s.^2)))/mean(s.^2);             
+0095     Cvec(i,:)=transpose(u(:,1));
+0096 
+0097 <span class="keyword">end</span>
+0098</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

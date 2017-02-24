@@ -1,0 +1,23 @@
+MClust Credits
+for version 3.5
+Released February 2008
+
+Original MClust by 
+
+	 "	A. David Redish (ADR), 
+		current address, University of Minnesota, Minneapolis MN.
+
+Major modifications that have been incorporated 
+into version 3.5 were made by   
+
+	 "	Neil Schmitzer-Torbert (NCST), 
+		University of Minnesota, Minneapolis MN.
+        "	Peter Lipa (PL), University of Arizona, Tucson AZ.
+	"	Stephen Cowen (SLC), University of Arizona, Tucson AZ.
+	"	Jadin Jackson (JCJ), University of Minnesota, Minneapolis MN.
+	"	Francesco Battaglia (batta), University of Arizona, Tucson AZ.
+
+KlustaKwik (automated spike-sorter) was written by  
+	"	Ken Harris, Rutgers University, Newark NJ.
+
+

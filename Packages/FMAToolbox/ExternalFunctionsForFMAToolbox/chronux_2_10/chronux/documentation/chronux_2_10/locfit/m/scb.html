@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of scb</title>
+  <meta name="keywords" content="scb">
+  <meta name="description" content="Simultaneous Confidence Bands">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>scb
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Simultaneous Confidence Bands</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function z=scb(x,y,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Simultaneous Confidence Bands
+
+ Example:
+   load ethanol;
+   z = scb(E,NOx,'h',0.5);
+
+ result (z) is a matrix with four columns: evaluation points,
+ fitted values, lower confidence limit, upper confidence limit.
+ Most locfit arguments should work.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="kappa0.html" class="code" title="function kap=kappa0(x,y,varargin)">kappa0</a>	Compute the constants for `tube-formula' based simultaneous</li><li><a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>	Interpolate a fit produced by locfit().</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/den_jack.html" class="code" title="function [m,ll,ul,llj,ulj]=den_jack(X,family,varargin)">den_jack</a>	Function to compute smooth estimates of the mean of x using locfit,</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function z=scb(x,y,varargin)</a>
+0002 
+0003 <span class="comment">% Simultaneous Confidence Bands</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Example:</span>
+0006 <span class="comment">%   load ethanol;</span>
+0007 <span class="comment">%   z = scb(E,NOx,'h',0.5);</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% result (z) is a matrix with four columns: evaluation points,</span>
+0010 <span class="comment">% fitted values, lower confidence limit, upper confidence limit.</span>
+0011 <span class="comment">% Most locfit arguments should work.</span>
+0012 
+0013 fit = <a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(x,y,<span class="string">'ev'</span>,<span class="string">'grid'</span>,<span class="string">'mg'</span>,20,varargin{:});
+0014 kap = <a href="kappa0.html" class="code" title="function kap=kappa0(x,y,varargin)">kappa0</a>(x,y,varargin{:});
+0015 cb = <a href="predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit,<span class="string">'fitp'</span>,<span class="string">'band'</span>,<span class="string">'g'</span>,<span class="string">'kappa'</span>,kap);
+0016 z = [fit.fit_points.evaluation_points' cb{1} cb{3}];
+0017 
+0018 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

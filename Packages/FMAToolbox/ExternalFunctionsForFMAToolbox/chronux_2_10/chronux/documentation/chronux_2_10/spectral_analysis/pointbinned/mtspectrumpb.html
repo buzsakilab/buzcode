@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtspectrumpb</title>
+  <meta name="keywords" content="mtspectrumpb">
+  <meta name="description" content="Multi-taper spectrum - binned point process">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointbinned -->
+<h1>mtspectrumpb
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper spectrum - binned point process</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [S,f,R,Serr]=mtspectrumpb(data,params,fscorr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper spectrum - binned point process
+
+ Usage:
+
+ [S,f,R,Serr]=mtspectrumpb(data,params,fscorr)
+ Input: 
+       data (in form samples x channels/trials or a single vector) -- required
+       params: structure with fields tapers, pad, Fs, fpass, err, trialave
+       - optional
+           tapers : precalculated tapers from dpss or in the one of the following
+                    forms: 
+                    (1) A numeric vector [TW K] where TW is the
+                        time-bandwidth product and K is the number of
+                        tapers to be used (less than or equal to
+                        2TW-1). 
+                    (2) A numeric vector [W T p] where W is the
+                        bandwidth, T is the duration of the data and p 
+                        is an integer such that 2TW-p tapers are used. In
+                        this form there is no default i.e. to specify
+                        the bandwidth, you have to specify T and p as
+                        well. Note that the units of W and T have to be
+                        consistent: if W is in Hz, T must be in seconds
+                        and vice versa. Note that these units must also
+                        be consistent with the units of params.Fs: W can
+                        be in Hz if and only if params.Fs is in Hz.
+                        The default is to use form 1 with TW=3 and K=5
+
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+           Fs   (sampling frequency) - optional. Default 1.
+           fpass    (frequency band to be used in the calculation in the form
+                                   [fmin fmax])- optional. 
+                                   Default all frequencies between 0 and Fs/2
+           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars
+                                   [0 p] or 0 - no error bars) - optional. Default 0.
+           trialave (average over channels/trials when 1, don't average when 0) - optional. Default 0
+       fscorr   (finite size corrections, 0 (don't use finite size corrections) or 
+                1 (use finite size corrections) - optional
+                (available only for spikes). Defaults 0.
+ Output:
+       S       (spectrum in form frequency x channels/trials if trialave=0; 
+               as a function of frequency if trialave=1)
+       f       (frequencies)
+       R       (spike rate)
+       Serr    (error bars) - only for err(1)&gt;=1</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>	Helper function that gets the frequency grid associated with a given fft based computation</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/specerr.html" class="code" title="function Serr=specerr(S,J,err,trialave,numsp)">specerr</a>	Function to compute lower and upper confidence intervals on the spectrum</li><li><a href="mtfftpb.html" class="code" title="function [J,Msp,Nsp]=mtfftpb(data,tapers,nfft)">mtfftpb</a>	Multi-taper fourier transform - binned point process data</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="mtspecgrampb.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampb(data,movingwin,params,fscorr)">mtspecgrampb</a>	Multi-taper time-frequency spectrum - binned point process</li><li><a href="mtspectrumtrigpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumtrigpb(data,E,win,params,fscorr)">mtspectrumtrigpb</a>	Multi-taper event triggered time-frequency spectrum - binned point process</li><li><a href="../../../chronux_2_10/test/testscript.html" class="code" title="">testscript</a>	function testscript(pname,direction,movingwin,segave,params,fscorr)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [S,f,R,Serr]=mtspectrumpb(data,params,fscorr)</a>
+0002 <span class="comment">% Multi-taper spectrum - binned point process</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage:</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% [S,f,R,Serr]=mtspectrumpb(data,params,fscorr)</span>
+0007 <span class="comment">% Input:</span>
+0008 <span class="comment">%       data (in form samples x channels/trials or a single vector) -- required</span>
+0009 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass, err, trialave</span>
+0010 <span class="comment">%       - optional</span>
+0011 <span class="comment">%           tapers : precalculated tapers from dpss or in the one of the following</span>
+0012 <span class="comment">%                    forms:</span>
+0013 <span class="comment">%                    (1) A numeric vector [TW K] where TW is the</span>
+0014 <span class="comment">%                        time-bandwidth product and K is the number of</span>
+0015 <span class="comment">%                        tapers to be used (less than or equal to</span>
+0016 <span class="comment">%                        2TW-1).</span>
+0017 <span class="comment">%                    (2) A numeric vector [W T p] where W is the</span>
+0018 <span class="comment">%                        bandwidth, T is the duration of the data and p</span>
+0019 <span class="comment">%                        is an integer such that 2TW-p tapers are used. In</span>
+0020 <span class="comment">%                        this form there is no default i.e. to specify</span>
+0021 <span class="comment">%                        the bandwidth, you have to specify T and p as</span>
+0022 <span class="comment">%                        well. Note that the units of W and T have to be</span>
+0023 <span class="comment">%                        consistent: if W is in Hz, T must be in seconds</span>
+0024 <span class="comment">%                        and vice versa. Note that these units must also</span>
+0025 <span class="comment">%                        be consistent with the units of params.Fs: W can</span>
+0026 <span class="comment">%                        be in Hz if and only if params.Fs is in Hz.</span>
+0027 <span class="comment">%                        The default is to use form 1 with TW=3 and K=5</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0030 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0031 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0032 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0033 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0034 <span class="comment">%                       Defaults to 0.</span>
+0035 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0036 <span class="comment">%           fpass    (frequency band to be used in the calculation in the form</span>
+0037 <span class="comment">%                                   [fmin fmax])- optional.</span>
+0038 <span class="comment">%                                   Default all frequencies between 0 and Fs/2</span>
+0039 <span class="comment">%           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars</span>
+0040 <span class="comment">%                                   [0 p] or 0 - no error bars) - optional. Default 0.</span>
+0041 <span class="comment">%           trialave (average over channels/trials when 1, don't average when 0) - optional. Default 0</span>
+0042 <span class="comment">%       fscorr   (finite size corrections, 0 (don't use finite size corrections) or</span>
+0043 <span class="comment">%                1 (use finite size corrections) - optional</span>
+0044 <span class="comment">%                (available only for spikes). Defaults 0.</span>
+0045 <span class="comment">% Output:</span>
+0046 <span class="comment">%       S       (spectrum in form frequency x channels/trials if trialave=0;</span>
+0047 <span class="comment">%               as a function of frequency if trialave=1)</span>
+0048 <span class="comment">%       f       (frequencies)</span>
+0049 <span class="comment">%       R       (spike rate)</span>
+0050 <span class="comment">%       Serr    (error bars) - only for err(1)&gt;=1</span>
+0051 
+0052 <span class="keyword">if</span> nargin &lt; 1; error(<span class="string">'Need data'</span>); <span class="keyword">end</span>;
+0053 <span class="keyword">if</span> nargin &lt; 2; params=[]; <span class="keyword">end</span>;
+0054 [tapers,pad,Fs,fpass,err,trialave,params]=<a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params);
+0055 clear params
+0056 <span class="keyword">if</span> nargout &gt; 3 &amp;&amp; err(1)==0; 
+0057 <span class="comment">%   Cannot compute error bars with err(1)=0. Need to change params and run again</span>
+0058     error(<span class="string">'When Serr is desired, err(1) has to be non-zero.'</span>);
+0059 <span class="keyword">end</span>;
+0060 <span class="keyword">if</span> nargin &lt; 3 || isempty(fscorr); fscorr=0;<span class="keyword">end</span>;
+0061 data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data);
+0062 N=size(data,1);
+0063 nfft=max(2^(nextpow2(N)+pad),N);
+0064 [f,findx]=<a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>(Fs,nfft,fpass);
+0065 
+0066 tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(tapers,N,Fs); <span class="comment">% check tapers</span>
+0067 [J,Msp,Nsp]=<a href="mtfftpb.html" class="code" title="function [J,Msp,Nsp]=mtfftpb(data,tapers,nfft)">mtfftpb</a>(data,tapers,nfft);  
+0068 J=J(findx,:,:);
+0069 S=squeeze(mean(conj(J).*J,2));
+0070 <span class="keyword">if</span> trialave; S=squeeze(mean(S,2)); Msp=mean(Msp);<span class="keyword">end</span>;
+0071 R=Msp*Fs;
+0072 <span class="keyword">if</span> nargout==4;
+0073    <span class="keyword">if</span> fscorr==1;
+0074       Serr=<a href="../../../chronux_2_10/spectral_analysis/helper/specerr.html" class="code" title="function Serr=specerr(S,J,err,trialave,numsp)">specerr</a>(S,J,err,trialave,Nsp);
+0075    <span class="keyword">else</span>
+0076       Serr=<a href="../../../chronux_2_10/spectral_analysis/helper/specerr.html" class="code" title="function Serr=specerr(S,J,err,trialave,numsp)">specerr</a>(S,J,err,trialave);
+0077    <span class="keyword">end</span>;
+0078 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

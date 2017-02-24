@@ -1,0 +1,473 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of videoWriter</title>
+  <meta name="keywords" content="videoWriter">
+  <meta name="description" content="videoWriter class constructor">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # videoIO --><!-- ../menu.html videoIO_2006a --><!-- menu.html @videoWriter -->
+<h1>videoWriter
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>videoWriter class constructor</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>function vw = videoWriter(url, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> videoWriter class constructor
+   Creates a object that writes video files.  We use a plugin 
+   architecture in the backend to do the actual writing.  For example, 
+   on Windows, DirectShow will typically be used and on Linux, the 
+   ffmpeg library is often used.
+
+   vw = videoWriter(url)
+     Opens the given video file for writing using the default plugin.
+     On Windows, 'DirectShow' is used by default and on Linux,
+     'ffmpegPopen2' is used by default.  For most plugins, the url will 
+     really be a filename.
+
+   vw = videoWriter(url,..., 'plugin',pluginName, ...)
+   vw = videoWriter(url,pluginName)
+     Opens the file using the specified plugin implementation.
+     Available plugins include:
+
+     'DirectShow': preferred method on Windows
+       - Only available on Windows
+       - See INSTALL.dshow.txt for installation instructions
+       - The URL parameter should be a filename.
+         - As a convenience, all forward slashes ('/') are automatically  
+           converted to backslashes ('\')
+
+     'ffmpegPopen2': safe method on Linux
+       - Only supported on GNU/Linux (might work on BSD systems too like Mac 
+         OS X, but this is untested)
+       - See INSTALL.ffmpeg.txt for installation instructions
+       - Creates a separate server process to communicate with the
+         ffmpeg libraries.  
+         - Works when the system's version of GCC is very different from
+           the one that MathWorks used to compile Matlab.
+         - Isolates ffmpeg errors so they typically cannot crash
+           Matlab.  
+         - May allow for more flexible distribution terms for your code 
+           when it uses videoIO (ffmpeg may be compiled with either 
+           the LGPL or GPL license).
+
+     'ffmpegDirect': low-overhead method on Linux
+       - same as ffmpegPopen2, but the ffmpeg libraries are loaded
+         directly by the MEX file.
+         - May not work if MathWorks' and your version of GCC are
+           incompatible. 
+         - Slightly faster than ffmpegPopen2 since there is no
+           interprocess communication overhead.
+
+   vw = videoWriter(url, ..., param,arg,...)
+     Allows the user to pass extra configuration arguments to plugin.
+     At present, all parameter names are case sensitive (but in the
+     future they may become case-insensitive).  
+
+     The following parameters are supported by current plugins:
+
+                        Plugin 
+     Parameter      ffmpeg* DShow  Implementation Notes
+     ---------      ------- -----  -----------------------------
+     width             X      X    Width of the encoded video.  Most
+                                   codecs require width to be divisible
+                                   by 2, 4, or 8.  Most users will want
+                                   to explicitly pass this parameter.
+                                   The addframe method will
+                                   automatically resize any images
+                                   according to the value chosen here
+                                   (or a default value if none is
+                                   specified here). 
+
+     height            X      X    Height of the encoded video.  Most
+                                   codecs require height to be divisible
+                                   by 2, 4, or 8.  Most users will want
+                                   to explicitly pass this parameter.
+                                   The addframe method will
+                                   automatically resize any images
+                                   according to the value chosen here
+                                   (or a default value if none is
+                                   specified here). 
+
+     codec             X      X    A string specifying the encoder to
+                                   use.  The exact set of possible
+                                   codecs is highly system-dependent.
+                                   Most users will want to explicitly
+                                   pass this parameter.  To see a list
+                                   of available codecs on a specific
+                                   machine, run:
+                                     codecs = videoWriter([],'codecs');
+
+     fourcc                   X    For the DirectShow plugin, this is a 
+                                   synonym for 'codec'.
+
+     fps               X      X    Frame rate of the recorded video.  
+                                   Note that some codecs only work with 
+                                   some frame rates. 15, 24, 25, 29.97,
+                                   and 30 should work with most codecs.  
+
+     framesPerSecond   X      X    An alias for fps.
+
+     fpsNum, fpsDenom  X      X    This pair of parameters allows frames
+                                   per second to be specified as a
+                                   rational number.  Either both or
+                                   neither parameter must be given.
+
+     framesPerSecond_num           Alias for fpsNum, fpsDenom pair.
+     framesPerSecond_denom
+                       X      X
+
+     bitRateTolerance  X           For supporting codecs, the actual
+                                   bit rate is allowed to vary by +/-
+                                   this value. 
+
+     showCompressionDialog    X    If true (a non-zero number), a dialog
+                                   box is presented to the user allowing
+                                   precise manual selection of the codec
+                                   and its parameters.  Note: sometimes 
+                                   the dialog does not received focus
+                                   automatically so you'll need to 
+                                   ALT-TAB to get to it.
+
+     codecParams              X    A MIME Base64-encoded string describing
+                                   the codec setup parameters for a 
+                                   DirectShow codec.  The contents of this
+                                   string are very codec-specific.  Often,
+                                   The best ways to come up with a string
+                                   like this are to first create a
+                                   videoWriter with the
+                                   'showCompressionDialog' option enabled,
+                                   choose the desired settings, then use
+                                   the GETINFO method to extract the
+                                   'codecParams' value.  Note that this
+                                   representation is the same as used by
+                                   VirtualDub 1.6 and 1.7 in its Sylia
+                                   Script files.  Nearly all useful
+                                   DirectShow codecs can only be
+                                   configured with 'codecParams' and they
+                                   ignore the separate 'bitRate' and
+                                   'gopSize' parameters given below.
+
+     bitRate           X      x    Target bits/sec of the encoded video.
+                                   Supported by most ffmpeg codecs.
+                                   To see whether a particular codec uses
+                                   the bitRate parameter, run the
+                                   testBitRate function in the tests/
+                                   subdirectory (NOTE: very few DirectShow
+                                   codecs support it).   
+
+     gopSize           X      x    Maximum period between keyframes.  GOP
+                                   stands for  &quot;group of pictures&quot; in MPEG
+                                   lingo.  Supported by most ffmpeg
+                                   codecs.  To see whether a particular
+                                   codec uses the gopSize parameter, run
+                                   the testGopSize function in the tests/
+                                   subdirectory (NOTE: very few DirectShow
+                                   codecs support it).
+
+     maxBFrames        X           For MPEG codecs, gives the max
+                                   number of bidirectional frames in a
+                                   group of pictures (GOP).
+
+  codecs = videoWriter([],'codecs')
+  codecs = videoWriter([],pluginName,'codecs')
+  codecs = videoWriter([],'codecs','plugin',pluginName)
+    Queries the backend for a list of the valid codecs that may be used
+    with the 'codec' plugin parameter.  
+
+ Once you are done using the videoWriter, make sure you call CLOSE so
+ that any system resources allocated by the plugin may be released.
+ Here's a simple example of how you might use videoWriter to create
+ a video of continually adding more motion blur to an image:
+
+   % Construct a videoWriter object
+   vw = videoWriter('writertest.avi', ...
+                    'width',320, 'height',240, 'codec','xvid');
+   img = imread('peppers.png');
+   h = fspecial('motion',10,5);
+   for i=1:100
+     addframe(vw, img);
+     img = imfilter(img, h);
+   end
+   vw=close(vw);
+
+ SEE ALSO:
+   buildVideoMex
+   videoWriter/addframe
+   videoWriter/close
+   videoReader
+
+Copyright (c) 2006 Gerald Dalley
+See &quot;MIT.txt&quot; in the installation directory for licensing details (especially
+when using this library on GNU/Linux).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+<li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/defaultVideoIOPlugin.html" class="code" title="function pluginName = defaultVideoIOPlugin">defaultVideoIOPlugin</a>	pluginName = defaultVideoIOPlugin</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/defaultVideoIOPlugin.html" class="code" title="function pluginName = defaultVideoIOPlugin">defaultVideoIOPlugin</a>	pluginName = defaultVideoIOPlugin</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/defaultVideoIOPlugin.html" class="code" title="function pluginName = defaultVideoIOPlugin">defaultVideoIOPlugin</a>	pluginName = defaultVideoIOPlugin</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function n = mexName(plugin)</a></li><li><a href="#_sub2" class="code">function [plugin,pluginArgs] = parsePlugin(plugin, pluginArgs)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function vw = videoWriter(url, varargin)</a>
+0002 <span class="comment">% videoWriter class constructor</span>
+0003 <span class="comment">%   Creates a object that writes video files.  We use a plugin</span>
+0004 <span class="comment">%   architecture in the backend to do the actual writing.  For example,</span>
+0005 <span class="comment">%   on Windows, DirectShow will typically be used and on Linux, the</span>
+0006 <span class="comment">%   ffmpeg library is often used.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%   vw = videoWriter(url)</span>
+0009 <span class="comment">%     Opens the given video file for writing using the default plugin.</span>
+0010 <span class="comment">%     On Windows, 'DirectShow' is used by default and on Linux,</span>
+0011 <span class="comment">%     'ffmpegPopen2' is used by default.  For most plugins, the url will</span>
+0012 <span class="comment">%     really be a filename.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%   vw = videoWriter(url,..., 'plugin',pluginName, ...)</span>
+0015 <span class="comment">%   vw = videoWriter(url,pluginName)</span>
+0016 <span class="comment">%     Opens the file using the specified plugin implementation.</span>
+0017 <span class="comment">%     Available plugins include:</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%     'DirectShow': preferred method on Windows</span>
+0020 <span class="comment">%       - Only available on Windows</span>
+0021 <span class="comment">%       - See INSTALL.dshow.txt for installation instructions</span>
+0022 <span class="comment">%       - The URL parameter should be a filename.</span>
+0023 <span class="comment">%         - As a convenience, all forward slashes ('/') are automatically</span>
+0024 <span class="comment">%           converted to backslashes ('\')</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">%     'ffmpegPopen2': safe method on Linux</span>
+0027 <span class="comment">%       - Only supported on GNU/Linux (might work on BSD systems too like Mac</span>
+0028 <span class="comment">%         OS X, but this is untested)</span>
+0029 <span class="comment">%       - See INSTALL.ffmpeg.txt for installation instructions</span>
+0030 <span class="comment">%       - Creates a separate server process to communicate with the</span>
+0031 <span class="comment">%         ffmpeg libraries.</span>
+0032 <span class="comment">%         - Works when the system's version of GCC is very different from</span>
+0033 <span class="comment">%           the one that MathWorks used to compile Matlab.</span>
+0034 <span class="comment">%         - Isolates ffmpeg errors so they typically cannot crash</span>
+0035 <span class="comment">%           Matlab.</span>
+0036 <span class="comment">%         - May allow for more flexible distribution terms for your code</span>
+0037 <span class="comment">%           when it uses videoIO (ffmpeg may be compiled with either</span>
+0038 <span class="comment">%           the LGPL or GPL license).</span>
+0039 <span class="comment">%</span>
+0040 <span class="comment">%     'ffmpegDirect': low-overhead method on Linux</span>
+0041 <span class="comment">%       - same as ffmpegPopen2, but the ffmpeg libraries are loaded</span>
+0042 <span class="comment">%         directly by the MEX file.</span>
+0043 <span class="comment">%         - May not work if MathWorks' and your version of GCC are</span>
+0044 <span class="comment">%           incompatible.</span>
+0045 <span class="comment">%         - Slightly faster than ffmpegPopen2 since there is no</span>
+0046 <span class="comment">%           interprocess communication overhead.</span>
+0047 <span class="comment">%</span>
+0048 <span class="comment">%   vw = videoWriter(url, ..., param,arg,...)</span>
+0049 <span class="comment">%     Allows the user to pass extra configuration arguments to plugin.</span>
+0050 <span class="comment">%     At present, all parameter names are case sensitive (but in the</span>
+0051 <span class="comment">%     future they may become case-insensitive).</span>
+0052 <span class="comment">%</span>
+0053 <span class="comment">%     The following parameters are supported by current plugins:</span>
+0054 <span class="comment">%</span>
+0055 <span class="comment">%                        Plugin</span>
+0056 <span class="comment">%     Parameter      ffmpeg* DShow  Implementation Notes</span>
+0057 <span class="comment">%     ---------      ------- -----  -----------------------------</span>
+0058 <span class="comment">%     width             X      X    Width of the encoded video.  Most</span>
+0059 <span class="comment">%                                   codecs require width to be divisible</span>
+0060 <span class="comment">%                                   by 2, 4, or 8.  Most users will want</span>
+0061 <span class="comment">%                                   to explicitly pass this parameter.</span>
+0062 <span class="comment">%                                   The addframe method will</span>
+0063 <span class="comment">%                                   automatically resize any images</span>
+0064 <span class="comment">%                                   according to the value chosen here</span>
+0065 <span class="comment">%                                   (or a default value if none is</span>
+0066 <span class="comment">%                                   specified here).</span>
+0067 <span class="comment">%</span>
+0068 <span class="comment">%     height            X      X    Height of the encoded video.  Most</span>
+0069 <span class="comment">%                                   codecs require height to be divisible</span>
+0070 <span class="comment">%                                   by 2, 4, or 8.  Most users will want</span>
+0071 <span class="comment">%                                   to explicitly pass this parameter.</span>
+0072 <span class="comment">%                                   The addframe method will</span>
+0073 <span class="comment">%                                   automatically resize any images</span>
+0074 <span class="comment">%                                   according to the value chosen here</span>
+0075 <span class="comment">%                                   (or a default value if none is</span>
+0076 <span class="comment">%                                   specified here).</span>
+0077 <span class="comment">%</span>
+0078 <span class="comment">%     codec             X      X    A string specifying the encoder to</span>
+0079 <span class="comment">%                                   use.  The exact set of possible</span>
+0080 <span class="comment">%                                   codecs is highly system-dependent.</span>
+0081 <span class="comment">%                                   Most users will want to explicitly</span>
+0082 <span class="comment">%                                   pass this parameter.  To see a list</span>
+0083 <span class="comment">%                                   of available codecs on a specific</span>
+0084 <span class="comment">%                                   machine, run:</span>
+0085 <span class="comment">%                                     codecs = videoWriter([],'codecs');</span>
+0086 <span class="comment">%</span>
+0087 <span class="comment">%     fourcc                   X    For the DirectShow plugin, this is a</span>
+0088 <span class="comment">%                                   synonym for 'codec'.</span>
+0089 <span class="comment">%</span>
+0090 <span class="comment">%     fps               X      X    Frame rate of the recorded video.</span>
+0091 <span class="comment">%                                   Note that some codecs only work with</span>
+0092 <span class="comment">%                                   some frame rates. 15, 24, 25, 29.97,</span>
+0093 <span class="comment">%                                   and 30 should work with most codecs.</span>
+0094 <span class="comment">%</span>
+0095 <span class="comment">%     framesPerSecond   X      X    An alias for fps.</span>
+0096 <span class="comment">%</span>
+0097 <span class="comment">%     fpsNum, fpsDenom  X      X    This pair of parameters allows frames</span>
+0098 <span class="comment">%                                   per second to be specified as a</span>
+0099 <span class="comment">%                                   rational number.  Either both or</span>
+0100 <span class="comment">%                                   neither parameter must be given.</span>
+0101 <span class="comment">%</span>
+0102 <span class="comment">%     framesPerSecond_num           Alias for fpsNum, fpsDenom pair.</span>
+0103 <span class="comment">%     framesPerSecond_denom</span>
+0104 <span class="comment">%                       X      X</span>
+0105 <span class="comment">%</span>
+0106 <span class="comment">%     bitRateTolerance  X           For supporting codecs, the actual</span>
+0107 <span class="comment">%                                   bit rate is allowed to vary by +/-</span>
+0108 <span class="comment">%                                   this value.</span>
+0109 <span class="comment">%</span>
+0110 <span class="comment">%     showCompressionDialog    X    If true (a non-zero number), a dialog</span>
+0111 <span class="comment">%                                   box is presented to the user allowing</span>
+0112 <span class="comment">%                                   precise manual selection of the codec</span>
+0113 <span class="comment">%                                   and its parameters.  Note: sometimes</span>
+0114 <span class="comment">%                                   the dialog does not received focus</span>
+0115 <span class="comment">%                                   automatically so you'll need to</span>
+0116 <span class="comment">%                                   ALT-TAB to get to it.</span>
+0117 <span class="comment">%</span>
+0118 <span class="comment">%     codecParams              X    A MIME Base64-encoded string describing</span>
+0119 <span class="comment">%                                   the codec setup parameters for a</span>
+0120 <span class="comment">%                                   DirectShow codec.  The contents of this</span>
+0121 <span class="comment">%                                   string are very codec-specific.  Often,</span>
+0122 <span class="comment">%                                   The best ways to come up with a string</span>
+0123 <span class="comment">%                                   like this are to first create a</span>
+0124 <span class="comment">%                                   videoWriter with the</span>
+0125 <span class="comment">%                                   'showCompressionDialog' option enabled,</span>
+0126 <span class="comment">%                                   choose the desired settings, then use</span>
+0127 <span class="comment">%                                   the GETINFO method to extract the</span>
+0128 <span class="comment">%                                   'codecParams' value.  Note that this</span>
+0129 <span class="comment">%                                   representation is the same as used by</span>
+0130 <span class="comment">%                                   VirtualDub 1.6 and 1.7 in its Sylia</span>
+0131 <span class="comment">%                                   Script files.  Nearly all useful</span>
+0132 <span class="comment">%                                   DirectShow codecs can only be</span>
+0133 <span class="comment">%                                   configured with 'codecParams' and they</span>
+0134 <span class="comment">%                                   ignore the separate 'bitRate' and</span>
+0135 <span class="comment">%                                   'gopSize' parameters given below.</span>
+0136 <span class="comment">%</span>
+0137 <span class="comment">%     bitRate           X      x    Target bits/sec of the encoded video.</span>
+0138 <span class="comment">%                                   Supported by most ffmpeg codecs.</span>
+0139 <span class="comment">%                                   To see whether a particular codec uses</span>
+0140 <span class="comment">%                                   the bitRate parameter, run the</span>
+0141 <span class="comment">%                                   testBitRate function in the tests/</span>
+0142 <span class="comment">%                                   subdirectory (NOTE: very few DirectShow</span>
+0143 <span class="comment">%                                   codecs support it).</span>
+0144 <span class="comment">%</span>
+0145 <span class="comment">%     gopSize           X      x    Maximum period between keyframes.  GOP</span>
+0146 <span class="comment">%                                   stands for  &quot;group of pictures&quot; in MPEG</span>
+0147 <span class="comment">%                                   lingo.  Supported by most ffmpeg</span>
+0148 <span class="comment">%                                   codecs.  To see whether a particular</span>
+0149 <span class="comment">%                                   codec uses the gopSize parameter, run</span>
+0150 <span class="comment">%                                   the testGopSize function in the tests/</span>
+0151 <span class="comment">%                                   subdirectory (NOTE: very few DirectShow</span>
+0152 <span class="comment">%                                   codecs support it).</span>
+0153 <span class="comment">%</span>
+0154 <span class="comment">%     maxBFrames        X           For MPEG codecs, gives the max</span>
+0155 <span class="comment">%                                   number of bidirectional frames in a</span>
+0156 <span class="comment">%                                   group of pictures (GOP).</span>
+0157 <span class="comment">%</span>
+0158 <span class="comment">%  codecs = videoWriter([],'codecs')</span>
+0159 <span class="comment">%  codecs = videoWriter([],pluginName,'codecs')</span>
+0160 <span class="comment">%  codecs = videoWriter([],'codecs','plugin',pluginName)</span>
+0161 <span class="comment">%    Queries the backend for a list of the valid codecs that may be used</span>
+0162 <span class="comment">%    with the 'codec' plugin parameter.</span>
+0163 <span class="comment">%</span>
+0164 <span class="comment">% Once you are done using the videoWriter, make sure you call CLOSE so</span>
+0165 <span class="comment">% that any system resources allocated by the plugin may be released.</span>
+0166 <span class="comment">% Here's a simple example of how you might use videoWriter to create</span>
+0167 <span class="comment">% a video of continually adding more motion blur to an image:</span>
+0168 <span class="comment">%</span>
+0169 <span class="comment">%   % Construct a videoWriter object</span>
+0170 <span class="comment">%   vw = videoWriter('writertest.avi', ...</span>
+0171 <span class="comment">%                    'width',320, 'height',240, 'codec','xvid');</span>
+0172 <span class="comment">%   img = imread('peppers.png');</span>
+0173 <span class="comment">%   h = fspecial('motion',10,5);</span>
+0174 <span class="comment">%   for i=1:100</span>
+0175 <span class="comment">%     addframe(vw, img);</span>
+0176 <span class="comment">%     img = imfilter(img, h);</span>
+0177 <span class="comment">%   end</span>
+0178 <span class="comment">%   vw=close(vw);</span>
+0179 <span class="comment">%</span>
+0180 <span class="comment">% SEE ALSO:</span>
+0181 <span class="comment">%   buildVideoMex</span>
+0182 <span class="comment">%   videoWriter/addframe</span>
+0183 <span class="comment">%   videoWriter/close</span>
+0184 <span class="comment">%   videoReader</span>
+0185 <span class="comment">%</span>
+0186 <span class="comment">%Copyright (c) 2006 Gerald Dalley</span>
+0187 <span class="comment">%See &quot;MIT.txt&quot; in the installation directory for licensing details (especially</span>
+0188 <span class="comment">%when using this library on GNU/Linux).</span>
+0189 
+0190 <span class="keyword">if</span> (numel(url)==0)
+0191   <span class="comment">% static method call</span>
+0192   <span class="keyword">if</span> (mod(length(varargin),2) == 0)
+0193     plugin       = varargin{1};
+0194     staticMethod = varargin{2};
+0195     methodArgs   = {varargin{3:end}};
+0196   <span class="keyword">else</span>
+0197     plugin       = <a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/defaultVideoIOPlugin.html" class="code" title="function pluginName = defaultVideoIOPlugin">defaultVideoIOPlugin</a>;
+0198     staticMethod = varargin{1};
+0199     methodArgs   = {varargin{2:end}};
+0200   <span class="keyword">end</span>
+0201   [plugin,methodArgs] = <a href="#_sub2" class="code" title="subfunction [plugin,pluginArgs] = parsePlugin(plugin, pluginArgs)">parsePlugin</a>(plugin, methodArgs);
+0202 
+0203   vw = feval(<a href="#_sub1" class="code" title="subfunction n = mexName(plugin)">mexName</a>(plugin), staticMethod, int32(-1), methodArgs{:});
+0204   
+0205 <span class="keyword">else</span>
+0206   <span class="comment">% constructor call</span>
+0207   <span class="keyword">if</span> (mod(length(varargin),2) == 0)
+0208     plugin     = <a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/defaultVideoIOPlugin.html" class="code" title="function pluginName = defaultVideoIOPlugin">defaultVideoIOPlugin</a>;
+0209     pluginArgs = varargin;
+0210   <span class="keyword">else</span>
+0211     plugin     = varargin{1};
+0212     pluginArgs = {varargin{2:end}};
+0213   <span class="keyword">end</span>
+0214   plugin = <a href="#_sub2" class="code" title="subfunction [plugin,pluginArgs] = parsePlugin(plugin, pluginArgs)">parsePlugin</a>(plugin, pluginArgs);
+0215   
+0216   vw = struct(<span class="string">'plugin'</span>,<a href="#_sub1" class="code" title="subfunction n = mexName(plugin)">mexName</a>(plugin), <span class="string">'handle'</span>,int32(-1), <span class="keyword">...</span>
+0217               <span class="string">'w'</span>,int32(-1), <span class="string">'h'</span>,int32(-1));
+0218   vw = class(vw, <span class="string">'videoWriter'</span>);
+0219   [pathstr, name, ext, versn] = fileparts(url);
+0220   strArgs = cell(size(pluginArgs));
+0221   <span class="keyword">for</span> i=1:numel(pluginArgs), strArgs{i} = num2str(pluginArgs{i}); <span class="keyword">end</span>
+0222   [vw.handle,vw.w,vw.h] = feval(vw.plugin, <span class="string">'open'</span>, vw.handle, <span class="keyword">...</span>
+0223                                 fullfile(pathstr,[name ext versn]), <span class="keyword">...</span>
+0224                                 strArgs{:});
+0225 <span class="keyword">end</span>
+0226   
+0227 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0228 <a name="_sub1" href="#_subfunctions" class="code">function n = mexName(plugin)</a>
+0229 n = [<span class="string">'videoWriter_'</span> plugin];
+0230 
+0231 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0232 <a name="_sub2" href="#_subfunctions" class="code">function [plugin,pluginArgs] = parsePlugin(plugin, pluginArgs)</a>
+0233 <span class="keyword">if</span> (length(pluginArgs) &gt; 0)
+0234   [pluginSpecified,idx] = ismember(<span class="string">'plugin'</span>, {pluginArgs{1:2:end}});
+0235   <span class="keyword">if</span> pluginSpecified
+0236     plugin = pluginArgs{idx*2};
+0237     pluginArgs = { pluginArgs{1:idx*2-2}, pluginArgs{idx*2+1:end} };
+0238   <span class="keyword">end</span>
+0239 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

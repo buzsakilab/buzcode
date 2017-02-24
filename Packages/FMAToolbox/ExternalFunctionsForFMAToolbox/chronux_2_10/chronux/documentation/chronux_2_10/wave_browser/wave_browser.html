@@ -1,0 +1,1747 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of wave_browser</title>
+  <meta name="keywords" content="wave_browser">
+  <meta name="description" content="WAVE_BROWSER M-file for wave_browser.fig">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html wave_browser -->
+<h1>wave_browser
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>WAVE_BROWSER M-file for wave_browser.fig</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function varargout = wave_browser(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> WAVE_BROWSER M-file for wave_browser.fig
+      WAVE_BROWSER, by itself, creates a new WAVE_BROWSER or raises the existing
+      singleton*.
+
+      H = WAVE_BROWSER returns the handle to a new WAVE_BROWSER or the handle to
+      the existing singleton*.
+
+      WAVE_BROWSER('CALLBACK',hObject,eventData,handles,...) calls the local
+      function named CALLBACK in WAVE_BROWSER.M with the given input arguments.
+
+      WAVE_BROWSER('Property','Value',...) creates a new WAVE_BROWSER or raises the
+      existing singleton*.  Starting from the left, property value pairs are
+      applied to the GUI before wave_browser_OpeningFunction gets called.  An
+      unrecognized property name or invalid value makes property application
+      stop.  All inputs are passed to wave_browser_OpeningFcn via varargin.
+
+      *See GUI Options on GUIDE's Tools menu.  Choose &quot;GUI allows only one
+      instance to run (singleton)&quot;.
+
+ See also: GUIDE, GUIDATA, GUIHANDLES</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtdspecgramc.html" class="code" title="function [dS,t,f]=mtdspecgramc(data,movingwin,phi,params)">mtdspecgramc</a>	Multi-taper derivative of the time-frequency spectrum - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>	Multi-taper time-frequency spectrum - continuous process</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function wave_browser_OpeningFcn(hObject, eventdata, handles, varargin)</a></li><li><a href="#_sub2" class="code">function varargout = wave_browser_OutputFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub3" class="code">function Frequency_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub4" class="code">function Frequency_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub5" class="code">function LoadFile_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub6" class="code">function [wavesize channels] = wavsizeget(filename);</a></li><li><a href="#_sub7" class="code">function handles = loadfile(hObject, eventdata, handles, varargin)</a></li><li><a href="#_sub8" class="code">function endian_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub9" class="code">function endian_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub10" class="code">function edit2_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub11" class="code">function edit2_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub12" class="code">function FileNameString_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub13" class="code">function FileNameString_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub14" class="code">function WinSize_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub15" class="code">function WinSize_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub16" class="code">function slider1_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub17" class="code">function slider1_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub18" class="code">function StepSize_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub19" class="code">function StepSize_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub20" class="code">function TW_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub21" class="code">function TW_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub22" class="code">function DisplayWindow_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub23" class="code">function DisplayWindow_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub24" class="code">function indexinS = getindexpre_c(t,timestart,timeend)</a></li><li><a href="#_sub25" class="code">function Plot_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub26" class="code">function  [Stot boxcurve] = compute_threshold_free(S,th,n)</a></li><li><a href="#_sub27" class="code">function [ratiof boxcurve] = compute_index(S,lower_range,upper_range,lowerfreq,upperfreq,indexthresh,n)</a></li><li><a href="#_sub28" class="code">function smoothedcurve = smooth_curve(curve2smooth,n);</a></li><li><a href="#_sub29" class="code">function MinFreq_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub30" class="code">function MinFreq_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub31" class="code">function MaxFreq_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub32" class="code">function MaxFreq_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub33" class="code">function SpectrumType_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub34" class="code">function SpectrumType_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub35" class="code">function AmpThresh_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub36" class="code">function AmpThresh_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub37" class="code">function TDerThresh_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub38" class="code">function TDerThresh_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub39" class="code">function PlayAll_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub40" class="code">function PlayWindow_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub41" class="code">function txt = datacursorfunc(empt,event_obj)</a></li><li><a href="#_sub42" class="code">function handles = draw_segments( handles )</a></li><li><a href="#_sub43" class="code">function SegmentButton_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub44" class="code">function SegStartButton_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub45" class="code">function SegEndButton_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub46" class="code">function out=draw_all_x( handles, segment )</a></li><li><a href="#_sub47" class="code">function out=draw_x( theaxes, segment )</a></li><li><a href="#_sub48" class="code">function JumpBack_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub49" class="code">function Jump_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub50" class="code">function Jump_shared(hObject, eventdata, handles, jump_dir )</a></li><li><a href="#_sub51" class="code">function LoadNext_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub52" class="code">function Precompute_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub53" class="code">function Precompute_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub54" class="code">function Path_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub55" class="code">function Path_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub56" class="code">function Extensions_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub57" class="code">function Extensions_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub58" class="code">function Duration_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub59" class="code">function LoadSegments_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub60" class="code">function handles=load_segment(handles,filename)</a></li><li><a href="#_sub61" class="code">function filteredsegments = filtersegments(handles,segments)</a></li><li><a href="#_sub62" class="code">function ExcludeExt_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub63" class="code">function ExcludeExt_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub64" class="code">function DeleteSegment_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub65" class="code">function handles=delete_segment( handles, n )</a></li><li><a href="#_sub66" class="code">function SaveSegments_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub67" class="code">function handles=savesegments2mem(handles)</a></li><li><a href="#_sub68" class="code">function SegCancel_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub69" class="code">function PlotSegments_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub70" class="code">function AutoSegButton_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub71" class="code">function DeleteAllButton_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub72" class="code">function PlotAllButton_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub73" class="code">function PreviousChunk_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub74" class="code">function NextChunk_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub75" class="code">function AutoSegmentFile_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub76" class="code">function MaxSegLength_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub77" class="code">function MaxSegLength_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub78" class="code">function MaximumWavSize_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub79" class="code">function MaximumWavSize_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub80" class="code">function SeekButton_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub81" class="code">function SeektoEdit_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub82" class="code">function SeektoEdit_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub83" class="code">function RealDuration_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub84" class="code">function RealDuration_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub85" class="code">function AutoMethodPopupMenu_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub86" class="code">function AutoMethodPopupMenu_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub87" class="code">function RatioThresh_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub88" class="code">function RatioThresh_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub89" class="code">function RatioLower_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub90" class="code">function RatioLower_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub91" class="code">function RatioUpper_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub92" class="code">function RatioUpper_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub93" class="code">function OptionsDisplay_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub94" class="code">function Duration_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub95" class="code">function SmoothFactor_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub96" class="code">function SmoothFactor_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub97" class="code">function channel_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub98" class="code">function channel_CreateFcn(hObject, eventdata, handles)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function varargout = wave_browser(varargin)</a>
+0002 <span class="comment">% WAVE_BROWSER M-file for wave_browser.fig</span>
+0003 <span class="comment">%      WAVE_BROWSER, by itself, creates a new WAVE_BROWSER or raises the existing</span>
+0004 <span class="comment">%      singleton*.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%      H = WAVE_BROWSER returns the handle to a new WAVE_BROWSER or the handle to</span>
+0007 <span class="comment">%      the existing singleton*.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%      WAVE_BROWSER('CALLBACK',hObject,eventData,handles,...) calls the local</span>
+0010 <span class="comment">%      function named CALLBACK in WAVE_BROWSER.M with the given input arguments.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%      WAVE_BROWSER('Property','Value',...) creates a new WAVE_BROWSER or raises the</span>
+0013 <span class="comment">%      existing singleton*.  Starting from the left, property value pairs are</span>
+0014 <span class="comment">%      applied to the GUI before wave_browser_OpeningFunction gets called.  An</span>
+0015 <span class="comment">%      unrecognized property name or invalid value makes property application</span>
+0016 <span class="comment">%      stop.  All inputs are passed to wave_browser_OpeningFcn via varargin.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%      *See GUI Options on GUIDE's Tools menu.  Choose &quot;GUI allows only one</span>
+0019 <span class="comment">%      instance to run (singleton)&quot;.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% See also: GUIDE, GUIDATA, GUIHANDLES</span>
+0022 
+0023 <span class="comment">% Copyright 2002-2003 The MathWorks, Inc.</span>
+0024 
+0025 <span class="comment">% Edit the above text to modify the response to help wave_browser</span>
+0026 
+0027 <span class="comment">% Last Modified by GUIDE v2.5 29-May-2007 16:30:52</span>
+0028 
+0029 <span class="comment">% Begin initialization code - DO NOT EDIT</span>
+0030 gui_Singleton = 1;
+0031 gui_State = struct(<span class="string">'gui_Name'</span>,       mfilename, <span class="keyword">...</span>
+0032                    <span class="string">'gui_Singleton'</span>,  gui_Singleton, <span class="keyword">...</span>
+0033                    <span class="string">'gui_OpeningFcn'</span>, @<a href="#_sub1" class="code" title="subfunction wave_browser_OpeningFcn(hObject, eventdata, handles, varargin)">wave_browser_OpeningFcn</a>, <span class="keyword">...</span>
+0034                    <span class="string">'gui_OutputFcn'</span>,  @<a href="#_sub2" class="code" title="subfunction varargout = wave_browser_OutputFcn(hObject, eventdata, handles)">wave_browser_OutputFcn</a>, <span class="keyword">...</span>
+0035                    <span class="string">'gui_LayoutFcn'</span>,  [] , <span class="keyword">...</span>
+0036                    <span class="string">'gui_Callback'</span>,   []);
+0037 <span class="keyword">if</span> nargin &amp;&amp; ischar(varargin{1})
+0038     gui_State.gui_Callback = str2func(varargin{1});
+0039 <span class="keyword">end</span>
+0040 
+0041 <span class="keyword">if</span> nargout
+0042     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+0043 <span class="keyword">else</span>
+0044     gui_mainfcn(gui_State, varargin{:});
+0045 <span class="keyword">end</span>
+0046 <span class="comment">% End initialization code - DO NOT EDIT</span>
+0047 
+0048 
+0049 <span class="comment">% --- Executes just before wave_browser is made visible.</span>
+0050 <a name="_sub1" href="#_subfunctions" class="code">function wave_browser_OpeningFcn(hObject, eventdata, handles, varargin)</a>
+0051 <span class="comment">% This function has no output args, see OutputFcn.</span>
+0052 <span class="comment">% hObject    handle to figure</span>
+0053 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0054 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0055 <span class="comment">% varargin   command line arguments to wave_browser (see VARARGIN)</span>
+0056 
+0057 handles.firsttime = 0; <span class="comment">% indicates the firsttime that segment has been precomputed</span>
+0058 handles.precomputed_spec = 0; <span class="comment">% indicates that the spectra has not been precomputed</span>
+0059 handles.longfile = 0;  <span class="comment">% indicates whether the file is a long file</span>
+0060 handles.maxwavsize = 10 * 44100; <span class="comment">% I will have to explore what number works best here</span>
+0061 handles.maxspec_t = 30; <span class="comment">% duration of the max size of a spectra</span>
+0062 
+0063 handles.Fs = 44100; <span class="comment">% default size to start with</span>
+0064 
+0065 handles.segments = []; <span class="comment">% holds regular segments in the current chunk</span>
+0066 handles.allsegments = []; <span class="comment">% holds segments across the maximum wave size</span>
+0067 handles.loadedsegment = 0; <span class="comment">% indicates no segments have been loaded</span>
+0068 
+0069 handles.lastmarkerstart = 1; <span class="comment">% largest segment</span>
+0070 
+0071 handles.segmentmode = 0; <span class="comment">% by default start off with segmenting turned off</span>
+0072 handles.dontcutsegments = 0; <span class="comment">% by default do not adapt to segments</span>
+0073 
+0074 handles.automethod = <span class="string">'threshold'</span>; <span class="comment">% use threshold or ratiof method</span>
+0075 
+0076 handles.indexthresh = 10; <span class="comment">% for ration method the threshold which to cut the curve off</span>
+0077 handles.lower_range = [10 10000];  <span class="comment">% the numerator in the ratio</span>
+0078 handles.upper_range = [15000 20000]; <span class="comment">% the denomitor in the ratio</span>
+0079 
+0080 handles.nsmooth = 0; <span class="comment">% moving average parameter for the thresholds curves</span>
+0081 
+0082 positionP = get(handles.OptionsUiPanel,<span class="string">'Position'</span>);
+0083 positionF = get(gcf,<span class="string">'Position'</span>);
+0084 
+0085 positionF(3) = positionF(3) - positionP(3);
+0086 
+0087 <span class="comment">% set(gcf,'Position',positionF); % untested</span>
+0088 
+0089 <span class="comment">% Choose default command line output for wave_browser</span>
+0090 handles.output = hObject;
+0091 
+0092 
+0093 <span class="comment">% Update handles structure</span>
+0094 guidata(hObject, handles);
+0095 
+0096 <span class="comment">% UIWAIT makes wave_browser wait for user response (see UIRESUME)</span>
+0097 <span class="comment">% uiwait(handles.figure1);</span>
+0098 
+0099 
+0100 <span class="comment">% --- Outputs from this function are returned to the command line.</span>
+0101 <a name="_sub2" href="#_subfunctions" class="code">function varargout = wave_browser_OutputFcn(hObject, eventdata, handles) </a>
+0102 
+0103 <span class="comment">% Get default command line output from handles structure</span>
+0104 varargout{1} = handles.output;
+0105 
+0106 <a name="_sub3" href="#_subfunctions" class="code">function Frequency_Callback(hObject, eventdata, handles)</a>
+0107 handles.Fs = eval(get(hObject,<span class="string">'String'</span>));
+0108 guidata(gcbo,handles); 
+0109 
+0110 <a name="_sub4" href="#_subfunctions" class="code">function Frequency_CreateFcn(hObject, eventdata, handles)</a>
+0111 set(hObject,<span class="string">'String'</span>, <span class="string">'44100'</span>);
+0112 handles.Fs = 44100;
+0113 guidata(gcbo,handles);
+0114 <span class="keyword">if</span> ispc
+0115     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0116 <span class="keyword">else</span>
+0117     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0118 <span class="keyword">end</span>
+0119 
+0120 <span class="comment">% --- Executes on button press in LoadFile.</span>
+0121 <a name="_sub5" href="#_subfunctions" class="code">function LoadFile_Callback(hObject, eventdata, handles)</a>
+0122 
+0123 [fname pname]=uigetfile({<span class="string">'*.wav'</span>;<span class="string">'*.*'</span>},<span class="string">'Load Time Series'</span>);
+0124 
+0125 <span class="keyword">if</span> fname == 0
+0126     <span class="keyword">return</span>
+0127 <span class="keyword">end</span>
+0128 
+0129 
+0130 
+0131 set(handles.FileNameString, <span class="string">'String'</span>,fname);
+0132 handles.filename = [pname fname];
+0133 [path] = cell2mat(regexp( handles.filename, <span class="string">'^.*\'</span>, <span class="string">'match'</span> ));
+0134 [extension] = cell2mat(regexp( handles.filename, <span class="string">'\w+$'</span>, <span class="string">'match'</span> ));
+0135 set(handles.Path,<span class="string">'String'</span>,path);
+0136 <span class="comment">% set(handles.Extensions,'String',extension);</span>
+0137 
+0138 handles.segments = [];
+0139 handles.allsegments = [];
+0140 
+0141 handles = <a href="#_sub7" class="code" title="subfunction handles = loadfile(hObject, eventdata, handles, varargin)">loadfile</a>(hObject, eventdata, handles);
+0142 guidata(hObject,handles);
+0143 
+0144 <a name="_sub6" href="#_subfunctions" class="code">function [wavesize channels] = wavsizeget(filename);</a>
+0145 <span class="comment">% Provides usable information about a file</span>
+0146     wavesize = 0;
+0147     [filestatus info] = wavfinfo(filename);
+0148     info = regexp(info,<span class="string">'[0-9]+'</span>,<span class="string">'match'</span>);
+0149     channels = str2num(info{2});
+0150     wavesize = str2num(info{1});
+0151         
+0152 <a name="_sub7" href="#_subfunctions" class="code">function handles = loadfile(hObject, eventdata, handles, varargin)</a>
+0153 <span class="comment">% Function for loading a file or using the optional varargin to load a</span>
+0154 <span class="comment">% specified position and size in the file</span>
+0155 
+0156 <span class="comment">% contents=get(handles.endian,'String');</span>
+0157 <span class="comment">% precision=contents{get(handles.endian,'Value')};</span>
+0158 
+0159 [datasize channels] = <a href="#_sub6" class="code" title="subfunction [wavesize channels] = wavsizeget(filename);">wavsizeget</a>(handles.filename);
+0160 handles.wavsize = datasize; <span class="comment">% total number of samples in the files</span>
+0161 
+0162 <span class="keyword">try</span>
+0163     handles.maxwavsize = round(handles.Fs * str2num(get(handles.MaximumWavSize,<span class="string">'String'</span>)));
+0164 <span class="keyword">catch</span>
+0165     handles.maxwavsize = 20;
+0166     set(handles.MaximumWavSize,<span class="string">'String'</span>,num2str(handles.maxwavsize));
+0167     handles.maxwavsize = handles.maxwavsize * handles.Fs;
+0168 <span class="keyword">end</span>
+0169 
+0170 <span class="keyword">if</span> isempty(varargin)
+0171     handles.markerstart = 1;
+0172     <span class="keyword">if</span> datasize &gt; handles.maxwavsize
+0173         handles.markerend = handles.maxwavsize;
+0174         handles.longfile = 1; <span class="comment">% indicates that the file is long and will be loaded in chunks</span>
+0175     <span class="keyword">else</span>
+0176         handles.markerend = datasize;
+0177     <span class="keyword">end</span>
+0178 <span class="keyword">else</span> <span class="comment">% passed in optional parameter</span>
+0179     handles.markervec = varargin{1};
+0180     handles.markerstart = handles.markervec(1);
+0181     handles.markerend = handles.markervec(2);
+0182 <span class="keyword">end</span>
+0183 
+0184 <span class="keyword">if</span> handles.markerstart &lt;= 1 <span class="comment">% make sure the range is possible</span>
+0185     handles.markerstart = 1;   
+0186     set(handles.PreviousChunk,<span class="string">'Enable'</span>,<span class="string">'off'</span>);
+0187 <span class="keyword">else</span>
+0188     set(handles.PreviousChunk,<span class="string">'Enable'</span>,<span class="string">'on'</span>);
+0189 <span class="keyword">end</span>
+0190 
+0191 <span class="keyword">if</span> handles.markerend &gt;= handles.wavsize
+0192     handles.markerend = handles.wavsize;   
+0193     set(handles.NextChunk,<span class="string">'Enable'</span>,<span class="string">'off'</span>);
+0194 <span class="keyword">else</span>
+0195     set(handles.NextChunk,<span class="string">'Enable'</span>,<span class="string">'on'</span>);
+0196 <span class="keyword">end</span>
+0197 
+0198 
+0199 <span class="keyword">if</span> handles.maxwavsize &lt; handles.wavsize
+0200    total_chunk = ceil(handles.wavsize / handles.maxwavsize);
+0201    i = 1;
+0202    <span class="keyword">while</span> (i &lt; total_chunk) &amp;&amp;  (handles.markerend &gt;= (handles.maxwavsize * i))
+0203        i = i + 1;
+0204    <span class="keyword">end</span>
+0205    
+0206    current_chunk = i-1;  
+0207    
+0208    <span class="keyword">if</span> handles.markerend == handles.wavsize
+0209        current_chunk = total_chunk;
+0210    <span class="keyword">end</span>
+0211    
+0212    set(handles.ChunkText,<span class="string">'String'</span>,[<span class="string">'Chunk '</span> num2str(current_chunk) <span class="string">'/'</span> num2str(total_chunk)]);
+0213 <span class="keyword">end</span>
+0214 
+0215 <span class="keyword">try</span>
+0216     handles.maxseglength = round(handles.Fs * str2num(get(handles.MaxSegLength,<span class="string">'String'</span>)));
+0217 <span class="keyword">catch</span>
+0218     handles.maxseglength = handles.Fs * 1;
+0219 <span class="keyword">end</span>
+0220 
+0221 set(handles.RealDuration,<span class="string">'String'</span>,num2str(handles.wavsize/handles.Fs,<span class="string">'%.1f'</span>));
+0222 
+0223 <span class="keyword">if</span> handles.segmentmode <span class="comment">% only if in segment mode make sure segments are not cut</span>
+0224     <span class="keyword">if</span> (handles.markerstart - handles.lastmarkerstart &gt; 0) <span class="comment">% only do this in terms of forward movement</span>
+0225         <span class="keyword">if</span> handles.dontcutsegments <span class="comment">% this code is added so segments are not cut off when segmenting</span>
+0226             <span class="keyword">if</span> not(isempty(handles.segments)) <span class="comment">% at least one segment has been defined previously</span>
+0227                 maxsegend = handles.segments(1).end; <span class="comment">% find last defined segment in previous view</span>
+0228                 <span class="keyword">for</span> i = 2:length(handles.segments)
+0229                     <span class="keyword">if</span> handles.segments(i).end &gt; maxsegend
+0230                         maxsegend = handles.segments(i).end;
+0231                     <span class="keyword">end</span>
+0232                 <span class="keyword">end</span>
+0233         
+0234                 maxsegend = round(maxsegend * handles.Fs);
+0235         
+0236                 <span class="keyword">if</span> (handles.lastmarkerend - maxsegend) &lt; (handles.lastmarkerend - handles.maxseglength)
+0237                     handles.markerstart = (handles.lastmarkerstart + maxsegend) + 1; <span class="comment">% defined segment is closer to the end</span>
+0238                 <span class="keyword">else</span>
+0239                     handles.markerstart = handles.lastmarkerend - handles.maxseglength;
+0240                 <span class="keyword">end</span>
+0241             <span class="keyword">else</span>
+0242                 handles.markerstart = handles.lastmarkerend - handles.maxseglength;
+0243             <span class="keyword">end</span>
+0244     
+0245             handles.markerend = handles.markerstart + handles.maxwavsize - 1;
+0246             <span class="keyword">if</span> handles.markerend &gt; handles.wavsize 
+0247                 handles.markerend = handles.wavsize;
+0248             <span class="keyword">end</span>
+0249         <span class="keyword">end</span>
+0250     <span class="keyword">end</span>
+0251 <span class="keyword">end</span>
+0252 
+0253 hw=waitbar(0,<span class="string">'Loading ...'</span>); waitbar(0.5,hw); drawnow;
+0254 
+0255 [handles.markerstart handles.markerend]/handles.Fs
+0256 [handles.ts,handles.Fs] = wavread(handles.filename, [handles.markerstart handles.markerend]);
+0257 channel = str2double(get(handles.channel,<span class="string">'String'</span>));
+0258 handles.ts = handles.ts(:,channel);
+0259 
+0260 count = length(handles.ts);
+0261 handles.ts = handles.ts/std(handles.ts); <span class="comment">% variance normalisation</span>
+0262 set(handles.Frequency,<span class="string">'String'</span>, num2str(handles.Fs));
+0263 set( handles.Duration, <span class="string">'String'</span>, count/handles.Fs );
+0264 Tim=eval(get(handles.DisplayWindow,<span class="string">'String'</span>));
+0265 display_frac = 1;<span class="comment">%max(1,Tim*handles.Fs/count);</span>
+0266 
+0267 set( handles.slider1, <span class="string">'Value'</span>, 0 );
+0268 set( handles.SegmentButton, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0269 
+0270 <span class="keyword">if</span> handles.longfile
+0271     set(handles.SeekButton,<span class="string">'Enable'</span>, <span class="string">'on'</span>);
+0272 <span class="keyword">end</span>
+0273 
+0274 set(handles.LoadNext, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0275 set(handles.PlayAll, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0276 set(handles.PlayWindow, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0277 set(handles.Plot, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0278 set(handles.PlotAllButton, <span class="string">'Enable'</span>, <span class="string">'on'</span>);
+0279 set(handles.Precompute, <span class="string">'Enable'</span>,<span class="string">'on'</span>);
+0280 set(handles.Jump,<span class="string">'Enable'</span>,<span class="string">'on'</span>);
+0281 set(handles.JumpBack,<span class="string">'Enable'</span>,<span class="string">'on'</span>);
+0282 
+0283 handles.segments = []; <span class="comment">% remove the current segments</span>
+0284 handles.segments = <a href="#_sub61" class="code" title="subfunction filteredsegments = filtersegments(handles,segments)">filtersegments</a>(handles,handles.allsegments);
+0285 
+0286 set(handles.Precompute,<span class="string">'Value'</span>,1); <span class="comment">% Set into precompute mode</span>
+0287 
+0288 <a href="#_sub52" class="code" title="subfunction Precompute_Callback(hObject, eventdata, handles)">Precompute_Callback</a>(handles.Precompute, eventdata, handles);
+0289 handles = guidata(gcbo);
+0290 
+0291 <span class="comment">% set(handles.Precompute,'Value',1);</span>
+0292 
+0293 handles.precomputed_spec = 1;
+0294 handles.dontcutsegments = 1; <span class="comment">% make sure segments are not cut off</span>
+0295 handles.lastmarkerstart = handles.markerstart;
+0296 handles.lastmarkerend = handles.markerend;
+0297 
+0298 <a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>(hw);
+0299 <span class="comment">% guidata(gcbo,handles);</span>
+0300 
+0301 
+0302 <span class="comment">% Plot_Callback(hObject, eventdata, handles);</span>
+0303 
+0304 <span class="comment">% --- Executes on selection change in endian.</span>
+0305 <a name="_sub8" href="#_subfunctions" class="code">function endian_Callback(hObject, eventdata, handles)</a>
+0306 
+0307 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0308 <a name="_sub9" href="#_subfunctions" class="code">function endian_CreateFcn(hObject, eventdata, handles)</a>
+0309 <span class="keyword">if</span> ispc
+0310     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0311 <span class="keyword">else</span>
+0312     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0313 <span class="keyword">end</span>
+0314 
+0315 
+0316 <a name="_sub10" href="#_subfunctions" class="code">function edit2_Callback(hObject, eventdata, handles)</a>
+0317 <a name="_sub11" href="#_subfunctions" class="code">function edit2_CreateFcn(hObject, eventdata, handles)</a>
+0318 <span class="keyword">if</span> ispc
+0319     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0320 <span class="keyword">else</span>
+0321     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0322 <span class="keyword">end</span>
+0323 
+0324 <a name="_sub12" href="#_subfunctions" class="code">function FileNameString_Callback(hObject, eventdata, handles)</a>
+0325 
+0326 <a name="_sub13" href="#_subfunctions" class="code">function FileNameString_CreateFcn(hObject, eventdata, handles)</a>
+0327 <span class="keyword">if</span> ispc
+0328     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0329 <span class="keyword">else</span>
+0330     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0331 <span class="keyword">end</span>
+0332 
+0333 <a name="_sub14" href="#_subfunctions" class="code">function WinSize_Callback(hObject, eventdata, handles)</a>
+0334 
+0335 <a name="_sub15" href="#_subfunctions" class="code">function WinSize_CreateFcn(hObject, eventdata, handles)</a>
+0336 <span class="keyword">if</span> ispc
+0337     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0338 <span class="keyword">else</span>
+0339     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0340 <span class="keyword">end</span>
+0341 
+0342 
+0343 <span class="comment">% --- Executes on slider movement.</span>
+0344 <a name="_sub16" href="#_subfunctions" class="code">function slider1_Callback(hObject, eventdata, handles)</a>
+0345 
+0346 <a name="_sub17" href="#_subfunctions" class="code">function slider1_CreateFcn(hObject, eventdata, handles)</a>
+0347 usewhitebg = 1;
+0348 <span class="keyword">if</span> usewhitebg
+0349     set(hObject,<span class="string">'BackgroundColor'</span>,[.9 .9 .9]);
+0350 <span class="keyword">else</span>
+0351     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0352 <span class="keyword">end</span>
+0353 
+0354 <a name="_sub18" href="#_subfunctions" class="code">function StepSize_Callback(hObject, eventdata, handles)</a>
+0355 
+0356 <a name="_sub19" href="#_subfunctions" class="code">function StepSize_CreateFcn(hObject, eventdata, handles)</a>
+0357 <span class="keyword">if</span> ispc
+0358     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0359 <span class="keyword">else</span>
+0360     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0361 <span class="keyword">end</span>
+0362 
+0363 <a name="_sub20" href="#_subfunctions" class="code">function TW_Callback(hObject, eventdata, handles)</a>
+0364 
+0365 <a name="_sub21" href="#_subfunctions" class="code">function TW_CreateFcn(hObject, eventdata, handles)</a>
+0366 <span class="keyword">if</span> ispc
+0367     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0368 <span class="keyword">else</span>
+0369     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0370 <span class="keyword">end</span>
+0371 
+0372 <a name="_sub22" href="#_subfunctions" class="code">function DisplayWindow_Callback(hObject, eventdata, handles)</a>
+0373 
+0374 <a name="_sub23" href="#_subfunctions" class="code">function DisplayWindow_CreateFcn(hObject, eventdata, handles)</a>
+0375 set(hObject, <span class="string">'String'</span>, <span class="string">'4'</span>);
+0376 <span class="keyword">if</span> ispc
+0377     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0378 <span class="keyword">else</span>
+0379     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0380 <span class="keyword">end</span>
+0381 
+0382 <span class="comment">%function axes2ButtonDownCallback(hObject, eventdata, handles)</span>
+0383 <span class="comment">%h=handles.axesS; P=get(h,'CurrentPoint');</span>
+0384 <span class="comment">%fprintf( 'worked %f %f!\n', P(1),P(2));</span>
+0385 
+0386 <a name="_sub24" href="#_subfunctions" class="code">function indexinS = getindexpre_c(t,timestart,timeend)</a>
+0387 <span class="comment">% A function for indexing correctly in time to a spectra stored in memory</span>
+0388 tlen = length(t);
+0389 
+0390 i=1;
+0391 
+0392 <span class="keyword">while</span> (i &lt;= tlen) &amp;&amp; (t(i) &lt; timestart)
+0393     i = i + 1;
+0394 <span class="keyword">end</span>
+0395 
+0396 firstindex = i;
+0397 
+0398 <span class="keyword">while</span> (i &lt;= tlen) &amp;&amp; (t(i) &lt; timeend)
+0399     i = i + 1;
+0400 <span class="keyword">end</span>
+0401 
+0402 secondindex = i;
+0403 
+0404 indexinS = [firstindex secondindex];
+0405 <span class="comment">% --- Executes on button press in Plot.</span>
+0406 <a name="_sub25" href="#_subfunctions" class="code">function Plot_Callback(hObject, eventdata, handles)</a>
+0407 
+0408 hw=waitbar(0.5,<span class="string">'Spectrogram calculation'</span>);drawnow
+0409 
+0410 params.Fs=handles.Fs;
+0411 
+0412 window=eval(get(handles.WinSize,<span class="string">'String'</span>));
+0413 winstep=eval(get(handles.StepSize,<span class="string">'String'</span>));
+0414 movingwin=[window winstep]*0.001;
+0415 
+0416 fmin=eval(get(handles.MinFreq,<span class="string">'String'</span>));
+0417 fmax=eval(get(handles.MaxFreq,<span class="string">'String'</span>));
+0418 params.fpass=[fmin fmax];
+0419 
+0420 p=eval(get(handles.TW,<span class="string">'String'</span>));
+0421 params.tapers=[p floor(2*p-1)];
+0422 
+0423 params.pad=1;
+0424 
+0425 Tslider=get(handles.slider1,<span class="string">'Value'</span>);
+0426 Tim=eval(get(handles.DisplayWindow,<span class="string">'String'</span>));
+0427 NT=min(round(Tim*handles.Fs),length(handles.ts));
+0428 handles.Tmin=1+floor(Tslider*length(handles.ts));
+0429 handles.Tmax=min(handles.Tmin+NT,length(handles.ts));
+0430 
+0431 <span class="keyword">if</span> handles.Tmax &lt; length(handles.ts)
+0432     set( handles.Jump, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0433 <span class="keyword">else</span> 
+0434     set( handles.Jump, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0435 <span class="keyword">end</span>
+0436 <span class="keyword">if</span> handles.Tmin &gt; 1
+0437     set( handles.JumpBack, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0438 <span class="keyword">else</span>
+0439     set( handles.JumpBack, <span class="string">'Enable'</span>, <span class="string">'off'</span> );    
+0440 <span class="keyword">end</span>
+0441 
+0442 data=handles.ts(handles.Tmin:handles.Tmax);data=data(:);
+0443 
+0444 handles.upper_range =  eval(get(handles.RatioLower,<span class="string">'String'</span>));
+0445 handles.lower_range  = eval(get(handles.RatioUpper,<span class="string">'String'</span>));
+0446 handles.indexthresh =  eval(get(handles.RatioThresh,<span class="string">'String'</span>));
+0447 handles.nsmooth = eval(get(handles.SmoothFactor,<span class="string">'String'</span>));
+0448 
+0449 <span class="comment">% determine spectrum type</span>
+0450 
+0451 contents=get(handles.SpectrumType,<span class="string">'String'</span>);
+0452 stype=contents{get(handles.SpectrumType,<span class="string">'Value'</span>)};
+0453 
+0454 axes(handles.axesW); plot(((handles.markerstart - 1)/handles.Fs) + [handles.Tmin:handles.Tmax]/handles.Fs,handles.ts(handles.Tmin:handles.Tmax)); axis tight;
+0455 
+0456 <span class="keyword">switch</span> stype
+0457     <span class="keyword">case</span> <span class="string">'Original'</span>
+0458         
+0459      <span class="keyword">if</span> not(handles.precomputed_spec) || handles.firsttime
+0460         [S,t,f]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>(diff(data),movingwin,params);
+0461         timeax=(handles.Tmin/handles.Fs)+t;
+0462      <span class="keyword">else</span>
+0463          indexinS = <a href="#_sub24" class="code" title="subfunction indexinS = getindexpre_c(t,timestart,timeend)">getindexpre_c</a>(handles.t,(handles.Tmin-1)/handles.Fs,(handles.Tmax-1)/handles.Fs);
+0464 <span class="comment">%          indexinS = round(([handles.Tmin-1, handles.Tmax-1]/handles.Fs)/movingwin(2))+1;</span>
+0465          
+0466          <span class="keyword">if</span> indexinS(1) &lt; 1
+0467              indexinS(1) = 1;
+0468          <span class="keyword">end</span>
+0469          
+0470          SLen = length(handles.S(:,1));
+0471          
+0472          <span class="keyword">if</span> indexinS(2) &gt; SLen
+0473              indexinS(2) = SLen;
+0474          <span class="keyword">end</span>
+0475          
+0476          f = handles.f;
+0477          t = handles.t(indexinS(1):indexinS(2));
+0478          S = handles.S(indexinS(1):indexinS(2),:);
+0479          
+0480          timeax=t;
+0481      <span class="keyword">end</span>
+0482     
+0483     cmap=<span class="string">'default'</span>; 
+0484     
+0485     th=eval(get(handles.AmpThresh,<span class="string">'String'</span>));
+0486     
+0487     <span class="comment">% This sets up the automatic segmenting algorithm</span>
+0488     <span class="keyword">if</span> strcmp(handles.automethod,<span class="string">'threshold'</span>)
+0489         [Stot boxcurve] = <a href="#_sub26" class="code" title="subfunction  [Stot boxcurve] = compute_threshold_free(S,th,n)">compute_threshold_free</a>(S,th,handles.nsmooth);
+0490         axes(handles.axesP); 
+0491         semilogy(timeax,Stot); 
+0492         axis tight;
+0493     <span class="keyword">elseif</span> strcmp(handles.automethod,<span class="string">'ratiof'</span>)
+0494         [ratiof boxcurve] = <a href="#_sub27" class="code" title="subfunction [ratiof boxcurve] = compute_index(S,lower_range,upper_range,lowerfreq,upperfreq,indexthresh,n)">compute_index</a>(S,handles.lower_range,handles.upper_range,fmin,fmax,handles.indexthresh,handles.nsmooth);
+0495         axes(handles.axesP); 
+0496         semilogy(timeax,ratiof); 
+0497         axis tight;
+0498     <span class="keyword">end</span>
+0499     
+0500      
+0501     hold on; semilogy(timeax,boxcurve,<span class="string">'r'</span>); hold off;
+0502     axes(handles.axesS);
+0503     imagesc(timeax,f,log(S)'); axis xy; colormap(cmap);
+0504     <span class="comment">%imagesc(t,f,log(S)'); axis xy; colormap(cmap);</span>
+0505     
+0506 <span class="comment">%    set(h,'ButtonDownFcn',axes2ButtonDownCallback);</span>
+0507     
+0508     <span class="keyword">case</span> <span class="string">'Time Derivative'</span>
+0509     
+0510     <span class="keyword">if</span> not(handles.precomputed_spec) || handles.firsttime   
+0511         [S,t,f]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtdspecgramc.html" class="code" title="function [dS,t,f]=mtdspecgramc(data,movingwin,phi,params)">mtdspecgramc</a>(diff(data),movingwin,0,params);S = S';
+0512         timeax=handles.Tmin/handles.Fs+t;
+0513     <span class="keyword">else</span>
+0514         indexinS = <a href="#_sub24" class="code" title="subfunction indexinS = getindexpre_c(t,timestart,timeend)">getindexpre_c</a>(handles.t,(handles.Tmin-1)/handles.Fs,(handles.Tmax-1)/handles.Fs);
+0515 <span class="comment">%          indexinS = round(([handles.Tmin-1, handles.Tmax-1]/handles.Fs)/movingwin(2))+1;</span>
+0516          
+0517          <span class="keyword">if</span> indexinS(1) &lt; 1
+0518              indexinS(1) = 1;
+0519          <span class="keyword">end</span>
+0520          
+0521          SLen = length(handles.S(1,:));
+0522          
+0523          <span class="keyword">if</span> indexinS(2) &gt; SLen
+0524              indexinS(2) = SLen;
+0525          <span class="keyword">end</span>
+0526          
+0527          f = handles.f;
+0528          t = handles.t(indexinS(1):indexinS(2));
+0529          S = handles.S(:,indexinS(1):indexinS(2));
+0530          timeax = t;
+0531     <span class="keyword">end</span>
+0532     
+0533     cmap=<span class="string">'gray'</span>;
+0534     th=eval(get(handles.TDerThresh,<span class="string">'String'</span>));
+0535     
+0536     <span class="keyword">if</span> strcmp(handles.automethod,<span class="string">'threshold'</span>)
+0537         [Stot boxcurve] = <a href="#_sub26" class="code" title="subfunction  [Stot boxcurve] = compute_threshold_free(S,th,n)">compute_threshold_free</a>(abs(S'),th.handles.nsmooth);
+0538         axes(handles.axesP); 
+0539         semilogy(timeax,Stot); 
+0540         axis tight;
+0541     <span class="keyword">elseif</span> strcmp(handles.automethod,<span class="string">'ratiof'</span>)
+0542         [ratiof boxcurve] = <a href="#_sub27" class="code" title="subfunction [ratiof boxcurve] = compute_index(S,lower_range,upper_range,lowerfreq,upperfreq,indexthresh,n)">compute_index</a>(abs(S)',handles.lower_range,handles.upper_range,fmin,fmax,handles.indexthresh,handles.nsmooth);
+0543         axes(handles.axesP); 
+0544         semilogy(timeax,ratiof); 
+0545         axis tight;
+0546     <span class="keyword">end</span>
+0547     
+0548     hold on; semilogy(timeax,boxcurve,<span class="string">'r'</span>); hold off;
+0549     axes(handles.axesS);
+0550     imagesc(timeax,f,S); axis xy; colormap(cmap);
+0551     cmin=0.02*min(min(S)); cmax=0.02*max(max(S)); caxis([cmin cmax]);
+0552     
+0553     <span class="keyword">case</span> <span class="string">'Frequency Derivative'</span>
+0554 
+0555     <span class="keyword">if</span> not(handles.precomputed_spec) || handles.firsttime
+0556         [S,t,f]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtdspecgramc.html" class="code" title="function [dS,t,f]=mtdspecgramc(data,movingwin,phi,params)">mtdspecgramc</a>(diff(data),movingwin,pi/2,params);S=S';
+0557         timeax=handles.Tmin/handles.Fs+t;
+0558     <span class="keyword">else</span>
+0559         indexinS = <a href="#_sub24" class="code" title="subfunction indexinS = getindexpre_c(t,timestart,timeend)">getindexpre_c</a>(handles.t,(handles.Tmin-1)/handles.Fs,(handles.Tmax-1)/handles.Fs);
+0560          
+0561          <span class="keyword">if</span> indexinS(1) &lt; 1
+0562              indexinS(1) = 1;
+0563          <span class="keyword">end</span>
+0564          
+0565          SLen = length(handles.S(1,:));
+0566          
+0567          <span class="keyword">if</span> indexinS(2) &gt; SLen
+0568              indexinS(2) = SLen;
+0569          <span class="keyword">end</span>
+0570          
+0571          f = handles.f;
+0572          t = handles.t(indexinS(1):indexinS(2));
+0573          S = handles.S(:,indexinS(1):indexinS(2));
+0574          timeax = t;
+0575     <span class="keyword">end</span>
+0576     
+0577     cmap=<span class="string">'gray'</span>;
+0578     th=eval(get(handles.TDerThresh,<span class="string">'String'</span>));
+0579     
+0580     <span class="keyword">if</span> strcmp(handles.automethod,<span class="string">'threshold'</span>)
+0581         [Stot boxcurve] = <a href="#_sub26" class="code" title="subfunction  [Stot boxcurve] = compute_threshold_free(S,th,n)">compute_threshold_free</a>(abs(S'),th,handles.nsmooth);
+0582         axes(handles.axesP); 
+0583         semilogy(timeax,Stot); 
+0584         axis tight;
+0585     <span class="keyword">elseif</span> strcmp(handles.automethod,<span class="string">'ratiof'</span>)
+0586         [ratiof boxcurve] = <a href="#_sub27" class="code" title="subfunction [ratiof boxcurve] = compute_index(S,lower_range,upper_range,lowerfreq,upperfreq,indexthresh,n)">compute_index</a>(abs(S)',handles.lower_range,handles.upper_range,fmin,fmax,handles.indexthresh,handles.nsmooth);
+0587         axes(handles.axesP); 
+0588         semilogy(timeax,ratiof); 
+0589         axis tight;
+0590     <span class="keyword">end</span>
+0591     
+0592     hold on; semilogy(timeax,boxcurve,<span class="string">'r'</span>); hold off;
+0593     axes(handles.axesS);
+0594     imagesc(timeax,f,S); axis xy; colormap(cmap);
+0595     cmin=0.02*min(min(S)); cmax=0.02*max(max(S)); caxis([cmin cmax]);
+0596 
+0597 <span class="keyword">end</span>;
+0598 
+0599 <span class="keyword">if</span> handles.firsttime <span class="comment">% first time precomputing the spectra</span>
+0600     handles.S = S;
+0601     handles.t = t;
+0602     handles.f = f;
+0603     handles.precomputed_spec = 1;
+0604     handles.firstime = 0;
+0605 <span class="keyword">end</span>
+0606 
+0607 <span class="comment">% S = log(S)';</span>
+0608 <span class="comment">% Smax = max(max(S));</span>
+0609 <span class="comment">% Smin = min(min(S));</span>
+0610 <span class="comment">% Ssmall = uint8(round(((S - Smin)/(Smax-Smin))*255));</span>
+0611 <span class="comment">%</span>
+0612 <span class="comment">%  save('uint8_test.mat','Ssmall','-mat');</span>
+0613 <span class="comment">%  save('full_rest.mat','S','-mat');</span>
+0614 
+0615 handles.times=timeax(:);
+0616 handles.transition=[diff(boxcurve(:)); 0];
+0617 
+0618 set( handles.axesS, <span class="string">'XTick'</span>, [] );
+0619 set( handles.axesP, <span class="string">'XTick'</span>, [] );
+0620  
+0621 <span class="keyword">if</span> exist(<span class="string">'handles.datacursor'</span>)
+0622     delete( handles.datacursor );
+0623     delete( handles.segmentLineP );
+0624     delete( handles.segmentLineS );
+0625     delete( handles.segmentLineW );
+0626 <span class="keyword">end</span> 
+0627 
+0628 handles.datacursor=datacursormode(handles.figure1);  
+0629 axes(handles.axesP);
+0630 handles.segmentLineP = line(<span class="string">'Visible'</span>,<span class="string">'off'</span>);
+0631 axes(handles.axesS);
+0632 handles.segmentLineS = line(<span class="string">'Visible'</span>,<span class="string">'off'</span>);
+0633 axes(handles.axesW);
+0634 handles.segmentLineW = line(<span class="string">'Visible'</span>,<span class="string">'off'</span>);
+0635 
+0636 <span class="keyword">if</span> get( handles.SegmentButton, <span class="string">'Value'</span> )
+0637     set(handles.datacursor,<span class="string">'Enable'</span>,<span class="string">'on'</span>,<span class="string">'DisplayStyle'</span>,<span class="string">'datatip'</span>,<span class="string">'SnapToDataVertex'</span>,<span class="string">'off'</span>,<span class="string">'UpdateFcn'</span>,@<a href="#_sub41" class="code" title="subfunction txt = datacursorfunc(empt,event_obj)">datacursorfunc</a>);
+0638 <span class="keyword">end</span>
+0639 
+0640 guidata(gcbo,handles); 
+0641 <a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>(hw);
+0642 handles = <a href="#_sub42" class="code" title="subfunction handles = draw_segments( handles )">draw_segments</a>(handles);
+0643 
+0644 <a name="_sub26" href="#_subfunctions" class="code">function  [Stot boxcurve] = compute_threshold_free(S,th,n)</a>
+0645 <span class="comment">% Computes the threshold based on a floating percentage of the maximum</span>
+0646 <span class="comment">% summed intensity</span>
+0647     Stot=sum(S,2); 
+0648     boxcurve=Stot; 
+0649     smax=max(Stot); 
+0650     
+0651     Stot = <a href="#_sub28" class="code" title="subfunction smoothedcurve = smooth_curve(curve2smooth,n);">smooth_curve</a>(Stot',n); <span class="comment">% for removing extremes</span>
+0652     
+0653     boxcurve(find(Stot&lt;th*smax))= smax*th; 
+0654     boxcurve(find(Stot&gt;th*smax))= smax;
+0655     
+0656 <a name="_sub27" href="#_subfunctions" class="code">function [ratiof boxcurve] = compute_index(S,lower_range,upper_range,lowerfreq,upperfreq,indexthresh,n)</a>
+0657     <span class="comment">% This algorithm is based on the method described in Aylin's</span>
+0658     <span class="comment">% dissertation.</span>
+0659     
+0660     S = S';
+0661     nfreqs = length(S(:,1)); 
+0662     freqspern = (upperfreq - lowerfreq) / nfreqs;
+0663     
+0664     indexinlower = fliplr(nfreqs - round((lower_range - lowerfreq)/freqspern));
+0665     indexinupper = fliplr(nfreqs - round((upper_range - lowerfreq)/freqspern)) + 1;
+0666     
+0667     nrangelower = indexinlower(2)-indexinlower(1);
+0668     nrangeupper = indexinupper(2)-indexinupper(1);
+0669     
+0670     ratiof = ( sum(S(indexinupper(1) : indexinupper(2),:)) / nrangeupper )<span class="keyword">...</span><span class="comment"> </span>
+0671     ./ ( sum(S( indexinlower(1) : indexinlower(2),:)) / nrangelower );
+0672      
+0673     
+0674     ratiof = <a href="#_sub28" class="code" title="subfunction smoothedcurve = smooth_curve(curve2smooth,n);">smooth_curve</a>(ratiof,n); <span class="comment">% for smoothing the curve</span>
+0675     
+0676     maxrf = max(ratiof);
+0677     
+0678     boxcurve = ratiof;
+0679     
+0680     boxcurve(find(ratiof&lt;indexthresh))= indexthresh; 
+0681     boxcurve(find(ratiof&gt;=indexthresh))= maxrf;    
+0682     
+0683 <a name="_sub28" href="#_subfunctions" class="code">function smoothedcurve = smooth_curve(curve2smooth,n);</a>
+0684 <span class="comment">% Computes the moving average of the curve where n is an integer</span>
+0685 <span class="comment">% for example n = 1 averages the current point with the point before and afterwards</span>
+0686 
+0687     m = length(curve2smooth);
+0688     <span class="keyword">if</span> m &gt; 0
+0689         curve2smooth = [repmat(curve2smooth(1),1,n) curve2smooth repmat(curve2smooth(m),1,n)];
+0690         smoothedcurve = zeros(m,1);
+0691     
+0692         <span class="keyword">for</span> i = 1:m
+0693             smoothedcurve(i) = sum(curve2smooth(i:i + 2 * n)) / (2 * n + 1);
+0694         <span class="keyword">end</span>
+0695     <span class="keyword">else</span> <span class="comment">% just to save computation time</span>
+0696         smoothed_curve = curve2smooth;
+0697     <span class="keyword">end</span>
+0698     
+0699 <a name="_sub29" href="#_subfunctions" class="code">function MinFreq_Callback(hObject, eventdata, handles)</a>
+0700 
+0701 <a name="_sub30" href="#_subfunctions" class="code">function MinFreq_CreateFcn(hObject, eventdata, handles)</a>
+0702 <span class="keyword">if</span> ispc
+0703     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0704 <span class="keyword">else</span>
+0705     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0706 <span class="keyword">end</span>
+0707 
+0708 <a name="_sub31" href="#_subfunctions" class="code">function MaxFreq_Callback(hObject, eventdata, handles)</a>
+0709 <a name="_sub32" href="#_subfunctions" class="code">function MaxFreq_CreateFcn(hObject, eventdata, handles)</a>
+0710 <span class="keyword">if</span> ispc
+0711     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0712 <span class="keyword">else</span>
+0713     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0714 <span class="keyword">end</span>
+0715 
+0716 <span class="comment">% --- Executes on selection change in SpectrumType.</span>
+0717 <a name="_sub33" href="#_subfunctions" class="code">function SpectrumType_Callback(hObject, eventdata, handles)</a>
+0718 <a name="_sub34" href="#_subfunctions" class="code">function SpectrumType_CreateFcn(hObject, eventdata, handles)</a>
+0719 <span class="keyword">if</span> ispc
+0720     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0721 <span class="keyword">else</span>
+0722     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0723 <span class="keyword">end</span>
+0724 
+0725 <a name="_sub35" href="#_subfunctions" class="code">function AmpThresh_Callback(hObject, eventdata, handles)</a>
+0726 <a name="_sub36" href="#_subfunctions" class="code">function AmpThresh_CreateFcn(hObject, eventdata, handles)</a>
+0727 <span class="keyword">if</span> ispc
+0728     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0729 <span class="keyword">else</span>
+0730     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0731 <span class="keyword">end</span>
+0732 
+0733 <a name="_sub37" href="#_subfunctions" class="code">function TDerThresh_Callback(hObject, eventdata, handles)</a>
+0734 
+0735 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0736 <a name="_sub38" href="#_subfunctions" class="code">function TDerThresh_CreateFcn(hObject, eventdata, handles)</a>
+0737 <span class="keyword">if</span> ispc
+0738     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0739 <span class="keyword">else</span>
+0740     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0741 <span class="keyword">end</span>
+0742 
+0743 <span class="comment">% --- Executes on button press in PlayAll.</span>
+0744 <a name="_sub39" href="#_subfunctions" class="code">function PlayAll_Callback(hObject, eventdata, handles)</a>
+0745 wavplay(handles.ts,handles.Fs);
+0746 
+0747 
+0748 <span class="comment">% --- Executes on button press in PlayWindow.</span>
+0749 <a name="_sub40" href="#_subfunctions" class="code">function PlayWindow_Callback(hObject, eventdata, handles)</a>
+0750 wavplay(handles.ts(handles.Tmin:handles.Tmax),handles.Fs,<span class="string">'async'</span>);
+0751 
+0752 <span class="comment">%h=handles.axesP; axes(h); semilogy(timeax,Stot); axis tight;</span>
+0753 
+0754 <a name="_sub41" href="#_subfunctions" class="code">function txt = datacursorfunc(empt,event_obj)</a>
+0755 pos = get(event_obj,<span class="string">'Position'</span>);
+0756 handles=guidata(get(event_obj,<span class="string">'Target'</span>));
+0757 
+0758   set(handles.segmentLineP,<span class="string">'Xdata'</span>,[pos(1) pos(1)],<span class="string">'Ydata'</span>,[0.00000000000001*pos(2) 1000000000000*pos(2)],<span class="string">'Visible'</span>,<span class="string">'on'</span> );
+0759   set(handles.segmentLineS,<span class="string">'Xdata'</span>,[pos(1) pos(1)],<span class="string">'Ydata'</span>,[0.00000000000001*pos(2) 1000000000000*pos(2)],<span class="string">'Visible'</span>,<span class="string">'on'</span> );
+0760   set(handles.segmentLineW,<span class="string">'Xdata'</span>,[pos(1) pos(1)],<span class="string">'Ydata'</span>,[-100000000000*pos(2) 1000000000000*pos(2)],<span class="string">'Visible'</span>,<span class="string">'on'</span> );
+0761 
+0762   <span class="keyword">if</span> handles.start_stop_enable == 1
+0763       set( handles.SegStartButton, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0764   <span class="keyword">else</span>
+0765       set( handles.SegEndButton, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0766   <span class="keyword">end</span>
+0767 
+0768 txt = {[num2str(pos(1))]};
+0769 guidata(gcbo,handles); 
+0770 
+0771 <a name="_sub42" href="#_subfunctions" class="code">function handles = draw_segments( handles )</a>
+0772 n = 1;
+0773 <span class="keyword">while</span> n &lt;= length( handles.segments )
+0774     handles.segments(n).lines=[];
+0775     handles.segments(n) = <a href="#_sub46" class="code" title="subfunction out=draw_all_x( handles, segment )">draw_all_x</a>( handles, handles.segments(n) );
+0776     n = n + 1;
+0777 <span class="keyword">end</span>
+0778 guidata(gcbo,handles); 
+0779 
+0780 <span class="comment">% --- Executes on button press in SegmentButton.</span>
+0781 <a name="_sub43" href="#_subfunctions" class="code">function SegmentButton_Callback(hObject, eventdata, handles)</a>
+0782 toggled = get( handles.SegmentButton, <span class="string">'Value'</span> );
+0783 
+0784 <span class="keyword">if</span> toggled
+0785     handles.segments = [];
+0786     handles.segmentmode = 1;
+0787     set( handles.SegmentButton, <span class="string">'String'</span>, <span class="string">'Segment On'</span> );
+0788     set( handles.SegmentButton, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0789     <span class="keyword">if</span> not(exist([handles.filename <span class="string">'.seg.txt'</span>]));
+0790         set( handles.LoadSegments, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0791     <span class="keyword">else</span>
+0792         set( handles.LoadSegments, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0793     <span class="keyword">end</span>
+0794     set( handles.AutoSegmentFile, <span class="string">'Enable'</span>,<span class="string">'on'</span>);
+0795     set( handles.AutoSegButton, <span class="string">'Enable'</span>, <span class="string">'on'</span> );  
+0796     set( handles.SegmentLengthEdit, <span class="string">'Enable'</span>, <span class="string">'on'</span> );  
+0797     set( handles.SegmentLengthText, <span class="string">'Enable'</span>, <span class="string">'on '</span> );  
+0798     set( handles.SaveSegments, <span class="string">'Enable'</span>, <span class="string">'on'</span> );  
+0799     set( handles.DeleteSegment, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0800     set( handles.DeleteAllButton, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0801     set( handles.SegCancel, <span class="string">'Enable'</span>, <span class="string">'on'</span> );  
+0802     set( handles.PlotSegments, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0803     set( handles.LoadFile, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0804     set( handles.LoadNext, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0805     handles.start_stop_enable = 1;
+0806     set(handles.datacursor,<span class="string">'Enable'</span>,<span class="string">'on'</span>,<span class="string">'DisplayStyle'</span>,<span class="string">'datatip'</span>,<span class="string">'SnapToDataVertex'</span>,<span class="string">'off'</span>,<span class="string">'UpdateFcn'</span>,@<a href="#_sub41" class="code" title="subfunction txt = datacursorfunc(empt,event_obj)">datacursorfunc</a>);
+0807     fprintf( <span class="string">'Segment mode on!\n'</span> );
+0808 <span class="keyword">else</span>
+0809     handles.segmentmode = 0;
+0810     set( handles.SegmentButton, <span class="string">'String'</span>, <span class="string">'Segment Off'</span> );
+0811     set( handles.AutoSegButton, <span class="string">'Enable'</span>, <span class="string">'off'</span> );  
+0812     set( handles.AutoSegmentFile, <span class="string">'Enable'</span>,<span class="string">'off'</span>);
+0813     set( handles.SegmentLengthEdit, <span class="string">'Enable'</span>, <span class="string">'off'</span> );  
+0814     set( handles.SegmentLengthText, <span class="string">'Enable'</span>, <span class="string">'off'</span> );  
+0815     set( handles.LoadSegments, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0816     set( handles.SaveSegments, <span class="string">'Enable'</span>, <span class="string">'off'</span> );  
+0817     set( handles.SegStartButton, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0818     set( handles.SegEndButton, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0819     set( handles.DeleteSegment, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0820     set( handles.DeleteAllButton, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0821     set( handles.SegCancel, <span class="string">'Enable'</span>, <span class="string">'off'</span> );  
+0822     set( handles.PlotSegments, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0823     set( handles.LoadFile, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0824     set( handles.LoadNext, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+0825     set(handles.datacursor,<span class="string">'Enable'</span>,<span class="string">'off'</span>)
+0826     fprintf( <span class="string">'Segment mode off!\n'</span> );
+0827 <span class="keyword">end</span>
+0828 guidata(gcbo,handles); 
+0829 
+0830 
+0831 <span class="comment">% --- Executes on button press in SegStartButton.</span>
+0832 <a name="_sub44" href="#_subfunctions" class="code">function SegStartButton_Callback(hObject, eventdata, handles)</a>
+0833 set( handles.LoadSegments, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0834 set( handles.SegStartButton, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0835 handles.start_stop_enable = 0;
+0836 xy=get(handles.segmentLineP,<span class="string">'Xdata'</span>);
+0837 handles.segment.start=xy(1);
+0838 handles.segment.lines=[];
+0839 axes(handles.axesP);
+0840 set(handles.segmentLineP,<span class="string">'LineWidth'</span>,3);
+0841 handles.segment.lines(1) = handles.segmentLineP;
+0842 handles.segmentLineP = line(<span class="string">'Visible'</span>,<span class="string">'off'</span>);
+0843 axes(handles.axesS);
+0844 set(handles.segmentLineS,<span class="string">'LineWidth'</span>,3);
+0845 handles.segment.lines(2) = handles.segmentLineS;
+0846 handles.segmentLineS = line(<span class="string">'Visible'</span>,<span class="string">'off'</span>);
+0847 axes(handles.axesW);
+0848 set(handles.segmentLineW,<span class="string">'LineWidth'</span>,3);
+0849 handles.segment.lines(3) = handles.segmentLineW;
+0850 handles.segmentLineW = line(<span class="string">'Visible'</span>,<span class="string">'off'</span>);
+0851 
+0852 guidata(gcbo,handles); 
+0853 
+0854 <span class="comment">% --- Executes on button press in SegEndButton.</span>
+0855 <a name="_sub45" href="#_subfunctions" class="code">function SegEndButton_Callback(hObject, eventdata, handles)</a>
+0856 set( handles.SegEndButton, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+0857 handles.start_stop_enable = 1;
+0858 xy=get(handles.segmentLineP,<span class="string">'Xdata'</span>);
+0859 handles.segment.end=xy(1);
+0860 handles.segment=<a href="#_sub46" class="code" title="subfunction out=draw_all_x( handles, segment )">draw_all_x</a>( handles, handles.segment );
+0861 handles.segments = [handles.segments handles.segment];
+0862 guidata(gcbo,handles); 
+0863 
+0864 <a name="_sub46" href="#_subfunctions" class="code">function out=draw_all_x( handles, segment )</a>
+0865 segment=<a href="#_sub47" class="code" title="subfunction out=draw_x( theaxes, segment )">draw_x</a>( handles.axesP, segment );
+0866 segment=<a href="#_sub47" class="code" title="subfunction out=draw_x( theaxes, segment )">draw_x</a>( handles.axesS, segment );
+0867 segment=<a href="#_sub47" class="code" title="subfunction out=draw_x( theaxes, segment )">draw_x</a>( handles.axesW, segment );
+0868 out=segment;
+0869 
+0870 <a name="_sub47" href="#_subfunctions" class="code">function out=draw_x( theaxes, segment )</a>
+0871 axes(theaxes);
+0872 ylim = get(theaxes,<span class="string">'YLim'</span>);
+0873 segment.lines = [segment.lines line(<span class="string">'Xdata'</span>,[segment.start segment.start],<span class="string">'Ydata'</span>,ylim,<span class="string">'LineWidth'</span>,3)];
+0874 segment.lines = [segment.lines line(<span class="string">'Xdata'</span>,[segment.end segment.end],<span class="string">'Ydata'</span>,ylim,<span class="string">'LineWidth'</span>,3)];
+0875 segment.lines = [segment.lines line(<span class="string">'Xdata'</span>,[segment.start segment.end],<span class="string">'Ydata'</span>,ylim,<span class="string">'LineWidth'</span>,3)];
+0876 segment.lines = [segment.lines line(<span class="string">'Xdata'</span>,[segment.start segment.end],<span class="string">'Ydata'</span>,[ylim(2) ylim(1)],<span class="string">'LineWidth'</span>,3)];
+0877 out=segment;
+0878 
+0879 <span class="comment">% --- Executes on button press in JumpBack.</span>
+0880 <a name="_sub48" href="#_subfunctions" class="code">function JumpBack_Callback(hObject, eventdata, handles)</a>
+0881 <a href="#_sub50" class="code" title="subfunction Jump_shared(hObject, eventdata, handles, jump_dir )">Jump_shared</a>(hObject, eventdata, handles, -1 )
+0882 
+0883 <span class="comment">% --- Executes on button press in Jump.</span>
+0884 <a name="_sub49" href="#_subfunctions" class="code">function Jump_Callback(hObject, eventdata, handles)</a>
+0885 <a href="#_sub50" class="code" title="subfunction Jump_shared(hObject, eventdata, handles, jump_dir )">Jump_shared</a>(hObject, eventdata, handles, 1 )
+0886 
+0887 <a name="_sub50" href="#_subfunctions" class="code">function Jump_shared(hObject, eventdata, handles, jump_dir )</a>
+0888 Tim=eval(get(handles.DisplayWindow,<span class="string">'String'</span>));
+0889 tDuration = str2num(get(handles.Duration,<span class="string">'String'</span>));
+0890 maxTslider = (tDuration - Tim)/tDuration;
+0891 NT=min(round(Tim*handles.Fs),length(handles.ts));
+0892 Tslider=get(handles.slider1,<span class="string">'Value'</span>);
+0893 Tslider = Tslider + jump_dir * Tim * handles.Fs / length(handles.ts);
+0894 
+0895 <span class="keyword">if</span> Tim &gt; tDuration
+0896     set(handles.DisplayWindow,<span class="string">'String'</span>,num2str(tDuration));
+0897     Tslider = 0;
+0898 <span class="keyword">end</span>
+0899 
+0900 
+0901 <span class="keyword">if</span> jump_dir == 1 <span class="comment">% jumping forward</span>
+0902     <span class="keyword">if</span> Tslider &gt; maxTslider
+0903         Tslider = maxTslider;
+0904     <span class="keyword">end</span>
+0905 <span class="keyword">end</span>
+0906 
+0907 <span class="keyword">if</span> jump_dir == -1 <span class="comment">% jumping backwards</span>
+0908     <span class="keyword">if</span> Tslider &lt; 0
+0909         Tslider = 0
+0910     <span class="keyword">end</span>
+0911 <span class="keyword">end</span>
+0912 
+0913     
+0914 <span class="comment">% if Tslider &gt; 1</span>
+0915 <span class="comment">%     Tslider = ( length(handles.ts) - NT ) / length(handles.ts);</span>
+0916 <span class="comment">% end</span>
+0917 <span class="comment">% if Tslider &lt; 0</span>
+0918 <span class="comment">%     Tslider = 0</span>
+0919 <span class="comment">% end</span>
+0920 set(handles.slider1,<span class="string">'Value'</span>,Tslider);
+0921 guidata(gcbo,handles); 
+0922 <a href="#_sub25" class="code" title="subfunction Plot_Callback(hObject, eventdata, handles)">Plot_Callback</a>(hObject, eventdata, handles)
+0923 
+0924 
+0925 <a name="_sub51" href="#_subfunctions" class="code">function LoadNext_Callback(hObject, eventdata, handles)</a>
+0926 
+0927 <span class="comment">% Get filename, extension.  Look for next file with same extension, no seg</span>
+0928 <span class="comment">% file associated</span>
+0929 
+0930 exclude_name = [handles.filename, get(handles.ExcludeExt,<span class="string">'String'</span>)];
+0931 <span class="keyword">if</span> not(exist(exclude_name))
+0932      fid=fopen( exclude_name, <span class="string">'w'</span> );
+0933      fclose( fid);
+0934 <span class="keyword">end</span>
+0935 
+0936 [path] = cell2mat(regexp( handles.filename, <span class="string">'^.*\'</span>, <span class="string">'match'</span> ));
+0937 [extension] = cell2mat(regexp( handles.filename, <span class="string">'\w+$'</span>, <span class="string">'match'</span> ));
+0938 dirlist = dir( [path <span class="string">'*'</span> extension] );
+0939 ndir = length(dirlist);
+0940 n = 1;
+0941 <span class="keyword">while</span> n &lt;= ndir
+0942     file = dirlist(n).name;
+0943     <span class="keyword">if</span> not(exist([path file get(handles.ExcludeExt,<span class="string">'String'</span>)]))
+0944         <span class="keyword">break</span>;
+0945     <span class="keyword">end</span>
+0946        n = n + 1;
+0947 <span class="keyword">end</span>
+0948 <span class="keyword">if</span> n &lt;= ndir
+0949     set( handles.FileNameString, <span class="string">'String'</span>,file);
+0950     handles.filename = [path file];
+0951     guidata(gcbo,handles); 
+0952     handles = <a href="#_sub7" class="code" title="subfunction handles = loadfile(hObject, eventdata, handles, varargin)">loadfile</a>(hObject, eventdata, handles);
+0953 <span class="keyword">else</span>
+0954     error(<span class="string">'No more files found matching desired pattern'</span>);
+0955 <span class="keyword">end</span>
+0956 
+0957 <span class="comment">% --- Executes on button press in Precompute.</span>
+0958 <a name="_sub52" href="#_subfunctions" class="code">function Precompute_Callback(hObject, eventdata, handles)</a>
+0959 <span class="comment">% handles = guidata(gcbo);</span>
+0960 toggled = get( hObject, <span class="string">'Value'</span> );
+0961 <span class="keyword">if</span> toggled
+0962     
+0963     <span class="comment">% Disable spectra configuration parameters</span>
+0964     
+0965 <span class="comment">%     set(handles.DisplayWindow, 'Enable', 'off');</span>
+0966     set(handles.WinSize, <span class="string">'Enable'</span>, <span class="string">'off'</span>);
+0967     set(handles.StepSize, <span class="string">'Enable'</span>, <span class="string">'off'</span>);
+0968     set(handles.TW, <span class="string">'Enable'</span>, <span class="string">'off'</span>);
+0969     set(handles.MinFreq, <span class="string">'Enable'</span>, <span class="string">'off'</span>);
+0970     set(handles.MaxFreq, <span class="string">'Enable'</span>, <span class="string">'off'</span>);
+0971     set(handles.SpectrumType, <span class="string">'Enable'</span>, <span class="string">'off'</span>);
+0972 <span class="comment">%     set(handles.AmpThresh, 'Enable', 'off');</span>
+0973 <span class="comment">%     set(handles.TDerThresh, 'Enable', 'off');</span>
+0974     set(handles.LoadNext, <span class="string">'Enable'</span>,<span class="string">'off'</span>);
+0975 <span class="comment">%    set(handles.LoadFile, 'Enable','off');</span>
+0976     
+0977     valueTslider = get(handles.slider1,<span class="string">'Value'</span>);
+0978     set(handles.slider1,<span class="string">'Value'</span>,0);
+0979     strDuration = get(handles.Duration,<span class="string">'String'</span>);
+0980     strWindow = get(handles.DisplayWindow,<span class="string">'String'</span>);
+0981     
+0982     handles.firsttime = 1; <span class="comment">% indicates that the spectra need to be calculated</span>
+0983     
+0984     <span class="keyword">if</span> str2num(strDuration) &gt; handles.maxspec_t
+0985         strDuration = num2str(handles.maxspec_t);
+0986     <span class="keyword">end</span>
+0987     
+0988     set(handles.DisplayWindow,<span class="string">'String'</span>,strDuration);
+0989     
+0990     <a href="#_sub25" class="code" title="subfunction Plot_Callback(hObject, eventdata, handles)">Plot_Callback</a>(handles.Plot, eventdata, handles);
+0991     
+0992     handles = guidata(hObject);
+0993     
+0994     handles.firsttime = 0;
+0995     handles.precomputed_spec = 1;
+0996     set(handles.DisplayWindow,<span class="string">'String'</span>,strWindow);
+0997     set(handles.slider1,<span class="string">'Value'</span>,valueTslider);
+0998     <a href="#_sub25" class="code" title="subfunction Plot_Callback(hObject, eventdata, handles)">Plot_Callback</a>(handles.Plot, eventdata, handles);
+0999     handles = guidata(hObject);
+1000     handles.precomputed_spec = 1;
+1001 <span class="keyword">else</span>
+1002   handles.precomputed_spec = 0;
+1003   
+1004   
+1005   <span class="comment">% Enable spectra configuration parameters</span>
+1006   
+1007   handles.S = []; <span class="comment">% release memory</span>
+1008   handles.t = [];
+1009   handles.f = [];
+1010   
+1011   set(handles.WinSize, <span class="string">'Enable'</span>, <span class="string">'on'</span>);
+1012     set(handles.StepSize, <span class="string">'Enable'</span>, <span class="string">'on'</span>);
+1013     set(handles.TW, <span class="string">'Enable'</span>, <span class="string">'on'</span>);
+1014     set(handles.MinFreq, <span class="string">'Enable'</span>, <span class="string">'on'</span>);
+1015     set(handles.MaxFreq, <span class="string">'Enable'</span>, <span class="string">'on'</span>);
+1016     set(handles.SpectrumType, <span class="string">'Enable'</span>, <span class="string">'on'</span>);
+1017 <span class="comment">%     set(handles.AmpThresh, 'Enable', 'on');</span>
+1018     set(handles.TDerThresh, <span class="string">'Enable'</span>, <span class="string">'on'</span>);
+1019     set(handles.LoadNext, <span class="string">'Enable'</span>,<span class="string">'on'</span>);
+1020     set(handles.LoadFile, <span class="string">'Enable'</span>,<span class="string">'on'</span>);
+1021   
+1022 <span class="keyword">end</span>
+1023 
+1024 guidata(hObject,handles);
+1025 
+1026 <a name="_sub53" href="#_subfunctions" class="code">function Precompute_CreateFcn(hObject, eventdata, handles)</a>
+1027    
+1028 <a name="_sub54" href="#_subfunctions" class="code">function Path_Callback(hObject, eventdata, handles)</a>
+1029 path=get(hObject,<span class="string">'String'</span>)
+1030 
+1031 
+1032 <a name="_sub55" href="#_subfunctions" class="code">function Path_CreateFcn(hObject, eventdata, handles)</a>
+1033 set(hObject,<span class="string">'String'</span>,pwd);
+1034 <span class="keyword">if</span> ispc
+1035     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1036 <span class="keyword">else</span>
+1037     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1038 <span class="keyword">end</span>
+1039 
+1040 <a name="_sub56" href="#_subfunctions" class="code">function Extensions_Callback(hObject, eventdata, handles)</a>
+1041 
+1042 <a name="_sub57" href="#_subfunctions" class="code">function Extensions_CreateFcn(hObject, eventdata, handles)</a>
+1043 set(hObject,<span class="string">'String'</span>,<span class="string">'wav'</span>);
+1044 <span class="keyword">if</span> ispc
+1045     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1046 <span class="keyword">else</span>
+1047     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1048 <span class="keyword">end</span>
+1049 
+1050 <a name="_sub58" href="#_subfunctions" class="code">function Duration_CreateFcn(hObject, eventdata, handles)</a>
+1051 <span class="keyword">if</span> ispc
+1052     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1053 <span class="keyword">else</span>
+1054     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1055 <span class="keyword">end</span>
+1056 
+1057 <a name="_sub59" href="#_subfunctions" class="code">function LoadSegments_Callback(hObject, eventdata, handles)</a>
+1058 
+1059 handles = <a href="#_sub60" class="code" title="subfunction handles=load_segment(handles,filename)">load_segment</a>(handles, [handles.filename <span class="string">'.seg.txt'</span>] );
+1060 set( handles.LoadSegments, <span class="string">'Enable'</span>, <span class="string">'off'</span> );
+1061 handles = <a href="#_sub42" class="code" title="subfunction handles = draw_segments( handles )">draw_segments</a>( handles );
+1062 guidata(gcbo,handles);
+1063 
+1064 <a name="_sub60" href="#_subfunctions" class="code">function handles=load_segment(handles,filename)</a>
+1065 fid=fopen( filename, <span class="string">'r'</span> );
+1066 segments = [];
+1067 scanned=fscanf( fid, <span class="string">'%g %g'</span>,[2 inf] );
+1068 n = 1;
+1069 
+1070 <span class="keyword">while</span> n &lt;= size(scanned, 2)
+1071     segment.start = scanned(1,n);
+1072     segment.end = scanned(2,n);
+1073     segment.lines = [];
+1074     segments = [ segments segment ];
+1075     n = n + 1;
+1076 <span class="keyword">end</span>
+1077 
+1078 handles.allsegments = segments; <span class="comment">% all segments holds all segments for the file</span>
+1079 handles.segments = <a href="#_sub61" class="code" title="subfunction filteredsegments = filtersegments(handles,segments)">filtersegments</a>(handles,handles.allsegments); <span class="comment">% get segments for the current chunk</span>
+1080 handles.loadedsegment = 1; <span class="comment">% indicates segments have been filtered</span>
+1081 
+1082 guidata(gcf,handles); 
+1083 
+1084 
+1085 <a name="_sub61" href="#_subfunctions" class="code">function filteredsegments = filtersegments(handles,segments)</a>
+1086 <span class="comment">% Returns segments which are in the current defined view. Returns segments</span>
+1087 <span class="comment">% which are not cut off.</span>
+1088 
+1089 realstart = handles.markerstart / handles.Fs;
+1090 realend = handles.markerend / handles.Fs;
+1091 
+1092 filteredsegments = [];
+1093 
+1094 <span class="keyword">for</span> i = 1:length(segments) <span class="comment">% no garuantee segments are in the same order</span>
+1095     <span class="keyword">if</span> (segments(i).start &gt;= realstart) &amp;&amp; (segments(i).end &lt;= realend)
+1096         filteredsegments = [filteredsegments segments(i)];
+1097     <span class="keyword">end</span>
+1098 <span class="keyword">end</span>
+1099     
+1100 <span class="keyword">for</span> i=1:length(filteredsegments)
+1101     filteredsegments(i).start =  filteredsegments(i).start - realstart;
+1102     filteredsegments(i).end =  filteredsegments(i).end - realstart;
+1103 <span class="keyword">end</span>
+1104 
+1105 <a name="_sub62" href="#_subfunctions" class="code">function ExcludeExt_Callback(hObject, eventdata, handles)</a>
+1106 
+1107 <span class="comment">% Hints: get(hObject,'String') returns contents of ExcludeExt as text</span>
+1108 <span class="comment">%        str2double(get(hObject,'String')) returns contents of ExcludeExt as a double</span>
+1109 
+1110 <a name="_sub63" href="#_subfunctions" class="code">function ExcludeExt_CreateFcn(hObject, eventdata, handles)</a>
+1111 
+1112 <span class="keyword">if</span> ispc
+1113     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1114 <span class="keyword">else</span>
+1115     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1116 <span class="keyword">end</span>
+1117 
+1118 
+1119 <a name="_sub64" href="#_subfunctions" class="code">function DeleteSegment_Callback(hObject, eventdata, handles)</a>
+1120 
+1121 
+1122    pos=get(handles.segmentLineP,<span class="string">'Xdata'</span>);    
+1123     n = 1;
+1124     <span class="keyword">while</span> n &lt;= length( handles.segments )
+1125         <span class="keyword">if</span> pos(1) &gt;= handles.segments(n).start &amp;&amp; pos(1) &lt;= handles.segments(n).end
+1126             handles=<a href="#_sub65" class="code" title="subfunction handles=delete_segment( handles, n )">delete_segment</a>( handles, n );
+1127         <span class="keyword">else</span>
+1128            n = n + 1;
+1129         <span class="keyword">end</span> 
+1130     <span class="keyword">end</span>
+1131     drawnow;
+1132 guidata(gcbo,handles); 
+1133 
+1134 <a name="_sub65" href="#_subfunctions" class="code">function handles=delete_segment( handles, n )</a>
+1135             nl = 1;
+1136             <span class="keyword">while</span> nl &lt;= length( handles.segments(n).lines )
+1137                 set( handles.segments(n).lines(nl), <span class="string">'Visible'</span>, <span class="string">'off'</span>); 
+1138                 nl = nl + 1;
+1139             <span class="keyword">end</span>
+1140             handles.segments(n) = [];
+1141             fprintf(<span class="string">'deleted!\n'</span>);
+1142 
+1143 <a name="_sub66" href="#_subfunctions" class="code">function SaveSegments_Callback(hObject, eventdata, handles)</a>
+1144 
+1145 <span class="comment">% For the currently defined segments append to the segment list</span>
+1146 
+1147 handles = <a href="#_sub67" class="code" title="subfunction handles=savesegments2mem(handles)">savesegments2mem</a>(handles);
+1148 
+1149 segment_file = fopen( [handles.filename <span class="string">'.seg.txt'</span>], <span class="string">'wt'</span> );
+1150 n = 1;
+1151 <span class="keyword">while</span> n &lt;= size(handles.allsegments, 2)
+1152     fprintf( segment_file, <span class="string">'%f %f\n'</span>, handles.allsegments(n).start, handles.allsegments(n).end );
+1153     n = n + 1;
+1154 <span class="keyword">end</span>
+1155 fclose(segment_file);
+1156 set( handles.SegmentButton, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+1157 guidata(gcbo,handles); 
+1158 
+1159 <a name="_sub67" href="#_subfunctions" class="code">function handles=savesegments2mem(handles)</a>
+1160 <span class="comment">% Updates the handles allsegments in memory</span>
+1161 
+1162 <span class="comment">% first remove in all segments all segments which are in the current chunk</span>
+1163 
+1164 oldsegments = [];
+1165 
+1166 realstart = handles.markerstart / handles.Fs; <span class="comment">% readjust time</span>
+1167 realend = handles.markerend / handles.Fs; <span class="comment">% readjust time</span>
+1168 
+1169 <span class="keyword">for</span> i = 1:length(handles.allsegments)
+1170     <span class="keyword">if</span> not((handles.allsegments(i).start) &gt;= realstart &amp;&amp; (handles.allsegments(i).end &lt;= realend))
+1171         oldsegments = [oldsegments handles.allsegments(i)];
+1172     <span class="keyword">end</span>
+1173 <span class="keyword">end</span>
+1174 
+1175 <span class="comment">% now put in the new segments</span>
+1176 
+1177 newsegments = [];
+1178 
+1179 <span class="keyword">for</span> i = 1:length(handles.segments)
+1180     segment = handles.segments(i);
+1181     segment.start = segment.start + realstart;
+1182     segment.end = segment.end + realstart;
+1183     newsegments = [newsegments segment];
+1184 <span class="keyword">end</span>
+1185 
+1186 handles.allsegments = [oldsegments newsegments];
+1187 
+1188 <a name="_sub68" href="#_subfunctions" class="code">function SegCancel_Callback(hObject, eventdata, handles)</a>
+1189 set( handles.SegmentButton, <span class="string">'Enable'</span>, <span class="string">'on'</span> );
+1190 guidata(gcbo,handles); 
+1191 
+1192 
+1193 <a name="_sub69" href="#_subfunctions" class="code">function PlotSegments_Callback(hObject, eventdata, handles)</a>
+1194 
+1195 <span class="comment">% Load Segments in directory</span>
+1196 
+1197 [path] = cell2mat(regexp( handles.filename, <span class="string">'^.*\'</span>, <span class="string">'match'</span> ));
+1198 [extension] = cell2mat(regexp( handles.filename, <span class="string">'\w+$'</span>, <span class="string">'match'</span> ));
+1199 
+1200 path=get(handles.Path,<span class="string">'String'</span>);
+1201 extension=get(handles.Extensions,<span class="string">'String'</span>);
+1202 dirlist = dir( [path <span class="string">'\*'</span> extension <span class="string">'.seg.txt'</span>] );
+1203 ndir = length(dirlist);
+1204 n = 1;
+1205 all_segments = [];
+1206 <span class="keyword">while</span> n &lt;= ndir
+1207     file = dirlist(n).name;
+1208     segments = <a href="#_sub60" class="code" title="subfunction handles=load_segment(handles,filename)">load_segment</a>([path <span class="string">'\'</span> file]);
+1209     all_segments = [all_segments segments];
+1210     n = n + 1;
+1211 <span class="keyword">end</span>
+1212 
+1213 <span class="comment">% Plot info</span>
+1214 <span class="keyword">if</span> length(all_segments) &gt; 2
+1215     
+1216     figure();
+1217     axes();
+1218     nbin= max(length([all_segments.end])/5,10);
+1219     syllable_lengths=[all_segments.end]-[all_segments.start];
+1220     hi=hist( syllable_lengths ,nbin);
+1221     tl=min( syllable_lengths );
+1222     th=max( syllable_lengths );
+1223     times=tl:((th-tl)/(nbin-1)):th;
+1224     plot(times,hi);
+1225     xlabel(<span class="string">'Segment Length (s)'</span>);
+1226     ylabel(<span class="string">'N'</span>);
+1227     title([<span class="string">'All segments in '</span> path]);
+1228 <span class="keyword">else</span>
+1229     error(<span class="string">'too few segments to plot'</span>);
+1230 <span class="keyword">end</span>
+1231 guidata(gcbo,handles); 
+1232   
+1233 
+1234 
+1235 <a name="_sub70" href="#_subfunctions" class="code">function AutoSegButton_Callback(hObject, eventdata, handles)</a>
+1236     
+1237     n = 1;
+1238     segments = [];
+1239     segment.start = 0;
+1240     segment.end = 0;
+1241     segment.lines = [];
+1242     minlen = eval(get( handles.SegmentLengthEdit, <span class="string">'String'</span> ));
+1243     <span class="keyword">while</span> n &lt; length( handles.times )
+1244         
+1245        <span class="keyword">if</span> ( handles.transition(n) &gt; 0 )
+1246            segment.start = handles.times(n);
+1247        <span class="keyword">end</span>
+1248        <span class="keyword">if</span> ( handles.transition(n) &lt; 0 )
+1249            segment.end = handles.times(n);
+1250        <span class="keyword">end</span>
+1251        <span class="keyword">if</span> (segment.start &gt; 0) &amp;&amp; (segment.end) &gt; 0 &amp;&amp; (segment.end - segment.start) &gt; minlen
+1252            segments = [ segments segment ];
+1253            segment.start = 0;
+1254             segment.end = 0;
+1255        <span class="keyword">end</span>
+1256        n = n + 1; 
+1257     <span class="keyword">end</span>
+1258     
+1259     handles.segments = [handles.segments segments]; 
+1260     handles = <a href="#_sub42" class="code" title="subfunction handles = draw_segments( handles )">draw_segments</a>( handles );
+1261     guidata(gcbo,handles);
+1262     
+1263 <a name="_sub71" href="#_subfunctions" class="code">function DeleteAllButton_Callback(hObject, eventdata, handles)</a>
+1264 
+1265 <span class="keyword">while</span> length( handles.segments )
+1266     handles = <a href="#_sub65" class="code" title="subfunction handles=delete_segment( handles, n )">delete_segment</a>( handles, 1 );
+1267 <span class="keyword">end</span>
+1268 guidata(gcf,handles); 
+1269 
+1270 
+1271 <span class="comment">% --- Executes on button press in PlotAllButton.</span>
+1272 <a name="_sub72" href="#_subfunctions" class="code">function PlotAllButton_Callback(hObject, eventdata, handles)</a>
+1273 <span class="comment">% hObject    handle to PlotAllButton (see GCBO)</span>
+1274 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1275 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1276 
+1277 set(handles.slider1,<span class="string">'Value'</span>,0);
+1278 
+1279 strDuration = get(handles.Duration,<span class="string">'String'</span>);
+1280 
+1281 <span class="keyword">if</span> str2num(strDuration) &gt; handles.maxspec_t
+1282     strDuration = num2str(handles.maxspec_t);
+1283 <span class="keyword">end</span>
+1284 
+1285 
+1286 set(handles.DisplayWindow,<span class="string">'String'</span>,strDuration);
+1287 <a href="#_sub25" class="code" title="subfunction Plot_Callback(hObject, eventdata, handles)">Plot_Callback</a>(hObject, eventdata, handles);
+1288 
+1289 
+1290 <span class="comment">% --- Executes on button press in PreviousChunk.</span>
+1291 <a name="_sub73" href="#_subfunctions" class="code">function PreviousChunk_Callback(hObject, eventdata, handles)</a>
+1292 <span class="comment">% hObject    handle to PreviousChunk (see GCBO)</span>
+1293 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1294 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1295 
+1296 <span class="comment">% [handles.markerstart handles.markerend]</span>
+1297 handles = <a href="#_sub67" class="code" title="subfunction handles=savesegments2mem(handles)">savesegments2mem</a>(handles);
+1298 handles = <a href="#_sub7" class="code" title="subfunction handles = loadfile(hObject, eventdata, handles, varargin)">loadfile</a>(hObject, eventdata, handles,[handles.markerstart-handles.maxwavsize-1,handles.markerstart-1]);
+1299 <span class="comment">% [handles.markerstart handles.markerend]</span>
+1300 ;
+1301 guidata(gcf,handles);
+1302 
+1303 <span class="comment">% --- Executes on button press in NextChunk.</span>
+1304 <a name="_sub74" href="#_subfunctions" class="code">function NextChunk_Callback(hObject, eventdata, handles)</a>
+1305 <span class="comment">% hObject    handle to NextChunk (see GCBO)</span>
+1306 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1307 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1308 
+1309 handles = <a href="#_sub67" class="code" title="subfunction handles=savesegments2mem(handles)">savesegments2mem</a>(handles);
+1310 handles = <a href="#_sub7" class="code" title="subfunction handles = loadfile(hObject, eventdata, handles, varargin)">loadfile</a>(hObject, eventdata, handles, [handles.markerend+1,handles.markerend+1+handles.maxwavsize]);
+1311 guidata(gcf,handles);
+1312 
+1313 <span class="comment">% --- Executes on button press in AutoSegmentFile.</span>
+1314 <a name="_sub75" href="#_subfunctions" class="code">function AutoSegmentFile_Callback(hObject, eventdata, handles)</a>
+1315 <span class="comment">% hObject    handle to AutoSegmentFile (see GCBO)</span>
+1316 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1317 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1318 
+1319 <span class="keyword">while</span> (handles.markerend &lt; handles.wavsize)
+1320 
+1321 <a href="#_sub72" class="code" title="subfunction PlotAllButton_Callback(hObject, eventdata, handles)">PlotAllButton_Callback</a>(hObject, eventdata, handles);
+1322 handles = guidata(gcbo);
+1323 <a href="#_sub70" class="code" title="subfunction AutoSegButton_Callback(hObject, eventdata, handles)">AutoSegButton_Callback</a>(hObject, eventdata, handles);
+1324 handles = guidata(gcbo);
+1325 <a href="#_sub74" class="code" title="subfunction NextChunk_Callback(hObject, eventdata, handles)">NextChunk_Callback</a>(hObject, eventdata, handles);
+1326 handles = guidata(gcbo);
+1327 
+1328 <span class="keyword">end</span>
+1329 
+1330 
+1331 <a href="#_sub72" class="code" title="subfunction PlotAllButton_Callback(hObject, eventdata, handles)">PlotAllButton_Callback</a>(hObject, eventdata, handles);
+1332 handles = guidata(gcbo);
+1333 <a href="#_sub70" class="code" title="subfunction AutoSegButton_Callback(hObject, eventdata, handles)">AutoSegButton_Callback</a>(hObject, eventdata, handles);
+1334 handles = guidata(gcbo);
+1335 guidata(gcbo,handles);
+1336 
+1337 
+1338 <a name="_sub76" href="#_subfunctions" class="code">function MaxSegLength_Callback(hObject, eventdata, handles)</a>
+1339 <span class="comment">% hObject    handle to MaxSegLength (see GCBO)</span>
+1340 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1341 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1342 
+1343 <span class="comment">% Hints: get(hObject,'String') returns contents of MaxSegLength as text</span>
+1344 <span class="comment">%        str2double(get(hObject,'String')) returns contents of MaxSegLength as a double</span>
+1345 
+1346 
+1347 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1348 <a name="_sub77" href="#_subfunctions" class="code">function MaxSegLength_CreateFcn(hObject, eventdata, handles)</a>
+1349 <span class="comment">% hObject    handle to MaxSegLength (see GCBO)</span>
+1350 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1351 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1352 
+1353 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+1354 <span class="comment">%       See ISPC and COMPUTER.</span>
+1355 <span class="keyword">if</span> ispc
+1356     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1357 <span class="keyword">else</span>
+1358     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1359 <span class="keyword">end</span>
+1360 
+1361 <a name="_sub78" href="#_subfunctions" class="code">function MaximumWavSize_Callback(hObject, eventdata, handles)</a>
+1362 <span class="comment">% hObject    handle to MaximumWavSize (see GCBO)</span>
+1363 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1364 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1365 
+1366 <span class="comment">% Hints: get(hObject,'String') returns contents of MaximumWavSize as text</span>
+1367 <span class="comment">%        str2double(get(hObject,'String')) returns contents of MaximumWavSize as a double</span>
+1368 
+1369 
+1370 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1371 <a name="_sub79" href="#_subfunctions" class="code">function MaximumWavSize_CreateFcn(hObject, eventdata, handles)</a>
+1372 <span class="comment">% hObject    handle to MaximumWavSize (see GCBO)</span>
+1373 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1374 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1375 
+1376 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+1377 <span class="comment">%       See ISPC and COMPUTER.</span>
+1378 <span class="keyword">if</span> ispc
+1379     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1380 <span class="keyword">else</span>
+1381     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1382 <span class="keyword">end</span>
+1383 
+1384 <span class="comment">% --- Executes on button press in SeekButton.</span>
+1385 <a name="_sub80" href="#_subfunctions" class="code">function SeekButton_Callback(hObject, eventdata, handles)</a>
+1386 <span class="comment">% hObject    handle to SeekButton (see GCBO)</span>
+1387 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1388 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1389 
+1390 <span class="comment">% Seek anywhere in a long file</span>
+1391 
+1392 handles = <a href="#_sub67" class="code" title="subfunction handles=savesegments2mem(handles)">savesegments2mem</a>(handles);
+1393 
+1394 <span class="keyword">try</span> 
+1395     timetoseek = str2num(get(handles.SeektoEdit,<span class="string">'String'</span>));
+1396 <span class="keyword">catch</span>
+1397     timetoseek = 0;
+1398     set(handles.SeektoEdit,<span class="string">'String'</span>,<span class="string">'0'</span>);
+1399 <span class="keyword">end</span>
+1400 
+1401 <span class="keyword">if</span> timetoseek &lt; 0
+1402     timetoseek = 0;
+1403     set(handles.SeektoEdit,<span class="string">'String'</span>,<span class="string">'0'</span>);
+1404 <span class="keyword">end</span>
+1405 
+1406 timetoseek = round(timetoseek * handles.Fs);
+1407 
+1408 <span class="keyword">if</span> timetoseek &gt;= handles.wavsize
+1409     timetoseek = timetoseek - handles.maxwavsize;
+1410 <span class="keyword">end</span>
+1411 
+1412 timetoseek = timetoseek  + 1;
+1413 timetoseekend = timetoseek + handles.maxwavsize;
+1414 
+1415 <span class="keyword">if</span> timetoseekend &gt; handles.wavsize
+1416     timetoseekend = handles.wavsize;
+1417 <span class="keyword">end</span>
+1418 
+1419 oldstate = handles.dontcutsegments;
+1420 handles.dontcutsegments = 0;
+1421 handles = <a href="#_sub7" class="code" title="subfunction handles = loadfile(hObject, eventdata, handles, varargin)">loadfile</a>(hObject,eventdata,handles,[timetoseek timetoseekend]);
+1422 handles.dontcutsegments = oldstate;
+1423 
+1424 guidata(gcbo,handles);
+1425 
+1426 <a name="_sub81" href="#_subfunctions" class="code">function SeektoEdit_Callback(hObject, eventdata, handles)</a>
+1427 <span class="comment">% hObject    handle to SeektoEdit (see GCBO)</span>
+1428 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1429 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1430 
+1431 <span class="comment">% Hints: get(hObject,'String') returns contents of SeektoEdit as text</span>
+1432 <span class="comment">%        str2double(get(hObject,'String')) returns contents of SeektoEdit as a double</span>
+1433 
+1434 
+1435 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1436 <a name="_sub82" href="#_subfunctions" class="code">function SeektoEdit_CreateFcn(hObject, eventdata, handles)</a>
+1437 <span class="comment">% hObject    handle to SeektoEdit (see GCBO)</span>
+1438 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1439 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1440 
+1441 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+1442 <span class="comment">%       See ISPC and COMPUTER.</span>
+1443 <span class="keyword">if</span> ispc
+1444     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1445 <span class="keyword">else</span>
+1446     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1447 <span class="keyword">end</span>
+1448 
+1449 
+1450 
+1451 
+1452 
+1453 <a name="_sub83" href="#_subfunctions" class="code">function RealDuration_Callback(hObject, eventdata, handles)</a>
+1454 <span class="comment">% hObject    handle to RealDuration (see GCBO)</span>
+1455 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1456 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1457 
+1458 <span class="comment">% Hints: get(hObject,'String') returns contents of RealDuration as text</span>
+1459 <span class="comment">%        str2double(get(hObject,'String')) returns contents of RealDuration as a double</span>
+1460 
+1461 
+1462 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1463 <a name="_sub84" href="#_subfunctions" class="code">function RealDuration_CreateFcn(hObject, eventdata, handles)</a>
+1464 <span class="comment">% hObject    handle to RealDuration (see GCBO)</span>
+1465 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1466 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1467 
+1468 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+1469 <span class="comment">%       See ISPC and COMPUTER.</span>
+1470 <span class="keyword">if</span> ispc
+1471     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1472 <span class="keyword">else</span>
+1473     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1474 <span class="keyword">end</span>
+1475 
+1476 
+1477 
+1478 
+1479 <span class="comment">% --- Executes on selection change in AutoMethodPopupMenu.</span>
+1480 <a name="_sub85" href="#_subfunctions" class="code">function AutoMethodPopupMenu_Callback(hObject, eventdata, handles)</a>
+1481 <span class="comment">% hObject    handle to AutoMethodPopupMenu (see GCBO)</span>
+1482 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1483 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1484 
+1485 <span class="comment">% Hints: contents = get(hObject,'String') returns AutoMethodPopupMenu contents as cell array</span>
+1486 <span class="comment">%        contents{get(hObject,'Value')} returns selected item from AutoMethodPopupMenu</span>
+1487 contents = get(hObject,<span class="string">'String'</span>);
+1488 method = contents{get(hObject,<span class="string">'Value'</span>)}
+1489 
+1490 <span class="keyword">if</span> strcmp(method,<span class="string">'Summed intensity'</span>)
+1491     handles.automethod = <span class="string">'threshold'</span>;
+1492     set(handles.AmpThresh,<span class="string">'Visible'</span>,<span class="string">'on'</span>);
+1493     set(handles.RatioThresh,<span class="string">'Visible'</span>,<span class="string">'off'</span>);
+1494 <span class="keyword">elseif</span> strcmp(method,<span class="string">'Ratio'</span>)
+1495     handles.automethod = <span class="string">'ratiof'</span>;
+1496     set(handles.AmpThresh,<span class="string">'Visible'</span>,<span class="string">'off'</span>);
+1497     set(handles.RatioThresh,<span class="string">'Visible'</span>,<span class="string">'on'</span>);
+1498 <span class="keyword">end</span>
+1499 
+1500 guidata(gcbo,handles);
+1501 
+1502 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1503 <a name="_sub86" href="#_subfunctions" class="code">function AutoMethodPopupMenu_CreateFcn(hObject, eventdata, handles)</a>
+1504 <span class="comment">% hObject    handle to AutoMethodPopupMenu (see GCBO)</span>
+1505 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1506 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1507 
+1508 <span class="comment">% Hint: popupmenu controls usually have a white background on Windows.</span>
+1509 <span class="comment">%       See ISPC and COMPUTER.</span>
+1510 <span class="keyword">if</span> ispc
+1511     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1512 <span class="keyword">else</span>
+1513     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1514 <span class="keyword">end</span>
+1515 
+1516 
+1517 
+1518 <a name="_sub87" href="#_subfunctions" class="code">function RatioThresh_Callback(hObject, eventdata, handles)</a>
+1519 <span class="comment">% hObject    handle to RatioThresh (see GCBO)</span>
+1520 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1521 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1522 
+1523 <span class="comment">% Hints: get(hObject,'String') returns contents of RatioThresh as text</span>
+1524 <span class="comment">%        str2double(get(hObject,'String')) returns contents of RatioThresh as a double</span>
+1525 
+1526 
+1527 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1528 <a name="_sub88" href="#_subfunctions" class="code">function RatioThresh_CreateFcn(hObject, eventdata, handles)</a>
+1529 <span class="comment">% hObject    handle to RatioThresh (see GCBO)</span>
+1530 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1531 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1532 
+1533 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+1534 <span class="comment">%       See ISPC and COMPUTER.</span>
+1535 <span class="keyword">if</span> ispc
+1536     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1537 <span class="keyword">else</span>
+1538     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1539 <span class="keyword">end</span>
+1540 
+1541 
+1542 
+1543 <a name="_sub89" href="#_subfunctions" class="code">function RatioLower_Callback(hObject, eventdata, handles)</a>
+1544 <span class="comment">% hObject    handle to RatioLower (see GCBO)</span>
+1545 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1546 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1547 
+1548 <span class="comment">% Hints: get(hObject,'String') returns contents of RatioLower as text</span>
+1549 <span class="comment">%        str2double(get(hObject,'String')) returns contents of RatioLower as a double</span>
+1550 
+1551 
+1552 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1553 <a name="_sub90" href="#_subfunctions" class="code">function RatioLower_CreateFcn(hObject, eventdata, handles)</a>
+1554 <span class="comment">% hObject    handle to RatioLower (see GCBO)</span>
+1555 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1556 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1557 
+1558 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+1559 <span class="comment">%       See ISPC and COMPUTER.</span>
+1560 <span class="keyword">if</span> ispc
+1561     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1562 <span class="keyword">else</span>
+1563     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1564 <span class="keyword">end</span>
+1565 
+1566 
+1567 
+1568 <a name="_sub91" href="#_subfunctions" class="code">function RatioUpper_Callback(hObject, eventdata, handles)</a>
+1569 <span class="comment">% hObject    handle to RatioUpper (see GCBO)</span>
+1570 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1571 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1572 
+1573 <span class="comment">% Hints: get(hObject,'String') returns contents of RatioUpper as text</span>
+1574 <span class="comment">%        str2double(get(hObject,'String')) returns contents of RatioUpper as a double</span>
+1575 
+1576 
+1577 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1578 <a name="_sub92" href="#_subfunctions" class="code">function RatioUpper_CreateFcn(hObject, eventdata, handles)</a>
+1579 <span class="comment">% hObject    handle to RatioUpper (see GCBO)</span>
+1580 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1581 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1582 
+1583 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+1584 <span class="comment">%       See ISPC and COMPUTER.</span>
+1585 <span class="keyword">if</span> ispc
+1586     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1587 <span class="keyword">else</span>
+1588     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1589 <span class="keyword">end</span>
+1590 
+1591 
+1592 <span class="comment">% --- Executes on button press in OptionsDisplay.</span>
+1593 <a name="_sub93" href="#_subfunctions" class="code">function OptionsDisplay_Callback(hObject, eventdata, handles)</a>
+1594 <span class="comment">% hObject    handle to OptionsDisplay (see GCBO)</span>
+1595 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1596 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1597 
+1598 <span class="comment">% Hint: get(hObject,'Value') returns toggle state of OptionsDisplay</span>
+1599 
+1600 <span class="comment">% positionP = get(handles.OptionsUiPanel,'Position');</span>
+1601 <span class="comment">% positionF = get(gcf,'Position');</span>
+1602 
+1603 state = get(hObject,<span class="string">'Value'</span>);
+1604 
+1605 <span class="keyword">if</span> state
+1606     set(handles.OptionsUiPanel,<span class="string">'Visible'</span>,<span class="string">'on'</span>);
+1607 <span class="comment">%     positionF(3) = positionF(3) + positionP(3);</span>
+1608 <span class="keyword">else</span>
+1609     set(handles.OptionsUiPanel,<span class="string">'Visible'</span>,<span class="string">'off'</span>);
+1610 <span class="comment">%     positionF(3) = positionF(3) - positionP(3);</span>
+1611 <span class="keyword">end</span>
+1612 
+1613 <span class="comment">%  set(gcf,'Position',positionF); % untested</span>
+1614 
+1615 guidata(gcbo,handles)
+1616 
+1617 
+1618 
+1619 <a name="_sub94" href="#_subfunctions" class="code">function Duration_Callback(hObject, eventdata, handles)</a>
+1620 <span class="comment">% hObject    handle to Duration (see GCBO)</span>
+1621 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1622 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1623 
+1624 <span class="comment">% Hints: get(hObject,'String') returns contents of Duration as text</span>
+1625 <span class="comment">%        str2double(get(hObject,'String')) returns contents of Duration as a double</span>
+1626 
+1627 
+1628 
+1629 
+1630 
+1631 <a name="_sub95" href="#_subfunctions" class="code">function SmoothFactor_Callback(hObject, eventdata, handles)</a>
+1632 <span class="comment">% hObject    handle to SmoothFactor (see GCBO)</span>
+1633 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1634 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1635 
+1636 <span class="comment">% Hints: get(hObject,'String') returns contents of SmoothFactor as text</span>
+1637 <span class="comment">%        str2double(get(hObject,'String')) returns contents of SmoothFactor as a double</span>
+1638 
+1639 
+1640 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1641 <a name="_sub96" href="#_subfunctions" class="code">function SmoothFactor_CreateFcn(hObject, eventdata, handles)</a>
+1642 <span class="comment">% hObject    handle to SmoothFactor (see GCBO)</span>
+1643 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1644 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1645 
+1646 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+1647 <span class="comment">%       See ISPC and COMPUTER.</span>
+1648 <span class="keyword">if</span> ispc
+1649     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1650 <span class="keyword">else</span>
+1651     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+1652 <span class="keyword">end</span>
+1653 
+1654 
+1655 
+1656 
+1657 
+1658 <a name="_sub97" href="#_subfunctions" class="code">function channel_Callback(hObject, eventdata, handles)</a>
+1659 <span class="comment">% hObject    handle to channel (see GCBO)</span>
+1660 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1661 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+1662 
+1663 <span class="comment">% Hints: get(hObject,'String') returns contents of channel as text</span>
+1664 <span class="comment">%        str2double(get(hObject,'String')) returns contents of channel as a double</span>
+1665 
+1666 
+1667 
+1668 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+1669 <a name="_sub98" href="#_subfunctions" class="code">function channel_CreateFcn(hObject, eventdata, handles)</a>
+1670 <span class="comment">% hObject    handle to channel (see GCBO)</span>
+1671 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+1672 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+1673 
+1674 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+1675 <span class="comment">%       See ISPC and COMPUTER.</span>
+1676 <span class="keyword">if</span> ispc &amp;&amp; isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+1677     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+1678 <span class="keyword">end</span>
+1679 
+1680</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

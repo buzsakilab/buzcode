@@ -1,0 +1,1 @@
+function [Idx,C] = FuzzyKmean(s,nbClusters)

@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of intervalFun</title>
+  <meta name="keywords" content="intervalFun">
+  <meta name="description" content="im = intervalFun(tsa, is, func, options) computes mean of tsa data in each of the intervals in isw">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; intervalFun.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>intervalFun
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>im = intervalFun(tsa, is, func, options) computes mean of tsa data in each of the intervals in isw</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function im = intervalFun(tsa, is, func, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> im = intervalFun(tsa, is, func, options) computes mean of tsa data in each of the intervals in isw
+
+ INPUTS:
+ tsa: a tsd object
+ is: an intervalSet
+ func: strign defining the functino to apply to the tsd, possible values
+ are 
+ 'mean', 'var', 'std', 'min', 'max'  
+ OUTPUTS: 
+ ic: a tsd object, where the timestamps correspond to each interval (see
+ OPTIONS for possibilities) and the data gives the mean  of the data points in
+ the tsd in each one of the intervals
+ OPTIONS:
+ 'Time': determines which time is selected for each interval, possible
+ values are 
+     'start' (default): use start of intervals
+     'end': use end of intervals
+     'middle': use middle point of intervals</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>	Returns Data of a TSD object</li><li><a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>	Returns TSD timestamps</li><li><a href="length.html" class="code" title="function l = length(tsa)">length</a>	Returns number of elements in tsa (overoads length function)</li><li><a href="size.html" class="code" title="function sz = size(TSA)">size</a>	Return the size of the data component (overoad of the size function)</li><li><a href="tsd.html" class="code" title="function tsa = tsd(t, Data, varargin)">tsd</a>	Constructor of TSD object</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function im = intervalFun(tsa, is, func, varargin)</a>
+0002 <span class="comment">% im = intervalFun(tsa, is, func, options) computes mean of tsa data in each of the intervals in isw</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% INPUTS:</span>
+0005 <span class="comment">% tsa: a tsd object</span>
+0006 <span class="comment">% is: an intervalSet</span>
+0007 <span class="comment">% func: strign defining the functino to apply to the tsd, possible values</span>
+0008 <span class="comment">% are</span>
+0009 <span class="comment">% 'mean', 'var', 'std', 'min', 'max'</span>
+0010 <span class="comment">% OUTPUTS:</span>
+0011 <span class="comment">% ic: a tsd object, where the timestamps correspond to each interval (see</span>
+0012 <span class="comment">% OPTIONS for possibilities) and the data gives the mean  of the data points in</span>
+0013 <span class="comment">% the tsd in each one of the intervals</span>
+0014 <span class="comment">% OPTIONS:</span>
+0015 <span class="comment">% 'Time': determines which time is selected for each interval, possible</span>
+0016 <span class="comment">% values are</span>
+0017 <span class="comment">%     'start' (default): use start of intervals</span>
+0018 <span class="comment">%     'end': use end of intervals</span>
+0019 <span class="comment">%     'middle': use middle point of intervals</span>
+0020   
+0021   
+0022   
+0023 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia</span>
+0024 <span class="comment">% This software is released under the GNU GPL</span>
+0025 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0026   
+0027   opt_varargin = varargin;
+0028   
+0029   
+0030   time_opt_values = dictArray({ { <span class="string">'start'</span>, []},
+0031                         { <span class="string">'end'</span>, []}, 
+0032                         { <span class="string">'middle'</span>, []} });
+0033   defined_options = dictArray({ { <span class="string">'Time'</span>, {<span class="string">'start'</span>, {<span class="string">'char'</span>} } } } );
+0034   
+0035   getOpt;
+0036   
+0037   d = <a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>(tsa);
+0038   
+0039   <span class="keyword">if</span> isempty(d)
+0040     error(<span class="string">'intervalMean not defined for tsd with empty data!'</span>);
+0041   <span class="keyword">end</span>
+0042   
+0043   
+0044   n_dim = <a href="length.html" class="code" title="function l = length(tsa)">length</a>(<a href="size.html" class="code" title="function sz = size(TSA)">size</a>(d));
+0045   
+0046 <span class="comment">% $$$   if ~isLinearArray(d)</span>
+0047     d = permute(d, [(2:n_dim) 1]); <span class="comment">% transpose d so that time index will be</span>
+0048                    <span class="comment">% major index, mkaing it easier to deal</span>
+0049                    <span class="comment">% with it in C</span>
+0050 <span class="comment">% $$$   end</span>
+0051   
+0052   
+0053   im = intervalFun_c(<a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa), d, <span class="keyword">...</span>
+0054               Start(is, tsa.time_unit), End(is, tsa.time_unit), <span class="keyword">...</span>
+0055              func);
+0056   n_dim = <a href="length.html" class="code" title="function l = length(tsa)">length</a>(<a href="size.html" class="code" title="function sz = size(TSA)">size</a>(im));
+0057   
+0058 <span class="comment">% $$$   if ~isLinearArray(d)</span>
+0059 
+0060     im = permute(im, [n_dim (1:(n_dim-1))]); <span class="comment">% restore the right</span>
+0061                                              <span class="comment">% dimension order</span>
+0062 <span class="comment">% $$$   end</span>
+0063   
+0064   
+0065   <span class="keyword">switch</span> Time
+0066    <span class="keyword">case</span> <span class="string">'start'</span>
+0067     t_im = Start(is, tsa.time_unit);
+0068    <span class="keyword">case</span> <span class="string">'end'</span>
+0069     t_im = End(is, tsa.time_unit);
+0070    <span class="keyword">case</span> <span class="string">'middle'</span>
+0071     t_im = ( Start(is, tsa.time_unit) + End(is, tsa.time_unit) ) / 2;
+0072   <span class="keyword">end</span>
+0073   
+0074   im = <a href="tsd.html" class="code" title="function tsa = tsd(t, Data, varargin)">tsd</a>(t_im, im);</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

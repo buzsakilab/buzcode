@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of createdatamatpt</title>
+  <meta name="keywords" content="createdatamatpt">
+  <meta name="description" content="Helper function to create an event triggered matrix from a single">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>createdatamatpt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Helper function to create an event triggered matrix from a single</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function data=createdatamatpt(data,E,win) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Helper function to create an event triggered matrix from a single
+ channel of spike times. 
+ Usage:  data=createdatamatpt(data,E,win)
+ Inputs:
+ data   (input spike times as a structural array or as a column vector) - required
+ E      (events to use as triggers) - required 
+ win    (window around triggers to use data matrix -[winl winr]) - required 
+          e.g [1 1] uses a window starting 1 sec before E and
+              ending 1 sec after E if E and data are in secs.
+ Note that E, win and data must have consistent units
+ Outputs:
+ data      (event triggered data as a structural array - times are stored
+ relative to the E-winl</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/old/tutorial/significant-spike-field-coherenceMBL2005.html" class="code" title="">significant-spike-field-coherenceMBL2005</a>	</li><li><a href="../../../chronux_2_10/old/tutorial/spike-field-coherenceMBL2005.html" class="code" title="">spike-field-coherenceMBL2005</a>	</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpt(data1,data2,win,params,segave,fscorr)">coherencysegcpt</a>	Multi-taper coherency,cross-spectrum and individual spectra computed by segmenting</li><li><a href="coherencysegpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpt(data1,data2,win,params,segave,fscorr)">coherencysegpt</a>	Multi-taper coherency computed by segmenting two univariate point processes into chunks</li><li><a href="mtspecgramtrigpt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgramtrigpt(data,E,win,movingwin,params,fscorr)">mtspecgramtrigpt</a>	Multi-taper event triggered time-frequency spectrum - point process times</li><li><a href="mtspectrumsegpt.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpt(data,win,params,segave,fscorr)">mtspectrumsegpt</a>	Multi-taper segmented spectrum for a univariate binned point process</li><li><a href="mtspectrumtrigpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumtrigpt(data,E,win,params,fscorr)">mtspectrumtrigpt</a>	Multi-taper time-frequency spectrum - point process times</li><li><a href="../../../chronux_2_10/test/testscript.html" class="code" title="">testscript</a>	function testscript(pname,direction,movingwin,segave,params,fscorr)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function data=createdatamatpt(data,E,win)</a>
+0002 <span class="comment">% Helper function to create an event triggered matrix from a single</span>
+0003 <span class="comment">% channel of spike times.</span>
+0004 <span class="comment">% Usage:  data=createdatamatpt(data,E,win)</span>
+0005 <span class="comment">% Inputs:</span>
+0006 <span class="comment">% data   (input spike times as a structural array or as a column vector) - required</span>
+0007 <span class="comment">% E      (events to use as triggers) - required</span>
+0008 <span class="comment">% win    (window around triggers to use data matrix -[winl winr]) - required</span>
+0009 <span class="comment">%          e.g [1 1] uses a window starting 1 sec before E and</span>
+0010 <span class="comment">%              ending 1 sec after E if E and data are in secs.</span>
+0011 <span class="comment">% Note that E, win and data must have consistent units</span>
+0012 <span class="comment">% Outputs:</span>
+0013 <span class="comment">% data      (event triggered data as a structural array - times are stored</span>
+0014 <span class="comment">% relative to the E-winl</span>
+0015 <span class="comment">%</span>
+0016 <span class="keyword">if</span> nargin &lt; 3; error(<span class="string">'Need all input arguments'</span>); <span class="keyword">end</span>;
+0017 <span class="keyword">if</span> isstruct(data);
+0018    fnames=fieldnames(data);
+0019    eval([<span class="string">'dtmp=data.'</span> fnames{1} <span class="string">';'</span>])
+0020 <span class="keyword">else</span>
+0021    dtmp=data(:);
+0022 <span class="keyword">end</span>;
+0023 NE=length(E);
+0024 winl=win(1);
+0025 winr=win(2);
+0026 data2(1:NE)=struct(<span class="string">'times'</span>,[]);
+0027 <span class="keyword">for</span> n=1:NE,
+0028     indx=find(dtmp &gt; E(n)-winl &amp; dtmp&lt;= E(n)+winr);
+0029     <span class="keyword">if</span> ~isempty(indx)
+0030        data2(n).times=dtmp(indx)-E(n)+winl;
+0031     <span class="keyword">else</span>
+0032        data2(n).times=[];
+0033     <span class="keyword">end</span>
+0034 <span class="keyword">end</span>
+0035 data=data2;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

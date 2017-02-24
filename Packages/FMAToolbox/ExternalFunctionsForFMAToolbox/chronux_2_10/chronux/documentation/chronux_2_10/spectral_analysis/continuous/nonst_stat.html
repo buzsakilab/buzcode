@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nonst_stat</title>
+  <meta name="keywords" content="nonst_stat">
+  <meta name="description" content="Nonstationarity test - continuous process">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>nonst_stat
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Nonstationarity test - continuous process</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function sigma = nonst_stat(data,A,sumV,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Nonstationarity test - continuous process
+
+ Usage:
+
+ sigma=nonst_test(data,A,sumV,params)
+ Input: 
+ Note units have to be consistent. See chronux.m for more information.
+       data (1d array in samples) -- required
+       A   quadratic coefficient matrix - (Compute this separately since
+       the computation is time consuming - [A,sumV]=quadcof(N,NW,order). order
+       has to &lt; 4NW.)
+       sumV   sum of the quadratic inverse basis vectors 
+       params: structure with fields tapers, pad, Fs, fpass, err, trialave
+       -optional
+           tapers : precalculated tapers from dpss or in the one of the following
+                    forms: 
+                    (1) A numeric vector [TW K] where TW is the
+                        time-bandwidth product and K is the number of
+                        tapers to be used (less than or equal to
+                        2TW-1). 
+                    (2) A numeric vector [W T p] where W is the
+                        bandwidth, T is the duration of the data and p 
+                        is an integer such that 2TW-p tapers are used. In
+                        this form there is no default i.e. to specify
+                        the bandwidth, you have to specify T and p as
+                        well. Note that the units of W and T have to be
+                        consistent: if W is in Hz, T must be in seconds
+                        and vice versa. Note that these units must also
+                        be consistent with the units of params.Fs: W can
+                        be in Hz if and only if params.Fs is in Hz.
+                        The default is to use form 1 with TW=3 and K=5
+
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+           Fs   (sampling frequency) - optional. Default 1.
+ Output:
+       sigma   (nonstationarity index Thomson, 2000)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="mtfftc.html" class="code" title="function J=mtfftc(data,tapers,nfft,Fs)">mtfftc</a>	Multi-taper fourier transform - continuous data</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function sigma = nonst_stat(data,A,sumV,params)</a>
+0002 
+0003 <span class="comment">% Nonstationarity test - continuous process</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Usage:</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% sigma=nonst_test(data,A,sumV,params)</span>
+0008 <span class="comment">% Input:</span>
+0009 <span class="comment">% Note units have to be consistent. See chronux.m for more information.</span>
+0010 <span class="comment">%       data (1d array in samples) -- required</span>
+0011 <span class="comment">%       A   quadratic coefficient matrix - (Compute this separately since</span>
+0012 <span class="comment">%       the computation is time consuming - [A,sumV]=quadcof(N,NW,order). order</span>
+0013 <span class="comment">%       has to &lt; 4NW.)</span>
+0014 <span class="comment">%       sumV   sum of the quadratic inverse basis vectors</span>
+0015 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass, err, trialave</span>
+0016 <span class="comment">%       -optional</span>
+0017 <span class="comment">%           tapers : precalculated tapers from dpss or in the one of the following</span>
+0018 <span class="comment">%                    forms:</span>
+0019 <span class="comment">%                    (1) A numeric vector [TW K] where TW is the</span>
+0020 <span class="comment">%                        time-bandwidth product and K is the number of</span>
+0021 <span class="comment">%                        tapers to be used (less than or equal to</span>
+0022 <span class="comment">%                        2TW-1).</span>
+0023 <span class="comment">%                    (2) A numeric vector [W T p] where W is the</span>
+0024 <span class="comment">%                        bandwidth, T is the duration of the data and p</span>
+0025 <span class="comment">%                        is an integer such that 2TW-p tapers are used. In</span>
+0026 <span class="comment">%                        this form there is no default i.e. to specify</span>
+0027 <span class="comment">%                        the bandwidth, you have to specify T and p as</span>
+0028 <span class="comment">%                        well. Note that the units of W and T have to be</span>
+0029 <span class="comment">%                        consistent: if W is in Hz, T must be in seconds</span>
+0030 <span class="comment">%                        and vice versa. Note that these units must also</span>
+0031 <span class="comment">%                        be consistent with the units of params.Fs: W can</span>
+0032 <span class="comment">%                        be in Hz if and only if params.Fs is in Hz.</span>
+0033 <span class="comment">%                        The default is to use form 1 with TW=3 and K=5</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0036 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0037 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0038 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0039 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0040 <span class="comment">%                       Defaults to 0.</span>
+0041 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0042 <span class="comment">% Output:</span>
+0043 <span class="comment">%       sigma   (nonstationarity index Thomson, 2000)</span>
+0044 
+0045 
+0046 <span class="keyword">if</span> nargin &lt; 1; error(<span class="string">'Need data'</span>); <span class="keyword">end</span>;
+0047 <span class="keyword">if</span> nargin &lt; 2; params=[]; <span class="keyword">end</span>;
+0048 
+0049 order = length(A);
+0050 N = length(data);
+0051 <span class="comment">%nfft=max(2^(nextpow2(N)+pad),N);</span>
+0052 [tapers,pad,Fs]=<a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params);
+0053 tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(tapers,N,Fs); <span class="comment">% check tapers</span>
+0054 
+0055 alpha=zeros(1,order);
+0056 <span class="keyword">for</span> j=1:order
+0057   alpha(j) = trace(squeeze(A(:,:,j))*squeeze(A(:,:,j)));
+0058 <span class="keyword">end</span>;
+0059 
+0060 tmp=<a href="mtfftc.html" class="code" title="function J=mtfftc(data,tapers,nfft,Fs)">mtfftc</a>(data,tapers,N,Fs);
+0061 <span class="comment">%tmp=mtfftc(data,tapers,nfft,Fs);</span>
+0062 sigma = zeros(length(data),1);
+0063 <span class="comment">% Pbar = sum(abs(tmp).^2,2)./sum(weights.^2,2);</span>
+0064 Pbar=mean(abs(tmp).^2,2);
+0065 <span class="keyword">for</span> ii=1:order
+0066   a0=real(sum(tmp'.*(squeeze(A(:,:,ii))*tmp.')))'/alpha(ii);
+0067   sigma=sigma+alpha(ii)*(a0./Pbar-sumV(ii)).^2;
+0068 <span class="keyword">end</span>;
+0069</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

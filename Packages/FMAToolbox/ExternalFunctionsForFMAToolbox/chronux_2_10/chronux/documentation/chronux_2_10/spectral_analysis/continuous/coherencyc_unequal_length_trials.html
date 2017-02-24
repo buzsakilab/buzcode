@@ -1,0 +1,343 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of coherencyc_unequal_length_trials</title>
+  <meta name="keywords" content="coherencyc_unequal_length_trials">
+  <meta name="description" content="This routine computes the average multi-taper coherence for a given set of unequal length segments. It is">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>coherencyc_unequal_length_trials
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This routine computes the average multi-taper coherence for a given set of unequal length segments. It is</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [Cmn,Phimn,Smn,Smm,f,ConfC,PhiStd,Cerr] = coherencyc_unequal_length_trials( data, movingwin, params, sMarkers ) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This routine computes the average multi-taper coherence for a given set of unequal length segments. It is
+ based on modifications to the Chronux routines. The segments are continuously structured in the 
+ data matrix, with the segment boundaries given by markers. Below,
+ movingwin is used in a non-overlaping way to partition each segment into
+ various windows. Th coherence is evaluated for each window, and then the
+ window coherence estimates averaged. Further averaging is conducted by
+ repeating the process for each segment. 
+
+ Inputs: 
+
+   data = data( samples, channels )- here segments must be stacked
+   as explained in the email 
+   movingwin = [window winstep] i.e length of moving
+              window and step size. Note that units here have
+              to be consistent with units of Fs. If Fs=1 (ie normalized)
+              then [window winstep]should be in samples, or else if Fs is
+              unnormalized then they should be in time (secs). 
+   sMarkers = N x 2 array of segment start &amp; stop marks. sMarkers(n, 1) = start
+           sample index; sMarkers(n,2) = stop sample index for the nth segment
+   params = see Chronux help on mtspecgramc
+
+ Output:
+       Cmn     magnitude of coherency - frequencies x iChPairs
+       Phimn   phase of coherency - frequencies x iChPairs
+       Smn     cross spectrum -  frequencies x iChPairs
+       Smm     spectrum m - frequencies x channels
+       f       frequencies x 1
+       ConfC   1 x iChPairs; confidence level for Cmn at 1-p % - only for err(1)&gt;=1
+       PhiStd  frequency x iChPairs; error bars for phimn - only for err(1)&gt;=1
+       Cerr    2 x frequency x iChPairs; Jackknife error bars for Cmn - use only for Jackknife - err(1)=2
+
+       Here iChPairs = indices corresponding to the off-diagonal terms of the
+       lower half matrix. iChPairs = 1 : nChannels*(nChannels-1)/2. So,
+       iChPairs=1,2,3,4,...correspond to C(2,1), C(3,1), C(3,2), C(4,1), etc. 
+       The mapping can be obtained as follows: 
+
+       C(i,j) = Cmn(:,k) where k = j + (1/2)*(i-1)*(i-2)
+
+       The above also applies to phimn, Smn
+
+ Note: 
+   segment length &gt;= NW/2 where NW = half bandwidth parameter (see dpss). So the power spectrum will 
+   be computed only for those segments whose length &gt; NW/2. For that reason, the routine returns the 
+   indices for segments for which the spectra is computed. This check is
+   done here since pSpecgramAvg calls it.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="mtfftc.html" class="code" title="function J=mtfftc(data,tapers,nfft,Fs)">mtfftc</a>	Multi-taper fourier transform - continuous data</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/coherr.html" class="code" title="function [confC,phistd,Cerr]=coherr(C,J1,J2,err,trialave,numsp1,numsp2)">coherr</a>	Function to compute lower and upper confidence intervals on the coherency</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>	Helper function that gets the frequency grid associated with a given fft based computation</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Cmn,Phimn,Smn,Smm,f,ConfC,PhiStd,Cerr] = coherencyc_unequal_length_trials( data, movingwin, params, sMarkers )</a>
+0002 
+0003 <span class="comment">% This routine computes the average multi-taper coherence for a given set of unequal length segments. It is</span>
+0004 <span class="comment">% based on modifications to the Chronux routines. The segments are continuously structured in the</span>
+0005 <span class="comment">% data matrix, with the segment boundaries given by markers. Below,</span>
+0006 <span class="comment">% movingwin is used in a non-overlaping way to partition each segment into</span>
+0007 <span class="comment">% various windows. Th coherence is evaluated for each window, and then the</span>
+0008 <span class="comment">% window coherence estimates averaged. Further averaging is conducted by</span>
+0009 <span class="comment">% repeating the process for each segment.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Inputs:</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%   data = data( samples, channels )- here segments must be stacked</span>
+0014 <span class="comment">%   as explained in the email</span>
+0015 <span class="comment">%   movingwin = [window winstep] i.e length of moving</span>
+0016 <span class="comment">%              window and step size. Note that units here have</span>
+0017 <span class="comment">%              to be consistent with units of Fs. If Fs=1 (ie normalized)</span>
+0018 <span class="comment">%              then [window winstep]should be in samples, or else if Fs is</span>
+0019 <span class="comment">%              unnormalized then they should be in time (secs).</span>
+0020 <span class="comment">%   sMarkers = N x 2 array of segment start &amp; stop marks. sMarkers(n, 1) = start</span>
+0021 <span class="comment">%           sample index; sMarkers(n,2) = stop sample index for the nth segment</span>
+0022 <span class="comment">%   params = see Chronux help on mtspecgramc</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Output:</span>
+0025 <span class="comment">%       Cmn     magnitude of coherency - frequencies x iChPairs</span>
+0026 <span class="comment">%       Phimn   phase of coherency - frequencies x iChPairs</span>
+0027 <span class="comment">%       Smn     cross spectrum -  frequencies x iChPairs</span>
+0028 <span class="comment">%       Smm     spectrum m - frequencies x channels</span>
+0029 <span class="comment">%       f       frequencies x 1</span>
+0030 <span class="comment">%       ConfC   1 x iChPairs; confidence level for Cmn at 1-p % - only for err(1)&gt;=1</span>
+0031 <span class="comment">%       PhiStd  frequency x iChPairs; error bars for phimn - only for err(1)&gt;=1</span>
+0032 <span class="comment">%       Cerr    2 x frequency x iChPairs; Jackknife error bars for Cmn - use only for Jackknife - err(1)=2</span>
+0033 <span class="comment">%</span>
+0034 <span class="comment">%       Here iChPairs = indices corresponding to the off-diagonal terms of the</span>
+0035 <span class="comment">%       lower half matrix. iChPairs = 1 : nChannels*(nChannels-1)/2. So,</span>
+0036 <span class="comment">%       iChPairs=1,2,3,4,...correspond to C(2,1), C(3,1), C(3,2), C(4,1), etc.</span>
+0037 <span class="comment">%       The mapping can be obtained as follows:</span>
+0038 <span class="comment">%</span>
+0039 <span class="comment">%       C(i,j) = Cmn(:,k) where k = j + (1/2)*(i-1)*(i-2)</span>
+0040 <span class="comment">%</span>
+0041 <span class="comment">%       The above also applies to phimn, Smn</span>
+0042 <span class="comment">%</span>
+0043 <span class="comment">% Note:</span>
+0044 <span class="comment">%   segment length &gt;= NW/2 where NW = half bandwidth parameter (see dpss). So the power spectrum will</span>
+0045 <span class="comment">%   be computed only for those segments whose length &gt; NW/2. For that reason, the routine returns the</span>
+0046 <span class="comment">%   indices for segments for which the spectra is computed. This check is</span>
+0047 <span class="comment">%   done here since pSpecgramAvg calls it.</span>
+0048 
+0049 iwAvg = 1; <span class="comment">% 0=no weighted average, 1=weighted average</span>
+0050 debug = 1; <span class="comment">% will display intermediate calcs.</span>
+0051 
+0052 <span class="keyword">if</span> nargin &lt; 2; error(<span class="string">'avgCoherence:: Need data and window parameters'</span>); <span class="keyword">end</span>;
+0053 <span class="keyword">if</span> nargin &lt; 3; params=[]; <span class="keyword">end</span>;
+0054 [ tapers, pad, Fs, fpass, err, trialave, params ] = <a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>( params );
+0055 <span class="keyword">if</span> isempty( sMarkers ), error( <span class="string">'avgCoherence:: Need Markers...'</span> ); <span class="keyword">end</span>
+0056 <span class="comment">% Not designed for &quot;trialave&quot; so set to 0</span>
+0057 params.trialave = 0;
+0058 [ tapers, pad, Fs, fpass, err, trialave, params ] = <a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>( params );
+0059 <span class="keyword">if</span> nargout &gt; 7 &amp;&amp; err(1)~=2; 
+0060     error(<span class="string">'avgCoherence:: Cerr computed only for Jackknife. Correct inputs and run again'</span>);
+0061 <span class="keyword">end</span>;
+0062 <span class="keyword">if</span> nargout &gt; 5 &amp;&amp; err(1)==0;
+0063 <span class="comment">%   Errors computed only if err(1) is nonzero. Need to change params and run again.</span>
+0064     error(<span class="string">'avgCoherence:: When errors are desired, err(1) has to be non-zero.'</span>);
+0065 <span class="keyword">end</span>;
+0066 <span class="keyword">if</span> size(data,2)==1, error(<span class="string">'avgCoherence:: Need more than 1 channel to compute coherence'</span>); <span class="keyword">end</span>
+0067 
+0068 <span class="comment">% Set moving window parameters to no-overlapping</span>
+0069 <span class="keyword">if</span> abs(movingwin(2) - movingwin(1)) &gt;= 1e-6, disp( <span class="string">'avgCoherence:: Warming: Window parameters for averaging should be non-overlapping. Set movingwin(2) = movingwin(1).'</span> ); <span class="keyword">end</span>
+0070 
+0071 wLength = round( Fs * movingwin(1) ); <span class="comment">% number of samples in window</span>
+0072 wStep = round( movingwin(2) * Fs ); <span class="comment">% number of samples to step through</span>
+0073 
+0074 <span class="comment">% Check whether window lengths satify segment length &gt; NW/2</span>
+0075 <span class="keyword">if</span> ( wLength &lt; 2*tapers(1) ), error( <span class="string">'avgCoherence:: movingwin(1) &gt; 2*tapers(1)'</span> ); <span class="keyword">end</span>
+0076 
+0077 <span class="comment">% Left align segment markers for easier coding</span>
+0078 sM = ones( size( sMarkers, 1 ), 2 ); 
+0079 sM( :, 2 ) = sMarkers( :, 2 ) - sMarkers( :, 1 ) + 1;
+0080 
+0081 <span class="comment">% min-max segments</span>
+0082 Nmax = max( sM(:,2) ); Nmin = min( sM(:,2) );
+0083 <span class="keyword">if</span> ( Nmin &lt; 2*tapers(1) ), error( <span class="string">'avgCoherence:: Smallest segment length &gt; 2*tapers(1). Change taper settings'</span> ); <span class="keyword">end</span>
+0084 
+0085 <span class="comment">% max time-sample length will be the window length.</span>
+0086 nfft = 2^( nextpow2( wLength ) + pad );
+0087 [ f, findx ] = <a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>( Fs, nfft, fpass); 
+0088 
+0089 <span class="comment">% Precompute all the tapers</span>
+0090 sTapers = tapers;
+0091 sTapers = <a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>( sTapers, wLength, Fs ); <span class="comment">% compute tapers for window length</span>
+0092 
+0093 nChannels = size( data, 2 ); 
+0094 nSegments = size( sMarkers, 1 );
+0095 iChPairs = ceil( nChannels*(nChannels-1)/2 );
+0096 
+0097 <span class="keyword">if</span> debug
+0098     disp( [<span class="string">'Window Length = '</span> num2str(wLength)] );
+0099     disp( [<span class="string">'Window Step = '</span> num2str(wStep)] );
+0100     disp( <span class="string">' '</span> );
+0101 <span class="keyword">end</span>
+0102 
+0103 <span class="comment">%</span>
+0104 <span class="comment">% coherr outputs such that:</span>
+0105 <span class="comment">% confc is has dimensions [1 size(cmn,2)]  =&gt; confc = 1 x iChPairs</span>
+0106 <span class="comment">% phistd has dimensions [f size(cmn,2)]  =&gt; phistd = frequencies x iChPairs = size( cmn )</span>
+0107 <span class="comment">% cerr has dimensions [2 size(cmn)]   =&gt; cerr = 2 x frequencies x iChPairs</span>
+0108 <span class="comment">%</span>
+0109 cerr = zeros( 2, length(f), iChPairs ); confc = zeros(1,iChPairs); phistd=zeros( length(f), iChPairs );
+0110 Cerr = zeros( 2, length(f), iChPairs ); ConfC = zeros(1,iChPairs); PhiStd=zeros( length(f), iChPairs );
+0111 
+0112 <span class="comment">%serr = zeros( 2, length(f), nChannels );</span>
+0113 smm = zeros( length(f), nChannels ); 
+0114 smn = zeros( length(f), iChPairs ); cmn=smn; phimn=smn; smn = complex( smn, smn );
+0115 Smm = smm; Smn = smn; Cmn = cmn; Phimn = phimn; 
+0116 nWins = 0;
+0117 <span class="keyword">for</span> sg = 1 : nSegments
+0118     <span class="comment">% Window lengths &amp; steps fixed above</span>
+0119     <span class="comment">% For the given segment, compute the positions &amp; number of windows</span>
+0120     N = sM(sg,2); 
+0121     wStartPos = 1 : wStep : ( N - wLength + 1 );
+0122     nWindows = length( wStartPos );
+0123     <span class="keyword">if</span> nWindows
+0124         nWins = nWins + nWindows; <span class="comment">% for averaging purposes</span>
+0125 
+0126         w=zeros(nWindows,2);
+0127         <span class="keyword">for</span> n = 1 : nWindows
+0128             w(n,:) = [ wStartPos(n), (wStartPos(n) + wLength - 1) ]; <span class="comment">% nWindows x 2. just like segment end points</span>
+0129         <span class="keyword">end</span>
+0130 
+0131         <span class="comment">% Shift window limits back to original sample-stamps</span>
+0132         w(:, 1) = w(:,1) + (sMarkers( sg, 1 ) - 1);
+0133         w(:, 2) = w(:,2) + (sMarkers( sg, 1 ) - 1);
+0134 
+0135         <span class="keyword">if</span> debug
+0136             disp( [<span class="string">'Segment Start/Stop = '</span> num2str( w(1,1) ) <span class="string">' '</span> num2str( w(<span class="keyword">end</span>,2) ) ] );
+0137             disp( [<span class="string">'Min / Max Window Positions = '</span> num2str( min(w(:,1)) ) <span class="string">' '</span> num2str( max(w(:,1)) ) ] );
+0138             disp( [<span class="string">'Total Number of Windows = '</span> num2str(nWindows) ]);
+0139             disp( <span class="string">' '</span> );
+0140         <span class="keyword">end</span>
+0141 
+0142         <span class="comment">% Pile up window segments similar to segment pileup</span>
+0143         wData = zeros( wLength, nChannels, nWindows ); <span class="comment">%initialize to avoid fragmentation</span>
+0144         <span class="keyword">for</span> n = 1:nWindows
+0145             <span class="comment">%wData( :, :, n ) = detrend( data( w(n,1):w(n,2), : ), 'constant' );</span>
+0146             wData( :, :, n ) = detrend( data( w(n,1):w(n,2), : ) );
+0147         <span class="keyword">end</span>
+0148 
+0149         <span class="comment">% J1 = frequency x taper x nWindows</span>
+0150         <span class="comment">% J2 = frequency x taper x nWindows x nChannels</span>
+0151         J2 = zeros( length(f), tapers(2), nWindows, nChannels ); J2 = complex( J2, J2 );
+0152         <span class="keyword">for</span> c = 1 : nChannels
+0153             J1 = <a href="mtfftc.html" class="code" title="function J=mtfftc(data,tapers,nfft,Fs)">mtfftc</a>( squeeze(wData( :, c, : )), sTapers, nfft, Fs ); <span class="comment">% FFT for the tapered data</span>
+0154             J2( :, :, :, c ) = J1(findx,:,:);
+0155         <span class="keyword">end</span>
+0156         <span class="comment">% J2 = frequency x taper x nWindows x nChannels</span>
+0157         <span class="comment">% Inner mean = Average over tapers =&gt; frequency x nWindows x nChannels</span>
+0158         <span class="comment">% Outer mean = Average over windows =&gt; frequency x nChannels</span>
+0159         <span class="comment">% smm = diagonal terms, ie power spectrum</span>
+0160         <span class="comment">%</span>
+0161         dim1 = [length(f), nWindows, nChannels];
+0162         dim2 = [length(f), nChannels];
+0163         <span class="comment">% s = frequency x nChannels</span>
+0164         smm = reshape( squeeze( mean( reshape( squeeze( mean( conj(J2).*J2, 2 ) ), dim1), 2 ) ), dim2 );
+0165 
+0166         <span class="comment">%</span>
+0167         <span class="comment">% Compute only the lower off-diagonal terms</span>
+0168         <span class="comment">% smn = Cross Spectrum terms = complex</span>
+0169         <span class="comment">% cmn = abs( coherence ); phimn = phase( coherence )</span>
+0170         <span class="comment">%</span>
+0171 
+0172         <span class="comment">%</span>
+0173         <span class="comment">% coherr outputs such that:</span>
+0174         <span class="comment">% confc is has dimensions [1 size(cmn,2)]  =&gt; confc = 1 x iChPairs</span>
+0175         <span class="comment">% phistd has dimensions [f size(cmn,2)]  =&gt; phistd = frequencies x iChPairs = size( cmn )</span>
+0176         <span class="comment">% cerr has dimensions [2 size(cmn)]   =&gt; cerr = 2 x frequencies x iChPairs</span>
+0177         <span class="comment">%</span>
+0178         cerr = zeros( 2, length(f), iChPairs ); confc = zeros(1,iChPairs); phistd=zeros( length(f), iChPairs ); 
+0179 
+0180         dim = [length(f), tapers(2), nWindows];
+0181         id = 1;
+0182         <span class="keyword">for</span> m=2:nChannels
+0183             Jm = reshape( squeeze( J2(:,:,:,m) ), dim ); <span class="comment">% frequency x taper x nWindows</span>
+0184             <span class="keyword">for</span> n=1:m-1 <span class="comment">% since we want off-diagonal terms only</span>
+0185                 Jn = reshape( squeeze( J2(:,:,:,n) ), dim ); <span class="comment">% frequency x taper x nWindows</span>
+0186                 <span class="comment">%</span>
+0187                 <span class="comment">% Average the Cross-Spectrum, Smn, over the windows</span>
+0188                 <span class="comment">% smn = complex</span>
+0189                 <span class="comment">% First average over tapers, then over windows</span>
+0190                 <span class="comment">%</span>
+0191                 smn(:,id) = squeeze( mean( squeeze( mean( conj(Jm).*Jn, 2 ) ), 2 ) ); <span class="comment">% frequency x iChPairs</span>
+0192                 <span class="comment">%</span>
+0193                 <span class="comment">% Coh = Coherence = complex = size( smn ) = frequency x iChPairs</span>
+0194                 <span class="comment">%</span>
+0195                 Coh = smn(:,id) ./ sqrt( smm(:,m) .* smm(:,n) );
+0196                 cmn(:,id) = abs(Coh); <span class="comment">% frequencies x iChPairs</span>
+0197                 phimn(:,id) = angle(Coh); <span class="comment">% frequencies x iChPairs</span>
+0198 
+0199                 <span class="comment">% Since we've averaged over segments, set trialave = 1</span>
+0200                 <span class="comment">%</span>
+0201                 <span class="comment">% coherr outputs:</span>
+0202                 <span class="comment">% confc is has dimensions [1 size(Cmn(:,1),2)]  =&gt; confC = 1 x iChPairs</span>
+0203                 <span class="comment">% phierr has dimensions [f size(Cmn(:,1),2)]  =&gt; phistd = frequencies x iChPairs = size( Cmn )</span>
+0204                 <span class="comment">% cerr has dimensions [2 size(Cmn(:,1))]   =&gt; Cerr = 2 x frequencies x iChPairs</span>
+0205                 <span class="comment">%</span>
+0206                 <span class="comment">% Now treat the various &quot;windowed data&quot; as &quot;trials&quot;</span>
+0207                 [ cconfc, cphistd, ccerr ] = <a href="../../../chronux_2_10/spectral_analysis/helper/coherr.html" class="code" title="function [confC,phistd,Cerr]=coherr(C,J1,J2,err,trialave,numsp1,numsp2)">coherr</a>( cmn(:,id), Jm, Jn, err, 1 );
+0208                 cerr(:,:,id ) = ccerr;
+0209                 confc(id) = cconfc;
+0210                 <span class="comment">%size(cphistd), size(phistd)</span>
+0211                 
+0212                 phistd(:,id) = cphistd; <span class="comment">% frequencies x iChPairs</span>
+0213 
+0214                 id = id + 1;
+0215             <span class="keyword">end</span>
+0216         <span class="keyword">end</span>
+0217         
+0218         <span class="keyword">if</span> iwAvg
+0219             <span class="comment">% Segment Weighted error estimates.</span>
+0220             Smm = Smm + nWindows*smm;
+0221             Smn = Smn + nWindows*smn;
+0222             Cmn = Cmn + nWindows*cmn;
+0223             Phimn = Phimn + nWindows*phimn;
+0224             PhiStd = PhiStd + nWindows*phistd;
+0225             ConfC = ConfC + nWindows*confc;
+0226             Cerr = Cerr + nWindows*cerr;
+0227         <span class="keyword">else</span>
+0228             Smm = Smm + smm;
+0229             Smn = Smn + smn;
+0230             Cmn = Cmn + cmn;
+0231             Phimn = Phimn + phimn;
+0232             PhiStd = PhiStd + phistd;
+0233             ConfC = ConfC + confc;
+0234             Cerr = Cerr + cerr;
+0235         <span class="keyword">end</span>
+0236 
+0237     <span class="keyword">else</span>
+0238         <span class="keyword">if</span> debug, disp([<span class="string">'avgCoherence:: Zero windows for segment: '</span> num2str(sg) ]); <span class="keyword">end</span>
+0239     <span class="keyword">end</span>
+0240 <span class="keyword">end</span>
+0241 
+0242 <span class="comment">% Segment Weighted error estimates.</span>
+0243 <span class="comment">% Only over those that had non-zero windows</span>
+0244 <span class="keyword">if</span> nWins &amp;&amp; iwAvg
+0245     Smn=Smn/nWins; Smm=Smm/nWins; Cmn=Cmn/nWins; Phimn=Phimn/nWins; PhiStd=PhiStd/nWins; ConfC=ConfC/nWins; Cerr=Cerr/nWins; 
+0246 <span class="keyword">end</span>
+0247 <span class="keyword">if</span> ~nWins
+0248     <span class="keyword">if</span> debug, disp([<span class="string">'avgCoherence:: No segment long enough with movingwin parameters found. Reduce movingwin.'</span> ]); <span class="keyword">end</span>
+0249 <span class="keyword">end</span>
+0250 
+0251 
+0252 
+0253</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

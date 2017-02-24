@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtfftpt</title>
+  <meta name="keywords" content="mtfftpt">
+  <meta name="description" content="Multi-taper fourier transform for point process given as times">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>mtfftpt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper fourier transform for point process given as times</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [J,Msp,Nsp]=mtfftpt(data,tapers,nfft,t,f,findx) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper fourier transform for point process given as times
+
+ Usage:
+ [J,Msp,Nsp]=mtfftpt (data,tapers,nfft,t,f,findx) - all arguments required
+ Input: 
+       data        (struct array of times with dimension channels/trials; 
+                   also takes in 1d array of spike times as a column vector) 
+       tapers      (precalculated tapers from dpss) 
+       nfft        (length of padded data) 
+       t           (time points at which tapers are calculated)
+       f           (frequencies of evaluation)
+       findx       (index corresponding to frequencies f) 
+ Output:
+       J (fft in form frequency index x taper index x channels/trials)
+       Msp (number of spikes per sample in each channel)
+       Nsp (number of spikes in each channel)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpt(data1,data2,params,fscorr,t)">coherencycpt</a>	Multi-taper coherency,cross-spectrum and individual spectra -continuous data and point process as times</li><li><a href="CrossSpecMatpt.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatpt(data,win,T,params)">CrossSpecMatpt</a>	</li><li><a href="coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>	Multi-taper coherency - point process times</li><li><a href="cohmatrixpt.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpt(data,params,fscorr)">cohmatrixpt</a>	Multi-taper coherency matrix - point process times</li><li><a href="mtdspectrumpt.html" class="code" title="function [dS,f]=mtdspectrumpt(data,phi,params,t)">mtdspectrumpt</a>	Multi-taper spectral derivative - point process times</li><li><a href="mtspectrumpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumpt(data,params,fscorr,t)">mtspectrumpt</a>	Multi-taper spectrum - point process times</li><li><a href="mtspectrumsegpt.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpt(data,win,params,segave,fscorr)">mtspectrumsegpt</a>	Multi-taper segmented spectrum for a univariate binned point process</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [J,Msp,Nsp]=mtfftpt(data,tapers,nfft,t,f,findx)</a>
+0002 <span class="comment">% Multi-taper fourier transform for point process given as times</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage:</span>
+0005 <span class="comment">% [J,Msp,Nsp]=mtfftpt (data,tapers,nfft,t,f,findx) - all arguments required</span>
+0006 <span class="comment">% Input:</span>
+0007 <span class="comment">%       data        (struct array of times with dimension channels/trials;</span>
+0008 <span class="comment">%                   also takes in 1d array of spike times as a column vector)</span>
+0009 <span class="comment">%       tapers      (precalculated tapers from dpss)</span>
+0010 <span class="comment">%       nfft        (length of padded data)</span>
+0011 <span class="comment">%       t           (time points at which tapers are calculated)</span>
+0012 <span class="comment">%       f           (frequencies of evaluation)</span>
+0013 <span class="comment">%       findx       (index corresponding to frequencies f)</span>
+0014 <span class="comment">% Output:</span>
+0015 <span class="comment">%       J (fft in form frequency index x taper index x channels/trials)</span>
+0016 <span class="comment">%       Msp (number of spikes per sample in each channel)</span>
+0017 <span class="comment">%       Nsp (number of spikes in each channel)</span>
+0018 <span class="keyword">if</span> nargin &lt; 6; error(<span class="string">'Need all input arguments'</span>); <span class="keyword">end</span>;
+0019 <span class="keyword">if</span> isstruct(data); C=length(data); <span class="keyword">else</span> C=1; <span class="keyword">end</span><span class="comment">% number of channels</span>
+0020 K=size(tapers,2); <span class="comment">% number of tapers</span>
+0021 nfreq=length(f); <span class="comment">% number of frequencies</span>
+0022 <span class="keyword">if</span> nfreq~=length(findx); error(<span class="string">'frequency information (last two arguments) inconsistent'</span>); <span class="keyword">end</span>;
+0023 H=fft(tapers,nfft,1);  <span class="comment">% fft of tapers</span>
+0024 H=H(findx,:); <span class="comment">% restrict fft of tapers to required frequencies</span>
+0025 w=2*pi*f; <span class="comment">% angular frequencies at which ft is to be evaluated</span>
+0026 Nsp=zeros(1,C); Msp=zeros(1,C);
+0027 <span class="keyword">for</span> ch=1:C;
+0028   <span class="keyword">if</span> isstruct(data);
+0029      fnames=fieldnames(data);
+0030      eval([<span class="string">'dtmp=data(ch).'</span> fnames{1} <span class="string">';'</span>])
+0031      indx=find(dtmp&gt;=min(t)&amp;dtmp&lt;=max(t));
+0032      <span class="keyword">if</span> ~isempty(indx); dtmp=dtmp(indx);
+0033      <span class="keyword">end</span>;
+0034   <span class="keyword">else</span>
+0035      dtmp=data;
+0036      indx=find(dtmp&gt;=min(t)&amp;dtmp&lt;=max(t));
+0037      <span class="keyword">if</span> ~isempty(indx); dtmp=dtmp(indx);
+0038      <span class="keyword">end</span>;
+0039   <span class="keyword">end</span>;
+0040   Nsp(ch)=length(dtmp);
+0041   Msp(ch)=Nsp(ch)/length(t);
+0042   <span class="keyword">if</span> Msp(ch)~=0;
+0043       data_proj=interp1(t',tapers,dtmp);
+0044       exponential=exp(-i*w'*(dtmp-t(1))');
+0045       J(:,:,ch)=exponential*data_proj-H*Msp(ch);
+0046   <span class="keyword">else</span>
+0047       J(1:nfreq,1:K,ch)=0;
+0048   <span class="keyword">end</span>;
+0049 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

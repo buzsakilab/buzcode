@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Data</title>
+  <meta name="keywords" content="Data">
+  <meta name="description" content="Returns Data of a TSD object">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; Data.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>Data
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Returns Data of a TSD object</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function v = Data(tsa, ix) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Returns Data of a TSD object
+
+      USAGE
+      d = Data(tsa)
+      d = Data(tsa, alignments)
+      
+      Retrieves data from ctsd
+      if called with alignment list (timestamps), returns those tsa.Data(ix)
+      if called without, returns complete tsa.Data</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="FindPeaks.html" class="code" title="function p = peaks(tsa, varargin)">FindPeaks</a>	Get peaks in data</li><li><a href="cat.html" class="code" title="function tsdOUT = cat(varargin)">cat</a>	Concatenation of TSD objects</li><li><a href="interp_missing.html" class="code" title="function tsi = interp_missing(tsa, TimeUnits, varargin)">interp_missing</a>	Interpolate missing values in continuously sampled tsd</li><li><a href="intervalFun.html" class="code" title="function im = intervalFun(tsa, is, func, varargin)">intervalFun</a>	im = intervalFun(tsa, is, func, options) computes mean of tsa data in each of the intervals in isw</li><li><a href="intervalMean.html" class="code" title="function im = intervalMean(tsa, is, varargin)">intervalMean</a>	Computes mean of of data in each of subset of a given interval</li><li><a href="peaks.html" class="code" title="function p = peaks(tsa, varargin)">peaks</a>	Get peaks in data</li><li><a href="smooth.html" class="code" title="function S = smooth(tsa, l, varargin)">smooth</a>	Smooth a TSD</li><li><a href="subset.html" class="code" title="function tss = subset(tsa, ix);">subset</a>	Returns tsd of a subset of input</li><li><a href="timeDeriv.html" class="code" title="function S = timeDeriv(tsa, varargin)">timeDeriv</a>	TimeDerivative of a tsd</li><li><a href="triggeredDataMat.html" class="code" title="function M = triggeredDataMat(tsa, t, nbBins,varargin);">triggeredDataMat</a>	Returns a event-by-events matrix of Data component triggered on a reference (TODO!)</li><li><a href="triggeredMeanData.html" class="code" title="function [tmd] = triggeredMeanData(tsa, events, tmax, varargin)">triggeredMeanData</a>	Event-triggered mean  of the Data component, triggered on events (TODO)</li><li><a href="tsd.html" class="code" title="function tsa = tsd(t, Data, varargin)">tsd</a>	Constructor of TSD object</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function v = Data(tsa, ix)</a>
+0002 
+0003 <span class="comment">% Returns Data of a TSD object</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE</span>
+0006 <span class="comment">%      d = Data(tsa)</span>
+0007 <span class="comment">%      d = Data(tsa, alignments)</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%      Retrieves data from ctsd</span>
+0010 <span class="comment">%      if called with alignment list (timestamps), returns those tsa.Data(ix)</span>
+0011 <span class="comment">%      if called without, returns complete tsa.Data</span>
+0012 
+0013 <span class="comment">% ADR 1998</span>
+0014 <span class="comment">% version L4.1</span>
+0015 <span class="comment">% status: PROMOTED</span>
+0016 
+0017 <span class="keyword">switch</span> nargin
+0018 <span class="keyword">case</span> 2
+0019    f = findAlignment(tsa, ix)
+0020    v = SelectAlongFirstDimension(tsa.data,f);
+0021   <span class="keyword">case</span> 1
+0022     v = tsa.data;
+0023   <span class="keyword">otherwise</span>
+0024     error(<span class="string">'Unknown number of input arguments'</span>);
+0025 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

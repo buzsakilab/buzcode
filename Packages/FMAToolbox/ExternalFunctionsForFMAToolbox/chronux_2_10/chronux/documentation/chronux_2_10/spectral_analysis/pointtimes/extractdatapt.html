@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of extractdatapt</title>
+  <meta name="keywords" content="extractdatapt">
+  <meta name="description" content="Extract segements of spike times between t(1) and t(2)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>extractdatapt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Extract segements of spike times between t(1) and t(2)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function data=extractdatapt(data,t,offset) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Extract segements of spike times between t(1) and t(2)
+ Usage: data=extractdatapt(data,t,offset)
+
+ Input:
+ data: structural array of spike times for each channel/trial or a single
+       array of spike times
+ t   : time as a 2d vector [t(1) t(2)]
+ offset: 0/1 - if 1, store the spike times relative to start of window i.e. t(1)
+         if 0, don't reset the times. Default 0. 
+ Note that all times can be in arbitrary units. But the units have to be
+ consistent. So, if E is in secs, win, t have to be in secs, and Fs has to
+ be Hz. If E is in samples, so are win and t, and Fs=1. In case of spike
+ times, the units have to be consistent with the units of data as well.
+
+ Output:
+ data: spike times between t(1) and t(2)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/hybrid/cohgramcpt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpt(data1,data2,movingwin,params,fscorr)">cohgramcpt</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="CrossSpecMatpt.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatpt(data,win,T,params)">CrossSpecMatpt</a>	</li><li><a href="cohgrampt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)">cohgrampt</a>	Multi-taper time-frequency coherence - two point processes given as times</li><li><a href="mtdspecgrampt.html" class="code" title="function [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params)">mtdspecgrampt</a>	Multi-taper derivative time-frequency spectrum - point process times</li><li><a href="mtspecgrampt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampt(data,movingwin,params,fscorr)">mtspecgrampt</a>	Multi-taper time-frequency spectrum - point process times</li><li><a href="../../../chronux_2_10/test/testscript.html" class="code" title="">testscript</a>	function testscript(pname,direction,movingwin,segave,params,fscorr)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function data=extractdatapt(data,t,offset)</a>
+0002 <span class="comment">% Extract segements of spike times between t(1) and t(2)</span>
+0003 <span class="comment">% Usage: data=extractdatapt(data,t,offset)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Input:</span>
+0006 <span class="comment">% data: structural array of spike times for each channel/trial or a single</span>
+0007 <span class="comment">%       array of spike times</span>
+0008 <span class="comment">% t   : time as a 2d vector [t(1) t(2)]</span>
+0009 <span class="comment">% offset: 0/1 - if 1, store the spike times relative to start of window i.e. t(1)</span>
+0010 <span class="comment">%         if 0, don't reset the times. Default 0.</span>
+0011 <span class="comment">% Note that all times can be in arbitrary units. But the units have to be</span>
+0012 <span class="comment">% consistent. So, if E is in secs, win, t have to be in secs, and Fs has to</span>
+0013 <span class="comment">% be Hz. If E is in samples, so are win and t, and Fs=1. In case of spike</span>
+0014 <span class="comment">% times, the units have to be consistent with the units of data as well.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Output:</span>
+0017 <span class="comment">% data: spike times between t(1) and t(2)</span>
+0018 <span class="keyword">if</span> nargin &lt; 2; error(<span class="string">'Need data and times'</span>); <span class="keyword">end</span>;
+0019 <span class="keyword">if</span> t(1) &lt; 0 || t(2)&lt;=t(1);
+0020     error(<span class="string">'times cannot be negative and t(2) has to greater than t(1)'</span>);
+0021 <span class="keyword">end</span>;
+0022 <span class="keyword">if</span> nargin &lt; 3 || isempty(offset); offset=0; <span class="keyword">end</span>;
+0023 <span class="keyword">if</span> isstruct(data); 
+0024     C=length(data);
+0025 <span class="keyword">elseif</span> min(size(data))~=1; 
+0026     error(<span class="string">'Can only accept single vector data unless it is a struct array'</span>); 
+0027 <span class="keyword">else</span>
+0028     C=1;
+0029     data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data);
+0030 <span class="keyword">end</span>;
+0031 <span class="comment">%fnames=fieldnames(data);</span>
+0032 d2(1:C)=struct(<span class="string">'times'</span>,[]);
+0033 <span class="keyword">for</span> c=1:C,
+0034     <span class="keyword">if</span> isstruct(data)
+0035        fnames=fieldnames(data);
+0036        eval([<span class="string">'dtmp=data(c).'</span> fnames{1} <span class="string">';'</span>])
+0037     <span class="keyword">else</span>
+0038        dtmp=data(:);
+0039     <span class="keyword">end</span>
+0040 <span class="comment">%     eval(['dtmp=data(c).' fnames{1} ';' ])</span>
+0041     sp=dtmp(dtmp&gt;=t(1) &amp; dtmp&lt;t(2));
+0042     <span class="keyword">if</span> offset==1; d2(c).times=sp-t(1); 
+0043     <span class="keyword">else</span> d2(c).times=sp;<span class="keyword">end</span>
+0044 <span class="keyword">end</span>;
+0045 data=d2;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

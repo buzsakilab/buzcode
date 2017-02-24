@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of rsum</title>
+  <meta name="keywords" content="rsum">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>rsum
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function z = rsum(fit) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ function to extract log-likelihood and degrees-of-freedom
+ from locfit fit.
+
+ order of returned vector:   df0 df1 llk.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="aic.html" class="code" title="function g=aic(varargin)">aic</a>	</li><li><a href="gcv.html" class="code" title="function g=gcv(varargin)">gcv</a>	</li><li><a href="lcv.html" class="code" title="function g=lcv(varargin)">lcv</a>	</li><li><a href="lf_censor.html" class="code" title="function fit = lf_censor(x,y,cens,varargin)">lf_censor</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function z = rsum(fit)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% function to extract log-likelihood and degrees-of-freedom</span>
+0004 <span class="comment">% from locfit fit.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% order of returned vector:   df0 df1 llk.</span>
+0007 <span class="comment">%</span>
+0008 
+0009 fp = fit.fit_points;
+0010 gf = fp.kappa;
+0011 
+0012 z = gf([2 3 1]);
+0013 
+0014 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Range</title>
+  <meta name="keywords" content="Range">
+  <meta name="description" content="Returns TSD timestamps">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; Range.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>Range
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Returns TSD timestamps</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function R = Range(tsa, tsflag) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Returns TSD timestamps
+ 
+  USAGE:
+  R = Range(tsa)
+  R = Range(tsa, tsflag)
+  
+  OPTIONS:
+  tsflag - if 'ts' returns time in timestamps (default),
+          if 'sec' returns time in sec
+          if 'ms' returns time in ms</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="CrossCorr.html" class="code" title="function Cr = CrossCorr(tsa, tsb, binsize, nbins, varargin)">CrossCorr</a>	Computes cross-correlation between TSD objects</li><li><a href="FindPeaks.html" class="code" title="function p = peaks(tsa, varargin)">FindPeaks</a>	Get peaks in data</li><li><a href="Restrict.html" class="code" title="function [R, il] = Restrict(tsa, varargin)">Restrict</a>	Restrict TSD to a new timestamp</li><li><a href="cat.html" class="code" title="function tsdOUT = cat(varargin)">cat</a>	Concatenation of TSD objects</li><li><a href="instantRate.html" class="code" title="function ir = instantRate(tsa, TimeUnits)">instantRate</a>	Computes instantaneous rate as the inverse of inter-event interval</li><li><a href="interp_missing.html" class="code" title="function tsi = interp_missing(tsa, TimeUnits, varargin)">interp_missing</a>	Interpolate missing values in continuously sampled tsd</li><li><a href="intervalFun.html" class="code" title="function im = intervalFun(tsa, is, func, varargin)">intervalFun</a>	im = intervalFun(tsa, is, func, options) computes mean of tsa data in each of the intervals in isw</li><li><a href="intervalMean.html" class="code" title="function im = intervalMean(tsa, is, varargin)">intervalMean</a>	Computes mean of of data in each of subset of a given interval</li><li><a href="intervalSplit.html" class="code" title="function S = intervalSplit(tsa, is, varargin);">intervalSplit</a>	Returns a cell array of tsd object, one for each subset of a given interval</li><li><a href="length.html" class="code" title="function l = length(tsa)">length</a>	Returns number of elements in tsa (overoads length function)</li><li><a href="median_dt.html" class="code" title="function [mdt, n_missing] = median_dt(tsa, TimeUnits)">median_dt</a>	Find the median value of inter-event interval</li><li><a href="peaks.html" class="code" title="function p = peaks(tsa, varargin)">peaks</a>	Get peaks in data</li><li><a href="smooth.html" class="code" title="function S = smooth(tsa, l, varargin)">smooth</a>	Smooth a TSD</li><li><a href="subset.html" class="code" title="function tss = subset(tsa, ix);">subset</a>	Returns tsd of a subset of input</li><li><a href="thresholdIntervals.html" class="code" title="function is = thresholdIntervals(tsa, thr, varargin)">thresholdIntervals</a>	Returns intervals in which a TSD is above (below) threshold</li><li><a href="timeDeriv.html" class="code" title="function S = timeDeriv(tsa, varargin)">timeDeriv</a>	TimeDerivative of a tsd</li><li><a href="triggeredDataMat.html" class="code" title="function M = triggeredDataMat(tsa, t, nbBins,varargin);">triggeredDataMat</a>	Returns a event-by-events matrix of Data component triggered on a reference (TODO!)</li><li><a href="triggeredMeanData.html" class="code" title="function [tmd] = triggeredMeanData(tsa, events, tmax, varargin)">triggeredMeanData</a>	Event-triggered mean  of the Data component, triggered on events (TODO)</li><li><a href="unique.html" class="code" title="function t = unique(tsa)">unique</a>	Eliminates points with the same timestamps</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function R = Range(tsa, tsflag)</a>
+0002 
+0003 <span class="comment">% Returns TSD timestamps</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%  USAGE:</span>
+0006 <span class="comment">%  R = Range(tsa)</span>
+0007 <span class="comment">%  R = Range(tsa, tsflag)</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%  OPTIONS:</span>
+0010 <span class="comment">%  tsflag - if 'ts' returns time in timestamps (default),</span>
+0011 <span class="comment">%          if 'sec' returns time in sec</span>
+0012 <span class="comment">%          if 'ms' returns time in ms</span>
+0013 
+0014 
+0015 <span class="comment">% ADR</span>
+0016 <span class="comment">% version L4.1</span>
+0017 <span class="comment">% status: PROMOTED</span>
+0018 
+0019 <span class="comment">% v4.1 28 oct 1998 flag no longer optional.</span>
+0020   <span class="keyword">if</span> nargin == 2
+0021     <span class="keyword">if</span> isa(tsflag, <span class="string">'units'</span>)
+0022       ;
+0023       
+0024     <span class="keyword">elseif</span> isa(tsflag, <span class="string">'char'</span>)
+0025       tsflag = time_units(tsflag);
+0026     <span class="keyword">else</span>
+0027       error(<span class="string">'tsflag must be time_units, or string'</span>);
+0028     <span class="keyword">end</span>
+0029     
+0030   <span class="keyword">else</span> 
+0031     tsflag = tsa.time_unit; <span class="comment">%defaults to ts</span>
+0032   <span class="keyword">end</span>
+0033     
+0034   cnvrt = convert(tsa.time_unit, tsflag);
+0035   
+0036   <span class="keyword">if</span> cnvrt ~= 1
+0037     R = tsa.t * cnvrt;
+0038   <span class="keyword">else</span>
+0039     R = tsa.t;
+0040   <span class="keyword">end</span>
+0041 
+0042</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

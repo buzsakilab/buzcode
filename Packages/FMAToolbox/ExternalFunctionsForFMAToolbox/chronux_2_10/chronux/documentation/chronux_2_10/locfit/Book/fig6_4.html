@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig6_4</title>
+  <meta name="keywords" content="fig6_4">
+  <meta name="description" content="Local Regression and Likelihood, Figure 6.4.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig6_4
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 6.4.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 6.4.
+ Author: Catherine Loader
+
+ Local smooth of CO2 dataset. Estimate the main trend,
+ then use periodic smoothing of the residuals to estimate
+ the annual effect. Add main trend and periodic components
+ to get overall smooth.
+
+ A periodic smooth is specified by 'style','a'.
+ Note that year+month/12 scales the predictor to have a period
+ of 1. The 'scale' argument to locfit() is period/(2*pi).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/fitted.html" class="code" title="function y = fitted(fit)">fitted</a>	Fitted values from a locfit object.</li><li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="../../../chronux_2_10/locfit/m/residuals.html" class="code" title="function y = residuals(fit,type)">residuals</a>	Residuals (or a few other things) from a locfit() fit.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 6.4.</span>
+0002 <span class="comment">% Author: Catherine Loader</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Local smooth of CO2 dataset. Estimate the main trend,</span>
+0005 <span class="comment">% then use periodic smoothing of the residuals to estimate</span>
+0006 <span class="comment">% the annual effect. Add main trend and periodic components</span>
+0007 <span class="comment">% to get overall smooth.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% A periodic smooth is specified by 'style','a'.</span>
+0010 <span class="comment">% Note that year+month/12 scales the predictor to have a period</span>
+0011 <span class="comment">% of 1. The 'scale' argument to locfit() is period/(2*pi).</span>
+0012 
+0013 load co2;
+0014 fit1 = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(year+month/12,co2,<span class="string">'alpha'</span>,0.5,<span class="string">'deg'</span>,1);
+0015 res = <a href="../../../chronux_2_10/locfit/m/residuals.html" class="code" title="function y = residuals(fit,type)">residuals</a>(fit1);
+0016 fit2 = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(year+month/12,res,<span class="string">'alpha'</span>,[0 2],<span class="string">'style'</span>,<span class="string">'a'</span>,<span class="string">'scale'</span>,1/(2*pi));
+0017 f1 = <a href="../../../chronux_2_10/locfit/m/fitted.html" class="code" title="function y = fitted(fit)">fitted</a>(fit1);
+0018 f2 = <a href="../../../chronux_2_10/locfit/m/fitted.html" class="code" title="function y = fitted(fit)">fitted</a>(fit2);
+0019 figure(<span class="string">'Name'</span>,<span class="string">'fig6_4: CO2 dataset local smoothing'</span> );
+0020 plot(year+month/12,f1+f2);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

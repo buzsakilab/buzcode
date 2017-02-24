@@ -1,0 +1,53 @@
+function A = CorrMaze(A)
+
+binSize = 1; %in ms
+nbBins = 100% +/- 50ms
+
+A = getResource(A,'MazeEpoch');
+mazeEpoch = mazeEpoch{1};
+
+A = getResource(A,'SpikeData');
+nbCells = length(S);
+
+A = getResource(A,'CellNames');
+
+A = registerResource(A, 'XCorrMaze', 'numeric', {[], []}, ...
+    'xCorrMaze', ['XCorr during Maze']);
+
+resdir = [parent_dir(A), filesep 'XCorr' filesep 'Maze' filesep 'Cross'];
+[p,ds,e] = fileparts(current_dir(A));
+mkdir(resdir,ds)
+
+for i=1:nbCells
+
+	display(i)
+
+	t0 = Range(Restrict(S{i},mazeEpoch));
+	l0 = length(t0);
+
+	if l0>0
+	
+		for j=i:nbCells
+		
+			t = Range(Restrict(S{j},mazeEpoch));
+			if length(t)>0
+				[C,B] = CrossCorr(t0,t,1,nbBins);
+				C(nbBins/2+1) = 0;
+				
+				fh = figure(1);clf
+				bar(B,C);
+				
+				saveas(fh,[resdir filesep ds filesep ds '_' cellnames{i} '_' cellnames{j} 'XCorrMaze300ms_1msBin'],'png')
+				xCorrMaze(i,j,:) = C;
+
+			end
+	
+		end
+
+	end
+
+end
+
+xCorrMaze = {xCorrMaze};
+
+A = saveAllResources(A);

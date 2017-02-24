@@ -1,0 +1,10 @@
+function M = spkLogcorrcoef(S,binSize,is)
+
+%  Y = spkLogTransform(X)
+%  z-transform of the log of the column vector X. If X is a matrix, z-transform of each vector is computed
+
+Q = MakeQfromS(S,binSize);
+Q = Restrict(Q,is);
+M = full(nancorrcoef(zscore(log(Data(Q)+10^-6))));
+M(isnan(M))=0;
+M = M - diag(diag(M));

@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of MakeQfromS</title>
+  <meta name="keywords" content="MakeQfromS">
+  <meta name="description" content="Spike train binning">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsdArray</a> &gt; MakeQfromS.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsdArray&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>MakeQfromS
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Spike train binning</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function Q = MakeQfromS(S,bin,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Spike train binning
+      
+      USAGE:
+      Q = MakeQfromS(S, bin,options)
+ 
+      INPUTS:
+      S - a cell array of ts objects
+      bin     - a bin size (in the same time_units as S).    
+            Bins are generated automatically and begin with first spike occurence
+          - an intervalSet object fixing the bounds of each bin
+          - a TS whose timestamps are the bounds of the bins 
+             example:    
+              t = [0;10;20], bin = ts(t);
+              S is binned on [0 10], [10 20].    
+            This last calling method is useful, for example, 
+            when bins have to be phase-locked to an oscillation:
+            bin = ts(osc_peaks)
+            it then becomes a 'phase' binning 
+            (see 'Subbins' in OPTIONS to see how to bin each cycle)
+  
+            Warning when bins are defined with TS:
+            the 'rate' option (see below) is most certainly required as the bin size is not constant.
+
+    OPTIONS:
+    'Rate'    - counts are expressed in instantaneous rate (Hz) if 1. 
+              Default is 0 (that is simple spike counts).
+    'Sparse'  - 1 to output a sparse matrix (useful for huge datasets), 0 otherwise (default).
+    'Subbins' - number of subbins, used only when 'bin' is a TS object.
+              Allows to sub-bin each interval bounded by the timestamps of the TS. Default is 1.
+      'T_start' - StartTime for the Q matrix
+              defaults to min(StartTime(S))
+              used only when 'bin' is a numeric
+        'T_end'   - EndTime for the Q matrix
+              defaults to max(EndTime(S))
+                used only when 'bin' is a numeric
+      'Sparse'  - 
+      OUTPUTS:
+      Q - a ctsd in which the main structure is a |t| x nCells histogram of firing rates
+
+  Inspired from the previous version by David Redish (1998) and F P. Battaglia (2004).
+  These previous versions of the code used the SPARSE command 
+  to automatically generate the binning. However, this requires 
+  unnecessary computation time as it can be more efficiently 
+  coded (and runs much faster). T_start and T_end options no
+  longer exist as the tsdArray can be restricted before 
+  or the Q matrix can be itself restricted as a any other TSD.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="End.html" class="code" title="function EnO = End(S0)">End</a>	Returns a vector containing the time of the last event of each tsd</li><li><a href="Rate.html" class="code" title="function r = Rate(S0,varargin)">Rate</a>	Returns a vector containing the time of the last event of each tsd</li><li><a href="Start.html" class="code" title="function [StO,ix] = Start(S0)">Start</a>	Returns a vector containing the time of the first event of each tsd</li><li><a href="length.html" class="code" title="function l = length(S)">length</a>	Returns number of item in the tsdArray (overload of length function)</li><li><a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>	Returns size of tsdArray (overlaod of size function)</li><li><a href="timeSpan.html" class="code" title="function is = timeSpan(S)">timeSpan</a>	Returns interval spanning the duration of the tsdArray</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Q = MakeQfromS(S,bin,varargin)</a>
+0002 
+0003 <span class="comment">% Spike train binning</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      Q = MakeQfromS(S, bin,options)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      INPUTS:</span>
+0009 <span class="comment">%      S - a cell array of ts objects</span>
+0010 <span class="comment">%      bin     - a bin size (in the same time_units as S).</span>
+0011 <span class="comment">%            Bins are generated automatically and begin with first spike occurence</span>
+0012 <span class="comment">%          - an intervalSet object fixing the bounds of each bin</span>
+0013 <span class="comment">%          - a TS whose timestamps are the bounds of the bins</span>
+0014 <span class="comment">%             example:</span>
+0015 <span class="comment">%              t = [0;10;20], bin = ts(t);</span>
+0016 <span class="comment">%              S is binned on [0 10], [10 20].</span>
+0017 <span class="comment">%            This last calling method is useful, for example,</span>
+0018 <span class="comment">%            when bins have to be phase-locked to an oscillation:</span>
+0019 <span class="comment">%            bin = ts(osc_peaks)</span>
+0020 <span class="comment">%            it then becomes a 'phase' binning</span>
+0021 <span class="comment">%            (see 'Subbins' in OPTIONS to see how to bin each cycle)</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">%            Warning when bins are defined with TS:</span>
+0024 <span class="comment">%            the 'rate' option (see below) is most certainly required as the bin size is not constant.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">%    OPTIONS:</span>
+0027 <span class="comment">%    'Rate'    - counts are expressed in instantaneous rate (Hz) if 1.</span>
+0028 <span class="comment">%              Default is 0 (that is simple spike counts).</span>
+0029 <span class="comment">%    'Sparse'  - 1 to output a sparse matrix (useful for huge datasets), 0 otherwise (default).</span>
+0030 <span class="comment">%    'Subbins' - number of subbins, used only when 'bin' is a TS object.</span>
+0031 <span class="comment">%              Allows to sub-bin each interval bounded by the timestamps of the TS. Default is 1.</span>
+0032 <span class="comment">%      'T_start' - StartTime for the Q matrix</span>
+0033 <span class="comment">%              defaults to min(StartTime(S))</span>
+0034 <span class="comment">%              used only when 'bin' is a numeric</span>
+0035 <span class="comment">%        'T_end'   - EndTime for the Q matrix</span>
+0036 <span class="comment">%              defaults to max(EndTime(S))</span>
+0037 <span class="comment">%                used only when 'bin' is a numeric</span>
+0038 <span class="comment">%      'Sparse'  -</span>
+0039 <span class="comment">%      OUTPUTS:</span>
+0040 <span class="comment">%      Q - a ctsd in which the main structure is a |t| x nCells histogram of firing rates</span>
+0041 <span class="comment">%</span>
+0042 <span class="comment">%  Inspired from the previous version by David Redish (1998) and F P. Battaglia (2004).</span>
+0043 <span class="comment">%  These previous versions of the code used the SPARSE command</span>
+0044 <span class="comment">%  to automatically generate the binning. However, this requires</span>
+0045 <span class="comment">%  unnecessary computation time as it can be more efficiently</span>
+0046 <span class="comment">%  coded (and runs much faster). T_start and T_end options no</span>
+0047 <span class="comment">%  longer exist as the tsdArray can be restricted before</span>
+0048 <span class="comment">%  or the Q matrix can be itself restricted as a any other TSD.</span>
+0049 
+0050 <span class="comment">% copyright (c) 2009 Adrien Peyrache adrien.peyrache@gmail.com</span>
+0051 <span class="comment">% This software is released under the GNU GPL</span>
+0052 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0053 
+0054 opt_varargin = varargin;
+0055 
+0056 defined_options = dictArray({    { <span class="string">'Rate'</span>, {0, {<span class="string">'numeric'</span>} } }
+0057                     { <span class="string">'Sparse'</span>, {0, {<span class="string">'numeric'</span>} } }
+0058                     { <span class="string">'Subbins'</span>, {1, {<span class="string">'numeric'</span>} } }    
+0059                     { <span class="string">'Sparse'</span>, {0, {<span class="string">'numeric'</span>} } }    
+0060 
+0061                     });
+0062 
+0063 getOpt;
+0064 
+0065 nbCells = <a href="length.html" class="code" title="function l = length(S)">length</a>(S.C); <span class="comment">% Number of Cells</span>
+0066 
+0067 <span class="comment">% in function of the type of 'bin', generates a vector of bin start time 'st' and end times 'en'</span>
+0068 
+0069 <span class="keyword">if</span> isa(bin,<span class="string">'numeric'</span>)
+0070 
+0071     is = <a href="timeSpan.html" class="code" title="function is = timeSpan(S)">timeSpan</a>(S);
+0072     T_start = <a href="Start.html" class="code" title="function [StO,ix] = Start(S0)">Start</a>(is);
+0073     T_end = <a href="End.html" class="code" title="function EnO = End(S0)">End</a>(is);
+0074     l = (T_end-T_start)/bin;
+0075     T_end = T_start+bin*ceil(l);
+0076     st = [T_start:bin:T_end-bin]';
+0077     en = st+bin;
+0078 
+0079 <span class="keyword">elseif</span>    isa(bin,<span class="string">'ts'</span>)
+0080 
+0081     rg = Range(bin);
+0082     st = [];
+0083 
+0084     <span class="keyword">for</span> i=1:<a href="length.html" class="code" title="function l = length(S)">length</a>(rg)-1 <span class="comment">%now define each bin</span>
+0085     
+0086         ts = rg(i);
+0087         te = rg(i+1);
+0088         dt = (te-ts)/Subbins;
+0089         dt = [ts:dt:te-dt];
+0090         st = [st;dt'];
+0091     
+0092     <span class="keyword">end</span>
+0093 
+0094     en = [st(2:end);rg(end)];
+0095 
+0096 <span class="keyword">elseif</span> isa(bin,<span class="string">'intervalSet'</span>)
+0097     st = <a href="Start.html" class="code" title="function [StO,ix] = Start(S0)">Start</a>(bin);
+0098     en = <a href="End.html" class="code" title="function EnO = End(S0)">End</a>(bin);
+0099 <span class="keyword">end</span>
+0100 
+0101 <span class="comment">% Creates the bin matrix</span>
+0102 dQ = zeros(<a href="length.html" class="code" title="function l = length(S)">length</a>(st),nbCells);
+0103 
+0104 <span class="keyword">for</span> i=1:<a href="length.html" class="code" title="function l = length(S)">length</a>(S)
+0105     spk = Range(S.C{i});
+0106     l = <a href="length.html" class="code" title="function l = length(S)">length</a>(spk);
+0107       
+0108     <span class="keyword">if</span> l
+0109       ix =1; <span class="comment">%index of spike times. Begins at 1!</span>
+0110       <span class="comment">% runs through all bins</span>
+0111       <span class="keyword">for</span> j=1:<a href="length.html" class="code" title="function l = length(S)">length</a>(st)
+0112           
+0113           <span class="comment">% the idea in this piece of code is to scan all spikes</span>
+0114           <span class="comment">% and check if it is in the given bin. as in the</span>
+0115           <span class="comment">% intervalCount method of TSD objects.</span>
+0116           <span class="comment">% but calling this method each time slows down this function.</span>
+0117 
+0118           <span class="keyword">while</span> spk(ix)&lt;st(j) &amp; ix&lt;l 
+0119               ix = ix+1;
+0120           <span class="keyword">end</span>
+0121           <span class="keyword">while</span> spk(ix)&lt;=en(j) &amp; ix&lt;l 
+0122               dQ(j,i) = dQ(j,i)+1;
+0123               ix = ix+1;
+0124           <span class="keyword">end</span>
+0125           <span class="keyword">if</span> ix==l &amp; spk(ix)&lt;=en(j) &amp; spk(ix)&gt;st(j) 
+0126               dQ(j,i) = dQ(j,i)+1;
+0127           <span class="keyword">end</span>
+0128 
+0129       <span class="keyword">end</span>
+0130 
+0131     <span class="keyword">end</span>
+0132 <span class="keyword">end</span>
+0133 
+0134 <span class="keyword">if</span> Sparse
+0135     dQ = sparse(dQ);
+0136 <span class="keyword">end</span>
+0137 
+0138 <span class="keyword">if</span> <a href="Rate.html" class="code" title="function r = Rate(S0,varargin)">Rate</a>
+0139     duration = (en-st)/10000;
+0140     dQ = dQ./(duration*ones(1,<a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>(dQ,2)));
+0141 <span class="keyword">end</span>
+0142 
+0143 Q = tsd((en+st)/2,dQ);</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

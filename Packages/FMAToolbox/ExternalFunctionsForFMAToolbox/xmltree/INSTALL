@@ -1,0 +1,45 @@
+INSTALLING XMLTree
+------------------
+
+This toolbox requires MATLAB 5.3 or later and should work on all
+platforms.
+
+1) Download <xmltree.zip> from here:
+
+   <http://www.artefact.tk/software/matlab/xml/>
+
+2) Extract files from the zip archive:
+
+>> unzip xmltree.zip
+
+3) Add the new path to Matlab (assuming you extracted the toolbox
+in '/home/flandin/matlab/'):
+
+>> addpath('/home/flandin/matlab/xmltree/');
+
+Note that the directory @xmltree doesn't need to be added in Matlab 
+path, since it's a class directory. 
+
+4) XMLTree package uses one mex-file for the parsing of XML data: 
+this mex-file is provided for Windows, Linux and Solaris platforms.
+If you need to compile it for your own architecture, the command is:
+
+>> cd /home/flandin/matlab/@xmltree/private/
+>> mex -O xml_findstr.c
+
+If never this compiled function doesn't work or behaves badly, 
+comment the line #define __HACK_MXCHAR__ at the beginning of the 
+file, and compile it again.
+
+5) You can now launch demonstration mfiles:
+
+>> xmldemo1
+>> xmldemo2
+>> xmldemo3
+
+
+If you've got troubles when installing this XML toolbox, you can 
+send me an email (Guillaume@artefact.tk) explaining precisely your
+problem.
+Suggestions for improvement and fixes are always welcome, although 
+no guarantee is made whether and when they will be implemented.

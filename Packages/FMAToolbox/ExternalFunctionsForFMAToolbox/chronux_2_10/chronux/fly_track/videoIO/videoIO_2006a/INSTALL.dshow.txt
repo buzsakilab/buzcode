@@ -1,0 +1,132 @@
+This file describes how to compile the MEX plugins for videoIO on a 32-bit 
+Windows platform.  Specifically, videoReader_DirectShow.mexw32 and
+videoWriter_DirectShow.mexw32 will be created.  See README.txt for a more 
+general description of this library and tips on using it.
+
+Users of 32-bit Windows XP or Windows Vista may try skipping to the 
+"Matlab Path" section of this document since precompiled binary mex files are
+provided with this distribution.  If there are any errors in running the test
+script or if you are using 64-bit Matlab, read this whole document.
+
+Prerequisites:
+--------------
+This procedure has only been tested with the following software:
+
+ * Windows XP Pro 32-bit        
+      It should work with Win2k+, maybe even Win95.  To try it out, you'll need
+      to modify WINVER in a few source files.  It should also work fine on 
+      32-bit Windows Vista.  64-bit XP Pro and 64-bit Vista running 32-bit 
+      Matlab should have no problems.  Running 64-bit Matlab is likely to work,
+      but as of July 2007, there are very few 64-bit codecs available.  If you 
+      get it to work on one of these platforms, please let us know.  You will 
+      probably need administrative privileges to install the 3rd party 
+      libraries. 
+      
+ * Matlab R2006a
+      It should work on 6.5 or later, but we have only tested it on R2006a. 
+      
+ * Microsoft Visual Studio 2005 
+      It should work with older versions, perhaps ones as old as Visual 
+      Studio 6.  Let us know if you get it to work with an older version.
+    
+ * Microsoft Windows Server 2003 SP1 Platform SDK (R2)
+ * Microsoft DirectX SDK (April 2006)
+      Only the DirectShow option is necessary for the Platform SDK.  Download 
+      these from http://msdn.microsoft.com (try searching for "Platform SDK" 
+      and "DirectX SDK" at their site if you get stuck--they keep moving these 
+      downloads around so we do not include a more specific link here).  If you 
+      use other versions of the DirectX SDK, it will probably work.  Older 
+      versions of the Platform SDK require fixing some compiler 
+      incompatibilities in Microsoft's source code (they're straightforward).  
+      If you need to use an older version, use the instructions below and 
+      adjust the INCLUDE and LIB environment variables whenever the compilation 
+      fails.
+     
+ * Windows Media 9 codec 
+      Use Windows Update (http://update.microsoft.com) to obtain the most 
+      recent version of Windows Media Player.  This codec is needed for some 
+      tests.
+ 
+ * An MPEG4 codec such as DivX, XviD, 3ivx 
+ * An H264-compatible codec such as x264
+      These codecs are not strictly necessary, but some tests will softly fail 
+      if they are not installed.  Here are some places to go for fully legal 
+      and free codecs (as of June 2007):
+          http://www.3ivx.com/
+          http://www.xvid.org/
+          http://sourceforge.net/projects/ffdshow-tryout/
+          http://developers.videolan.org/x264.html
+ 
+ * Knowledge
+      We assume you have at least a passing familiarity with compiling
+      C/C++ programs and that you know what environment variables are (or 
+      can follow directions exactly).  
+
+       
+Installation Instructions:
+--------------------------
+  1) Add the following paths to your INCLUDE environment variable 
+     (Start -> right click on "My Computer" -> "Properties" menu item -> 
+     "Advanced" tab -> "Environment Variables" button; edit the INCLUDE 
+     variable and add each item to the end, separating each item with a 
+     semicolon, if it is not already there).
+       C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Include
+       C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses
+       %DXSDK_DIR%\Include
+     If the DXSDK_DIR variable does not exist, then you'll need to create it.  
+     The file ddraw.h should be found in %DXSDK_DIR%\Include.
+       
+  2) Add the following to the LIB environment variable
+       C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Lib
+       C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses\WIN2000_RETAIL
+       
+  3) Add the following to the PATH environment variable
+       C:\Program Files\Microsoft Visual Studio 8\VC\bin
+       
+  4) Accept the environment variable modifications (click "OK" on the dialog 
+     box so that only the "System Properties" dialog is still up, or no 
+     dialogs).
+       
+  5) Run the following commands from the command prompt (Start -> Run...
+     -> type in "cmd.exe" without quotes):
+       cd "C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses"
+       "C:\Program Files\Microsoft Visual Studio 8\VC\vcvarsall.bat"
+       nmake NODEBUG=1 _CRT_SECURE_NO_DEPRECATE=1
+     
+  6) Start a *new* Matlab session.  You must relaunch Matlab so that it can see
+     the new values of the environment variables you have created and/or 
+     modified.  Any time you modify environment variables used by Matlab (or 
+     programs it calls), you must completely exit Matlab and restart it.
+     
+  7) In Matlab, run the following if you have not already done so:
+       mex -setup
+     then edit the file
+       C:\Documents and Settings\[your username]\Application Data\MathWorks\MATLAB\R2006a\mexopts.bat
+     replacing [your username] with... your username.  On the COMPFLAGS line, 
+     add the following:
+       -D_CRT_SECURE_NO_DEPRECATE
+       
+  8) In Matlab, run 
+       buildVideoIO
+
+Matlab Path
+-----------
+In Matlab add the base installation directory (but not all subdirectories) to
+the path.  In the GUI this can be done by 
+  File -> Set Path... -> Add Folder...
+From the Matlab command line this can be done using the "addpath" and
+"savepath" functions. 
+ 
+Testing
+-------
+In Matlab, go to the tests/ subdirectory and run
+  testAll
+
+Usage:
+------
+See README.txt for a simple usage example.  Type 
+  help buildVideoIO
+  help videoReader
+  help videoWriter
+  help videoread
+at the Matlab prompt for user-level documentation.  

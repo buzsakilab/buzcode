@@ -1,0 +1,311 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html>
+  <head>
+    <title>classify_spectra help</title>
+
+<style>
+
+</style>
+  </head>
+
+
+
+  <body>
+    <h1>classify_spectra help</h1>
+<p>
+<ul>
+ <li><a href="#overview">Overview of classify_spectra</a></li>
+ <li><a href="#load">Loading segments from a directory</a></li>
+    <ul>
+        <li>Prerequisite: wave_browser generated "*.seg.txt" file</li>
+        <li>Selecting a directory</li>
+        <li>Loading a directory</li>
+     </ul>
+ <li><a href="#navigate">Navigating the segments</a></li>
+    <ul>
+        <li>Previous and Next buttons</li>
+        <li>Browsing all segments</li>
+        <li>Selecting a class member</li>
+    </ul>
+ <li><a href="#classify">Classifying a segment</a></li>
+ <ul>
+  <li> Defining a new class</li>
+  <li> Selecting a defined class</li>
+  <li> Declassifying a segment</li>
+  <li> Quick mode</li>
+  <li> Auto-classifying</li>
+ </ul>
+ <li><a href="#classview">Class view</a></li>
+ <ul>
+  <li> Viewing members of a class</li>
+  <li> Removing a class</li>
+  
+ </ul>
+ <li><a href="#compare">Comparison mode</a></li>
+ <ul>
+     <li>Entering comparison mode</li>
+     <li>Exiting comparison mode</li>
+     <li>Zooming spectra</li>
+ </ul>
+ <li><a href="#classmembers">Class members view</a></li>
+ <ul>
+  <li>Typifying a class</li>
+  <li>Renaming a class</li>
+  <li>Merging two classes</li>
+  <li>Navigating to next class</li>
+ </ul>
+ <li><a href="#configure">Configuring classify_spectra</a></li>
+ <ul>
+  <li>View parameters</li>
+  <li>Parameters for computing spectra</li>
+ </ul>
+ </ul>
+ <hr>
+
+<h2><a name="overview"/>Overview of classify_spectra</h2>
+
+<h2><a name="load"/>Loading segments from a directory</a></h2>
+
+<p>The first task in classifying segments is to load predefined
+segments in a directory using the <b>Load</b> button. Segments are
+predefined by the wave_browser software which generates "*.seg.txt"
+files. If you have just "*.wav" files in a directory and no
+"*.seg.txt" files then no segments will be loaded. A directory to load
+can be selected using the "<b>...</b>" button. Classify_spectra will
+load all defined segments from a directory. Each directory should be
+considered as a separate database.</p>
+
+<p>If you are successful loading a directory a progress bar will
+appear.  Depending on the number of segments and the speed of the
+processor computing all the spectragrams for the segments can take a
+considerable amount of time. When one is finished precomputing the
+segments click the <b>Save</b> button. This will make it unnecessary to
+recompute the spectra the next time the directory is loaded.</p>
+
+<h2><a name="navigate"/>Navigating the segments</h2>
+
+<p>There are several methods to navigate the segments in a
+directory. The current selected segment is shown on the left. To
+change the current segment use can use the <b>Next</b> and
+<b>Previous</b> buttons. Segments are ordered time sequentially and
+are grouped by the wave file they originated from. Above the larger
+view of the segment is information about the current segment. The
+information gives the current segment number, the wav file the segment
+comes from, and the segment length.</p>
+
+<p>For directories with a large number of segments navigating with the
+<b>Next</b> and <b>Previous</b> buttons can be slow. By selecting
+<b>all</b> from the <b>View</b> drop-down menu all segments in the
+directory are shown on the right axes. Clicking on the icon of the
+spectragram will make the selected segment the current segment. If
+there are large number of segments in a directory all the defined
+segments will not be shown. One can navigate the segments in a
+directory by clicking the <b>Next row</b> and <b>Previous row</b>
+buttons.
+</p>
+
+<p>A third method exists for navigating segments is in the <b>class
+members</b> view in the <b>View</b> drop-down menu. For a defined
+class you can click on a class member on the right axes. </p>
+
+<img width="768" height="570" src="opening_view-scaled.png"/>
+<h2><a name="classify"/>Classifying a segment</h2>
+
+<p>There are several methods for classifying a segments. The most
+direct way of classifying the current segment on the left is to use
+the <b>Classify</b> button.  A <b>New Class</b> button appears
+adjacent to the disabled <b>Classify</b> button. If no classes have
+ been defined, the axes on the right are blank, clicking <b>New
+Class</b>. By generating a new class will bring you into the <b>class
+view</b>. Notice that the classify button has been changed to a
+Declassify button.  If you choose not to define a class clicking
+anywhere on the blank axes will reenable the <b>Classify</b> button and
+hide the <b>New Class</b> button.</p>
+
+<p>If you already have classes defined click on the class on right
+will classify the segment. By default the classes on the right are
+organized in descending segment length. If there are more classes than
+fit on the current axes the closest matching size segment
+automatically will be placed in the middle of the axes.  Using the
+<b>Sort</b> drop-down menu you can also sort the classes <b>by
+popularity</b> or by the <b>original</b> order of the defined classes.
+Popularity is defined by the number of members which belong to that
+class.</p>
+
+By clicking on the <b>Declassify</b> button will remove the
+classification for the current segment. The current segment can now be
+reclassified or skipped. While navigating through the segments you can
+see whether a segment is classified by the label
+<b>Declassify</b>. Unclassified segments will have the label
+<b>Classify</b>. To view all unclassified segments select from the
+<b>View</b> drop-down menu <b>unclassified</b>.</p>
+
+<p>By clicking the <b>Save</b> button along the way your
+classification will be saved. </P>
+
+
+<p>An alternative and faster method for classifying exists. By
+clicking on the <b>Quick mode</b> toggle button the quick mode for
+classification is entered. Quick mode will automatically forward to
+the next unclassified segment. Three buttons will appear on the top
+right to facilitate faster classification. The <b>New</b> button
+generates a new class, the <b>Skip</b> button advances to the the next
+unclassified segment, and <b>Review last</b> takes you out of quick
+mode and back to the last classified segment. To classify in quick
+mode just click a class on the right. After each classification the
+next unclassified segment will appear. At any time quick mode can be
+exited by clicking the <b>Quick mode</b> toggle button. If all
+segments are classified quick mode will be automatically exited. </p>
+
+<p>An additional method for classification exists when in comparison
+mode. By clicking on the enabled <b>Classify</b> button the user will
+classify the current segment as the class that is being compared
+to. This will skip the normal classify view.</p>
+
+<p>The final method for classifying is to click the <b>Auto Classify</b>
+Button which will allow the classification to be made automatically.</p>
+
+
+<img width="217" height="449" src="auto_classify-scaled.png"/>
+
+<h2><a name="classview"/>Class view</h2>
+
+<p>Class view allows you to view all defined classes on the right
+axes. Class view is entered by selecting <b>class view</b> from the
+<b>View</b> drop-down menu. By clicking on a class you can view all
+members of the class. This view is known as class members mode.  In
+class view mode one can also remove a defined class and declassify all
+class members. By clicking the <b>Remove Class</b> button and
+selecting a class on the right a prompt will appear about whether you
+want to remove the class and and all its members. By selecting
+<b>Yes</b> the class will be removed.</p> 
+
+<img width="768" height="570" src="class_view-scaled.png"/>
+
+<h2><a name="compare">Comparison mode</h2>
+
+<p>To compare a segment against a class click on the <b>Compare</b>
+toggle button. The user will be presented with a class view. By
+clicking on a class on the right axes the current segment will be
+compared to the selected class. The current segment will be the first
+segment and the class being compared to will be the second class. If
+the current segment is unclassified you can classify it by clicking
+the <b>Classify</b> button on the lower left.</p>
+
+<p>When comparing the current segment clicking the <b>Compare</b>
+toggle button will not take you entirely out of the comparison
+mode. Rather you will be brought back to the class view where you can
+select another class to compare the current segment against. If the
+user wants to exit the comparison mode click the <b>Compare</b> toggle
+button a second time.</p>
+
+<p>In order to make a comparison more carefully it is useful to zoom
+in on a specific frequency range of the spectragram. The <b>Zoom
+in</b> button will zoom into the specified frequency.  The first time
+the the <b>Zoom in</b> button is hit the precomputed spectragram are
+resampled. The frequency range for the zoom can be set in the
+Configuration window.</p>
+
+
+<img width="768" height="570" src="comparison_mode-scaled.png"/>
+
+<h2><a name="classmembers"/>Class members view</h2>
+
+<p>There are two ways to view all members of a specific class. The
+first is by selecting the class in the class view. The second is to
+select <b>class members</b> from the <b>View</b> drop-down menu. When
+this is done all members belonging to the the same class as the
+currently selected segment are shown on the right. </p>
+
+<p>When a new class is defined the spectra of the first member of the
+class is used to represent or typify the class. The spectra of the
+typified segment is used in the class view and when making a
+comparison.  The segment which typifies the class can be changed in
+the class members view. By clicking the <b>Typify</b> button and
+selecting a class member on the right. When a member is successfully
+selected to typify a class the <b>Typify</b> button is reenabled. By
+clicking in the area between the class members the typifying class is
+not changed and the <b>Typify</b> button is reenabled. </p>
+
+
+<p>Each class is automatically assigned a name when a new class is
+created. The class name can be changed by clicking <b>Rename
+Class</b>. A dialog box will appear titled Edit class name where the
+name can be changed. By clicking <b>Ok</b> the name change will be
+accepted. If the name is already assigned a second dialog box will appear
+asking if you want to merge the two classes with the same name. By
+clicking <b>Yes</b> the classes will be merged.</p>
+
+<p>The next class button allows you to forward to the next class
+without leaving the class members view.</p>
+
+<img width="768" height="576" src="class_members-scaled.png"/>
+<h2><a name="configure"/>Configuring classify_spectra</h2>
+
+<p>Classify_spectra can be configured by the user. The first set of
+configuration is for how the software view manipulates spectra.</p>  
+
+<ul>
+
+<li><b>Zoom lower frequency</b> and <b>Zoom upper frequency</b> sets
+the frequency range used to resample the spectra when  <b>Zoom in</b>
+is clicked. The values should be contained within the <b>Minimum
+Frequency</b> and <b>Maximum Frequency</b> that is used to compute the
+spectragram.</li>
+
+<li><b>Classified Axes Width</b> and <b>Classified Axes Height</b>
+are resolution used for plotting the spectragrams of the segments on
+the right axes. Each spectragram is a fixed height of 100 pixels while
+the width will vary with time. The higher the numbers the more spectra
+that can appear on the axes. </li>
+
+<li><b>Fixed Scaling:</b> Normally when you resize a window the size
+of the spectragram stays constant. By enlarging the window you can
+view more spectragrams. When fixed scaling is enabled rather than keep
+the size constant when you enlarge the spectragram also increases in size.</li>
+</ul>
+
+
+<p>A spectragram is a visual representation of how the intensity of
+sound frequencies change over time. Classify_spectra uses a multitaper
+approach to compute the spectragram. The log transformed intensities
+are plotted. Parameters used to compute the spectragram can be
+modified by the user. If these parameters are changed the spectragrams
+for all the segments will need to be recomputed.</p>
+
+<ul>
+
+<li><b>Sampling Frequency:</b>  is the frequency that sound is
+sampled at in Hertz. Audio on a digital compact disc is sampled 44100
+time per second.  It is assumed that all wav files in a directory are
+sampled at the same frequency.</li>
+
+<li><b>Moving window (ms)</b> is the window size in milliseconds for
+which the intensity of the frequencies is computed by the multitaper
+based Fourier transform.</li>
+
+<li><b>Step size (ms)</b> is the step size for the moving window. The
+smaller the step size the greater the resolution of the spectragram.</li>
+
+<li><b>Smooth Parameter TW</b> is used to smooth the
+spectragram. The parameter is an integer above 1.</li>
+
+<li><b>Minimum Frequency</b> and <b>Maximum Frequency</b> is the
+frequency in Hertz range for which the intensity of the audio is
+computed. Generally this value is set between 0 and half the sampling
+frequency.
+</li>
+
+</ul>
+
+
+
+<img width="460" height="382" src="configure_classify-scaled.png"/>
+<br>
+
+<!-- Created: Mon May 15 15:30:19 EDT 2006 -->
+<!-- hhmts start -->
+Last modified: Tue May 23 10:52:39 EDT 2006
+<!-- hhmts end -->
+    </body>
+</html>

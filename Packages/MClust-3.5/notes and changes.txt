@@ -1,0 +1,107 @@
+- tsd _DONE 
+ speed up restrict? - DONE
+ mask? - DONE
+ antimask? - DONE
+ maskvalues? - DONE 
+
+- ts - DONE
+ clean code
+ speed up restrict? - DONE
+
+- ctsd - 
+ clean code - DONE
+ speed up restrict - DONE
+
+- MClust opening window
+ basics DONE.
+ next step is CalcFD - DONE
+ then transferBetweenListboxes DONE
+ - need to actually implement 
+   (1) calculate those FDs that need calculating - DONE
+   (2) load fds into data - DONE
+
+- Generalized Cutter
+ basics
+  mcconvexhull
+   - mv mcconvexhull to mccluster - DONE
+  - Undo - DONE
+
+   - make it so mccluster works - OK
+        individual cluster options - OK
+     Add_Points - DONE
+     Add_Limit - DONE
+     Delete_Limit - DONE
+     Delete_All_Limits - DONE
+     Delete_All_Points - DONE
+     Merge_With - DONE
+     Delete_Points - DONE
+
+  - add extra cluster options - OK     
+     Check_Cluster - OK
+     ShowAverageWaveform - OK
+     HistISI - OK
+     
+  - Load and Save Clusters, WriteTfiles - OK
+
+ mcconvexhull - OK
+  - real convexhull class which can save and load boundaries
+
+ KlustaKwik - OK
+
+ - move ShowContourPlot into GCOptions. - OK
+
+ - RunKKwik - OK
+ - WaveformCutter - OK
+ - Cluster quality - OK
+
+In KKwik Decision Window
+- up/down key for cluster up/down, pgup, pgdn for group
+
+--------------------------------
+Supplemental...
+
+- Batch Processing 
+ - Get condor from MvdM
+
+---------------------------------------------------
+MAJOR CHANGES
+- reconverted to keep feature data in memory.
+- changed name of "generalizedcutter" to "MClustCutter"
+- multistep undo (Thanks JCJ!)
+- moved mcconvexhull to mccluster
+- changed MClustCutter to handle multiple cluster types
+  - CTO_...
+- new mcconvexhull cluster -> if save and load will apply bounds to new data set!
+- KKwik decision window now closes on export
+- KKwik correlation is corr over all valid channels
+- KKwik correlation shows on declaration of hold
+- moved ShowContourPlot into GCOptions.
+- RunWaveFormCutter: a cluster type needs to include "Restrict_Points" as a method 
+in order to use WaveformCutter
+- key change in kkwik decision window (up, down, pgup, pgdn, k)
+
+----------------------------------------------------
+
+VERSION 3.5A
+
+- changed back to loading only displaying features
+- added concept of MClust_FeatureSources
+
+
+Amir Kashef bugs
+
+
+ - "Without choosing any limits or points, in the cluster functions
+   use the "convertcluster" to change the mccluster to the
+   mcconvexhull. " FIXED 
+
+ - "The same thing can happen if "add points" or "add limit" is chosen
+    then press "enter" before any mouse click." FIXED
+
+ - "Losing points when changing to mcconvexhull."  FIXED
+
+Ullrich Bartsch bugs
+
+ - Delete limit with no limits chokes. - FIXED
+
+ - Eval Overlap

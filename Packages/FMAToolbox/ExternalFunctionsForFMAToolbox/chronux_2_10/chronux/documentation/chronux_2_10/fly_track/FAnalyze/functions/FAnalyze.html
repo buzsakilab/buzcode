@@ -1,0 +1,803 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of FAnalyze</title>
+  <meta name="keywords" content="FAnalyze">
+  <meta name="description" content="FANALYZE">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FAnalyze --><!-- menu.html functions -->
+<h1>FAnalyze
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>FANALYZE</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function varargout = FAnalyze(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> FANALYZE 
+ For all your trajectory analysis needs! . See documentation for usage details.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="CalcCurvature.html" class="code" title="function kappa = CalcCurvature(v, vtheta, indx, dt)">CalcCurvature</a>	CALCCURVATURE</li><li><a href="CalcReorientAngle.html" class="code" title="function beta = CalcReorientAngle(vtheta, moves_indx)">CalcReorientAngle</a>	CALCREORIENTANGLE</li><li><a href="FindDuration.html" class="code" title="function out = FindDuration(indx);">FindDuration</a>	FINDDURATION</li><li><a href="runline.html" class="code" title="function y_line=runline(y,n,dn)">runline</a>	Running line fit (local linear regression)</li><li><a href="../../../../chronux_2_10/spectral_analysis/continuous/runline.html" class="code" title="function y_line=runline(y,n,dn)">runline</a>	Running line fit (local linear regression)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function FAnalyze_OpeningFcn(hObject, eventdata, handles, varargin)</a></li><li><a href="#_sub2" class="code">function varargout = FAnalyze_OutputFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub3" class="code">function ws_vars_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub4" class="code">function ws_vars_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub5" class="code">function bins_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub6" class="code">function bins_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub7" class="code">function view_dist_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub8" class="code">function segment_speed_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub9" class="code">function load_traj_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub10" class="code">function smooth_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub11" class="code">function n_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub12" class="code">function n_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub13" class="code">function dn_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub14" class="code">function dn_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub15" class="code">function view_traj_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub16" class="code">function variables_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub17" class="code">function variables_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub18" class="code">function segment_space_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub19" class="code">function save_ws_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub20" class="code">function update_listbox(handles, vars)</a></li><li><a href="#_sub21" class="code">function varargout = get_var_names(handles)</a></li><li><a href="#_sub22" class="code">function num_zones_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub23" class="code">function num_zones_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub24" class="code">function noise_thresh_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub25" class="code">function noise_thresh_CreateFcn(hObject, eventdata, handles)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function varargout = FAnalyze(varargin)</a>
+0002 <span class="comment">% FANALYZE</span>
+0003 <span class="comment">% For all your trajectory analysis needs! . See documentation for usage details.</span>
+0004 
+0005 <span class="comment">%Written by Dan Valente</span>
+0006 <span class="comment">%November 2007</span>
+0007 
+0008 <span class="comment">% Begin initialization code - DO NOT EDIT</span>
+0009 gui_Singleton = 1;
+0010 gui_State = struct(<span class="string">'gui_Name'</span>,       mfilename, <span class="keyword">...</span>
+0011                    <span class="string">'gui_Singleton'</span>,  gui_Singleton, <span class="keyword">...</span>
+0012                    <span class="string">'gui_OpeningFcn'</span>, @<a href="#_sub1" class="code" title="subfunction FAnalyze_OpeningFcn(hObject, eventdata, handles, varargin)">FAnalyze_OpeningFcn</a>, <span class="keyword">...</span>
+0013                    <span class="string">'gui_OutputFcn'</span>,  @<a href="#_sub2" class="code" title="subfunction varargout = FAnalyze_OutputFcn(hObject, eventdata, handles)">FAnalyze_OutputFcn</a>, <span class="keyword">...</span>
+0014                    <span class="string">'gui_LayoutFcn'</span>,  [] , <span class="keyword">...</span>
+0015                    <span class="string">'gui_Callback'</span>,   []);
+0016 <span class="keyword">if</span> nargin &amp;&amp; ischar(varargin{1})
+0017     gui_State.gui_Callback = str2func(varargin{1});
+0018 <span class="keyword">end</span>
+0019 
+0020 <span class="keyword">if</span> nargout
+0021     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+0022 <span class="keyword">else</span>
+0023     gui_mainfcn(gui_State, varargin{:});
+0024 <span class="keyword">end</span>
+0025 <span class="comment">% End initialization code - DO NOT EDIT</span>
+0026 
+0027 
+0028 <span class="comment">% --- Executes just before FAnalyze is made visible.</span>
+0029 <a name="_sub1" href="#_subfunctions" class="code">function FAnalyze_OpeningFcn(hObject, eventdata, handles, varargin)</a>
+0030 <span class="comment">% This function has no output args, see OutputFcn.</span>
+0031 <span class="comment">% hObject    handle to figure</span>
+0032 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0033 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0034 <span class="comment">% varargin   command line arguments to FAnalyze (see VARARGIN)</span>
+0035 
+0036 <span class="comment">% Choose default command line output for FAnalyze</span>
+0037 handles.output = hObject;
+0038 handles.called = 0;
+0039 disp(<span class="string">'Welcome to FAnalyze!'</span>)
+0040 <span class="comment">% Update handles structure</span>
+0041 guidata(hObject, handles);
+0042 
+0043 <span class="comment">% UIWAIT makes FAnalyze wait for user response (see UIRESUME)</span>
+0044 <span class="comment">% uiwait(handles.figure1);</span>
+0045 
+0046 
+0047 <span class="comment">% --- Outputs from this function are returned to the command line.</span>
+0048 <a name="_sub2" href="#_subfunctions" class="code">function varargout = FAnalyze_OutputFcn(hObject, eventdata, handles) </a>
+0049 <span class="comment">% varargout  cell array for returning output args (see VARARGOUT);</span>
+0050 <span class="comment">% hObject    handle to figure</span>
+0051 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0052 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0053 
+0054 <span class="comment">% Get default command line output from handles structure</span>
+0055 varargout{1} = handles.output;
+0056 
+0057 
+0058 <span class="comment">% --- Executes on selection change in ws_vars.</span>
+0059 <a name="_sub3" href="#_subfunctions" class="code">function ws_vars_Callback(hObject, eventdata, handles)</a>
+0060 <span class="comment">% hObject    handle to ws_vars (see GCBO)</span>
+0061 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0062 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0063 
+0064 <span class="comment">% Hints: contents = get(hObject,'String') returns ws_vars contents as cell array</span>
+0065 <span class="comment">%        contents{get(hObject,'Value')} returns selected item from ws_vars</span>
+0066 
+0067 
+0068 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0069 <a name="_sub4" href="#_subfunctions" class="code">function ws_vars_CreateFcn(hObject, eventdata, handles)</a>
+0070 <span class="comment">% hObject    handle to ws_vars (see GCBO)</span>
+0071 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0072 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0073 
+0074 <span class="comment">% Hint: listbox controls usually have a white background on Windows.</span>
+0075 <span class="comment">%       See ISPC and COMPUTER.</span>
+0076 <span class="keyword">if</span> ispc &amp;&amp; isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0077     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0078 <span class="keyword">end</span>
+0079 
+0080 
+0081 
+0082 <a name="_sub5" href="#_subfunctions" class="code">function bins_Callback(hObject, eventdata, handles)</a>
+0083 <span class="comment">% hObject    handle to bins (see GCBO)</span>
+0084 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0085 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0086 
+0087 <span class="comment">% Hints: get(hObject,'String') returns contents of bins as text</span>
+0088 <span class="comment">%        str2double(get(hObject,'String')) returns contents of bins as a double</span>
+0089 
+0090 
+0091 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0092 <a name="_sub6" href="#_subfunctions" class="code">function bins_CreateFcn(hObject, eventdata, handles)</a>
+0093 <span class="comment">% hObject    handle to bins (see GCBO)</span>
+0094 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0095 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0096 
+0097 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0098 <span class="comment">%       See ISPC and COMPUTER.</span>
+0099 <span class="keyword">if</span> ispc &amp;&amp; isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0100     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0101 <span class="keyword">end</span>
+0102 
+0103 
+0104 <span class="comment">% --- Executes on button press in view_dist.</span>
+0105 <a name="_sub7" href="#_subfunctions" class="code">function view_dist_Callback(hObject, eventdata, handles)</a>
+0106 <span class="comment">% hObject    handle to view_dist (see GCBO)</span>
+0107 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0108 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0109 
+0110 handles.called = handles.called+1;
+0111 index_selected = get(handles.ws_vars,<span class="string">'Value'</span>);
+0112 bins = get(handles.bins,<span class="string">'String'</span>);
+0113 phase_opt = get(get(handles.phase_space,<span class="string">'SelectedObject'</span>), <span class="string">'Tag'</span>);
+0114 
+0115 <span class="keyword">if</span> (length(index_selected) == 1)
+0116    
+0117         var1 = <a href="#_sub21" class="code" title="subfunction varargout = get_var_names(handles)">get_var_names</a>(handles);
+0118         u = strfind(var1,<span class="string">'_'</span>);
+0119         cur_zone1 = var1(u(1)+1:u(2)-1);
+0120         cur_zone1 = strmatch(cur_zone1, handles.zone_names,<span class="string">'exact'</span>);
+0121         cur_seg1 = var1(u(2)+1:end);
+0122         cur_seg1 = strmatch(cur_seg1, handles.zone{cur_zone1}.seg_label,<span class="string">'exact'</span>);
+0123         cur_var1 = var1(1:strfind(var1,<span class="string">'_'</span>)-1);
+0124 
+0125         <span class="keyword">if</span> strcmp(phase_opt,<span class="string">'phase1D'</span>)
+0126             P.label = var1;
+0127             P.phase_opt = phase_opt;
+0128             [P.data P.bins] = eval([<span class="string">'ProbDist1D(handles.zone{'</span> num2str(cur_zone1) <span class="string">'}.'</span> cur_var1 <span class="keyword">...</span>
+0129                 <span class="string">'{'</span> num2str(cur_seg1) <span class="string">'}.data ,'</span> bins <span class="string">')'</span>]);
+0130         <span class="keyword">elseif</span> strcmp(phase_opt,<span class="string">'phase2D'</span>)
+0131             P.label = var1;
+0132             P.phase_opt = phase_opt;
+0133             [P.data P.bins] = eval([<span class="string">'ProbDist2D(handles.zone{'</span> num2str(cur_zone1) <span class="string">'}.'</span> cur_var1<span class="keyword">...</span>
+0134                 <span class="string">'{'</span> num2str(cur_seg1) <span class="string">'}.data ,'</span> bins <span class="string">')'</span>]);
+0135         <span class="keyword">end</span>
+0136 
+0137         <span class="comment">%plot the distribution</span>
+0138         figure
+0139         plot(P.bins,P.data)
+0140     
+0141     
+0142 <span class="keyword">elseif</span> (length(index_selected) == 2)
+0143     
+0144     <span class="comment">% should only look at joint distribution for same speed segments in</span>
+0145     <span class="comment">% same zones right now.   The JointDist command expects equal length</span>
+0146     <span class="comment">% vectors.  The following variables are just calculated in case we</span>
+0147     <span class="comment">% modify JointDist down the road to handle vectors of different</span>
+0148     <span class="comment">% lengths.</span>
+0149     
+0150     <span class="keyword">if</span> numel(str2num(bins)) == 2 | numel(str2num(bins))== 0
+0151         [var1 var2] = <a href="#_sub21" class="code" title="subfunction varargout = get_var_names(handles)">get_var_names</a>(handles);
+0152         u1 = strfind(var1,<span class="string">'_'</span>);
+0153         u2 = strfind(var2,<span class="string">'_'</span>);
+0154         cur_zone1 = var1(u1(1)+1:u1(2)-1);
+0155         cur_zone1 = strmatch(cur_zone1, handles.zone_names,<span class="string">'exact'</span>);
+0156         cur_zone2 = var2(u2(1)+1:u2(2)-1);
+0157         cur_zone2 = strmatch(cur_zone2, handles.zone_names,<span class="string">'exact'</span>);
+0158         cur_seg1 = var1(u1(2)+1:end);
+0159         cur_seg1 = strmatch(cur_seg1, handles.zone{cur_zone1}.seg_label,<span class="string">'exact'</span>);
+0160         cur_seg2 = var2(u2(2)+1:end);
+0161         cur_seg2 = strmatch(cur_seg2, handles.zone{cur_zone2}.seg_label,<span class="string">'exact'</span>);
+0162         cur_var1 = var1(1:strfind(var1,<span class="string">'_'</span>)-1);
+0163         cur_var2 = var2(1:strfind(var2,<span class="string">'_'</span>)-1);
+0164 
+0165         P.label = [var1 <span class="string">'_'</span> var2];
+0166         P.phase_opt = <span class="string">'N/A'</span>;
+0167         [P.data P.bins] = eval([<span class="string">'JointDist(handles.zone{'</span> num2str(cur_zone1) <span class="string">'}.'</span> cur_var1<span class="keyword">...</span>
+0168                 <span class="string">'{'</span> num2str(cur_seg1) <span class="string">'}.data , handles.zone{'</span> num2str(cur_zone2) <span class="string">'}.'</span> cur_var2<span class="keyword">...</span>
+0169                 <span class="string">'{'</span> num2str(cur_seg2) <span class="string">'}.data ,'</span> bins <span class="string">')'</span>]);
+0170 
+0171         figure
+0172         imagesc(P.bins{2},P.bins{1},log(P.data))
+0173     <span class="keyword">else</span>
+0174         errordlg(<span class="string">'For a joint distribution, you must define bins or number of bins for BOTH directions!'</span>,<span class="string">'Missing Bin Parameter'</span>)
+0175         <span class="keyword">return</span>;
+0176     <span class="keyword">end</span>
+0177 <span class="keyword">elseif</span> length(index_selected) &gt; 2
+0178         errordlg(<span class="string">'You must select only one or two variables, no more than two!!!'</span>,<span class="keyword">...</span>
+0179                 <span class="string">'Incorrect Selection'</span>,<span class="string">'modal'</span>)
+0180 <span class="keyword">end</span>
+0181 
+0182 <span class="keyword">if</span> exist(<span class="string">'P'</span>)
+0183 handles.P{handles.called} = P;
+0184 <span class="keyword">else</span>
+0185     handles.P{handles.called} = [];
+0186 <span class="keyword">end</span>
+0187 
+0188 guidata(gcbo,handles);
+0189 
+0190 
+0191 <span class="comment">% --- Executes on button press in segment_speed.</span>
+0192 <a name="_sub8" href="#_subfunctions" class="code">function segment_speed_Callback(hObject, eventdata, handles)</a>
+0193 <span class="comment">% hObject    handle to segment_speed (see GCBO)</span>
+0194 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0195 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0196 
+0197 noise_thresh = str2num(get(handles.noise_thresh,<span class="string">'String'</span>));
+0198 NumZones = length(handles.zone_names);
+0199 list1 = {<span class="string">'x'</span>,<span class="string">'y'</span>,<span class="string">'r'</span>,<span class="string">'theta'</span>,<span class="string">'vx'</span>,<span class="string">'vy'</span>,<span class="string">'v'</span>,<span class="string">'vtheta'</span>,<span class="string">'tau'</span>,<span class="string">'kappa'</span>,<span class="string">'beta'</span>};
+0200 fps = handles.fps;
+0201 
+0202 disp(<span class="string">'Segmenting speed.  Input parameters and wait...'</span>)
+0203 <span class="comment">%based on how many spatial zones, ask how we want to segment speed.</span>
+0204 <span class="comment">%Remember that first zone is always the full arena.</span>
+0205 n=0;
+0206 <span class="keyword">for</span> i=1:NumZones
+0207     prompt1 = {[<span class="string">'How many speed segments in '</span> handles.zone{i}.zone_label{1}]};
+0208     dlg_title1 = <span class="string">'Segment Speed'</span>;
+0209     num_lines1 = 1;
+0210     def1 = {<span class="string">'2'</span>};
+0211     num_segs = str2double(inputdlg(prompt1,dlg_title1,num_lines1,def1));
+0212     nameB4 = <span class="string">'dummy'</span>;
+0213     seg_names = [];
+0214     speed_thresh = noise_thresh;
+0215     <span class="keyword">for</span> j=1:num_segs-1;
+0216         prompt2 = {[<span class="string">'Threshold between Segments '</span> num2str(j), <span class="string">' and '</span> num2str(j+1) <span class="string">'.'</span>],<span class="keyword">...</span>
+0217             <span class="string">'Names for these zones:'</span>, <span class="string">' '</span>};
+0218         dlg_title2 = <span class="string">'Please Input Speed Segmentation Data'</span>;
+0219         num_lines2 = 1;
+0220         def2 = {<span class="string">'0.75'</span>,<span class="string">'NZS'</span>,<span class="string">'FSS'</span>};
+0221         answer = inputdlg(prompt2,dlg_title2,num_lines2,def2);
+0222         speed_thresh = [speed_thresh str2double(answer(1))];
+0223         nameA = answer(2);
+0224         nameB = answer(3);
+0225         check = strcmp(nameA,nameB4);
+0226         <span class="keyword">if</span> (j~=1 &amp; ~check)
+0227             errordlg([handles.zone{i}.zone_label{1} <span class="string">' Segment '</span> num2str(j)<span class="keyword">...</span>
+0228                 <span class="string">' name must be same as previous '</span> handles.zone{i}.zone_label{1} <span class="string">' Segment '</span><span class="keyword">...</span>
+0229                  num2str(j) <span class="string">' name! Rename!'</span>])
+0230              <span class="keyword">return</span>;
+0231         <span class="keyword">else</span>
+0232             seg_names = [seg_names nameA nameB];
+0233         <span class="keyword">end</span>
+0234         nameB4 = nameB;
+0235     <span class="keyword">end</span>
+0236     
+0237     <span class="keyword">if</span> (num_segs == 1 | num_segs == 2)
+0238         seg_names = seg_names;
+0239     <span class="keyword">elseif</span> (num_segs== 3)
+0240         seg_names = [seg_names(1:2) seg_names(end)];
+0241     <span class="keyword">else</span>
+0242         seg_names = [seg_names(1:2) seg_names(end-1:end)];
+0243     <span class="keyword">end</span>
+0244     <span class="comment">%check speed thresholds in that zone</span>
+0245     [s indx] = sort(speed_thresh,<span class="string">'ascend'</span>);
+0246     <span class="keyword">if</span> (indx ~= [1:length(speed_thresh)])
+0247         errordlg([<span class="string">'Speed thresholds for successive segments should be larger than previous segments.  Try Again!'</span>])
+0248              <span class="keyword">return</span>;
+0249     <span class="keyword">elseif</span> (~isempty(find(s &lt; noise_thresh)))
+0250         errordlg([<span class="string">'None of the thresholds are permitted to be below the noise threshold. Try Again!'</span>])
+0251              <span class="keyword">return</span>;
+0252     <span class="keyword">end</span>
+0253     
+0254     seg_names = [{<span class="string">'all'</span>} {<span class="string">'stops'</span>} seg_names];
+0255     
+0256   
+0257         <span class="keyword">for</span> q=1:length(seg_names)
+0258             <span class="keyword">for</span>  j=1:length(list1)
+0259             <span class="keyword">if</span> (strcmp(seg_names{q},<span class="string">'all'</span>) &amp; strcmp(list1{j},<span class="string">'kappa'</span>)) | <span class="keyword">...</span>
+0260                     (strcmp(seg_names{q},<span class="string">'all'</span>) &amp; strcmp(list1{j},<span class="string">'tau'</span>))
+0261                temp_list{j,q+n*length(seg_names)} = [];
+0262             <span class="keyword">elseif</span> (strcmp(seg_names{q},<span class="string">'stops'</span>) &amp; strcmp(list1{j},<span class="string">'kappa'</span>)) | <span class="keyword">...</span>
+0263                     (strcmp(seg_names{q},<span class="string">'stops'</span>) &amp; strcmp(list1{j},<span class="string">'beta'</span>))
+0264                temp_list{j,q+n*length(seg_names)} = [];
+0265             <span class="keyword">elseif</span> ~strcmp(seg_names{q},<span class="string">'all'</span>) &amp; strcmp(list1{j},<span class="string">'beta'</span>)
+0266                     temp_list{j,q+n*length(seg_names)} = [];
+0267             <span class="keyword">else</span>
+0268                 temp_list{j,q+n*length(seg_names)} = [list1{j} <span class="string">'_'</span> handles.zone{i}.zone_label{1} <span class="string">'_'</span> seg_names{q}];
+0269             <span class="keyword">end</span>
+0270         <span class="keyword">end</span>
+0271     <span class="keyword">end</span>
+0272     
+0273     <span class="comment">%calculate stuff for this particular zone</span>
+0274     t = handles.zone{i}.t{1}.data;
+0275     x = handles.zone{i}.x{1}.data;
+0276     y = handles.zone{i}.y{1}.data;
+0277     r = handles.zone{i}.r{1}.data;
+0278     theta = handles.zone{i}.theta{1}.data;
+0279     vx = handles.zone{i}.vx{1}.data;
+0280     vy = handles.zone{i}.vy{1}.data;
+0281     v = handles.zone{i}.v{1}.data;
+0282     vtheta =handles.zone{i}.vtheta{1}.data;
+0283       
+0284     
+0285     stops_indx = find(v &lt; speed_thresh(1));
+0286     moves_indx = find(v &gt;= speed_thresh(1));
+0287     
+0288     v(stops_indx) = 0; vx(stops_indx) = 0; vy(stops_indx) = 0; vtheta = atan2(vy,vx);
+0289     
+0290     
+0291     handles.zone{i}.seg_label = seg_names;
+0292     handles.zone{i}.t{2}.data = t(stops_indx);
+0293     handles.zone{i}.x{2}.data = x(stops_indx);
+0294     handles.zone{i}.y{2}.data = y(stops_indx);    
+0295     handles.zone{i}.r{2}.data = r(stops_indx);    
+0296     handles.zone{i}.theta{2}.data = theta(stops_indx);    
+0297     handles.zone{i}.vx{2}.data = vx(stops_indx);    
+0298     handles.zone{i}.vy{2}.data = vy(stops_indx);   
+0299     handles.zone{i}.v{2}.data = v(stops_indx);    
+0300     handles.zone{i}.vtheta{2}.data = vtheta(stops_indx);
+0301     handles.zone{i}.tau{2}.data = <a href="FindDuration.html" class="code" title="function out = FindDuration(indx);">FindDuration</a>(stops_indx);
+0302     handles.zone{i}.kappa{2}.data = <span class="string">'N/A'</span>;
+0303     
+0304     
+0305     <span class="keyword">for</span> j=2:length(speed_thresh)
+0306         
+0307         indxA =  find(v &gt;= speed_thresh(j-1) &amp; v &lt; speed_thresh(j));
+0308         indxB =  find(v &gt;= speed_thresh(j));
+0309         
+0310         handles.zone{i}.t{j+1}.data = t(indxA);
+0311         handles.zone{i}.x{j+1}.data = x(indxA);     
+0312         handles.zone{i}.y{j+1}.data = y(indxA);        
+0313         handles.zone{i}.r{j+1}.data = r(indxA);       
+0314         handles.zone{i}.theta{j+1}.data = theta(indxA);       
+0315         handles.zone{i}.vx{j+1}.data = vx(indxA);       
+0316         handles.zone{i}.vy{j+1}.data = vy(indxA);     
+0317         handles.zone{i}.v{j+1}.data = v(indxA);      
+0318         handles.zone{i}.vtheta{j+1}.data = vtheta(indxA);
+0319         handles.zone{i}.tau{j+1}.data = <a href="FindDuration.html" class="code" title="function out = FindDuration(indx);">FindDuration</a>(indxA);
+0320         handles.zone{i}.kappa{j+1}.data = <a href="CalcCurvature.html" class="code" title="function kappa = CalcCurvature(v, vtheta, indx, dt)">CalcCurvature</a>(v, vtheta, indxA, 1/fps);
+0321         
+0322         handles.zone{i}.t{j+2}.data = t(indxB);
+0323         handles.zone{i}.x{j+2}.data = x(indxB);    
+0324         handles.zone{i}.y{j+2}.data = y(indxB);     
+0325         handles.zone{i}.r{j+2}.data = r(indxB);       
+0326         handles.zone{i}.theta{j+2}.data = theta(indxB);      
+0327         handles.zone{i}.vx{j+2}.data = vx(indxB);     
+0328         handles.zone{i}.vy{j+2}.data = vy(indxB);       
+0329         handles.zone{i}.v{j+2}.data = v(indxB);    
+0330         handles.zone{i}.vtheta{j+2}.data = vtheta(indxB);
+0331         handles.zone{i}.tau{j+2}.data = <a href="FindDuration.html" class="code" title="function out = FindDuration(indx);">FindDuration</a>(indxB);
+0332         handles.zone{i}.kappa{j+2}.data = <a href="CalcCurvature.html" class="code" title="function kappa = CalcCurvature(v, vtheta, indx, dt)">CalcCurvature</a>(v, vtheta, indxB, 1/fps);
+0333 
+0334     <span class="keyword">end</span>
+0335     handles.zone{i}.beta{1}.data = <a href="CalcReorientAngle.html" class="code" title="function beta = CalcReorientAngle(vtheta, moves_indx)">CalcReorientAngle</a>(vtheta, moves_indx);
+0336     n=n+1;
+0337 <span class="keyword">end</span>
+0338 
+0339 
+0340 temp3 = {};
+0341 sz = size(temp_list);
+0342 <span class="keyword">for</span> q=1:sz(2)
+0343     temp3 = [temp3 temp_list{:,q}];
+0344 <span class="keyword">end</span>
+0345 
+0346 disp(<span class="string">'Speed has been segmented.'</span>)
+0347 <a href="#_sub20" class="code" title="subfunction update_listbox(handles, vars)">update_listbox</a>(handles, temp3)
+0348 guidata(gcbo,handles);
+0349 
+0350 <span class="comment">% --- Executes on button press in load_traj.</span>
+0351 <a name="_sub9" href="#_subfunctions" class="code">function load_traj_Callback(hObject, eventdata, handles)</a>
+0352 <span class="comment">% hObject    handle to load_traj (see GCBO)</span>
+0353 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0354 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0355 
+0356 [filename, pathname] = uigetfile({<span class="string">'*.mat'</span>}, <span class="string">'Select the .mat file containing the trajectory'</span>, <span class="string">'MultiSelect'</span>,<span class="string">'off'</span>);
+0357 
+0358 <span class="keyword">if</span> isequal(filename,0) || isequal(pathname,0)
+0359     disp(<span class="string">'File select canceled'</span>)
+0360     <span class="keyword">return</span>;
+0361 <span class="keyword">else</span>
+0362     disp([<span class="string">'File selected: '</span>, fullfile(pathname, filename)])
+0363     load(fullfile(pathname,filename));
+0364     handles.filename = fullfile(pathname, filename); 
+0365     
+0366 <span class="keyword">end</span>
+0367 
+0368 
+0369 handles.zone{1}.t{1}.data = t;
+0370 handles.fps = 1/(t(2)-t(1));
+0371 handles.zone{1}.x{1}.data = x;
+0372 handles.zone{1}.y{1}.data = y;
+0373 
+0374 guidata(gcbo,handles);
+0375 
+0376 <span class="comment">% --- Executes on button press in smooth.</span>
+0377 <a name="_sub10" href="#_subfunctions" class="code">function smooth_Callback(hObject, eventdata, handles)</a>
+0378 <span class="comment">% hObject    handle to smooth (see GCBO)</span>
+0379 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0380 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0381 
+0382 <span class="comment">%grab data</span>
+0383 t = handles.zone{1}.t{1}.data;
+0384 fps = handles.fps;
+0385 x = handles.zone{1}.x{1}.data;
+0386 y = handles.zone{1}.y{1}.data;
+0387 handles.P = [];
+0388 
+0389 <span class="comment">%grab smoothing parameters as input by the user</span>
+0390 n = str2double(get(handles.n,<span class="string">'String'</span>));
+0391 dn = str2double(get(handles.dn,<span class="string">'String'</span>));
+0392 
+0393 disp(<span class="string">'Smoothing data.  Please wait...'</span>)
+0394 <span class="comment">%smooth using runline</span>
+0395 x = <a href="runline.html" class="code" title="function y_line=runline(y,n,dn)">runline</a>(x, n, dn);
+0396 y = <a href="runline.html" class="code" title="function y_line=runline(y,n,dn)">runline</a>(y, n, dn);
+0397 
+0398 <span class="comment">%Calculate polar coords and velocity.</span>
+0399 r = sqrt(x.^2+y.^2);
+0400 theta = atan2(y,x);
+0401 
+0402 vx = fps*gradient(x);
+0403 vy = fps*gradient(y);
+0404 v = sqrt(vx.^2+vy.^2);
+0405 vtheta = atan2(vy,vx);
+0406 
+0407 clear handles.x;
+0408 clear handles.y;
+0409 <span class="comment">%save smooth data to handles to be used by other GUI functions</span>
+0410 handles.zone_names{1} = <span class="string">'Full Arena'</span>;
+0411 handles.zone{1}.zone_label = {<span class="string">'Full Arena'</span>};
+0412 handles.zone{1}.seg_label = {<span class="string">'all'</span>};
+0413 handles.zone{1}.t{1}.data = t;
+0414 handles.zone{1}.x{1}.data = x;
+0415 handles.zone{1}.y{1}.data = y;
+0416 
+0417 handles.zone{1}.r{1}.data = r;
+0418 handles.zone{1}.theta{1}.data = theta;
+0419 handles.zone{1}.vx{1}.data = vx;
+0420 handles.zone{1}.vy{1}.data = vy;
+0421 handles.zone{1}.v{1}.data = v;
+0422 handles.zone{1}.vtheta{1}.data = vtheta;
+0423 handles.zone{1}.tau{1}.data = <span class="string">'N/A'</span>;
+0424 handles.zone{1}.kappa{1}.data = <span class="string">'N/A'</span>;
+0425     
+0426 
+0427 
+0428 disp(<span class="string">'Trajectory has been smoothed.'</span>)
+0429 
+0430 <a href="#_sub20" class="code" title="subfunction update_listbox(handles, vars)">update_listbox</a>(handles, {<span class="string">'x_Full Arena_all'</span>,<span class="string">'y_Full Arena_all'</span>,<span class="string">'r_Full Arena_all'</span>,<span class="string">'theta_Full Arena_all'</span>,<span class="keyword">...</span>
+0431     <span class="string">'vx_Full Arena_all'</span>,<span class="string">'vy_Full Arena_all'</span>,<span class="string">'v_Full Arena_all'</span>,<span class="string">'vtheta_Full Arena_all'</span>});
+0432 guidata(gcbo,handles);
+0433 
+0434 <a name="_sub11" href="#_subfunctions" class="code">function n_Callback(hObject, eventdata, handles)</a>
+0435 <span class="comment">% hObject    handle to n (see GCBO)</span>
+0436 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0437 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0438 
+0439 <span class="comment">% Hints: get(hObject,'String') returns contents of n as text</span>
+0440 <span class="comment">%        str2double(get(hObject,'String')) returns contents of n as a double</span>
+0441 
+0442 
+0443 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0444 <a name="_sub12" href="#_subfunctions" class="code">function n_CreateFcn(hObject, eventdata, handles)</a>
+0445 <span class="comment">% hObject    handle to n (see GCBO)</span>
+0446 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0447 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0448 
+0449 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0450 <span class="comment">%       See ISPC and COMPUTER.</span>
+0451 <span class="keyword">if</span> ispc &amp;&amp; isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0452     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0453 <span class="keyword">end</span>
+0454 
+0455 
+0456 <a name="_sub13" href="#_subfunctions" class="code">function dn_Callback(hObject, eventdata, handles)</a>
+0457 <span class="comment">% hObject    handle to dn (see GCBO)</span>
+0458 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0459 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0460 
+0461 <span class="comment">% Hints: get(hObject,'String') returns contents of dn as text</span>
+0462 <span class="comment">%        str2double(get(hObject,'String')) returns contents of dn as a double</span>
+0463 
+0464 
+0465 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0466 <a name="_sub14" href="#_subfunctions" class="code">function dn_CreateFcn(hObject, eventdata, handles)</a>
+0467 <span class="comment">% hObject    handle to dn (see GCBO)</span>
+0468 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0469 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0470 
+0471 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0472 <span class="comment">%       See ISPC and COMPUTER.</span>
+0473 <span class="keyword">if</span> ispc &amp;&amp; isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0474     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0475 <span class="keyword">end</span>
+0476 
+0477 
+0478 <span class="comment">% --- Executes on button press in view_traj.</span>
+0479 <a name="_sub15" href="#_subfunctions" class="code">function view_traj_Callback(hObject, eventdata, handles)</a>
+0480 <span class="comment">% hObject    handle to view_traj (see GCBO)</span>
+0481 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0482 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0483 
+0484 t = handles.zone{1}.t{1}.data;
+0485 x = handles.zone{1}.x{1}.data;
+0486 y = handles.zone{1}.y{1}.data;
+0487 tmp = getfield(handles, <span class="string">'zone'</span>);
+0488 
+0489 <span class="keyword">if</span> (isfield(tmp{1},<span class="string">'r'</span>))
+0490     r = handles.zone{1}.r{1}.data;
+0491     theta = handles.zone{1}.theta{1}.data;
+0492     vx = handles.zone{1}.vx{1}.data;
+0493     vy = handles.zone{1}.vy{1}.data;
+0494     v = handles.zone{1}.v{1}.data;
+0495     vtheta =handles.zone{1}.vtheta{1}.data; 
+0496 <span class="keyword">end</span>
+0497 
+0498 str = get(handles.variables, <span class="string">'String'</span>);
+0499 val = get(handles.variables, <span class="string">'Value'</span>);
+0500 
+0501 <span class="comment">% Set current data to the selected data set.</span>
+0502       <span class="keyword">if</span> strcmp(str(val),<span class="string">'(x,y)'</span>)
+0503           figure
+0504           plot(x,y)
+0505           xlabel(<span class="string">'x-position'</span>)
+0506           ylabel(<span class="string">'y-position'</span>)
+0507           title(<span class="string">'Trajectory'</span>)
+0508           <span class="keyword">if</span> (~isfield(tmp{1},<span class="string">'r'</span>))
+0509               disp(<span class="string">'You can view your trajectory, but you MUST smooth your data before proceeding with any calculations!'</span>)
+0510           <span class="keyword">end</span>
+0511       <span class="keyword">else</span>
+0512           
+0513           var1 = <span class="string">'t'</span>;
+0514           <span class="keyword">if</span> exist(str{val})
+0515               figure
+0516               var2 = str{val};
+0517               eval([<span class="string">'plot('</span> var1 <span class="string">','</span>  var2 <span class="string">')'</span>])
+0518               xlabel(<span class="string">'Time'</span>)
+0519               ylabel(var2)
+0520               xlim([0 t(end)])
+0521           <span class="keyword">else</span>
+0522               errordlg(<span class="string">'Can&quot;t view this variable unless data is smoothed'</span>,<span class="string">'Non-existant Variable'</span>)
+0523              
+0524               <span class="keyword">return</span>;
+0525           <span class="keyword">end</span>
+0526       <span class="keyword">end</span>
+0527 
+0528 <span class="comment">% --- Executes on selection change in variables.</span>
+0529 <a name="_sub16" href="#_subfunctions" class="code">function variables_Callback(hObject, eventdata, handles)</a>
+0530 <span class="comment">% hObject    handle to variables (see GCBO)</span>
+0531 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0532 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0533 
+0534 <span class="comment">% Hints: contents = get(hObject,'String') returns variables contents as cell array</span>
+0535 <span class="comment">%        contents{get(hObject,'Value')} returns selected item from variables</span>
+0536 
+0537 set(hObject,<span class="string">'String'</span>,{<span class="string">'(x,y)'</span>,<span class="string">'x'</span>,<span class="string">'y'</span>,<span class="string">'r'</span>,<span class="string">'theta'</span>,<span class="string">'vx'</span>,<span class="string">'vy'</span>,<span class="string">'v'</span>,<span class="string">'vtheta'</span>})
+0538 
+0539 guidata(gcbo,handles);
+0540 
+0541 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0542 <a name="_sub17" href="#_subfunctions" class="code">function variables_CreateFcn(hObject, eventdata, handles)</a>
+0543 <span class="comment">% hObject    handle to variables (see GCBO)</span>
+0544 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0545 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0546 
+0547 <span class="comment">% Hint: popupmenu controls usually have a white background on Windows.</span>
+0548 <span class="comment">%       See ISPC and COMPUTER.</span>
+0549 <span class="keyword">if</span> ispc &amp;&amp; isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0550     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0551 <span class="keyword">end</span>
+0552 
+0553 set(hObject,<span class="string">'String'</span>,{<span class="string">'(x,y)'</span>,<span class="string">'x'</span>,<span class="string">'y'</span>,<span class="string">'r'</span>,<span class="string">'theta'</span>,<span class="string">'vx'</span>,<span class="string">'vy'</span>,<span class="string">'v'</span>,<span class="string">'vtheta'</span>})
+0554 
+0555 guidata(gcbo,handles);
+0556 <span class="comment">% --- Executes on button press in segment_space.</span>
+0557 <a name="_sub18" href="#_subfunctions" class="code">function segment_space_Callback(hObject, eventdata, handles)</a>
+0558 <span class="comment">% hObject    handle to segment_space (see GCBO)</span>
+0559 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0560 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0561 
+0562 NumZones = str2double(get(handles.num_zones,<span class="string">'String'</span>)); 
+0563 <span class="keyword">if</span> NumZones &lt; 2
+0564     errordlg(<span class="string">'Must have at least 2 zones'</span>,<span class="string">'Too few zones'</span>)
+0565     <span class="keyword">return</span>;
+0566 <span class="keyword">end</span>
+0567 
+0568 zone_indx = 1:NumZones;
+0569 list1 = {<span class="string">'x'</span>,<span class="string">'y'</span>,<span class="string">'r'</span>,<span class="string">'theta'</span>,<span class="string">'vx'</span>,<span class="string">'vy'</span>,<span class="string">'v'</span>,<span class="string">'vtheta'</span>,<span class="string">'tau'</span>,<span class="string">'kappa'</span>};
+0570 zone_names = handles.zone_names;
+0571 handles.zone_names = {};
+0572 handles.zone_names{1} = <span class="string">'Full Arena'</span>;
+0573 
+0574 t = handles.zone{1}.t{1}.data;
+0575 dt = t(2)-t(1);
+0576 x = handles.zone{1}.x{1}.data;
+0577 y = handles.zone{1}.y{1}.data;
+0578 r = handles.zone{1}.r{1}.data;
+0579 theta = handles.zone{1}.theta{1}.data;
+0580 vx = handles.zone{1}.vx{1}.data;
+0581 vy = handles.zone{1}.vy{1}.data;
+0582 v = handles.zone{1}.v{1}.data;
+0583 vtheta =handles.zone{1}.vtheta{1}.data;
+0584 
+0585 disp(<span class="string">'Segmenting Space.  Input parameters and wait...'</span>)
+0586 
+0587 thresh(1) = 0;
+0588 <span class="keyword">for</span> i=1:NumZones-1
+0589     prompt = {[<span class="string">'Threshold between Zones '</span> num2str(zone_indx(i)), <span class="string">' and '</span> num2str(zone_indx(i+1)) <span class="string">'.'</span>],<span class="keyword">...</span>
+0590         <span class="string">'Names for these zones:'</span>, <span class="string">' '</span>};
+0591     dlg_title = <span class="string">'Please Input Spatial Zone Data'</span>;
+0592     num_lines = 1;
+0593     def = {<span class="string">'7.3'</span>,<span class="string">'CZ'</span>,<span class="string">'RZ'</span>};
+0594     answer{i} = inputdlg(prompt,dlg_title,num_lines,def);
+0595     thresh(i+1) = str2double(answer{i}(1));
+0596 <span class="keyword">end</span>
+0597 
+0598 zone_names = [zone_names answer{1}(2)];
+0599 <span class="keyword">for</span> i=1:NumZones-2
+0600     nameA = answer{i}(2);
+0601     nameB = answer{i}(3);
+0602     nameC = answer{i+1}(2);
+0603     <span class="keyword">if</span> (~strcmp(nameB,nameC))
+0604         errordlg([<span class="string">'Zone '</span> num2str(i+1) <span class="string">' name must be same as previous Zone '</span> num2str(i+1) <span class="string">' name! Rename!'</span>])
+0605     <span class="keyword">else</span>
+0606         zone_names = [zone_names nameB];
+0607     <span class="keyword">end</span>
+0608 <span class="keyword">end</span>    
+0609 zone_names = [zone_names answer{NumZones-1}(3)];
+0610 
+0611 <span class="keyword">for</span> i=1:length(zone_names)
+0612     <span class="keyword">for</span>  j=1:length(list1)
+0613         <span class="keyword">if</span>  strcmp(zone_names{i},<span class="string">'Full Arena'</span>) &amp; (strcmp(list1{j},<span class="string">'kappa'</span>) | strcmp(list1{j},<span class="string">'tau'</span>))
+0614             temp_list{j,i} = [];
+0615         <span class="keyword">elseif</span> strcmp(list1{j},<span class="string">'kappa'</span>)
+0616             temp_list{j,i} = [];
+0617         <span class="keyword">else</span>
+0618         temp_list{j,i} = [list1{j} <span class="string">'_'</span> zone_names{i} <span class="string">'_all'</span>];
+0619         <span class="keyword">end</span>
+0620     <span class="keyword">end</span>
+0621 <span class="keyword">end</span>
+0622 
+0623 temp3 = {};
+0624 <span class="keyword">for</span> i=1:NumZones+1
+0625     temp3 = [temp3 temp_list{:,i}];
+0626 <span class="keyword">end</span>
+0627 
+0628 handles.zone_names = zone_names;
+0629 
+0630 <span class="comment">%Now using thresholds, divvy up space</span>
+0631 <span class="keyword">for</span> i = 2:length(thresh)
+0632     
+0633         <span class="comment">% Can only do radial zones in this version of FAnalyze</span>
+0634         indxA =  find(r &gt;= thresh(i-1) &amp; r &lt; thresh(i));
+0635         indxB =  find(r &gt;= thresh(i));
+0636         
+0637         handles.zone{i}.zone_label = zone_names(i);
+0638         handles.zone{i}.seg_label = {<span class="string">'all'</span>};
+0639         handles.zone{i}.t{1}.data = t(indxA);
+0640         handles.zone{i}.x{1}.data = x(indxA);
+0641         handles.zone{i}.y{1}.data = y(indxA);
+0642         handles.zone{i}.r{1}.data = r(indxA);
+0643         handles.zone{i}.theta{1}.data = theta(indxA);
+0644         handles.zone{i}.vx{1}.data = vx(indxA);
+0645         handles.zone{i}.vy{1}.data = vy(indxA);
+0646         handles.zone{i}.v{1}.data = v(indxA);
+0647         handles.zone{i}.vtheta{1}.data = vtheta(indxA);
+0648         handles.zone{i}.tau{1}.data = <a href="FindDuration.html" class="code" title="function out = FindDuration(indx);">FindDuration</a>(indxA);
+0649         handles.zone{i}.kappa{1}.data = <a href="CalcCurvature.html" class="code" title="function kappa = CalcCurvature(v, vtheta, indx, dt)">CalcCurvature</a>(v, vtheta, indxA, dt);
+0650         
+0651         handles.zone{i+1}.zone_label = zone_names(i+1);
+0652         handles.zone{i+1}.seg_label = {<span class="string">'all'</span>};
+0653         handles.zone{i+1}.t{1}.data = t(indxB);
+0654         handles.zone{i+1}.x{1}.data = x(indxB);
+0655         handles.zone{i+1}.y{1}.data = y(indxB);
+0656         handles.zone{i+1}.r{1}.data = r(indxB);
+0657         handles.zone{i+1}.theta{1}.data = theta(indxB);
+0658         handles.zone{i+1}.vx{1}.data = vx(indxB);
+0659         handles.zone{i+1}.vy{1}.data = vy(indxB);
+0660         handles.zone{i+1}.v{1}.data = v(indxB);
+0661         handles.zone{i+1}.vtheta{1}.data = vtheta(indxB);
+0662         
+0663         
+0664         handles.zone{i+1}.tau{1}.data = <a href="FindDuration.html" class="code" title="function out = FindDuration(indx);">FindDuration</a>(indxB);
+0665         handles.zone{i+1}.kappa{1}.data = <a href="CalcCurvature.html" class="code" title="function kappa = CalcCurvature(v, vtheta, indx, dt)">CalcCurvature</a>(v, vtheta, indxB, dt);
+0666       
+0667  
+0668        
+0669 <span class="keyword">end</span>
+0670 
+0671 <a href="#_sub20" class="code" title="subfunction update_listbox(handles, vars)">update_listbox</a>(handles, temp3)
+0672 disp(<span class="string">'Space has been segmented.'</span>)
+0673 guidata(gcbo,handles);
+0674 
+0675 <span class="comment">% --- Executes on button press in save_ws.</span>
+0676 <a name="_sub19" href="#_subfunctions" class="code">function save_ws_Callback(hObject, eventdata, handles)</a>
+0677 <span class="comment">% hObject    handle to save_ws (see GCBO)</span>
+0678 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0679 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0680 
+0681 <span class="comment">% %This whole function just defines variables and saves the workspace as a</span>
+0682 <span class="comment">% %.mat file.</span>
+0683 [filename, pathname] = uiputfile(<span class="string">'*.mat'</span>, <span class="string">'Pick a MAT file to save to'</span>);
+0684 
+0685 traj = handles.zone;
+0686 P = handles.P;
+0687 fps = handles.fps;
+0688 save(fullfile(pathname, filename),<span class="string">'traj'</span>,<span class="string">'P'</span>)       
+0689 disp([<span class="string">'Data has been saved to '</span> fullfile(pathname, filename)])   
+0690 
+0691 <a name="_sub20" href="#_subfunctions" class="code">function update_listbox(handles, vars)</a>
+0692 <span class="comment">% this function updates the message center at the bottom of the GUI</span>
+0693 <span class="comment">% adapted from Mike Rieser's PControl GUI.</span>
+0694 
+0695 set(handles.ws_vars, <span class="string">'String'</span>, vars);
+0696 
+0697 <span class="comment">%%%%%%%%%%%%%%%%</span>
+0698 <a name="_sub21" href="#_subfunctions" class="code">function varargout = get_var_names(handles)</a>
+0699 list_entries = get(handles.ws_vars,<span class="string">'String'</span>);
+0700 index_selected = get(handles.ws_vars,<span class="string">'Value'</span>);
+0701 
+0702 varargout = list_entries(index_selected);
+0703 
+0704 
+0705 
+0706 
+0707 
+0708 <a name="_sub22" href="#_subfunctions" class="code">function num_zones_Callback(hObject, eventdata, handles)</a>
+0709 <span class="comment">% hObject    handle to num_zones (see GCBO)</span>
+0710 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0711 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0712 
+0713 <span class="comment">% Hints: get(hObject,'String') returns contents of num_zones as text</span>
+0714 <span class="comment">%        str2double(get(hObject,'String')) returns contents of num_zones as a double</span>
+0715 
+0716 
+0717 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0718 <a name="_sub23" href="#_subfunctions" class="code">function num_zones_CreateFcn(hObject, eventdata, handles)</a>
+0719 <span class="comment">% hObject    handle to num_zones (see GCBO)</span>
+0720 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0721 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0722 
+0723 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0724 <span class="comment">%       See ISPC and COMPUTER.</span>
+0725 <span class="keyword">if</span> ispc &amp;&amp; isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0726     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0727 <span class="keyword">end</span>
+0728 
+0729 
+0730 
+0731 <a name="_sub24" href="#_subfunctions" class="code">function noise_thresh_Callback(hObject, eventdata, handles)</a>
+0732 <span class="comment">% hObject    handle to noise_thresh (see GCBO)</span>
+0733 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0734 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0735 
+0736 <span class="comment">% Hints: get(hObject,'String') returns contents of noise_thresh as text</span>
+0737 <span class="comment">%        str2double(get(hObject,'String')) returns contents of noise_thresh as a double</span>
+0738 
+0739 
+0740 
+0741 
+0742 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0743 <a name="_sub25" href="#_subfunctions" class="code">function noise_thresh_CreateFcn(hObject, eventdata, handles)</a>
+0744 <span class="comment">% hObject    handle to noise_thresh (see GCBO)</span>
+0745 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0746 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0747 
+0748 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0749 <span class="comment">%       See ISPC and COMPUTER.</span>
+0750 <span class="keyword">if</span> ispc &amp;&amp; isequal(get(hObject,<span class="string">'BackgroundColor'</span>), get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>))
+0751     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0752 <span class="keyword">end</span>
+0753 
+0754</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig6_1</title>
+  <meta name="keywords" content="fig6_1">
+  <meta name="description" content="Local Regression and Likelihood, Figure 6.1.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig6_1
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 6.1.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 6.1.
+
+ Derivative (local slope) estimation, for the Old Faithful Geyser Data.
+ The 'deriv' argument specifies derivative estimation,
+   'deriv',1        First-order derivative.
+   'deriv',[1 1]    Second-order derivative.
+   'deriv',2        For bivariate fits, partial deriv. wrt second variable.
+   'deriv',[1 2]    Mixed second-order derivative.
+
+ Density estimation is done on the log-scale. That is, the estimate
+ is of g(x) = log(f(x)), where f(x) is the density.
+
+ The relation between derivatives is therefore
+     f'(x) = f(x)g'(x) = g'(x)exp(g(x)).
+ To estimate f'(x), we must estimate g(x) and g'(x) (fit1 and fit2 below),
+ evaluate on a grid of points (p1 and p2), and apply the back-transformation.
+
+ Disclaimer: I don't consider derivative estimation from noisy data
+ to be a well-defined problem. Use at your own risk.
+
+ Author: Catherine Loader
+
+ NEED: m argument passed to lfmarg().</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/lfmarg.html" class="code" title="function xfit = lfmarg(fit)">lfmarg</a>	computes grid margins from a locfit object, used for plotting.</li><li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>	Interpolate a fit produced by locfit().</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 6.1.</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Derivative (local slope) estimation, for the Old Faithful Geyser Data.</span>
+0004 <span class="comment">% The 'deriv' argument specifies derivative estimation,</span>
+0005 <span class="comment">%   'deriv',1        First-order derivative.</span>
+0006 <span class="comment">%   'deriv',[1 1]    Second-order derivative.</span>
+0007 <span class="comment">%   'deriv',2        For bivariate fits, partial deriv. wrt second variable.</span>
+0008 <span class="comment">%   'deriv',[1 2]    Mixed second-order derivative.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Density estimation is done on the log-scale. That is, the estimate</span>
+0011 <span class="comment">% is of g(x) = log(f(x)), where f(x) is the density.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% The relation between derivatives is therefore</span>
+0014 <span class="comment">%     f'(x) = f(x)g'(x) = g'(x)exp(g(x)).</span>
+0015 <span class="comment">% To estimate f'(x), we must estimate g(x) and g'(x) (fit1 and fit2 below),</span>
+0016 <span class="comment">% evaluate on a grid of points (p1 and p2), and apply the back-transformation.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Disclaimer: I don't consider derivative estimation from noisy data</span>
+0019 <span class="comment">% to be a well-defined problem. Use at your own risk.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Author: Catherine Loader</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% NEED: m argument passed to lfmarg().</span>
+0024 
+0025 load geyser;
+0026 fit1 = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(geyser,<span class="string">'alpha'</span>,[0.1 0.6],<span class="string">'ll'</span>,1,<span class="string">'ur'</span>,6);
+0027 fit2 = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(geyser,<span class="string">'alpha'</span>,[0.1 0.6],<span class="string">'ll'</span>,1,<span class="string">'ur'</span>,6,<span class="string">'deriv'</span>,1);
+0028 z = <a href="../../../chronux_2_10/locfit/m/lfmarg.html" class="code" title="function xfit = lfmarg(fit)">lfmarg</a>(fit1);
+0029 p1 = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit1,z);
+0030 p2 = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit2,z);
+0031 figure(<span class="string">'Name'</span>,<span class="string">'fig6_1: slope estimation: Old faithful data'</span> );
+0032 plot(z{1},p2.*exp(p1));
+0033 xlabel(<span class="string">'Eruption Duration (Minutes)'</span>);
+0034 ylabel(<span class="string">'Density Derivative'</span>);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

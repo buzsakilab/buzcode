@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of testAvg4</title>
+  <meta name="keywords" content="testAvg4">
+  <meta name="description" content="This is a calling routine to test &amp; check out the power spectrum &amp;">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html test -->
+<h1>testAvg4
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a calling routine to test &amp; check out the power spectrum &amp;</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This is a calling routine to test &amp; check out the power spectrum &amp;
+ spectrogram routines for unequal segment lengths. In addition, use it 
+ to compare with Chronux routines when segments are of equal length.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../chronux_2_10/spectral_analysis/chronux.html" class="code" title="function chronux">chronux</a>	This library performs time-frequency analysis (mostly using the</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>	Multi-taper spectrum - continuous process</li><li><a href="myrandint.html" class="code" title="function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)">myrandint</a>	MYRANDINT(M,N,RANGE) is an M-by-N matrix with random integer entries</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%</span>
+0002 <span class="comment">% This is a calling routine to test &amp; check out the power spectrum &amp;</span>
+0003 <span class="comment">% spectrogram routines for unequal segment lengths. In addition, use it</span>
+0004 <span class="comment">% to compare with Chronux routines when segments are of equal length.</span>
+0005 <span class="comment">%</span>
+0006 clear all;
+0007 
+0008 <span class="keyword">if</span> 0
+0009     dir = <span class="string">'G:\ravi\Chrowser\Pass~ Tioga_0e927741-9673-46e5-9050-ca1d7541bf22\'</span>;
+0010     xfile = <span class="string">'Pass~ Tioga_0e927741-9673-46e5-9050-ca1d7541bf22'</span>
+0011     <span class="comment">%dir = 'G:\ravi\Chrowser\sample~ data_8ef647e3-e5ea-43a6-8c69-fb848b8db7c2\';</span>
+0012     <span class="comment">%xfile = 'sample~ data_8ef647e3-e5ea-43a6-8c69-fb848b8db7c2'</span>
+0013 <span class="keyword">else</span>
+0014     dir = <span class="string">'Z:\xltekRawData\Wallis~ Terry_c3f44891-afa7-4fa7-a643-55c772a05241\'</span>
+0015     xfile = <span class="string">'Wallis~ Terry_c3f44891-afa7-4fa7-a643-55c772a05241'</span>
+0016 <span class="keyword">end</span>
+0017 
+0018 <span class="comment">% Get header info</span>
+0019 <span class="comment">% Channels are labelled from C1 through C127 and ''</span>
+0020 <span class="comment">% total of 128 channels</span>
+0021 hdr = eegMex( dir, xfile);
+0022 
+0023 
+0024 gram = 1 ; <span class="comment">% 0=spectra, 1=coherence</span>
+0025 <a href="../../chronux_2_10/spectral_analysis/chronux.html" class="code" title="function chronux">chronux</a> = 0 ; <span class="comment">% 0=no comparison with Chronux; 1=compare with chronux</span>
+0026 
+0027 <span class="comment">%nSamples = 4210;</span>
+0028 nChannels = 2; 
+0029 nSegments = 1;
+0030 movingwin = [25, 25];
+0031 
+0032 <span class="comment">%</span>
+0033 <span class="comment">% Spectral Parameters</span>
+0034 <span class="comment">%</span>
+0035 params.fpass = [ 0 0.5 ];
+0036 params.pad = 2;
+0037 params.err = [2 0.05];  <span class="comment">% err(1)=0 is no err estimates; err(1)=1 is asymptotic estimates; err(1)=2 is Jacknife</span>
+0038 params.trialave = 1;
+0039 params.Fs = 1;
+0040 
+0041 <span class="comment">%</span>
+0042 <span class="comment">% Tapers issues</span>
+0043 <span class="comment">%</span>
+0044 halfBandWidth = 2.5; 
+0045 kCap = 2*halfBandWidth - 1;
+0046 <span class="comment">%params.tapers = [ halfBandWidth, kCap ];</span>
+0047 params.tapers = [ halfBandWidth, 2 ];
+0048 
+0049 <span class="comment">%</span>
+0050 <span class="comment">% Basic checks on inputs</span>
+0051 <span class="comment">%</span>
+0052 <span class="keyword">if</span> (gram==1) &amp;&amp; (nChannels &lt; 2), error( <span class="string">'Coherence requires at least 2 channels...'</span> ); <span class="keyword">end</span> 
+0053 <span class="comment">%if (nSegments==1) &amp;&amp; (params.err(1)==2), error( 'Jacknife requires more than 1 segment'); end</span>
+0054 
+0055 <span class="comment">%</span>
+0056 <span class="comment">% Generate segments endpoints randomly</span>
+0057 <span class="comment">% myrandint is a 3rd party routine (from matlab site)</span>
+0058 <span class="comment">%</span>
+0059 <span class="comment">% Randomly generated segment end points</span>
+0060 sMarkers = reshape( sort( <a href="myrandint.html" class="code" title="function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)">myrandint</a>( 2*nSegments, 1, [ ceil(hdr.nSamples/500) : ceil(hdr.nSamples/50) ], <span class="string">'noreplace'</span> ) )', 2, nSegments )';
+0061 <span class="comment">%sMarkers = [ ceil(hdr.nSamples/80), ceil(hdr.nSamples/65) ];</span>
+0062 
+0063 <span class="comment">%</span>
+0064 <span class="comment">% Randomly select a few channels</span>
+0065 <span class="comment">%</span>
+0066 <span class="keyword">if</span> ~<a href="../../chronux_2_10/spectral_analysis/chronux.html" class="code" title="function chronux">chronux</a>
+0067     <span class="comment">%chIndices = sort( myrandint( nChannels, 1, [ round(hdr.nChans/4) : round(3*hdr.nChans/4) ], 'noreplace' ) );</span>
+0068     chIndices = [ 3 : 3+nChannels-1 ];
+0069 <span class="keyword">else</span>
+0070     <span class="comment">%chIndices = [ 10 : 10+nChannels-1 ];</span>
+0071     chIndices = [ 3, 7 ];
+0072 <span class="keyword">end</span>
+0073 
+0074 <span class="comment">%</span>
+0075 <span class="comment">% Randomly generate the time series</span>
+0076 <span class="comment">%</span>
+0077 fulldata = eegMex( dir, xfile, chIndices, [ 1 hdr.nSamples/50 1 ] );
+0078 mDiscardBits = 0;
+0079 conversionFactor = ( 8711 / (2^21 - 0.5) ) * 2^mDiscardBits;
+0080 fulldata{:} = fulldata{:} * conversionFactor;
+0081 
+0082 <span class="comment">%</span>
+0083 <span class="comment">% Create a data matrix with all the segments aligned one after another</span>
+0084 <span class="comment">%</span>
+0085 totalSegmentLength = sum( sMarkers(:,2) - sMarkers(:,1) + 1 );
+0086 data = zeros( totalSegmentLength, length(chIndices) ); <span class="comment">% preallocate to ensure contiguous memory</span>
+0087 newMarkers(1,1) = 1; 
+0088 newMarkers(1,2) = sMarkers(1,2) - sMarkers(1,1) + 1;
+0089 data( newMarkers(1,1):newMarkers(1,2), : ) = detrend( fulldata{1}( sMarkers(1,1):sMarkers(1,2), :) );
+0090 <span class="keyword">for</span> sg = 2:size( sMarkers, 1 )
+0091     newMarkers(sg,1) = newMarkers(sg-1,2) + 1; 
+0092     newMarkers(sg,2) = newMarkers(sg,1) + sMarkers(sg,2) - sMarkers(sg,1);
+0093     data( newMarkers(sg,1):newMarkers(sg,2), : ) = detrend( fulldata{1}( sMarkers(sg,1):sMarkers(sg,2), :) );
+0094 <span class="keyword">end</span>
+0095 
+0096 <span class="comment">% To ensure that we check results from array indices beyond 1</span>
+0097 <span class="keyword">if</span> nChannels &gt; 1
+0098     ix = sort( <a href="myrandint.html" class="code" title="function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)">myrandint</a>( 1, 2, [1:length(chIndices)], <span class="string">'noreplace'</span> ) ); <span class="comment">% Arbitrarily pick two indices from selected channels for testing results</span>
+0099     i1=ix(1); i2=ix(2);
+0100     <span class="comment">% iC = m + (n-1)*(n-2)/2, for elements of the the coherence matrix, Cmn</span>
+0101     iC = ix(1) + (ix(2)-1)*(ix(2)-2)/2;
+0102 <span class="keyword">else</span>
+0103     ix = sort( <a href="myrandint.html" class="code" title="function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)">myrandint</a>( 1, 1, [1:length(chIndices)], <span class="string">'noreplace'</span> ) ); <span class="comment">% Arbitrarily pick 1 indices from selected channels for testing results</span>
+0104     i1=ix(1);
+0105 <span class="keyword">end</span>
+0106 
+0107 <span class="comment">%</span>
+0108 <span class="comment">% Power spectrum/spectrogram/coherence/coherogram</span>
+0109 <span class="comment">%</span>
+0110 <span class="keyword">if</span> gram==0
+0111     [ S, f, Serr ] = avgSpectrum( data, movingwin, params, newMarkers );
+0112     figure; plot( f, 10*log10( S(:,i1) ), <span class="string">'k'</span>, f, 10*log10( Serr(2,:,i1) ), <span class="string">'g--'</span>, f, 10*log10( Serr(1,:,i1)), <span class="string">'g--'</span> ); title(<span class="string">'Avg. Routine:: Spectrum'</span>);
+0113     <span class="comment">%figure; plot( f, 10*log10( S(:,i1) )); title('Avg. Routine:: Spectrum');</span>
+0114 <span class="keyword">elseif</span> gram==1
+0115     [Cmn,Phimn,Smn,Smm,f,ConfC,PhiStd,Cerr] = avgCoherence( data, movingwin, params, newMarkers );
+0116     <span class="comment">%  C(i,j) = Cmn(:,k) where k = j + (1/2)*(i-1)*(i-2)</span>
+0117     figure; plot( f, Cmn(:,iC), <span class="string">'k'</span>, f, Cerr(2,:,iC), <span class="string">'g--'</span>, f, Cerr(1,:,iC), <span class="string">'g--'</span> ); 
+0118     title(<span class="string">'Avg. Routine:: Coherence'</span>); ylim([0 1])
+0119     <span class="comment">%figure; plot( f, 10*log10( Cmn(:,iC) ) ); title('Avg. Routine:: Coherence-Magnitude');</span>
+0120     <span class="comment">%figure; plot( f, phimn(:,iC) ); title('Avg. Routine:: Coherence-Phase');</span>
+0121     disp( [<span class="string">'Confidence level for C (confC) at (1-p) level: '</span> num2str( ConfC(iC)) ] );
+0122 <span class="keyword">end</span>
+0123 
+0124 
+0125 
+0126 <span class="comment">%</span>
+0127 <span class="comment">% Use to check against Chronux: only for equal length segments</span>
+0128 <span class="comment">%</span>
+0129 <span class="keyword">if</span> <a href="../../chronux_2_10/spectral_analysis/chronux.html" class="code" title="function chronux">chronux</a>
+0130 
+0131     win = floor( newMarkers(1,2) / movingwin(1) );
+0132     newMarkers(1,2) = newMarkers(1,2) - mod( newMarkers(1,2), win );
+0133     cdata = data( [1:newMarkers(1,2)], i1 );
+0134     cdata = detrend( reshape( cdata, [ newMarkers(1,2)/win, win ] ) );
+0135     cdata2 = data( [1:newMarkers(1,2)], i2 );
+0136     cdata2 = detrend( reshape( cdata2, [ newMarkers(1,2)/win, win ] ) );
+0137     params.trialave = 1;
+0138     <span class="keyword">if</span> gram==0
+0139         [ cS, cf, cSerr ] = <a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>( cdata, params );
+0140         figure; plotvector( cS, cf, <span class="string">'l'</span>, cSerr );
+0141         <span class="comment">%figure; plot( cf, 10*log10( cS )); title('Chronux:: Spectrum');</span>
+0142         figure; plot( cf, 10*log10(cSerr(1,:)), cf, 10*log10(cSerr(2,:)) ); title(<span class="string">'Chronux Error-Bar Computations'</span>);
+0143         figure; plot( cf, 10*log10( cS ) - 10*log10( S(:,i1) )); title(<span class="string">'Error in Spectrum = |New Routines - Chronux|'</span>);
+0144         figure; plot( cf, 10*log10(cSerr(1,:)) - 10*log10(Serr(1,:,i1)), cf, 10*log10(cSerr(2,:)) - 10*log10(Serr(2,:,i1)) );title(<span class="string">'Error in Error-Bar Computations = |New Routines - Chronux| '</span>);
+0145     <span class="keyword">elseif</span> gram==1
+0146         
+0147         [cC,cphi,cS12,cS1,cS2,cf,cconfC,cphistd,cCerr]=<a href="../../chronux_2_10/spectral_analysis/continuous/coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>( cdata, cdata2, params );
+0148         
+0149         <span class="comment">%figure; plotvector( cC(:,1), cf, 'n', cCerr );</span>
+0150         figure; plot( cf, cC(:,iC), <span class="string">'k'</span>, cf, cCerr(2,:,iC), <span class="string">'g--'</span>, cf, cCerr(1,:,iC), <span class="string">'g--'</span> );
+0151         title(<span class="string">'Chronux:: Coherence'</span>); ylim([0 1])
+0152         <span class="comment">%figure; plot( cf, 10*log10( cC(:,1) ) ); title('Chronux:: Coherence-Magnitude');</span>
+0153         figure; plot( cf, 10*log10( cC(:,1) ) - 10*log10( Cmn(:,iC) ) ); title(<span class="string">'Error in Coherence = |New Routines - Chronux|'</span>);
+0154         <span class="comment">% Phase may give a problem of 2pi difference... look into it.</span>
+0155         figure; plot( cf, cphi(:,1) -  Phimn(:,iC) ); title(<span class="string">'Error in Phase = |New Routines - Chronux|'</span>);
+0156         <span class="comment">%</span>
+0157         <span class="comment">% Note the remaining quantities do not really need to checked since</span>
+0158         <span class="comment">% coherence = cross-spectrum/power spectra* power spectra, ie C = S12/(S1*S2)</span>
+0159         <span class="comment">% so unlikely that S12, S1, S2 are incorrect if C is correct.</span>
+0160         <span class="keyword">if</span> 1
+0161             figure; plot( cf, 10*log10( cS1(:,1) ) - 10*log10( Smm(:,ix(1)) ) ); title(<span class="string">'Error in Power Spectrogram-1 = |New Routines - Chronux|'</span>);
+0162             figure; plot( cf, 10*log10( cS2(:,1) ) - 10*log10( Smm(:,ix(2)) ) ); title(<span class="string">'Error in Power Spectrogram-2 = |New Routines - Chronux|'</span>);
+0163         <span class="keyword">end</span>
+0164         <span class="comment">%</span>
+0165         <span class="comment">% Error-Bars &amp; Confidence Levels</span>
+0166         disp( [<span class="string">'Confidence levelfor C (confC) at (1-p) level: '</span> num2str( cconfC) <span class="string">' (Chronux)'</span> ] );
+0167         disp( [<span class="string">'Error in confidence level, confC: '</span> num2str( ConfC(iC) - cconfC ) ] );     
+0168         <span class="comment">%figure; plot( cf, cphistd(:,1), f, phistd(:,iC) ); title('Phase-Error-Bar Computations');</span>
+0169         figure; plot( cf, cphistd(:,1) -  PhiStd(:,iC) ); title(<span class="string">'Error in PhiStd-1'</span>);
+0170         figure; plot( cf, cphistd(:,1) -  PhiStd(:,iC) ); title(<span class="string">'Error in PhiStd-2'</span>);
+0171         figure; plot( cf, abs(cCerr(1,:,1) -  Cerr(1,:,iC)), cf, abs(cCerr(2,:,1) -  Cerr(2,:,iC))  ); title(<span class="string">'Error in Abs(Coherence)-Error-Bar Computations = |New Routines - Chronux|'</span>);
+0172     <span class="keyword">end</span>
+0173 <span class="keyword">end</span>
+0174 
+0175     
+0176 
+0177 
+0178</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of testAvg3</title>
+  <meta name="keywords" content="testAvg3">
+  <meta name="description" content="This is a calling routine to test &amp; check out the power spectrum &amp;">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html test -->
+<h1>testAvg3
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a calling routine to test &amp; check out the power spectrum &amp;</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This is a calling routine to test &amp; check out the power spectrum &amp;
+ spectrogram routines for unequal segment lengths. In addition, use it 
+ to compare with Chronux routines when segments are of equal length.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../chronux_2_10/spectral_analysis/chronux.html" class="code" title="function chronux">chronux</a>	This library performs time-frequency analysis (mostly using the</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>	Multi-taper spectrum - continuous process</li><li><a href="myrandint.html" class="code" title="function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)">myrandint</a>	MYRANDINT(M,N,RANGE) is an M-by-N matrix with random integer entries</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%</span>
+0002 <span class="comment">% This is a calling routine to test &amp; check out the power spectrum &amp;</span>
+0003 <span class="comment">% spectrogram routines for unequal segment lengths. In addition, use it</span>
+0004 <span class="comment">% to compare with Chronux routines when segments are of equal length.</span>
+0005 <span class="comment">%</span>
+0006 clear all;
+0007 
+0008 gram = 0 ; <span class="comment">% 0=spectra, 1=coherence</span>
+0009 <a href="../../chronux_2_10/spectral_analysis/chronux.html" class="code" title="function chronux">chronux</a> = 0; <span class="comment">% 1=compare, 0=don't</span>
+0010 line = 0;
+0011 
+0012 nSamples = 4210; 
+0013 nChannels = 1; 
+0014 nSegments = 1;
+0015 movingwin = [50, 50];
+0016 
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Spectral Parameters</span>
+0019 <span class="comment">%</span>
+0020 params.fpass = [ 0 0.5 ];
+0021 params.pad = 2;
+0022 params.err = [1 0.85];  <span class="comment">% err(1)=0 is no err estimates; err(1)=1 is asymptotic estimates; err(1)=2 is Jacknife</span>
+0023 params.trialave = 1;
+0024 params.Fs = 1;
+0025 
+0026 <span class="comment">%</span>
+0027 <span class="comment">% Tapers issues</span>
+0028 <span class="comment">%</span>
+0029 halfBandWidth = 2.5; 
+0030 kCap = 2*halfBandWidth - 1;
+0031 <span class="comment">%params.tapers = [ halfBandWidth, kCap ];</span>
+0032 params.tapers = [ halfBandWidth, 1 ];
+0033 
+0034 <span class="comment">%</span>
+0035 <span class="comment">% Basic checks on inputs</span>
+0036 <span class="comment">%</span>
+0037 <span class="keyword">if</span> (gram==1) &amp;&amp; (nChannels &lt; 2), error( <span class="string">'Coherence requires at least 2 channels...'</span> ); <span class="keyword">end</span> 
+0038 <span class="keyword">if</span> (nSegments==1) &amp;&amp; (params.err(1)==2), error( <span class="string">'Jacknife requires more than 1 segment'</span>); <span class="keyword">end</span>
+0039 
+0040 <span class="comment">%</span>
+0041 <span class="comment">% Generate segments endpoints randomly</span>
+0042 <span class="comment">% myrandint is a 3rd party routine (from matlab site)</span>
+0043 <span class="comment">%</span>
+0044 <span class="keyword">if</span> ~<a href="../../chronux_2_10/spectral_analysis/chronux.html" class="code" title="function chronux">chronux</a>
+0045     <span class="comment">% Randomly generated segment end points</span>
+0046     sMarkers = reshape( sort( <a href="myrandint.html" class="code" title="function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)">myrandint</a>( 2*nSegments, 1, [ 1 : nSamples ], <span class="string">'noreplace'</span> ) )', 2, nSegments )';
+0047 <span class="keyword">else</span>
+0048     <span class="comment">% Equal length segments (to compare with Chronux)</span>
+0049     sMarkers = ones( nSegments, 2 ); 
+0050     sMarkers( :, 2 ) = round( nSamples/2 ); 
+0051 <span class="keyword">end</span>
+0052 
+0053 <span class="comment">%</span>
+0054 <span class="comment">% Randomly generate the time series</span>
+0055 <span class="comment">%</span>
+0056 fulldata = randn( nSamples, nChannels );  
+0057 <span class="keyword">if</span> line <span class="comment">% add line harmonic for testing purposes</span>
+0058     f1 = 0.45; a1 = 0.20;
+0059     f2 = 0.25; a2 = 0.15;
+0060     <span class="keyword">for</span> c=1:size(fulldata,2)
+0061         mx = max(fulldata(:,c));
+0062         fulldata(:,c) = fulldata(:,c) + a1*mx*sin( f1*2*pi*[1:size(fulldata,1)]') + a2*mx*sin( f2*2*pi*[1:size(fulldata,1)]') ;
+0063     <span class="keyword">end</span>
+0064 <span class="keyword">end</span>
+0065 
+0066 <span class="comment">%</span>
+0067 <span class="comment">% Randomly select a few channels</span>
+0068 <span class="comment">%</span>
+0069 chIndices = sort( <a href="myrandint.html" class="code" title="function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)">myrandint</a>( ceil(nChannels/1.5), 1, [ 1 : nChannels ], <span class="string">'noreplace'</span> ) );
+0070 <span class="comment">%chIndices = [ 1 : nChannels ];</span>
+0071 
+0072 <span class="comment">%</span>
+0073 <span class="comment">% Create a data matrix with all the segments aligned one after another</span>
+0074 <span class="comment">%</span>
+0075 totalSegmentLength = sum( sMarkers(:,2) - sMarkers(:,1) + 1 );
+0076 data = zeros( totalSegmentLength, length(chIndices) ); <span class="comment">% preallocate to ensure contiguous memory</span>
+0077 newMarkers(1,1) = 1; 
+0078 newMarkers(1,2) = sMarkers(1,2) - sMarkers(1,1) + 1;
+0079 data( newMarkers(1,1):newMarkers(1,2), : ) = fulldata( sMarkers(1,1):sMarkers(1,2), chIndices(:));
+0080 <span class="keyword">for</span> sg = 2:size( sMarkers, 1 )
+0081     newMarkers(sg,1) = newMarkers(sg-1,2) + 1; 
+0082     newMarkers(sg,2) = newMarkers(sg,1) + sMarkers(sg,2) - sMarkers(sg,1);
+0083     data( newMarkers(sg,1):newMarkers(sg,2), : ) = fulldata( sMarkers(sg,1):sMarkers(sg,2), chIndices(:));
+0084 <span class="keyword">end</span>
+0085 
+0086 <span class="comment">% To ensure that we check results from array indices beyond 1</span>
+0087 <span class="keyword">if</span> nChannels &gt; 1
+0088     ix = sort( <a href="myrandint.html" class="code" title="function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)">myrandint</a>( 1, 2, [1:length(chIndices)], <span class="string">'noreplace'</span> ) ); <span class="comment">% Arbitrarily pick two indices from selected channels for testing results</span>
+0089     i1=ix(1); i2=ix(2);
+0090     <span class="comment">% iC = m + (n-1)*(n-2)/2, for elements of the the coherence matrix, Cmn</span>
+0091     iC = ix(1) + (ix(2)-1)*(ix(2)-2)/2;
+0092 <span class="keyword">else</span>
+0093     ix = sort( <a href="myrandint.html" class="code" title="function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)">myrandint</a>( 1, 1, [1:length(chIndices)], <span class="string">'noreplace'</span> ) ); <span class="comment">% Arbitrarily pick 1 indices from selected channels for testing results</span>
+0094     i1=ix(1);
+0095 <span class="keyword">end</span>
+0096 
+0097 <span class="comment">%</span>
+0098 <span class="comment">% Power spectrum/spectrogram/coherence/coherogram</span>
+0099 <span class="comment">%</span>
+0100 <span class="keyword">if</span> gram==0
+0101     [ S, f, Serr ] = ueSpectrogram( data, movingwin, params, newMarkers );
+0102     figure; plotvector( S(:,i1), f, <span class="string">'l'</span>, squeeze(Serr(:,:,i1)) );
+0103     <span class="comment">%figure; plot( f, 10*log10( S(:,i1) )); title('Avg. Routine:: Spectrum');</span>
+0104 <span class="keyword">elseif</span> gram==1
+0105     [Cmn,Phimn,Smn,Smm,f,I,ConfC,PhiStd,Cerr] = ueCoherence( data, params, newMarkers );
+0106     <span class="comment">%  C(i,j) = Cmn(:,k) where k = j + (1/2)*(i-1)*(i-2)</span>
+0107     figure; plot( f, 10*log10( Cmn(:,iC) ) ); title(<span class="string">'Avg. Routine:: Coherence-Magnitude'</span>);
+0108     <span class="comment">%figure; plot( f, phimn(:,iC) ); title('Avg. Routine:: Coherence-Phase');</span>
+0109     disp( [<span class="string">'Confidence levelfor C (confC) at (1-p) level: '</span> num2str( ConfC(iC)) ] );
+0110 <span class="keyword">end</span>
+0111 
+0112 <span class="comment">%</span>
+0113 <span class="comment">% Use to check against Chronux: only for equal length segments</span>
+0114 <span class="comment">%</span>
+0115 <span class="keyword">if</span> <a href="../../chronux_2_10/spectral_analysis/chronux.html" class="code" title="function chronux">chronux</a>
+0116     cdata = repmat( fulldata( sMarkers(1,1):sMarkers(1,2), chIndices(i1) ), 1, nSegments ); <span class="comment">% round(nSamples/2) x nSegments</span>
+0117     params.trialave = 1;
+0118     <span class="keyword">if</span> gram==0
+0119         [ cS, cf, cSerr ] = <a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>( cdata, params );
+0120         figure; plot( cf, 10*log10( cS )); title(<span class="string">'Chronux:: Spectrum'</span>);
+0121         figure; plot( cf, 10*log10(cSerr(1,:)), cf, 10*log10(cSerr(2,:)) ); title(<span class="string">'Chronux Error-Bar Computations'</span>);
+0122         figure; plot( cf, 10*log10( cS ) - 10*log10( S(:,i1) )); title(<span class="string">'Error in Spectrum = |New Routines - Chronux|'</span>);
+0123         figure; plot( cf, 10*log10(cSerr(1,:)) - 10*log10(Serr(1,:,i1)), cf, 10*log10(cSerr(2,:)) - 10*log10(Serr(2,:,i1)) );title(<span class="string">'Error in Error-Bar Computations = |New Routines - Chronux| '</span>);
+0124     <span class="keyword">elseif</span> gram==1
+0125         cdata2 = repmat( fulldata( sMarkers(1,1):sMarkers(1,2), chIndices(i2) ), 1, nSegments ); <span class="comment">% round(nSamples/2) x nSegments</span>
+0126         params.trialave = 1;
+0127         
+0128         [cC,cphi,cS12,cS1,cS2,cf,cconfC,cphistd,cCerr]=<a href="../../chronux_2_10/spectral_analysis/continuous/coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>( cdata, cdata2, params );
+0129         
+0130         figure; plot( cf, 10*log10( cC(:,1) ) ); title(<span class="string">'Chronux:: Coherence-Magnitude'</span>);
+0131         figure; plot( cf, 10*log10( cC(:,1) ) - 10*log10( Cmn(:,iC) ) ); title(<span class="string">'Error in Coherence = |New Routines - Chronux|'</span>);
+0132         <span class="comment">% Phase may give a problem of 2pi difference... look into it.</span>
+0133         figure; plot( cf, cphi(:,1) -  Phimn(:,iC) ); title(<span class="string">'Error in Phase = |New Routines - Chronux|'</span>);
+0134         <span class="comment">%</span>
+0135         <span class="comment">% Note the remaining quantities do not really need to checked since</span>
+0136         <span class="comment">% coherence = cross-spectrum/power spectra* power spectra, ie C = S12/(S1*S2)</span>
+0137         <span class="comment">% so unlikely that S12, S1, S2 are incorrect if C is correct.</span>
+0138         <span class="keyword">if</span> 1
+0139             figure; plot( cf, 10*log10( cS1(:,1) ) - 10*log10( Smm(:,ix(1)) ) ); title(<span class="string">'Error in Power Spectrogram-1 = |New Routines - Chronux|'</span>);
+0140             figure; plot( cf, 10*log10( cS2(:,1) ) - 10*log10( Smm(:,ix(2)) ) ); title(<span class="string">'Error in Power Spectrogram-2 = |New Routines - Chronux|'</span>);
+0141         <span class="keyword">end</span>
+0142         <span class="comment">%</span>
+0143         <span class="comment">% Error-Bars &amp; Confidence Levels</span>
+0144         disp( [<span class="string">'Confidence levelfor C (confC) at (1-p) level: '</span> num2str( cconfC) <span class="string">' (Chronux)'</span> ] );
+0145         disp( [<span class="string">'Error in confidence level, confC: '</span> num2str( ConfC(iC) - cconfC ) ] );     
+0146         <span class="comment">%figure; plot( cf, cphistd(:,1), f, phistd(:,iC) ); title('Phase-Error-Bar Computations');</span>
+0147         figure; plot( cf, cphistd(1,:,1) -  PhiStd(1,:,iC) ); title(<span class="string">'Error in PhiStd-1'</span>);
+0148         figure; plot( cf, cphistd(2,:,1) -  PhiStd(2,:,iC) ); title(<span class="string">'Error in PhiStd-2'</span>);
+0149         figure; plot( cf, abs(cCerr(1,:,1) -  Cerr(1,:,iC)), cf, abs(cCerr(2,:,1) -  Cerr(2,:,iC))  ); title(<span class="string">'Error in Abs(Coherence)-Error-Bar Computations = |New Routines - Chronux|'</span>);
+0150     <span class="keyword">end</span>
+0151 <span class="keyword">end</span>
+0152 
+0153     
+0154 
+0155 
+0156</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

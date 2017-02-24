@@ -1,0 +1,235 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of intervalSet</title>
+  <meta name="keywords" content="intervalSet">
+  <meta name="description" content="Constructor for intervalSet objects">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@intervalSet</a> &gt; intervalSet.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @intervalSet&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>intervalSet
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Constructor for intervalSet objects</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function O = intervalSet(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Constructor for intervalSet objects
+      
+      USAGE:
+      O = intervalSet(s, e, fixit, PropertyName, PropertyValue, ....) 
+      
+      INPUTS:
+      if no inputs, return a null intervalSet object
+      s, e - vectors containing start and stop times for intervals
+      
+      'PropertyName', PropertyValue: set properties
+      
+      once created objects are readonly, so properties can be set only in the
+      constructor
+      
+      if the '-fixit' flag is specified as an argument, the start and stop
+      arrays are fixed in such a way that the intervalSet is made out of the
+      smallest intervals included between a start point and a stop point</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="diff.html" class="code" title="function O = diff(varargin)">diff</a>	Computes the set difference of intervalSet's</li><li><a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>	Returns the length of each interval in the set</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="cat.html" class="code" title="function R = cat(varargin)">cat</a>	Concatenates IntervalSet objects</li><li><a href="diff.html" class="code" title="function O = diff(varargin)">diff</a>	Computes the set difference of intervalSet's</li><li><a href="dropLongIntervals.html" class="code" title="function iso = dropLongIntervals(is, thr, varargin)">dropLongIntervals</a>	Drops the intervals in the set that are longer than a given threshold</li><li><a href="dropShortIntervals.html" class="code" title="function iso = dropShortIntervals(is, thr, varargin)">dropShortIntervals</a>	Drops the intervals in the set that are shorter than a given threshold</li><li><a href="intersect.html" class="code" title="function O = intersect(varargin)">intersect</a>	Computes the intersection of intervalSet's</li><li><a href="regIntervals.html" class="code" title="function R = regIntervals(ep,N)">regIntervals</a>	Split an intervalSet object in N segments of equal length</li><li><a href="shift.html" class="code" title="function A = shift(O, shift, TimeUnits)">shift</a>	Shifts intervalSet</li><li><a href="subset.html" class="code" title="function A = subset(O, ix)">subset</a>	Returns subsets of an intervalSet</li><li><a href="timeSpan.html" class="code" title="function tsp = timeSpan(is)">timeSpan</a>	Returns the minimum continuous interval that contains the intervalSet</li><li><a href="union.html" class="code" title="function O = union(varargin)">union</a>	Computes the union of intervalSet's</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function O = intervalSet(varargin)</a>
+0002 
+0003 <span class="comment">%  Constructor for intervalSet objects</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      O = intervalSet(s, e, fixit, PropertyName, PropertyValue, ....)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      INPUTS:</span>
+0009 <span class="comment">%      if no inputs, return a null intervalSet object</span>
+0010 <span class="comment">%      s, e - vectors containing start and stop times for intervals</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%      'PropertyName', PropertyValue: set properties</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%      once created objects are readonly, so properties can be set only in the</span>
+0015 <span class="comment">%      constructor</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%      if the '-fixit' flag is specified as an argument, the start and stop</span>
+0018 <span class="comment">%      arrays are fixed in such a way that the intervalSet is made out of the</span>
+0019 <span class="comment">%      smallest intervals included between a start point and a stop point</span>
+0020 
+0021 
+0022 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia</span>
+0023 <span class="comment">% This software is released under the GNU GPL</span>
+0024 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0025   
+0026   
+0027   <span class="keyword">if</span> nargin == 0
+0028     O.units = {};
+0029     O.start = [];
+0030     O.stop = [];
+0031     O = class(O, <span class="string">'intervalSet'</span>);
+0032     <span class="keyword">return</span>
+0033   <span class="keyword">end</span>
+0034   
+0035 
+0036   
+0037   <span class="keyword">if</span> isa(varargin{1}, <span class="string">'intervalSet'</span>)
+0038     <span class="keyword">if</span>(<a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(varargin) &gt; 1)
+0039       error(<span class="string">'Trailing arguments in copy constructor'</span>);
+0040     <span class="keyword">else</span>
+0041       O = varargin{1};
+0042       <span class="keyword">return</span>
+0043     <span class="keyword">end</span>
+0044   <span class="keyword">end</span>
+0045   
+0046   
+0047   <span class="keyword">if</span>(<a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(varargin) &lt; 2)
+0048     error(<span class="string">'constructor takes at least two argument: start, stop'</span>);
+0049   <span class="keyword">end</span>
+0050   O.units = units(<span class="string">'time'</span>, <span class="string">'ts'</span>);
+0051   
+0052   s = varargin{1};
+0053   <span class="keyword">if</span> isa(s, <span class="string">'numeric'</span>)
+0054     ;
+0055   <span class="keyword">elseif</span> isa(s, <span class="string">'tsd'</span>)
+0056     s = Range(s, O.units);
+0057   <span class="keyword">else</span>
+0058     error(<span class="string">'arguments must be arrays and/or tsd'</span>);
+0059   <span class="keyword">end</span>
+0060   
+0061   
+0062   
+0063   e = varargin{2};
+0064   <span class="keyword">if</span> isa(e, <span class="string">'numeric'</span>)
+0065     ;
+0066   <span class="keyword">elseif</span> isa(e, <span class="string">'tsd'</span>)
+0067     e = Range(e, O.units);
+0068   <span class="keyword">else</span>
+0069     error(<span class="string">'arguments must be arrays and/or tsd'</span>);
+0070   <span class="keyword">end</span>
+0071   
+0072   c_varargin = varargin(3:end);
+0073   
+0074   
+0075   
+0076   
+0077   input_units = time_units(<span class="string">'ts'</span>);
+0078   fixit = 0;
+0079   <span class="keyword">if</span> nargin == 0
+0080     s = zeros(0,1);
+0081     e = zeros(0,1);
+0082   <span class="keyword">end</span>
+0083 
+0084   <span class="keyword">while</span> <a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(c_varargin) &gt; 0
+0085     
+0086     <span class="keyword">switch</span>(char(c_varargin(1)))
+0087      <span class="keyword">case</span> <span class="string">'-fixit'</span>
+0088       fixit = 1;
+0089       c_varargin = c_varargin(2:end);
+0090      <span class="keyword">case</span> <span class="string">'-nofixit'</span>
+0091       fixit = 0;
+0092       c_varargin = c_varargin(2:end);
+0093      <span class="keyword">case</span> <span class="string">'units'</span>
+0094       input_units = c_varargin{2};
+0095       c_varargin = c_varargin(2:end);
+0096     <span class="keyword">end</span>
+0097   <span class="keyword">end</span>
+0098 
+0099   <span class="keyword">if</span> isa(input_units, <span class="string">'char'</span>)
+0100     input_units = time_units(input_units);
+0101   <span class="keyword">end</span>
+0102   
+0103     
+0104   
+0105 
+0106   
+0107 
+0108   
+0109   
+0110       
+0111   
+0112   <span class="keyword">if</span> (~isempty(s)) | (~isempty(e))
+0113     
+0114     <span class="keyword">if</span> ~(isa(s, <span class="string">'numeric'</span>) &amp; isa(e, <span class="string">'numeric'</span>))
+0115       error(<span class="string">'start and stop must be numeric arrays'</span>);
+0116     <span class="keyword">end</span>
+0117     
+0118     
+0119     <span class="keyword">if</span> all(size(s) ~= 1) | all(size(e) ~= 1)
+0120       error(<span class="string">'start and stop must be 1-D arrays'</span>);
+0121     <span class="keyword">end</span>
+0122     
+0123     s = s(:);
+0124     e = e(:);
+0125     
+0126     
+0127     <span class="keyword">if</span> ~fixit
+0128       <span class="keyword">if</span>  <a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(s) ~= <a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(e)
+0129     error(<span class="string">'s and e must be of the same length'</span>);
+0130       <span class="keyword">end</span>
+0131       
+0132       <span class="keyword">if</span>(any(s&gt; e))
+0133     error(<span class="string">'it must be s(i) &lt; e(i) for any i'</span>);
+0134       <span class="keyword">end</span>
+0135       
+0136       <span class="keyword">if</span>(any(<a href="diff.html" class="code" title="function O = diff(varargin)">diff</a>(s) &lt; 0))
+0137     error(<span class="string">'s must be sorted'</span>);
+0138       <span class="keyword">end</span>
+0139       
+0140       <span class="keyword">if</span>(any(<a href="diff.html" class="code" title="function O = diff(varargin)">diff</a>(e) &lt; 0))
+0141     error(<span class="string">'e must be sorted'</span>);
+0142       <span class="keyword">end</span>
+0143       
+0144       
+0145     <span class="keyword">elseif</span> <a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(s) &amp; <a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(e)
+0146       
+0147       mm = [s(:) ; e(:)];
+0148       mz = [zeros(<a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(s),1) ; ones(<a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(e),1)];
+0149       [mm, mx] = sort(mm);
+0150       mz = mz(mx);
+0151       good_ix = find(<a href="diff.html" class="code" title="function O = diff(varargin)">diff</a>(mz) == 1);
+0152       s = mm(good_ix);
+0153       e = mm(good_ix+1);
+0154  
+0155     <span class="keyword">end</span>
+0156   
+0157     <span class="keyword">if</span> any(s ~= sort(s))
+0158       [s, ix] = sort(s);
+0159       e = e(ix);
+0160     <span class="keyword">end</span>
+0161     
+0162     
+0163     
+0164   <span class="keyword">end</span>
+0165   
+0166     
+0167   cnvrt  = convert(input_units, O.units); 
+0168   O.start = cnvrt * s;
+0169   O.stop = cnvrt * e;
+0170   
+0171   O = class(O, <span class="string">'intervalSet'</span>);
+0172</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

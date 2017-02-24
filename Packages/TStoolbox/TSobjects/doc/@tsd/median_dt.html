@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of median_dt</title>
+  <meta name="keywords" content="median_dt">
+  <meta name="description" content="Find the median value of inter-event interval">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; median_dt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>median_dt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Find the median value of inter-event interval</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [mdt, n_missing] = median_dt(tsa, TimeUnits) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Find the median value of inter-event interval 
+      
+      USAGE:
+      [mdt [, n_missing] ] = median_dt(tsa) 
+      
+      Intended for tsd that are sampled at regular intervals, this function
+      returns the mean inter-event interval.
+      
+      INPUTS:
+      tsa       - a tsd object 
+      TimeUnits - a units object or the abbreviation string
+      
+      OUTPUTS:
+      mdt      - the median inter-event interval, in the units specified by TimeUnits 
+      n_missing - (optional) the number of points that are missing, assuming
+              that everything was sampled at 1/mdt rate</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>	Returns TSD timestamps</li><li><a href="find.html" class="code" title="function O = find(tsa, find_string)">find</a>	Selects points in a TSD object based on conditions</li><li><a href="length.html" class="code" title="function l = length(tsa)">length</a>	Returns number of elements in tsa (overoads length function)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="interp_missing.html" class="code" title="function tsi = interp_missing(tsa, TimeUnits, varargin)">interp_missing</a>	Interpolate missing values in continuously sampled tsd</li><li><a href="smooth.html" class="code" title="function S = smooth(tsa, l, varargin)">smooth</a>	Smooth a TSD</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [mdt, n_missing] = median_dt(tsa, TimeUnits)</a>
+0002 
+0003 <span class="comment">%  Find the median value of inter-event interval</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      [mdt [, n_missing] ] = median_dt(tsa)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      Intended for tsd that are sampled at regular intervals, this function</span>
+0009 <span class="comment">%      returns the mean inter-event interval.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%      INPUTS:</span>
+0012 <span class="comment">%      tsa       - a tsd object</span>
+0013 <span class="comment">%      TimeUnits - a units object or the abbreviation string</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%      OUTPUTS:</span>
+0016 <span class="comment">%      mdt      - the median inter-event interval, in the units specified by TimeUnits</span>
+0017 <span class="comment">%      n_missing - (optional) the number of points that are missing, assuming</span>
+0018 <span class="comment">%              that everything was sampled at 1/mdt rate</span>
+0019   
+0020 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia</span>
+0021 <span class="comment">% This software is released under the GNU GPL</span>
+0022 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0023 
+0024   
+0025   
+0026   
+0027   <span class="keyword">if</span> nargin == 1
+0028     TimeUnits = tsa.time_units;
+0029   <span class="keyword">else</span> 
+0030     TimeUnits = time_units(TimeUnits);
+0031   <span class="keyword">end</span>
+0032   
+0033   
+0034   dt = diff(<a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa, TimeUnits));
+0035   
+0036   mdt = median(dt);
+0037   
+0038   miss_ix = <a href="find.html" class="code" title="function O = find(tsa, find_string)">find</a>((dt &gt; mdt + eps ) | (dt &lt; mdt - eps));
+0039   
+0040   <span class="keyword">if</span> nargout &gt; 1
+0041     n_missing = sum(dt(miss_ix)) / mdt - <a href="length.html" class="code" title="function l = length(tsa)">length</a>(miss_ix);
+0042   <span class="keyword">end</span>
+0043   
+0044   
+0045</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

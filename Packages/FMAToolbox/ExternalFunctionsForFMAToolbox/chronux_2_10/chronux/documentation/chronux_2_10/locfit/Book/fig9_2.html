@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig9_2</title>
+  <meta name="keywords" content="fig9_2">
+  <meta name="description" content="Local Regression and Likelihood, Figure 9.2.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig9_2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 9.2.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 9.2.
+
+ Hardle's Motorcycle accelaration dataset.
+ Local Variance Estimation.
+
+ Author: Catherine Loader
+
+ NEED: lfknots function to extract fit points.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>	Interpolate a fit produced by locfit().</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 9.2.</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Hardle's Motorcycle accelaration dataset.</span>
+0004 <span class="comment">% Local Variance Estimation.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Author: Catherine Loader</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% NEED: lfknots function to extract fit points.</span>
+0009 
+0010 load mcyc;
+0011 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(time,<span class="string">'y'</span>,accel,<span class="string">'nn'</span>,0.1);
+0012 y = -2*<a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit,<span class="string">'fitp'</span>,<span class="string">'what'</span>,<span class="string">'lik'</span>);
+0013 w = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit,<span class="string">'fitp'</span>,<span class="string">'what'</span>,<span class="string">'rdf'</span>);
+0014 x = fit.fit_points.evaluation_points';
+0015 [x y w]
+0016 fitv = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(x,y,<span class="string">'weights'</span>,w,<span class="string">'family'</span>,<span class="string">'gamma'</span>,<span class="string">'nn'</span>,0.4);
+0017 figure(<span class="string">'Name'</span>,<span class="string">'fig9_2: Motorcycle acceleration'</span>);
+0018 <a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>(fitv);
+0019 xlabel(<span class="string">'Time'</span>);
+0020 ylabel(<span class="string">'Variance'</span>);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

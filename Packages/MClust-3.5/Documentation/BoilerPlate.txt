@@ -1,0 +1,1 @@
+%% Status: PROMOTED (Release version) % See documentation for copyright (owned by original authors) and warranties (none!).% This code released as part of MClust 3.5.% Version control M3.5.

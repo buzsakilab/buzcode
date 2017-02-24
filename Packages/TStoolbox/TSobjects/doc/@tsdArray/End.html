@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of End</title>
+  <meta name="keywords" content="End">
+  <meta name="description" content="Returns a vector containing the time of the last event of each tsd">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsdArray</a> &gt; End.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsdArray&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>End
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Returns a vector containing the time of the last event of each tsd</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function EnO = End(S0) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Returns a vector containing the time of the last event of each tsd
+      
+      USAGE:
+      eno = Start(tsa,is)
+      
+      INPUTS:
+      tsa - a tsdArray
+      is - an intervalSet
+      
+      OUTPUT:
+      eno - an vector of time</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="length.html" class="code" title="function l = length(S)">length</a>	Returns number of item in the tsdArray (overload of length function)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="MakeQfromS.html" class="code" title="function Q = MakeQfromS(S,bin,varargin)">MakeQfromS</a>	Spike train binning</li><li><a href="Rate.html" class="code" title="function r = Rate(S0,varargin)">Rate</a>	Returns a vector containing the time of the last event of each tsd</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function EnO = End(S0)</a>
+0002 
+0003 <span class="comment">%  Returns a vector containing the time of the last event of each tsd</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      eno = Start(tsa,is)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      INPUTS:</span>
+0009 <span class="comment">%      tsa - a tsdArray</span>
+0010 <span class="comment">%      is - an intervalSet</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%      OUTPUT:</span>
+0013 <span class="comment">%      eno - an vector of time</span>
+0014 
+0015 <span class="comment">%  copyright (c) 2009 Adrien Peyrache adrien.peyrache@gmail.com</span>
+0016 
+0017 EnO = [];
+0018 
+0019 <span class="keyword">for</span> i=1:<a href="length.html" class="code" title="function l = length(S)">length</a>(S0)
+0020     
+0021     Sr = S0.C{i};
+0022     rg = Range(Sr);
+0023     <span class="keyword">if</span> <a href="length.html" class="code" title="function l = length(S)">length</a>(rg)&gt;0
+0024         EnO = [EnO;rg(end)];
+0025     <span class="keyword">end</span>
+0026 
+0027 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of FlyOrient</title>
+  <meta name="keywords" content="FlyOrient">
+  <meta name="description" content="FLYORIENT">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FTrack --><!-- menu.html functions -->
+<h1>FlyOrient
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>FLYORIENT</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function orientation  = FlyOrient(subset_frame, threshold) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">FLYORIENT
+   Usage:
+       orientation = FlyOrient(subset_frame, threshold)
+
+ This function takes in a subset frame around the fly (calculated by
+ FindFly) and discards the 3D data by placing points where the pixel intensity
+ is larger than the user chosen threshold.  Then, Principal Components
+ Analysis (by way fot the pca1 function) is performed on the resulting 
+ scatter plot to find the direction of maximum variance --- this direction
+ is taken to be the fly's (ambiguous) orientation.  
+ orientation is a vector consisting of two angles (complements) that comprise 
+ the body axis. The first element is an angle in the upper half plane; the
+ second element is an angle in the lower half plane.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="pca1.html" class="code" title="function [signals, PC, V, data] = pca1(data)">pca1</a>	PCA1: Perform PCA using covariance.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="FindFly.html" class="code" title="function [x, y, bodyline, sqr] = FindFly(chunk, sqrsize)">FindFly</a>	FINDFLY</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function orientation  = FlyOrient(subset_frame, threshold)</a>
+0002 
+0003 <span class="comment">%FLYORIENT</span>
+0004 <span class="comment">%   Usage:</span>
+0005 <span class="comment">%       orientation = FlyOrient(subset_frame, threshold)</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% This function takes in a subset frame around the fly (calculated by</span>
+0008 <span class="comment">% FindFly) and discards the 3D data by placing points where the pixel intensity</span>
+0009 <span class="comment">% is larger than the user chosen threshold.  Then, Principal Components</span>
+0010 <span class="comment">% Analysis (by way fot the pca1 function) is performed on the resulting</span>
+0011 <span class="comment">% scatter plot to find the direction of maximum variance --- this direction</span>
+0012 <span class="comment">% is taken to be the fly's (ambiguous) orientation.</span>
+0013 <span class="comment">% orientation is a vector consisting of two angles (complements) that comprise</span>
+0014 <span class="comment">% the body axis. The first element is an angle in the upper half plane; the</span>
+0015 <span class="comment">% second element is an angle in the lower half plane.</span>
+0016 
+0017 <span class="comment">% Written by Dan Valente</span>
+0018 <span class="comment">% 11 October 2006</span>
+0019 
+0020 <span class="comment">%Normalize frame data by pixel of maximum intensity</span>
+0021 subset_frame = subset_frame/max(max(subset_frame));
+0022 
+0023 <span class="comment">% Put dots where fly is and do PCA on reduced data set</span>
+0024 [rows, cols] = find(subset_frame &gt;= threshold);
+0025 rows = length(subset_frame(:,1))-rows+1;
+0026 x = [cols';rows'];
+0027 [xnew, PC, V, data] = <a href="pca1.html" class="code" title="function [signals, PC, V, data] = pca1(data)">pca1</a>(x);
+0028 
+0029 <span class="comment">% Find orientation vectors (two, mirrored across diagonal), and group into</span>
+0030 <span class="comment">% upper half and lower half planes.</span>
+0031 a1 = PC(1,1);
+0032 b1 = PC(2,1);
+0033 a2 = -PC(1,1);
+0034 b2 = -PC(2,1);
+0035 <span class="keyword">if</span> (b1 &gt;= 0 );
+0036     orientUHP = atan2(b1,a1);
+0037     orientLHP = atan2(b2,a2);
+0038 <span class="keyword">elseif</span> (b2 &gt;=0);
+0039     orientUHP = atan2(b2,a2);
+0040     orientLHP = atan2(b1,a1);
+0041 <span class="keyword">else</span>
+0042 <span class="keyword">end</span>
+0043 
+0044 <span class="comment">% The vector we will return</span>
+0045 orientation = [orientUHP orientLHP];
+0046 
+0047 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

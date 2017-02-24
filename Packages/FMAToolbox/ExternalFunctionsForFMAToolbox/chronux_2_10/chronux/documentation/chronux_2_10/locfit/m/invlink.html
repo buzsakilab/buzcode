@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of invlink</title>
+  <meta name="keywords" content="invlink">
+  <meta name="description" content="inverse link function for locfit.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>invlink
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>inverse link function for locfit.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function y0 = invlink(y,fali) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> inverse link function for locfit.
+ y is a vector of raw fitted values.
+ fali is the integer [family link] vector from locfit.
+ output is the inv. link.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="lfband.html" class="code" title="function lfband(fit,varargin)">lfband</a>	adds confidence bands around the plot of a locfit() fit.</li><li><a href="lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="smooth_lf.html" class="code" title="function z=smooth_lf(x,y,varargin)">smooth_lf</a>	must (unlike R smooth.lf() function) give x and y.</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/den_jack.html" class="code" title="function [m,ll,ul,llj,ulj]=den_jack(X,family,varargin)">den_jack</a>	Function to compute smooth estimates of the mean of x using locfit,</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function y0 = invlink(y,fali)</a>
+0002 <span class="comment">% inverse link function for locfit.</span>
+0003 <span class="comment">% y is a vector of raw fitted values.</span>
+0004 <span class="comment">% fali is the integer [family link] vector from locfit.</span>
+0005 <span class="comment">% output is the inv. link.</span>
+0006 
+0007 link = fali(2);
+0008 
+0009 <span class="keyword">switch</span>(link)
+0010     <span class="keyword">case</span> 3   <span class="comment">% identity</span>
+0011         y0 = y;
+0012     <span class="keyword">case</span> 4   <span class="comment">% log</span>
+0013         y0 = exp(y);
+0014     <span class="keyword">case</span> 5   <span class="comment">% logit - should invert carefully!</span>
+0015         y0 = 1 - 1./(1+exp(y));
+0016     <span class="keyword">case</span> 6   <span class="comment">% inverse</span>
+0017         y0 = 1/y;
+0018     <span class="keyword">case</span> 7   <span class="comment">% sqrt</span>
+0019         y0 = y*abs(y);
+0020     <span class="keyword">case</span> 8   <span class="comment">% arcsin</span>
+0021         y0 = sin(y)*sin(y);
+0022     <span class="keyword">otherwise</span>
+0023         disp(<span class="string">'invlink: Unknown link function'</span>);
+0024 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

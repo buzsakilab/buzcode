@@ -1,0 +1,7 @@
+function tu = TimeUnit(tsa)
+
+% tsd/TimeUnit
+% 
+% a Peyrache 2007
+
+tu = tsa.time_unit;

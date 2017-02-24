@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dropShortIntervals</title>
+  <meta name="keywords" content="dropShortIntervals">
+  <meta name="description" content="Drops the intervals in the set that are shorter than a given threshold">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@intervalSet</a> &gt; dropShortIntervals.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @intervalSet&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>dropShortIntervals
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Drops the intervals in the set that are shorter than a given threshold</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function iso = dropShortIntervals(is, thr, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Drops the intervals in the set that are shorter than a given threshold
+  
+      USAGE:
+      iso = dropShortIntervals(is, thr, OptionName, OptionValue) 
+      
+      INPUTS:
+      is  - an intervalSet
+      thr - a duration threshold; all intervals shorter than thr will be
+            dropped
+      
+      OUTPUTS:
+      iso - the resulting intervalSet</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="End.html" class="code" title="function S = End(O, TimeUnits)">End</a>	Ending time of the intervalSet object</li><li><a href="Start.html" class="code" title="function S = Start(O, TimeUnits)">Start</a>	Starting times of for each interval in the set</li><li><a href="intervalSet.html" class="code" title="function O = intervalSet(varargin)">intervalSet</a>	Constructor for intervalSet objects</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="mergeCloseIntervals.html" class="code" title="function iso = mergeCloseIntervals(is, thr, varargin)">mergeCloseIntervals</a>	Merge together intervals that are closer than a given threshold</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function iso = dropShortIntervals(is, thr, varargin)</a>
+0002 
+0003 <span class="comment">%  Drops the intervals in the set that are shorter than a given threshold</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      iso = dropShortIntervals(is, thr, OptionName, OptionValue)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      INPUTS:</span>
+0009 <span class="comment">%      is  - an intervalSet</span>
+0010 <span class="comment">%      thr - a duration threshold; all intervals shorter than thr will be</span>
+0011 <span class="comment">%            dropped</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%      OUTPUTS:</span>
+0014 <span class="comment">%      iso - the resulting intervalSet</span>
+0015   
+0016 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia</span>
+0017 <span class="comment">% This software is released under the GNU GPL</span>
+0018 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0019   
+0020   
+0021   
+0022   opt_varargin = varargin;
+0023   
+0024   defined_options = dictArray( <span class="keyword">...</span>
+0025   { { <span class="string">'TimeUnits'</span>, {time_units(<span class="string">'ts'</span>), {<span class="string">'char'</span>, <span class="string">'units'</span>} } } } );
+0026   
+0027   getOpt;  
+0028   
+0029   
+0030   cnvrt = convert(TimeUnits, is.units);
+0031   
+0032   thr = thr * cnvrt;
+0033   
+0034   st = <a href="Start.html" class="code" title="function S = Start(O, TimeUnits)">Start</a>(is);
+0035   en = <a href="End.html" class="code" title="function S = End(O, TimeUnits)">End</a>(is);
+0036   
+0037   d = en-st;
+0038   
+0039   ix = find(d &gt; thr);
+0040   
+0041   iso = <a href="intervalSet.html" class="code" title="function O = intervalSet(varargin)">intervalSet</a>(st(ix), en(ix));
+0042   
+0043   
+0044   
+0045</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

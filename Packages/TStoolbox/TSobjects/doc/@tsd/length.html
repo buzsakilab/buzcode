@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of length</title>
+  <meta name="keywords" content="length">
+  <meta name="description" content="Returns number of elements in tsa (overoads length function)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; length.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>length
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Returns number of elements in tsa (overoads length function)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function l = length(tsa) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Returns number of elements in tsa (overoads length function)
+      
+      USAGE:
+      l = length(tsa) 
+    
+  copyright (c) 2004 Francesco P. Battaglia
+  This software is released under the GNU GPL
+  www.gnu.org/copyleft/gpl.html</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>	Returns TSD timestamps</li><li><a href="length.html" class="code" title="function l = length(tsa)">length</a>	Returns number of elements in tsa (overoads length function)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="CrossCorr.html" class="code" title="function Cr = CrossCorr(tsa, tsb, binsize, nbins, varargin)">CrossCorr</a>	Computes cross-correlation between TSD objects</li><li><a href="Restrict.html" class="code" title="function [R, il] = Restrict(tsa, varargin)">Restrict</a>	Restrict TSD to a new timestamp</li><li><a href="cat.html" class="code" title="function tsdOUT = cat(varargin)">cat</a>	Concatenation of TSD objects</li><li><a href="classify.html" class="code" title="function [tout, N] = classify(tsa, is, col)">classify</a>	Breaks a TSD object in many tsds according to the value of data</li><li><a href="compatible_ts.html" class="code" title="function t = compatible_ts(tsa, tsb, tl)">compatible_ts</a>	Tells whether two tsd's have the same timestamps, within relative tolerance</li><li><a href="horzcat.html" class="code" title="function s = horzcat(a, b, varargin)">horzcat</a>	Horizontal concatenation of TSDs (overload of the [a, b] operator)</li><li><a href="interp_missing.html" class="code" title="function tsi = interp_missing(tsa, TimeUnits, varargin)">interp_missing</a>	Interpolate missing values in continuously sampled tsd</li><li><a href="intervalCount.html" class="code" title="function ic = intervalCount(tsa, is, varargin)">intervalCount</a>	Counts instances of tsa in each subset of an interval</li><li><a href="intervalFun.html" class="code" title="function im = intervalFun(tsa, is, func, varargin)">intervalFun</a>	im = intervalFun(tsa, is, func, options) computes mean of tsa data in each of the intervals in isw</li><li><a href="intervalMean.html" class="code" title="function im = intervalMean(tsa, is, varargin)">intervalMean</a>	Computes mean of of data in each of subset of a given interval</li><li><a href="intervalRate.html" class="code" title="function ic = intervalRate(tsa, is, TimeUnits, varargin)">intervalRate</a>	Returns rates of a TSD in each subset of an interval</li><li><a href="intervalSplit.html" class="code" title="function S = intervalSplit(tsa, is, varargin);">intervalSplit</a>	Returns a cell array of tsd object, one for each subset of a given interval</li><li><a href="length.html" class="code" title="function l = length(tsa)">length</a>	Returns number of elements in tsa (overoads length function)</li><li><a href="max.html" class="code" title="function maxTsd = max(tsa,is)">max</a>	Returns the maximal value(s) and time(s) of a TSD object (overoads the max function)</li><li><a href="median_dt.html" class="code" title="function [mdt, n_missing] = median_dt(tsa, TimeUnits)">median_dt</a>	Find the median value of inter-event interval</li><li><a href="rate.html" class="code" title="function r = rate(tsa, varargin)">rate</a>	TODO: overlap with intervalRate</li><li><a href="smooth.html" class="code" title="function S = smooth(tsa, l, varargin)">smooth</a>	Smooth a TSD</li><li><a href="threshold.html" class="code" title="function t = threshold(tsa, thr, varargin)">threshold</a>	Threshold crossings</li><li><a href="timeDeriv.html" class="code" title="function S = timeDeriv(tsa, varargin)">timeDeriv</a>	TimeDerivative of a tsd</li><li><a href="triggeredDataMat.html" class="code" title="function M = triggeredDataMat(tsa, t, nbBins,varargin);">triggeredDataMat</a>	Returns a event-by-events matrix of Data component triggered on a reference (TODO!)</li><li><a href="triggeredMeanData.html" class="code" title="function [tmd] = triggeredMeanData(tsa, events, tmax, varargin)">triggeredMeanData</a>	Event-triggered mean  of the Data component, triggered on events (TODO)</li><li><a href="tsd.html" class="code" title="function tsa = tsd(t, Data, varargin)">tsd</a>	Constructor of TSD object</li><li><a href="vertcat.html" class="code" title="function s = vertcat(a, b, varargin);">vertcat</a>	Vertical concatenation of TSDs (overload of the [a; b] operator)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function l = length(tsa)</a>
+0002 
+0003 <span class="comment">%  Returns number of elements in tsa (overoads length function)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      l = length(tsa)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%  copyright (c) 2004 Francesco P. Battaglia</span>
+0009 <span class="comment">%  This software is released under the GNU GPL</span>
+0010 <span class="comment">%  www.gnu.org/copyleft/gpl.html</span>
+0011 
+0012 l = <a href="length.html" class="code" title="function l = length(tsa)">length</a>(<a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa));</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of psth</title>
+  <meta name="keywords" content="psth">
+  <meta name="description" content="function to plot trial averaged rate smoothed by">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>psth
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function to plot trial averaged rate smoothed by</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [R,t,E] = psth(data,sig,plt,T,err,t) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  function to plot trial averaged rate smoothed by 
+  a Gaussian kernel - visual check on stationarity 
+  Usage: [R,t,E] = psth(data,sig,plt,T,err,t)
+                                                   
+  Inputs:                                  
+ Note that all times have to be consistent. If data
+ is in seconds, so must be sig and t. If data is in 
+ samples, so must sig and t. The default is seconds.
+ data            structural array of spike times   
+ sig             std dev of Gaussian (default 50ms)
+                 (minus indicates adaptive with    
+                  approx width equal to mod sig)   
+ plt = 'n'|'r' etc      (default 'r')              
+ T is the time interval (default all)              
+ err - 0 = none                                    
+       1 = Poisson                                 
+       2 = Bootstrap over trials (default)         
+ (both are based on 2* std err rather than 95%)    
+ t   = times to evaluate psth at                   
+                                                   
+ The adaptive estimate works by first estimating   
+ the psth with a fixed kernel width (-sig) it      
+ then alters the kernel width so that the number   
+ of spikes falling under the kernel is the same on 
+ average but is time dependent.  Reagions rich     
+ in data therefore have their kernel width reduced 
+                                                    
+ Outputs:                                 
+                                                   
+ R = rate                                          
+ t = times                                         
+ E = errors (standard error)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="padNaN.html" class="code" title="function data=padNaN(data)">padNaN</a>	Creates a padded data matrix from input structural array of spike times</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [R,t,E] = psth(data,sig,plt,T,err,t)</a>
+0002 <span class="comment">%  function to plot trial averaged rate smoothed by</span>
+0003 <span class="comment">%  a Gaussian kernel - visual check on stationarity</span>
+0004 <span class="comment">%  Usage: [R,t,E] = psth(data,sig,plt,T,err,t)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%  Inputs:</span>
+0007 <span class="comment">% Note that all times have to be consistent. If data</span>
+0008 <span class="comment">% is in seconds, so must be sig and t. If data is in</span>
+0009 <span class="comment">% samples, so must sig and t. The default is seconds.</span>
+0010 <span class="comment">% data            structural array of spike times</span>
+0011 <span class="comment">% sig             std dev of Gaussian (default 50ms)</span>
+0012 <span class="comment">%                 (minus indicates adaptive with</span>
+0013 <span class="comment">%                  approx width equal to mod sig)</span>
+0014 <span class="comment">% plt = 'n'|'r' etc      (default 'r')</span>
+0015 <span class="comment">% T is the time interval (default all)</span>
+0016 <span class="comment">% err - 0 = none</span>
+0017 <span class="comment">%       1 = Poisson</span>
+0018 <span class="comment">%       2 = Bootstrap over trials (default)</span>
+0019 <span class="comment">% (both are based on 2* std err rather than 95%)</span>
+0020 <span class="comment">% t   = times to evaluate psth at</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% The adaptive estimate works by first estimating</span>
+0023 <span class="comment">% the psth with a fixed kernel width (-sig) it</span>
+0024 <span class="comment">% then alters the kernel width so that the number</span>
+0025 <span class="comment">% of spikes falling under the kernel is the same on</span>
+0026 <span class="comment">% average but is time dependent.  Reagions rich</span>
+0027 <span class="comment">% in data therefore have their kernel width reduced</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Outputs:</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">% R = rate</span>
+0032 <span class="comment">% t = times</span>
+0033 <span class="comment">% E = errors (standard error)</span>
+0034 
+0035 <span class="keyword">if</span> nargin &lt;1 ; error(<span class="string">'I need data!'</span>);<span class="keyword">end</span>
+0036 [data]=<a href="padNaN.html" class="code" title="function data=padNaN(data)">padNaN</a>(data); <span class="comment">% create a zero padded data matrix from input structural array</span>
+0037 sz=size(data);
+0038 <span class="comment">% transposes data so that the longer dimension is assumed to be time</span>
+0039 <span class="comment">% Procedure used to bring input data into form compatible with that required</span>
+0040 <span class="comment">% for Murray's routine</span>
+0041 <span class="keyword">if</span> sz(1)&gt;sz(2); data=data';<span class="keyword">end</span>; 
+0042 <span class="keyword">if</span> nargin &lt; 2; sig = 0.05;<span class="keyword">end</span>
+0043 <span class="keyword">if</span> nargin &lt; 3; plt = <span class="string">'r'</span>;<span class="keyword">end</span>
+0044 <span class="keyword">if</span> nargin &lt; 5; err = 2; <span class="keyword">end</span>
+0045 
+0046 <span class="keyword">if</span> isempty(sig); sig = 0.05;<span class="keyword">end</span>
+0047 <span class="keyword">if</span> isempty(plt); plt = <span class="string">'r'</span>;<span class="keyword">end</span>
+0048 <span class="keyword">if</span> isempty(err); err = 2; <span class="keyword">end</span>
+0049 
+0050 adapt = 0;
+0051 <span class="keyword">if</span> sig &lt; 0; adapt = 1; sig = -sig; <span class="keyword">end</span>
+0052 
+0053 <span class="comment">%  to avoid end effects increase time interval by the width</span>
+0054 <span class="comment">%  of the kernel (otherwise rate is too low near edges)</span>
+0055 
+0056 <span class="keyword">if</span> nargin &lt; 4; 
+0057   T(1) = min(data(:,1));
+0058   T(2) = max(max(data));
+0059 <span class="keyword">else</span>
+0060   T(1) = T(1)-4*sig;
+0061   T(2) = T(2)+4*sig;
+0062 <span class="keyword">end</span>
+0063 
+0064 <span class="comment">% calculate NT and ND and filter out times of interest</span>
+0065 
+0066 NT = length(data(:,1));
+0067 <span class="keyword">if</span> NT &lt; 4 &amp;&amp; err == 2
+0068   disp(<span class="string">'Using Poisson errorbars as number of trials is too small for bootstrap'</span>)
+0069   err = 1;
+0070 <span class="keyword">end</span>    
+0071     
+0072 m = 1;
+0073 D = zeros(size(data));
+0074 ND=zeros(1,NT);
+0075 <span class="keyword">for</span> n=1:NT
+0076   indx = find(~isnan(data(n,:)) &amp; data(n,:)&gt;=T(1) &amp; data(n,:)&lt;=T(2));
+0077   ND(n) = length(indx);
+0078   D(n,1:ND(n)) = data(n,indx);
+0079   m = m + ND(n); 
+0080 <span class="keyword">end</span>
+0081 N_tot = m;
+0082 N_max = max(ND);
+0083 D = D(:,1:N_max);
+0084 
+0085 <span class="comment">% if the kernel density is such that there are on average</span>
+0086 <span class="comment">% one or less spikes under the kernel then the units are probably wrong</span>
+0087 
+0088 L = N_tot/(NT*(T(2)-T(1)));
+0089 <span class="keyword">if</span> 2*L*NT*sig &lt; 1 || L &lt; 0.1 
+0090   disp(<span class="string">'Spikes very low density: are the units right? is the kernel width sensible?'</span>)
+0091   disp([<span class="string">'Total events: '</span> num2str(fix(100*N_tot)/100) <span class="string">' sig: '</span> <span class="keyword">...</span>
+0092         num2str(fix(1000*sig)) <span class="string">'ms T: '</span> num2str(fix(100*T)/100) <span class="string">' events/sig: '</span> <span class="keyword">...</span>
+0093         num2str(fix(100*N_tot*sig/(T(2)-T(1)))/100)])
+0094 <span class="keyword">end</span>
+0095 
+0096 <span class="comment">%    Smear each spike out</span>
+0097 <span class="comment">%    std dev is sqrt(rate*(integral over kernal^2)/trials)</span>
+0098 <span class="comment">%    for Gaussian integral over Kernal^2 is 1/(2*sig*srqt(pi))</span>
+0099 
+0100 <span class="keyword">if</span> nargin &lt; 6
+0101   N_pts =  fix(5*(T(2)-T(1))/sig);
+0102   t = linspace(T(1),T(2),N_pts);
+0103 <span class="keyword">else</span>
+0104   N_pts = length(t);
+0105 <span class="keyword">end</span>
+0106   
+0107 RR = zeros(NT,N_pts);
+0108 f = 1/(2*sig^2);
+0109 <span class="keyword">for</span> n=1:NT
+0110   <span class="keyword">for</span> m=1:ND(n)
+0111     RR(n,:) = RR(n,:) + exp(-f*(t-D(n,m)).^2);
+0112   <span class="keyword">end</span>
+0113 <span class="keyword">end</span>
+0114 RR = RR*(1/sqrt(2*pi*sig^2));
+0115 <span class="keyword">if</span> NT &gt; 1; R = mean(RR); <span class="keyword">else</span> R = RR;<span class="keyword">end</span>
+0116 
+0117 <span class="keyword">if</span> err == 1
+0118   E = sqrt(R/(2*NT*sig*sqrt(pi)));
+0119 <span class="keyword">elseif</span> err == 2
+0120   Nboot = 10;
+0121   mE = 0;
+0122   sE = 0;
+0123   <span class="keyword">for</span> b=1:Nboot
+0124     indx = floor(NT*rand(1,NT)) + 1;
+0125     mtmp = mean(RR(indx,:));
+0126     mE = mE + mtmp;
+0127     sE = sE + mtmp.^2;
+0128   <span class="keyword">end</span>
+0129   E = sqrt((sE/Nboot - mE.^2/Nboot^2));
+0130 <span class="keyword">end</span>
+0131 
+0132 <span class="comment">% if adaptive warp sig so that on average the number of spikes</span>
+0133 <span class="comment">% under the kernel is the same but regions where there is</span>
+0134 <span class="comment">% more data have a smaller kernel</span>
+0135 
+0136 <span class="keyword">if</span> adapt 
+0137   sigt = mean(R)*sig./R;
+0138   RR = zeros(NT,N_pts);
+0139   f = 1./(2*sigt.^2);
+0140   <span class="keyword">for</span> n=1:NT
+0141     <span class="keyword">for</span> m=1:ND(n)
+0142       RR(n,:) = RR(n,:) + exp(-f.*(t-D(n,m)).^2);
+0143     <span class="keyword">end</span>
+0144     RR(n,:) = RR(n,:).*(1./sqrt(2*pi*sigt.^2));
+0145   <span class="keyword">end</span>
+0146   <span class="keyword">if</span> NT &gt; 1; R = mean(RR); <span class="keyword">else</span> R = RR;<span class="keyword">end</span>
+0147 
+0148   <span class="keyword">if</span> err == 1
+0149     E = sqrt(R./(2*NT*sigt*sqrt(pi)));
+0150   <span class="keyword">elseif</span> err == 2
+0151     Nboot = 10;
+0152     mE = 0;
+0153     sE = 0;
+0154     <span class="keyword">for</span> b=1:Nboot
+0155       indx = floor(NT*rand(1,NT)) + 1;
+0156       mtmp = mean(RR(indx,:));
+0157       mE = mE + mtmp;
+0158       sE = sE + mtmp.^2;
+0159     <span class="keyword">end</span>
+0160     E = sqrt((sE/Nboot - mE.^2/Nboot^2)); 
+0161   <span class="keyword">end</span>
+0162 <span class="keyword">end</span>  
+0163 
+0164 <span class="keyword">if</span> plt == <span class="string">'n'</span>;<span class="keyword">return</span>;<span class="keyword">end</span>
+0165 plot(t,R,plt)
+0166 hold on
+0167 <span class="keyword">if</span> err &gt; 0
+0168   plot(t,R+2*E,<span class="string">'g'</span>)
+0169   plot(t,R-2*E,<span class="string">'g'</span>)
+0170 <span class="keyword">end</span>
+0171 <span class="comment">%axis([T(1)+(4*sig) T(2)-(4*sig) 0 1.25*max(R)])</span>
+0172 axis([T(1)+(4*sig) T(2)-(4*sig) 0 max(R+2*E)+10])
+0173 xlabel(<span class="string">'time (s)'</span>)
+0174 ylabel(<span class="string">'rate (Hz)'</span>)
+0175 title([<span class="string">'Trial averaged rate : Gaussian Kernel :'</span>  <span class="keyword">...</span>
+0176         <span class="string">' sigma = '</span> num2str(1000*sig) <span class="string">'ms'</span>])
+0177 hold off
+0178 
+0179 
+0180 
+0181 
+0182 
+0183 
+0184 
+0185 
+0186 
+0187 
+0188</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

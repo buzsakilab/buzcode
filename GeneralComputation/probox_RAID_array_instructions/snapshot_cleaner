@@ -1,0 +1,14 @@
+# usage: snapshot_cleaner ZPOOLNAME
+#
+# e.g. sudo ./snapshot_cleaner rawdata
+# 
+# to delete snapshots on all datasets, use
+#
+# sudo ./snapshot_cleaner probox
+#
+ 
+#!/bin/bash
+for SNAPSHOT in `zfs list -H -t snapshot | cut -f 1 | grep $1`
+do
+	zfs destroy $SNAPSHOT
+done

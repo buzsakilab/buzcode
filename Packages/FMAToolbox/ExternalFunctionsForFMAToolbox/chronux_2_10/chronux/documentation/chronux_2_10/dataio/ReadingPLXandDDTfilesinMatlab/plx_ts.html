@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of plx_ts</title>
+  <meta name="keywords" content="plx_ts">
+  <meta name="description" content="plx_ts(filename, channel, unit): Read spike timestamps from a .plx file">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html dataio --><!-- menu.html ReadingPLXandDDTfilesinMatlab -->
+<h1>plx_ts
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>plx_ts(filename, channel, unit): Read spike timestamps from a .plx file</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [n, ts] = plx_ts(filename, ch, u) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> plx_ts(filename, channel, unit): Read spike timestamps from a .plx file
+
+ [n, ts] = plx_ts(filename, channel, unit)
+
+ INPUT:
+   filename - if empty string, will use File Open dialog
+   channel - 1-based channel number
+   unit  - unit number (0- invalid, 1-4 valid)
+ OUTPUT:
+   n - number of timestamps
+   ts - array of timestamps (in seconds)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [n, ts] = plx_ts(filename, ch, u)</a>
+0002 <span class="comment">% plx_ts(filename, channel, unit): Read spike timestamps from a .plx file</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [n, ts] = plx_ts(filename, channel, unit)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% INPUT:</span>
+0007 <span class="comment">%   filename - if empty string, will use File Open dialog</span>
+0008 <span class="comment">%   channel - 1-based channel number</span>
+0009 <span class="comment">%   unit  - unit number (0- invalid, 1-4 valid)</span>
+0010 <span class="comment">% OUTPUT:</span>
+0011 <span class="comment">%   n - number of timestamps</span>
+0012 <span class="comment">%   ts - array of timestamps (in seconds)</span>
+0013 
+0014 <span class="keyword">if</span>(nargin ~= 3)
+0015    disp(<span class="string">'3 input arguments are required'</span>)
+0016    <span class="keyword">return</span>
+0017 <span class="keyword">end</span>
+0018 
+0019 n = 0;
+0020 ts = 0;
+0021 <span class="keyword">if</span>(isempty(filename))
+0022    [fname, pathname] = uigetfile(<span class="string">'*.plx'</span>, <span class="string">'Select a plx file'</span>);
+0023     filename = strcat(pathname, fname);
+0024 <span class="keyword">end</span>
+0025 
+0026 fid = fopen(filename, <span class="string">'r'</span>);
+0027 <span class="keyword">if</span>(fid == -1)
+0028     disp(<span class="string">'cannot open file'</span>);
+0029    <span class="keyword">return</span>
+0030 <span class="keyword">end</span>
+0031 
+0032 disp(strcat(<span class="string">'file = '</span>, filename));
+0033 
+0034 <span class="comment">% read file header</span>
+0035 header = fread(fid, 64, <span class="string">'int32'</span>);
+0036 freq = header(35);  <span class="comment">% frequency</span>
+0037 ndsp = header(36);  <span class="comment">% number of dsp channels</span>
+0038 nevents = header(37); <span class="comment">% number of external events</span>
+0039 nslow = header(38);  <span class="comment">% number of slow channels</span>
+0040 npw = header(39);  <span class="comment">% number of points in wave</span>
+0041 npr = header(40);  <span class="comment">% number of points before threshold</span>
+0042 tscounts = fread(fid, [5, 130], <span class="string">'int32'</span>);
+0043 wfcounts = fread(fid, [5, 130], <span class="string">'int32'</span>);
+0044 evcounts = fread(fid, [1, 512], <span class="string">'int32'</span>);
+0045 
+0046 <span class="comment">% skip variable headers</span>
+0047 fseek(fid, 1020*ndsp + 296*nevents + 296*nslow, <span class="string">'cof'</span>);
+0048 
+0049 <span class="comment">% read the data</span>
+0050 record = 0;
+0051 <span class="keyword">while</span> feof(fid) == 0
+0052     type = fread(fid, 1, <span class="string">'int16'</span>);
+0053     upperbyte = fread(fid, 1, <span class="string">'int16'</span>);
+0054     timestamp = fread(fid, 1, <span class="string">'int32'</span>);
+0055     channel = fread(fid, 1, <span class="string">'int16'</span>);
+0056     unit = fread(fid, 1, <span class="string">'int16'</span>);
+0057     nwf = fread(fid, 1, <span class="string">'int16'</span>);
+0058     nwords = fread(fid, 1, <span class="string">'int16'</span>);
+0059     toread = nwords;
+0060     <span class="keyword">if</span> toread &gt; 0
+0061       wf = fread(fid, toread, <span class="string">'int16'</span>);
+0062     <span class="keyword">end</span>
+0063        <span class="keyword">if</span> type == 1
+0064          <span class="keyword">if</span> channel == ch 
+0065             <span class="keyword">if</span> unit == u
+0066                  n = n + 1;
+0067                  ts(n) = timestamp/freq;
+0068             <span class="keyword">end</span>
+0069            <span class="keyword">end</span>
+0070        <span class="keyword">end</span>
+0071    
+0072    record = record + 1;
+0073    <span class="keyword">if</span> feof(fid) == 1
+0074       <span class="keyword">break</span>
+0075    <span class="keyword">end</span>
+0076    
+0077 <span class="keyword">end</span>
+0078 disp(strcat(<span class="string">'number of timestamps = '</span>, num2str(n)));
+0079 
+0080 fclose(fid);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

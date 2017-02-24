@@ -1,0 +1,697 @@
+#!/bin/bash
+
+script=$(basename $0)
+echo_error()
+{
+	echo "error: $1" >&2
+	exit 1
+}
+
+# Run as root?
+if [ $(id -u) -ne 0 ]
+then
+	echo_error "you need root privileges to install autocompletion for MATLAB"
+	exit 1
+fi
+
+# Make sure sed is installed
+if [ -z "$(which sed)" ]
+then
+	echo_error "'sed' is not installed on this system"
+fi
+
+# Parse parameters
+matlab_root=$MATLAB
+while true
+do
+	case $1 in
+		-h|--help)
+			echo "usage: $script [-r directory]"
+			echo "  -r directory      MATLAB root directory (overrides MATLAB environment variable)"
+			exit 0
+			;;
+		-r)
+			matlab_root="$2"
+			shift 2
+			;;
+		*)
+			break
+			;;
+	esac
+done
+
+# Check MATLAB root directory
+if [ -z "$matlab_root" ]
+then
+	echo_error "missing MATLAB root directory (type $script -h for details)"
+fi
+
+# Check TC.xml and TC.xsd files
+tc_xml=$matlab_root/toolbox/local/TC.xml
+tc_xsd=$matlab_root/toolbox/local/TC.xsd
+if [ ! -f $tc_xml ] || [ ! -f $tc_xsd ]
+then
+	echo_error "TC.xml and/or TC.xsd not found"
+fi
+
+# Backup files
+echo "Backing up existing 'TC.xml' and 'TC.xsd'..."
+date=$(date +%Y%m%d%H%M%S)
+cp -v $tc_xml $tc_xml.$date
+cp -v $tc_xsd $tc_xsd.$date
+
+# Update TC.xsd:
+#  for tcBindingNameType, replace [a-z_0-9] with [A-Za-z_0-9] in <xsd:pattern value='[a-z_0-9]+(/[a-z_0-9]+)?'/>
+#  for tcPreviousType, replace -[a-z0-9]+ with -?[A-Za-z0-9]+ in <xsd:pattern value='-?[a-z0-9]+'/>
+echo "Updating TC.xsd..."
+sed -i -e '/<xsd:simpleType name="tcBindingNameType">/,/<\/xsd:simpleType>/ {/<xsd:pattern value=/ s/\[a-z/[A-Za-z/g}' \
+		 -e '/<xsd:simpleType name="tcPreviousType">/,/<\/xsd:simpleType>/ {/<xsd:pattern value=/ s/-\[a-z/-?[A-Za-z/}' \
+		 $tc_xsd
+
+# Update TC.xml
+echo "Updating TC.xml..."
+tmpfile=$(mktemp)
+sed -n -e '/^TC.XML/,$ {/^TC.XML/d;p}' $0 > $tmpfile
+sed -i -e '/<!-- FMAToolbox >>> -->/,/<!-- FMAToolbox <<< -->/ d' \
+		 -e '/<\/TC>/ {
+	s///
+	r '$tmpfile'
+	a\
+	</TC>
+	}' $tc_xml
+
+echo "Done"
+exit 0
+
+#############################################################################################################
+
+TC.XML
+
+<!-- FMAToolbox >>> -->
+
+<!-- FMAToolbox/Analyses -->
+
+<binding name="BrainStates">
+	<arg argn="1:5" ctype="VAR"/>
+	<arg argn="6:2:30" ctype="VAR" value="nClusters method nComponents show"/>
+	<arg argn="7:2:31" ctype="VAR" previous="method" value="pca direct ratios"/>
+	<arg argn="7:2:31" ctype="VAR" previous="show" value="kmeans clusters all none"/>
+</binding>
+
+<binding name="BurstFrequency">
+	<arg argn="1:5" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="binSize duration"/>
+</binding>
+
+<binding name="CCG">
+	<arg argn="1:5" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="binSize duration"/>
+</binding>
+
+<binding name="CV">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="measure order method binSize smooth"/>
+	<arg argn="3:2:31" ctype="VAR" previous="method" value="cv cvo cv2"/>
+	<arg argn="3:2:31" ctype="VAR" previous="method" value="fixed adaptive inverse"/>
+</binding>
+
+<binding name="DefineZone">
+	<arg argn="1 3" ctype="VAR"/>
+	<arg argn="2" ctype="VAR" value="rectangle circle"/>
+</binding>
+
+<binding name="FilterLFP">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="passband order ripple nyquist filter"/>
+	<arg argn="3:2:31" ctype="VAR" previous="passband" value="delta theta spindles gamma ripples"/>
+	<arg argn="3:2:31" ctype="VAR" previous="filter" value="cheby2 fir1"/>
+</binding>
+
+<binding name="FindRipples">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="thresholds durations restrict frequency stdev show noise"/>
+	<arg argn="3:2:31" ctype="VAR" previous="show" value="on off"/>
+</binding>
+
+<binding name="FiringCurve">
+	<arg argn="1 2" ctype="VAR"/>
+	<!-- the following args are inherited from Map -->
+	<arg argn="3:2:31" ctype="VAR" value="smooth nBins minTime maxGap type"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="linear circular"/>
+	<!-- the following args are inherited from MapStats -->
+	<arg argn="3:2:31" ctype="VAR" value="center threshold minSize type"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="ll cl lc cc"/>
+</binding>
+
+<binding name="FiringMap">
+	<arg argn="1 2" ctype="VAR"/>
+	<!-- the following args are inherited from Map -->
+	<arg argn="3:2:31" ctype="VAR" value="smooth nBins minTime maxGap type"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="linear circular"/>
+	<!-- the following args are inherited from MapStats -->
+	<arg argn="3:2:31" ctype="VAR" value="center threshold minSize type"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="ll cl lc cc"/>
+</binding>
+
+<binding name="Frequency">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="method limits binSize smooth show"/>
+	<arg argn="3:2:31" ctype="VAR" previous="method" value="fixed adaptive inverse"/>
+	<arg argn="3:2:31" ctype="VAR" previous="show" value="on off"/>
+</binding>
+
+<binding name="IsolationDistance">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="units show"/>
+	<arg argn="3:2:31" ctype="VAR" previous="show" value="on off"/>
+</binding>
+
+<binding name="Map">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="smooth nBins minTime maxGap type"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="linear circular"/>
+</binding>
+
+<binding name="MapStats">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="center threshold minSize type"/>
+	<arg argn="3:2:31" ctype="VAR" previous="type" value="ll cl lc cc"/>
+</binding>
+
+<binding name="MTPointSpectrum">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="frequency range tapers pad error show"/>
+	<arg argn="3:2:31" ctype="VAR" previous="show" value="on off"/>
+</binding>
+
+<binding name="MTSpectrogram">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="frequency range window overlap step tapers pad show parent cutoffs"/>
+	<arg argn="3:2:31" ctype="VAR" previous="show" value="on off"/>
+</binding>
+
+<binding name="MTSpectrum">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="frequency range tapers pad error show"/>
+	<arg argn="3:2:31" ctype="VAR" previous="show" value="on off"/>
+</binding>
+
+<binding name="PETHTransition">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="method show"/>
+	<arg argn="3:2:31" ctype="VAR" previous="method" value="ml ls pl"/>
+	<arg argn="3:2:31" ctype="VAR" previous="show" value="on off"/>
+</binding>
+
+<binding name="PhaseCurve">
+	<arg argn="1 2" ctype="VAR"/>
+	<!-- the following args are inherited from Map -->
+	<arg argn="3:2:31" ctype="VAR" value="smooth nBins minTime maxGap type"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="linear circular"/>
+</binding>
+
+<binding name="PhaseDistribution">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="nBins smooth groups"/>
+</binding>
+
+<binding name="PhaseMap">
+	<arg argn="1 2" ctype="VAR"/>
+	<!-- the following args are inherited from Map -->
+	<arg argn="3:2:31" ctype="VAR" value="smooth nBins minTime maxGap type"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="linear circular"/>
+</binding>
+
+<binding name="PhasePrecession">
+	<arg argn="1:3" ctype="VAR"/>
+	<arg argn="4:2:30" ctype="VAR" value="maxGap boundaries"/>
+	<arg argn="5:2:31" ctype="VAR" previous="boundaries" value="field count"/>
+</binding>
+
+<binding name="RadialMaze">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="plots measures anova"/>
+	<arg argn="4:2:32" ctype="VAR" previous="plots" value="individuals groups"/>
+	<arg argn="4:2:32" ctype="VAR" previous="measures" value="ref work rewards visits perf penalty adjusted"/>
+	<arg argn="4:2:32" ctype="VAR" previous="anova" value="on off"/>
+</binding>
+
+<binding name="RadialMazeTurns">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2" ctype="VAR" value="good preferred non-preferred"/>
+</binding>
+
+<binding name="RemoveArtefacts">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="durations"/>
+</binding>
+
+<binding name="RippleStats">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="frequency durations"/>
+</binding>
+
+<binding name="SelectSpikes">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="mode isi"/>
+	<arg argn="3:2:31" ctype="VAR" previous="mode" value="bursts single"/>
+</binding>
+
+<binding name="ShortTimeCCG">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="2 3:2:31" ctype="VAR" value="binSize duration window overlap smooth mode min"/>
+	<arg ctype="VAR" previous="mode" value="counts norm"/>
+</binding>
+
+<binding name="SpectrogramBands">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="smooth delta theta spindles lowGamma highGamma ripples"/>
+</binding>
+
+<binding name="SyncHist">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="mode durations nBins type smooth hist error"/>
+	<arg argn="4:2:32" ctype="VAR" previous="mode" value="sum mean dist"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="linear circular"/>
+	<arg argn="4:2:32" ctype="VAR" previous="error" value="std sem 95%"/>
+</binding>
+
+<binding name="Sync">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="durations verbose"/>
+	<arg argn="4:2:32" ctype="VAR" previous="verbose" value="on off"/>
+</binding>
+
+<binding name="SyncMap">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="durations nBins smooth"/>
+</binding>
+
+<binding name="TuneArtefactTimes">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="method durations verbose"/>
+	<arg argn="4:2:32" ctype="VAR" previous="method" value="slope amplitude"/>
+	<arg argn="4:2:32" ctype="VAR" previous="verbose" value="on off"/>
+</binding>
+
+<!-- FMAToolbox/Data -->
+
+<binding name="GetCurrentSession">
+	<arg argn="1" ctype="VAR" value="verbose"/>
+</binding>
+
+<binding name="GetEvents">
+	<arg argn="1" ctype="VAR" value=".*"/> <!-- default: get all events -->
+	<arg argn="2:2:30" ctype="VAR" value="output"/>
+	<arg argn="3:2:31" ctype="VAR" previous="output" value="times indices logical descriptions"/>
+</binding>
+
+<binding name="GetLFP">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="restrict select"/>
+	<arg argn="3:2:31" ctype="VAR" previous="select" value="id number"/>
+</binding>
+
+<binding name="GetPositions">
+	<arg argn="1:2:31" ctype="VAR" value="mode coordinates pixel discard"/>
+	<arg argn="2:2:32" ctype="VAR" previous="mode" value="all clean"/>
+	<arg argn="2:2:32" ctype="VAR" previous="coordinates" value="video normalized real"/>
+	<arg argn="2:2:32" ctype="VAR" previous="discard" value="partial none"/>
+	<!-- The following lines compensate for the fact (bug) that MATLAB ignores the "previous" attribute for arg #2 -->
+	<arg argn="2" ctype="VAR" value="all clean video normalized real partial none"/>
+</binding>
+
+<binding name="GetSpikeFeatures">
+	<arg argn="1" ctype="VAR"/>
+</binding>
+
+<binding name="GetSpikes">
+	<arg argn="1" ctype="VAR"/>
+	<!-- the following args are inherited from GetSpikeTimes -->
+	<arg argn="2:2:30" ctype="VAR" value="output"/>
+	<arg argn="3:2:31" ctype="VAR" previous="output" value="time full"/>
+</binding>
+
+<binding name="GetSpikeTimes">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="output"/>
+	<arg argn="3:2:31" ctype="VAR" previous="output" value="time full"/>
+</binding>
+
+<binding name="GetSpikeWaveforms">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="restrict"/>
+	<arg argn="3:2:31" ctype="VAR"/>
+</binding>
+
+<binding name="GetUnits">
+	<arg argn="1" ctype="VAR"/>
+</binding>
+
+<binding name="GetWidebandData">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="restrict select"/>
+	<arg argn="3:2:31" ctype="VAR" previous="select" value="id number"/>
+</binding>
+
+<binding name="SetCurrentSession">
+	<arg argn="1" ctype="FILE"/>
+</binding>
+
+<binding name="SurveyFiringMaps">
+	<arg argn="1:31" ctype="VAR" value="minv pixel"/>
+</binding>
+
+<binding name="SurveyPhasePrecession">
+	<arg argn="1 2 3" ctype="VAR"/>
+	<arg argn="4:30" ctype="VAR" value="linearize minv pixel figures"/>
+	<arg argn="5:2:31" ctype="VAR" previous="linearize" value="FUN"/>
+	<arg argn="5:2:31" ctype="VAR" previous="figures" value="single multiple"/>
+</binding>
+
+<!-- FMAToolbox/Database -->
+
+<binding name="DBExportGallery">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="size nColumns info code"/>
+	<arg argn="4:2:32" ctype="VAR" previous="info" value="on off"/>
+	<arg argn="4:2:32" ctype="VAR" previous="code" value="on off"/>
+</binding>
+
+<binding name="DBInsertFigure">
+	<arg argn="1:6" ctype="VAR"/>
+	<arg argn="7:2:31" ctype="VAR" value="onlyPNG"/>
+	<arg argn="8:2:32" ctype="VAR" previous="onlyPNG" value="on off"/>
+</binding>
+
+<!-- FMAToolbox/General -->
+
+<binding name="Bin">
+	<arg argn="1 2 3" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="trim"/>
+</binding>
+
+<binding name="CircularANOVA">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3" ctype="VAR" value="ww l2 lr"/>
+</binding>
+
+<binding name="ConsolidateIntervals">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="strict epsilon"/>
+	<arg argn="3:2:31" ctype="VAR" previous="strict" value="on off"/>
+</binding>
+
+<binding name="Diff">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="type smooth"/>
+	<arg argn="3:2:31" ctype="VAR" previous="type" value="linear circular"/>
+</binding>
+
+<binding name="ExcludeIntervals">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="strict"/>
+	<arg argn="3:2:31" ctype="VAR" previous="strict" value="on off"/>
+</binding>
+
+<binding name="Filter">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="passband stopband order ripple nyquist filter"/>
+	<arg argn="3:2:31" ctype="VAR" previous="filter" value="cheby2 fir1"/>
+</binding>
+
+<binding name="InIntervals">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="verbose"/>
+	<arg argn="3:2:31" ctype="VAR" previous="verbose" value="on off"/>
+</binding>
+
+<binding name="Interpolate">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="type trim maxGap"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="linear circular"/>
+	<arg argn="4:2:32" ctype="VAR" previous="trim" value="on off"/>
+</binding>
+
+<binding name="IsExtremum">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="mode type smooth"/>
+	<arg argn="3:2:31" ctype="VAR" previous="mode" value="maxima minima"/>
+	<arg argn="3:2:31" ctype="VAR" previous="type" value="linear circular"/>
+</binding>
+
+<binding name="IsFirstAfter">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="strict"/>
+	<arg argn="4:2:32" ctype="VAR" previous="strict" value="on off"/>
+</binding>
+
+<binding name="IsLastBefore">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="strict"/>
+	<arg argn="4:2:32" ctype="VAR" previous="strict" value="on off"/>
+</binding>
+
+<binding name="Match">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="match error"/>
+	<arg argn="4:2:32" ctype="VAR" previous="match" value="down up"/>
+</binding>
+
+<binding name="MatchPairs">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="error"/>
+</binding>
+
+<binding name="Restrict">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="shift"/>
+	<arg argn="4:2:32" ctype="VAR" previous="shift" value="on off"/>
+</binding>
+
+<binding name="RunningAverage">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="window overlap limits type"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="linear circular"/>
+</binding>
+
+<binding name="SineWavePeaks">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="mode method smooth"/>
+	<arg argn="3:2:31" ctype="VAR" previous="mode" value="peaks troughs"/>
+	<arg argn="3:2:31" ctype="VAR" previous="method" value="zero diff"/>
+</binding>
+
+<binding name="SubtractIntervals">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="strict"/>
+	<arg argn="4:2:32" ctype="VAR" previous="strict" value="on off"/>
+</binding>
+
+<binding name="Threshold">
+<!--	<arg argn="1" ctype="VAR"/>
+	<arg argn="2" ctype="VAR" value="> >= < <="/>
+	<arg argn="3" ctype="VAR"/> -->
+	<arg argn="1 2 3" ctype="VAR"/>
+	<arg argn="4:2:30" ctype="VAR" value="min max"/>
+	<arg argn="5:2:31" ctype="VAR"/>
+</binding>
+
+<binding name="ZeroCrossings">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="smooth"/>
+</binding>
+
+<!-- FMAToolbox/IO -->
+
+<binding name="ChangeBinaryGain">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="output nChannels gains precision skip"/>
+	<arg argn="3:2:31" ctype="VAR" previous="precision" value="int8 int16 int32 int64 float32 float64 uint8 uint16 uint32 uint64"/>
+</binding>
+
+<binding name="LoadBinary">
+	<arg argn="1" ctype="FILE"/>
+	<arg argn="2:2:30" ctype="VAR" value="frequency start duration offset samples nChannels channels precision skip"/>
+	<arg argn="3:2:31" ctype="VAR" previous="precision" value="int8 int16 int32 int64 float32 float64 uint8 uint16 uint32 uint64"/>
+</binding>
+
+<binding name="LoadEvents">
+	<arg argn="1" ctype="FILE"/>
+</binding>
+
+<binding name="LoadParameters">
+	<arg argn="1" ctype="FILE"/>
+</binding>
+
+<binding name="LoadPositions">
+	<arg argn="1" ctype="FILE"/>
+	<arg argn="2" ctype="VAR"/>
+</binding>
+
+<binding name="LoadSpikeFeatures">
+	<arg argn="1" ctype="FILE"/>
+	<arg argn="2" ctype="VAR"/>
+</binding>
+
+<binding name="LoadSpikeTimes">
+	<arg argn="1" ctype="FILE"/>
+	<arg argn="2" ctype="VAR"/>
+</binding>
+
+<binding name="LoadSpikeWaveforms">
+	<arg argn="1" ctype="FILE"/>
+	<arg argn="2 3" ctype="VAR"/>
+</binding>
+
+<binding name="SaveBinary">
+	<arg argn="1" ctype="FILE"/>
+	<arg argn="2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="precision mode"/>
+	<arg argn="4:2:32" ctype="VAR" previous="precision" value="int8 int16 int32 int64 float32 float64 uint8 uint16 uint32 uint64"/>
+	<arg argn="4:2:32" ctype="VAR" previous="mode" value="new append"/>
+</binding>
+
+<binding name="SaveEvents">
+	<arg argn="1" ctype="FILE"/>
+	<arg argn="2" ctype="VAR"/>
+</binding>
+
+<binding name="SaveRippleEvents">
+	<arg argn="1" ctype="FILE"/>
+	<arg argn="2 3" ctype="VAR"/>
+</binding>
+
+<binding name="StartBatch">
+	<arg argn="1 2" ctype="FILE"/>
+	<arg argn="3:2:31" ctype="VAR" value="delay hide"/>
+	<arg argn="4:2:32" ctype="VAR" previous="hide" value="on off"/>
+</binding>
+
+<binding name="SaveEvents">
+	<arg argn="1" ctype="FILE"/>
+</binding>
+
+<binding name="SaveRippleEvents">
+	<arg argn="1" ctype="FILE"/>
+	<arg argn="2 3" ctype="VAR"/>
+</binding>
+
+<!-- FMAToolbox/Plot -->
+
+<binding name="Bright">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="gamma type"/>
+	<arg argn="3:2:31" ctype="VAR" previous="type" value="linear circular"/>
+</binding>
+
+<binding name="Browse">
+	<arg argn="1 2" ctype="VAR" value="on off all none"/>
+</binding>
+
+<binding name="Hide">
+	<arg argn="1 2" ctype="VAR" value="on off all none"/>
+</binding>
+
+<binding name="Insets">
+	<arg argn="1 2" ctype="VAR" value="topleft top topright left center right bottomleft bottom bottomright"/>
+	<arg argn="2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="margin"/>
+</binding>
+
+<binding name="PlotColorMap">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="x y threshold cutoffs gamma colorspace bar type"/>
+	<arg argn="4:2:32" ctype="VAR" previous="colorspace" value="hsv rgb"/>
+	<arg argn="4:2:32" ctype="VAR" previous="bar" value="on off"/>
+	<arg argn="4:2:32" ctype="VAR" previous="type" value="linear circular"/>
+</binding>
+
+<binding name="PlotCSD">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="lfp scale cutoffs"/>
+</binding>
+
+<binding name="PlotDistribution2">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="nBins smooth"/>
+</binding>
+
+<binding name="PlotHVLines">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2" ctype="VAR" value="h v"/>
+</binding>
+
+<binding name="PlotIntervals">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2" ctype="VAR" value="bars rectangles"/>
+	<arg argn="2" ctype="VAR" value="h v"/>
+</binding>
+
+<binding name="PlotMean">
+	<arg argn="1:4" ctype="VAR"/>
+	<arg argn="5" ctype="VAR" value=": -"/>
+</binding>
+
+<binding name="PlotPhasePrecession">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="smooth nBins track laps parent"/>
+	<arg argn="3:2:31" ctype="VAR" previous="track" value="linear circular"/>
+	<arg argn="3:2:31" ctype="VAR" previous="laps" value="all single"/>
+</binding>
+
+<binding name="PlotPopEPSP">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="direction durations focus window mode parent plot debug"/>
+	<arg argn="4:2:32" ctype="VAR" previous="direction" value="up down"/>
+	<arg argn="4:2:32" ctype="VAR" previous="mode" value="time count"/>
+	<arg argn="4:2:32" ctype="VAR" previous="plot" value="scatter average"/>
+	<arg argn="4:2:32" ctype="VAR" previous="debug" value="on off"/>
+</binding>
+
+<binding name="PlotRippleStats">
+	<arg argn="1:4" ctype="VAR"/>
+	<arg argn="5:2:31" ctype="VAR" value="frequency durations"/>
+</binding>
+
+<binding name="PlotSamples">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="spacing"/>
+</binding>
+
+<binding name="PlotShortTimeCCG">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="parent"/>
+	<!-- the following args are inherited from PlotColorMap -->
+	<arg argn="2:2:30" ctype="VAR" value="x y threshold cutoffs gamma colorspace bar type"/>
+	<arg argn="3:2:29" ctype="VAR" previous="colorspace" value="hsv rgb"/>
+	<arg argn="3:2:29" ctype="VAR" previous="bar" value="on off"/>
+	<arg argn="3:2:29" ctype="VAR" previous="type" value="linear circular"/>
+</binding>
+
+<binding name="PlotSpikeWaveforms">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="spacing"/>
+</binding>
+
+<binding name="PlotSync">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="durations spacing"/>
+</binding>
+
+<binding name="PlotTicks">
+	<arg argn="1 2" ctype="VAR"/>
+	<arg argn="3:2:31" ctype="VAR" value="direction size"/>
+	<arg argn="4:2:32" ctype="VAR" previous="direction" value="h v"/>
+</binding>
+
+<binding name="Subpanel">
+	<arg argn="1" ctype="VAR"/>
+	<arg argn="2:2:30" ctype="VAR" value="parent"/>
+</binding>
+
+<binding name="UIAddLine">
+	<arg argn="1" ctype="VAR" value="h v"/>
+</binding>
+
+<!-- FMAToolbox <<< -->

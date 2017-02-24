@@ -1,0 +1,248 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of CleanWhlForR</title>
+  <meta name="keywords" content="CleanWhlForR">
+  <meta name="description" content="Position file cleaning">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">Wrappers</a> &gt; CleanWhlForR.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for Wrappers&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>CleanWhlForR
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Position file cleaning</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [cWhl, GoodRanges_F] = CleanWhlForR(Whl, StretchLen, JumpSize, Gap) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Position file cleaning
+
+ [CleanWhl GoodRanges] = CleanWhlFR(Whl, StretchLen, JumpSize,Gap);
+
+ &quot;cleans up&quot; a wheel file by interpolating missing stretches
+ up to StretchLen long (default 20), for which the endpoints 
+ don't differ by more than JumpSize, (default 30).
+
+ also returns the ranges where the whl file is valid (in .whl units)
+ GoodRanges which gives start and end samples of the good ranges
+ (so Whl(GoodRanges) has no -1 values).
+
+ if there are any very high derivatives left over, it warns you
+
+ This is a modified version of CleanWhl. If the discrimination of Front and 
+ Rear LED is imcomplete in MakeWhlFile_3spots program, uncleaned Whl file has 
+ -1 -1 in only either whl(:,1:2) or whl(:,3:4). If those Whl file are used in Original 
+ version of CleanWhl, the resultant cWhl file use -1 in whl(:,3:4) for interpolation.
+ To prevent this problem, the value of whl(:,3:4) is also taken into account for the rang 
+ of interpolation.
+
+ Before useing interp1, remove the data which has (-1,-1) or big Gap between two continous rows.
+ Assing the (-Gap, -Gap) to the row which has big Gap or (-1,-1).
+ interporate.
+ if the Gap is longer than StretchLen in terms of number of .whl rows or longer than JumpSize in terms of distance, remove the interporated values.
+
+
+ change by A Peyrache, @2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="LoadPosition.html" class="code" title="function [whl,t,GoodRanges] = LoadPosition(fbasename)">LoadPosition</a>	Intermediate wrapper, should not be used directly</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Position file cleaning</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% [CleanWhl GoodRanges] = CleanWhlFR(Whl, StretchLen, JumpSize,Gap);</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% &quot;cleans up&quot; a wheel file by interpolating missing stretches</span>
+0006 <span class="comment">% up to StretchLen long (default 20), for which the endpoints</span>
+0007 <span class="comment">% don't differ by more than JumpSize, (default 30).</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% also returns the ranges where the whl file is valid (in .whl units)</span>
+0010 <span class="comment">% GoodRanges which gives start and end samples of the good ranges</span>
+0011 <span class="comment">% (so Whl(GoodRanges) has no -1 values).</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% if there are any very high derivatives left over, it warns you</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% This is a modified version of CleanWhl. If the discrimination of Front and</span>
+0016 <span class="comment">% Rear LED is imcomplete in MakeWhlFile_3spots program, uncleaned Whl file has</span>
+0017 <span class="comment">% -1 -1 in only either whl(:,1:2) or whl(:,3:4). If those Whl file are used in Original</span>
+0018 <span class="comment">% version of CleanWhl, the resultant cWhl file use -1 in whl(:,3:4) for interpolation.</span>
+0019 <span class="comment">% To prevent this problem, the value of whl(:,3:4) is also taken into account for the rang</span>
+0020 <span class="comment">% of interpolation.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Before useing interp1, remove the data which has (-1,-1) or big Gap between two continous rows.</span>
+0023 <span class="comment">% Assing the (-Gap, -Gap) to the row which has big Gap or (-1,-1).</span>
+0024 <span class="comment">% interporate.</span>
+0025 <span class="comment">% if the Gap is longer than StretchLen in terms of number of .whl rows or longer than JumpSize in terms of distance, remove the interporated values.</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% change by A Peyrache, @2012</span>
+0029 
+0030 <a name="_sub0" href="#_subfunctions" class="code">function [cWhl, GoodRanges_F] = CleanWhlForR(Whl, StretchLen, JumpSize, Gap)</a>
+0031 
+0032 <span class="comment">% If the gap between the good strech is more than StrethcLen in terms of Whl row number,remove interporated values.</span>
+0033 <span class="keyword">if</span> nargin&lt;2
+0034     StretchLen = 30;
+0035 <span class="keyword">end</span>
+0036 
+0037 <span class="comment">% If the Gap between the good strech is more than JumpSize, remove interporated values.</span>
+0038 <span class="keyword">if</span> nargin&lt;3
+0039     JumpSize = 30;
+0040 <span class="keyword">end</span>
+0041 
+0042 <span class="comment">% if the distance between the two contimous rows are more than Gap centimeter, It's a big jump and do not use as an input for inpterp1.</span>
+0043 <span class="keyword">if</span> nargin&lt;4,
+0044     Gap = 30;
+0045 <span class="keyword">end</span>
+0046 
+0047 nWhl = size(Whl,1);
+0048 
+0049 <span class="comment">% interpolate missing values or large jumps.</span>
+0050 <span class="comment">% the value of whl(:,3:4) is also taken into account for the rang of interpolation.</span>
+0051 <span class="comment">% A transision to and form (-1,-1) should be taken as a BigJump.</span>
+0052 
+0053 <span class="comment">% I hsould use distance, not the one dimentinal projection of trajectory, by the way.</span>
+0054 
+0055 whltemp = Whl;
+0056 whltemp(find(whltemp)==-1) = -Gap;
+0057 dist_F = sqrt(diff(whltemp(:,1)).^2+diff(whltemp(:,2)).^2);
+0058 dist_R = sqrt(diff(whltemp(:,3)).^2+diff(whltemp(:,4)).^2);
+0059 BigJump_F = dist_F&gt;Gap;
+0060 BigJump_R = dist_R&gt;Gap;
+0061 
+0062 Good_F = find(Whl(:,1)&gt;-1 &amp; ~([BigJump_F;0] | [0;BigJump_F]));
+0063 Bad_F = find(~(Whl(:,1)&gt;-1 &amp; ~([BigJump_F;0] | [0;BigJump_F])));
+0064 Good_R = find(Whl(:,3)&gt;-1 &amp; ~([BigJump_R;0] | [0;BigJump_R]));
+0065 Bad_R = find(~(Whl(:,3)&gt;-1 &amp; ~([BigJump_R;0] | [0;BigJump_R])));
+0066 
+0067 whltemp(Bad_F,1:2) = -Gap;
+0068 whltemp(Bad_R,3:4) = -Gap;
+0069 
+0070 WhlNaN = Whl;
+0071 WhlNaN(find(Whl==-1)) = NaN;
+0072 
+0073 <span class="comment">% Give -1 outside of the interpolation.</span>
+0074 
+0075 <span class="keyword">if</span> length(Good_F)&lt;2 || length(Good_R)&lt;2;
+0076     cWhl(:,1:2) = -ones(size(Whl,1),2);
+0077 <span class="keyword">else</span>
+0078     cWhl(:,1:2) = interp1(Good_F, Whl(Good_F,1:2), 1:nWhl, <span class="string">'linear'</span>, -1);
+0079     cWhl(:,3:4) = interp1(Good_R, Whl(Good_R,3:4), 1:nWhl, <span class="string">'linear'</span>, -1);
+0080 <span class="keyword">end</span>
+0081 
+0082 
+0083 <span class="comment">% find missing stretches for Front LED</span>
+0084 dGoodF = [-(whltemp(1,1)==-Gap) ; diff(whltemp(:,1)&gt;-Gap)];
+0085 BadStartF = find(dGoodF&lt;0);
+0086 BadEndF = find(dGoodF&gt;0)-1;
+0087 <span class="comment">% if last point is bad, need to finish off BadEnd</span>
+0088 <span class="keyword">if</span> Whl(<span class="keyword">end</span>,1)==-1
+0089     BadEndF = [BadEndF; nWhl];
+0090 <span class="keyword">end</span>
+0091 
+0092 <span class="keyword">if</span> length(BadStartF)&gt;length(BadEndF)
+0093     BadEndF = [BadEndF; nWhl];
+0094 <span class="keyword">end</span>
+0095 
+0096 
+0097 <span class="comment">% find ranges to chuck</span>
+0098 <span class="comment">% jump size ...</span>
+0099 <span class="keyword">if</span> any(BadStartF&gt;0)
+0100 
+0101     StartIndF = clip(BadStartF-1, 1, nWhl); <span class="comment">% StartInd and EndInd give the</span>
+0102     EndIndF = clip(BadEndF+1, 1, nWhl);     <span class="comment">% points you are interpolating between</span>
+0103     
+0104     dist_F = sqrt((Whl(StartIndF,1)-Whl(EndIndF,1)).^2+(Whl(StartIndF,2)-Whl(EndIndF,2)).^2);
+0105     ToChuckF = find(BadEndF-BadStartF&gt;=StretchLen <span class="keyword">...</span>
+0106         | dist_F &gt; JumpSize);
+0107     <span class="comment">% chuck em</span>
+0108 
+0109     <span class="keyword">for</span> i=ToChuckF(:)'
+0110            cWhl(BadStartF(i):BadEndF(i),1:2) = NaN;
+0111     <span class="keyword">end</span>
+0112 <span class="keyword">end</span>
+0113 
+0114 <span class="comment">% find missing stretches for Rear LED</span>
+0115 dGoodR = [-(whltemp(1,3)==-Gap) ; diff(whltemp(:,3)&gt;-Gap)];
+0116 BadStartR = find(dGoodR&lt;0);
+0117 BadEndR = find(dGoodR&gt;0)-1;
+0118 <span class="comment">% if last point is bad, need to finish off BadEnd</span>
+0119 <span class="keyword">if</span> Whl(<span class="keyword">end</span>,3)==-1
+0120     BadEndR = [BadEndR; nWhl];
+0121 <span class="keyword">end</span>
+0122 
+0123 <span class="keyword">if</span> length(BadStartR)&gt;length(BadEndR)
+0124     BadEndR = [BadEndR; nWhl];
+0125 <span class="keyword">end</span>
+0126 
+0127 
+0128 <span class="comment">% find ranges to chuck</span>
+0129 <span class="comment">% jump size ...</span>
+0130 <span class="keyword">if</span> any(BadStartR&gt;0)
+0131     StartIndR = clip(BadStartR-1, 1, nWhl); <span class="comment">% StartInd and EndInd give the</span>
+0132     EndIndR = clip(BadEndR+1, 1, nWhl);     <span class="comment">% points you are interpolating between</span>
+0133 
+0134       dist_R = sqrt((Whl(StartIndR,3)-Whl(EndIndR,3)).^2+(Whl(StartIndR,4)-Whl(EndIndR,4)).^2);
+0135     ToChuckR = find(BadEndR-BadStartR&gt;=StretchLen <span class="keyword">...</span>
+0136         | dist_R &gt; JumpSize);
+0137     
+0138     <span class="comment">% chuck em</span>
+0139     <span class="keyword">for</span> i=ToChuckR(:)'
+0140            cWhl(BadStartR(i):BadEndR(i),3:4) = NaN;
+0141     <span class="keyword">end</span>
+0142 <span class="keyword">end</span>
+0143 
+0144 
+0145 <span class="keyword">if</span> 0 <span class="comment">% OLD VERSION (BUG?)</span>
+0146 <span class="comment">% % now find good ranges</span>
+0147 <span class="comment">% dcGood = [-(Whl(1,1)==1) ; diff(cWhl(:,1)&gt;-1)];</span>
+0148 <span class="comment">% GoodStart = find(dcGood&gt;0);</span>
+0149 <span class="comment">% GoodEnd = find(dcGood&lt;0)-1;</span>
+0150 <span class="comment">% % if last point is good, need to finish GoodEnd</span>
+0151 <span class="comment">% if cWhl(end,1)&gt;-1</span>
+0152 <span class="comment">%     GoodEnd = [GoodEnd; nWhl];</span>
+0153 <span class="comment">% end</span>
+0154 <span class="comment">% GoodRanges = [GoodStart, GoodEnd];</span>
+0155 <span class="keyword">else</span>
+0156     dcGood_F = diff([0; cWhl(:,1)&gt;-1; 0]);
+0157     GoodStart_F = find(dcGood_F&gt;0);
+0158     GoodEnd_F = find(dcGood_F&lt;0)-1;
+0159     GoodRanges_F = [GoodStart_F, GoodEnd_F];
+0160 <span class="keyword">end</span>
+0161 
+0162 
+0163 <span class="comment">% delete singletons</span>
+0164 <span class="comment">%%% I don't think that I need to remove singletons here.(Kenji 060405)</span>
+0165 <span class="comment">%%if length(GoodStart&gt;0)</span>
+0166 <span class="comment">%   Singletons = find(GoodStart==GoodEnd);</span>
+0167 <span class="comment">%    cWhl(GoodStart(Singletons),:) = -1;</span>
+0168 <span class="comment">%    GoodRanges(Singletons,:) = [];</span>
+0169 <span class="comment">% end</span>
+0170 
+0171 <span class="comment">%keyboard</span>
+0172 
+0173 
+0174 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

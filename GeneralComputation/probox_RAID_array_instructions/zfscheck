@@ -1,0 +1,48 @@
+#!/bin/bash
+USER=luke
+HOMEDIR=/home/luke
+
+# a script to put in root's crontab to run every day. It checks all of your
+# zpools and sends you messages if it finds errors.
+#
+# usage: type 'sudo crontab -e' and add the following line (without the #)
+# 0 3 * * * env DISPLAY=0 /home/luke/scripts/zfscheck
+# (edit the path as necessary)
+#
+# Luke Sjulson, 2014-08-05
+
+DISPLAY=:0.0
+
+if [ -r "$HOMEDIR/.dbus/Xdbus" ]; then
+  . "$HOMEDIR/.dbus/Xdbus"
+fi
+
+/sbin/zpool status -x | /bin/grep 'all pools are healthy' > /dev/null 2>&1
+# ls asdfalskfjs # (command designed to mimic error for testing)
+if [ $? -ne 0 ];
+then
+	echo "*********************************************" > /tmp/zfs.stat
+	echo "* WARNING!!! ERRORS FOUND ON HARD DRIVES!!! *" >> /tmp/zfs.stat
+	echo "*********************************************" >> /tmp/zfs.stat
+	echo >> /tmp/zfs.stat
+        /bin/date >> /tmp/zfs.stat
+        echo "hostname:">> /tmp/zfs.stat
+        /bin/hostname >> /tmp/zfs.stat
+        /sbin/zpool status >> /tmp/zfs.stat
+
+	while true # an infinite loop to bother you forever
+	do
+#		/usr/local/bin/matlab -r -nosplash zfsemail
+#		mail -s "Warning: hard disk errors found" $USER < /tmp/zfs.stat
+		su $USER -c $'/usr/bin/notify-send --urgency=critical --expire-time=1000000000 "`cat /tmp/zfs.stat`"'
+		cat /tmp/zfs.stat | wall
+		echo "type sudo pkill zfscheck to silence these messages" | wall
+		sleep 3600
+#		sleep 10
+	done
+
+else
+#	su $USER -c $'/usr/bin/notify-send --urgency=critical --expire-time=1000000000 "zfscheck: all zpools are healthy at `date`"'
+	echo "zfscheck: all zpools are healthy at `date`" | wall
+fi
+

@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of videoread</title>
+  <meta name="keywords" content="videoread">
+  <meta name="description" content="VIDEOREAD Read an video file in a mannter compatible with Matlab's">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # videoIO --><!-- menu.html videoIO_2006b -->
+<h1>videoread
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>VIDEOREAD Read an video file in a mannter compatible with Matlab's</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function mov=videoread(fname,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">VIDEOREAD Read an video file in a mannter compatible with Matlab's
+          built-in AVIREAD function, but using a videoReader object to do
+          the work instead. 
+
+   MOV=VIDEOREAD(FNAME)
+     Read the video file FNAME into the Matlab movie structure MOV.  MOV
+     has two fields, &quot;cdata&quot; and &quot;colormap&quot;.  Since all videoReader
+     plugins currently output 24-bit images in all cases, colormap will
+     always be blank.    
+
+   MOV=VIDEOREAD(FNAME,VRARGS)
+     The same as MOV=VIDEOREAD(FNAME), but VRARGS are passed to the 
+     videoReader constructor.  VRARGS should be a cell array of arguments.
+     E.g. 
+         mov = videoread('tests/numbers.wmv3.avi', {'DirectShow'});
+
+   MOV=VIDEOREAD(FNAME,INDEX)
+     Reads only the frame(s) specified by INDEX.  INDEX can be a single
+     index or an array of indices into the video stream, where the first
+     frame is  number one.  IMPORTANT NOTES: If you use videoReader
+     directly, it assumes  frames start at 0, not 1.  We use 1-indexing
+     here in VIDEOREAD to maximize  compatibility with MathWork's AVIREAD.  
+     Also, if you find yourself making several calls to VIDEOREAD to 
+     extract different portions of the file and/or if the number of 
+     frames is large, consider using videoReader directly instead of this 
+     wrapper function.
+
+   MOV=VIDEOREAD(FNAME,VRARGS,INDEX)
+     The same as MOV=VIDEOREAD(FNAME,INDEX), but VRARGS are passed to the 
+     videoReader constructor.  VRARGS should be a cell array of arguments.  
+
+Copyright (c) 2006 Gerald Dalley
+See &quot;MIT.txt&quot; in the installation directory for licensing details (especially 
+when using this library on GNU/Linux).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>	FRAME=GETFRAME(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>	INFO=GETINFO(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>	WORKED=NEXT(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>	WORKED=SEEK(VR,FNUM)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>	videoReader class constructor</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/getinfo.html" class="code" title="function info = getinfo(vw)">getinfo</a>	INFO=GETINFO(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>	FRAME=GETFRAME(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>	INFO=GETINFO(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>	WORKED=NEXT(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>	WORKED=SEEK(VR,FNUM)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>	videoReader class constructor</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/getinfo.html" class="code" title="function info = getinfo(vw)">getinfo</a>	INFO=GETINFO(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>	FRAME=GETFRAME(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>	INFO=GETINFO(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>	WORKED=NEXT(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>	WORKED=SEEK(VR,FNUM)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>	videoReader class constructor</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/getinfo.html" class="code" title="function info = getinfo(vw)">getinfo</a>	INFO=GETINFO(VW)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function mov=videoread(fname,varargin)</a>
+0002 <span class="comment">%VIDEOREAD Read an video file in a mannter compatible with Matlab's</span>
+0003 <span class="comment">%          built-in AVIREAD function, but using a videoReader object to do</span>
+0004 <span class="comment">%          the work instead.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   MOV=VIDEOREAD(FNAME)</span>
+0007 <span class="comment">%     Read the video file FNAME into the Matlab movie structure MOV.  MOV</span>
+0008 <span class="comment">%     has two fields, &quot;cdata&quot; and &quot;colormap&quot;.  Since all videoReader</span>
+0009 <span class="comment">%     plugins currently output 24-bit images in all cases, colormap will</span>
+0010 <span class="comment">%     always be blank.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%   MOV=VIDEOREAD(FNAME,VRARGS)</span>
+0013 <span class="comment">%     The same as MOV=VIDEOREAD(FNAME), but VRARGS are passed to the</span>
+0014 <span class="comment">%     videoReader constructor.  VRARGS should be a cell array of arguments.</span>
+0015 <span class="comment">%     E.g.</span>
+0016 <span class="comment">%         mov = videoread('tests/numbers.wmv3.avi', {'DirectShow'});</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%   MOV=VIDEOREAD(FNAME,INDEX)</span>
+0019 <span class="comment">%     Reads only the frame(s) specified by INDEX.  INDEX can be a single</span>
+0020 <span class="comment">%     index or an array of indices into the video stream, where the first</span>
+0021 <span class="comment">%     frame is  number one.  IMPORTANT NOTES: If you use videoReader</span>
+0022 <span class="comment">%     directly, it assumes  frames start at 0, not 1.  We use 1-indexing</span>
+0023 <span class="comment">%     here in VIDEOREAD to maximize  compatibility with MathWork's AVIREAD.</span>
+0024 <span class="comment">%     Also, if you find yourself making several calls to VIDEOREAD to</span>
+0025 <span class="comment">%     extract different portions of the file and/or if the number of</span>
+0026 <span class="comment">%     frames is large, consider using videoReader directly instead of this</span>
+0027 <span class="comment">%     wrapper function.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">%   MOV=VIDEOREAD(FNAME,VRARGS,INDEX)</span>
+0030 <span class="comment">%     The same as MOV=VIDEOREAD(FNAME,INDEX), but VRARGS are passed to the</span>
+0031 <span class="comment">%     videoReader constructor.  VRARGS should be a cell array of arguments.</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">%Copyright (c) 2006 Gerald Dalley</span>
+0034 <span class="comment">%See &quot;MIT.txt&quot; in the installation directory for licensing details (especially</span>
+0035 <span class="comment">%when using this library on GNU/Linux).</span>
+0036 
+0037 <span class="keyword">if</span> nargin==1,
+0038   vrargs = {};
+0039 <span class="keyword">elseif</span> nargin==2,
+0040   <span class="keyword">if</span> (iscell(varargin{1})),
+0041     vrargs = varargin{1};
+0042   <span class="keyword">else</span>
+0043     vrargs = {};
+0044     index  = varargin{1};
+0045   <span class="keyword">end</span>
+0046 <span class="keyword">elseif</span> nargin==3,
+0047   vrargs = varargin{1};
+0048   index  = varargin{2};
+0049 <span class="keyword">end</span>
+0050 
+0051 vr = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>(fname, vrargs{:});
+0052 <span class="keyword">if</span> ~(exist(<span class="string">'index'</span>,<span class="string">'var'</span>)),
+0053   info = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>(vr);
+0054   index = (0:info.numFrames-1); <span class="comment">% 0-indexed</span>
+0055 <span class="keyword">else</span>
+0056   index = index - 1; <span class="comment">% 0-indexed</span>
+0057 <span class="keyword">end</span>
+0058 
+0059 mov = struct;
+0060 currFrame = -1;
+0061 <span class="keyword">if</span> (size(index)&gt;0)
+0062   <span class="comment">% index supplied or deduced from file</span>
+0063   <span class="keyword">for</span> i=1:length(index)
+0064     f = index(i);
+0065     <span class="keyword">if</span> (f == currFrame+1)
+0066       <span class="keyword">if</span> ~<a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>(vr), error(<span class="string">'Could not advance to frame %d\n'</span>, f+1); <span class="keyword">end</span>
+0067     <span class="keyword">else</span>
+0068       <span class="keyword">if</span> ~<a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>(vr, f), error(<span class="string">'Could not seek to frame %d\n'</span>, f+1); <span class="keyword">end</span>
+0069     <span class="keyword">end</span>
+0070     currFrame = f;
+0071     mov(i).cdata = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>(vr);
+0072     mov(i).colormap = [];
+0073   <span class="keyword">end</span>
+0074 <span class="keyword">else</span>
+0075   <span class="comment">% no index was supplied and we could not deduce the number of frames</span>
+0076   <span class="comment">% in the video.</span>
+0077   i=1;
+0078   <span class="keyword">while</span> <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>(vr)
+0079     mov(i).cdata = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>(vr);
+0080     mov(i).colormap = [];
+0081     i = i+1;
+0082   <span class="keyword">end</span>
+0083 <span class="keyword">end</span>
+0084 
+0085 vr = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>(vr);
+0086</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

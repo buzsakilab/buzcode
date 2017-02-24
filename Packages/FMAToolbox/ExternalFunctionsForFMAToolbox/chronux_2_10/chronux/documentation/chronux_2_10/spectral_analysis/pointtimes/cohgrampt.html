@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of cohgrampt</title>
+  <meta name="keywords" content="cohgrampt">
+  <meta name="description" content="Multi-taper time-frequency coherence - two point processes given as times">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>cohgrampt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper time-frequency coherence - two point processes given as times</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper time-frequency coherence - two point processes given as times
+
+ Usage:
+
+ [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)
+ Input: 
+ Note units have to be consistent. Thus, if movingwin is in seconds, Fs
+ has to be in Hz. see chronux.m for more information.
+
+       data1  (structure array of spike times with dimension trials; also accepts 1d array of spike times) -- required
+       data2  (structure array of spike times with dimension trials; also accepts 1d array of spike times) -- required
+       movingwin (in the form [window winstep] -- required
+       params: structure with fields tapers, pad, Fs, fpass, err, trialave
+       - optional
+           tapers : precalculated tapers from dpss or in the one of the following
+                    forms: 
+                   (1) A numeric vector [TW K] where TW is the
+                       time-bandwidth product and K is the number of
+                       tapers to be used (less than or equal to
+                       2TW-1). 
+                   (2) A numeric vector [W T p] where W is the
+                       bandwidth, T is the duration of the data and p 
+                       is an integer such that 2TW-p tapers are used. In
+                       this form there is no default i.e. to specify
+                       the bandwidth, you have to specify T and p as
+                       well. Note that the units of W and T have to be
+                       consistent: if W is in Hz, T must be in seconds
+                       and vice versa. Note that these units must also
+                       be consistent with the units of params.Fs: W can
+                       be in Hz if and only if params.Fs is in Hz.
+                       The default is to use form 1 with TW=3 and K=5
+                    Note that T has to be equal to movingwin(1).
+
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+           Fs   (sampling frequency) - optional. Default 1.
+           fpass    (frequency band to be used in the calculation in the form
+                                   [fmin fmax])- optional. 
+                                   Default all frequencies between 0 and Fs/2
+           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars
+                                   [0 p] or 0 - no error bars) - optional. Default 0.
+           trialave (average over trials when 1, don't average when 0) - optional. Default 0
+       fscorr   (finite size corrections, 0 (don't use finite size corrections) or 
+                 1 (use finite size corrections) - optional
+                (available only for spikes). Defaults 0.
+ Output:
+       C (magnitude of coherency time x frequencies x trials for trialave=0; 
+              time x frequency for trialave=1)
+       phi (phase of coherency time x frequencies x trials for no trial averaging; 
+              time x frequency for trialave=1)
+       S12 (cross spectrum - time x frequencies x trials for no trial averaging; 
+              time x frequency for trialave=1)
+       S1 (spectrum 1 - time x frequencies x trials for no trial averaging; 
+              time x frequency for trialave=1)
+       S2 (spectrum 2 - time x frequencies x trials for no trial averaging; 
+              time x frequency for trialave=1)
+       t (time)
+       f (frequencies)
+       zerosp (1 for windows and trials where spikes were absent (in either channel),zero otherwise)
+       confC (confidence level for C at 1-p %) - only for err(1)&gt;=1
+       phistd - theoretical/jackknife (depending on err(1)=1/err(1)=2) standard deviation for phi 
+                Note that phi + 2 phistd and phi - 2 phistd will give 95% confidence
+                bands for phi - only for err(1)&gt;=1 
+       Cerr  (Jackknife error bars for C - use only for Jackknife - err(1)=2)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/check_consistency.html" class="code" title="function [N,C]=check_consistency(data1,data2,sp)">check_consistency</a>	Helper routine to check consistency of data dimensions</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>	Helper function that gets the frequency grid associated with a given fft based computation</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li><li><a href="coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>	Multi-taper coherency - point process times</li><li><a href="extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>	Extract segements of spike times between t(1) and t(2)</li><li><a href="minmaxsptimes.html" class="code" title="function [mintime, maxtime]=minmaxsptimes(data)">minmaxsptimes</a>	Find the minimum and maximum of the spike times in each channel</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/test/testscript.html" class="code" title="">testscript</a>	function testscript(pname,direction,movingwin,segave,params,fscorr)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)</a>
+0002 <span class="comment">% Multi-taper time-frequency coherence - two point processes given as times</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage:</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)</span>
+0007 <span class="comment">% Input:</span>
+0008 <span class="comment">% Note units have to be consistent. Thus, if movingwin is in seconds, Fs</span>
+0009 <span class="comment">% has to be in Hz. see chronux.m for more information.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%       data1  (structure array of spike times with dimension trials; also accepts 1d array of spike times) -- required</span>
+0012 <span class="comment">%       data2  (structure array of spike times with dimension trials; also accepts 1d array of spike times) -- required</span>
+0013 <span class="comment">%       movingwin (in the form [window winstep] -- required</span>
+0014 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass, err, trialave</span>
+0015 <span class="comment">%       - optional</span>
+0016 <span class="comment">%           tapers : precalculated tapers from dpss or in the one of the following</span>
+0017 <span class="comment">%                    forms:</span>
+0018 <span class="comment">%                   (1) A numeric vector [TW K] where TW is the</span>
+0019 <span class="comment">%                       time-bandwidth product and K is the number of</span>
+0020 <span class="comment">%                       tapers to be used (less than or equal to</span>
+0021 <span class="comment">%                       2TW-1).</span>
+0022 <span class="comment">%                   (2) A numeric vector [W T p] where W is the</span>
+0023 <span class="comment">%                       bandwidth, T is the duration of the data and p</span>
+0024 <span class="comment">%                       is an integer such that 2TW-p tapers are used. In</span>
+0025 <span class="comment">%                       this form there is no default i.e. to specify</span>
+0026 <span class="comment">%                       the bandwidth, you have to specify T and p as</span>
+0027 <span class="comment">%                       well. Note that the units of W and T have to be</span>
+0028 <span class="comment">%                       consistent: if W is in Hz, T must be in seconds</span>
+0029 <span class="comment">%                       and vice versa. Note that these units must also</span>
+0030 <span class="comment">%                       be consistent with the units of params.Fs: W can</span>
+0031 <span class="comment">%                       be in Hz if and only if params.Fs is in Hz.</span>
+0032 <span class="comment">%                       The default is to use form 1 with TW=3 and K=5</span>
+0033 <span class="comment">%                    Note that T has to be equal to movingwin(1).</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0036 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0037 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0038 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0039 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0040 <span class="comment">%                       Defaults to 0.</span>
+0041 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0042 <span class="comment">%           fpass    (frequency band to be used in the calculation in the form</span>
+0043 <span class="comment">%                                   [fmin fmax])- optional.</span>
+0044 <span class="comment">%                                   Default all frequencies between 0 and Fs/2</span>
+0045 <span class="comment">%           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars</span>
+0046 <span class="comment">%                                   [0 p] or 0 - no error bars) - optional. Default 0.</span>
+0047 <span class="comment">%           trialave (average over trials when 1, don't average when 0) - optional. Default 0</span>
+0048 <span class="comment">%       fscorr   (finite size corrections, 0 (don't use finite size corrections) or</span>
+0049 <span class="comment">%                 1 (use finite size corrections) - optional</span>
+0050 <span class="comment">%                (available only for spikes). Defaults 0.</span>
+0051 <span class="comment">% Output:</span>
+0052 <span class="comment">%       C (magnitude of coherency time x frequencies x trials for trialave=0;</span>
+0053 <span class="comment">%              time x frequency for trialave=1)</span>
+0054 <span class="comment">%       phi (phase of coherency time x frequencies x trials for no trial averaging;</span>
+0055 <span class="comment">%              time x frequency for trialave=1)</span>
+0056 <span class="comment">%       S12 (cross spectrum - time x frequencies x trials for no trial averaging;</span>
+0057 <span class="comment">%              time x frequency for trialave=1)</span>
+0058 <span class="comment">%       S1 (spectrum 1 - time x frequencies x trials for no trial averaging;</span>
+0059 <span class="comment">%              time x frequency for trialave=1)</span>
+0060 <span class="comment">%       S2 (spectrum 2 - time x frequencies x trials for no trial averaging;</span>
+0061 <span class="comment">%              time x frequency for trialave=1)</span>
+0062 <span class="comment">%       t (time)</span>
+0063 <span class="comment">%       f (frequencies)</span>
+0064 <span class="comment">%       zerosp (1 for windows and trials where spikes were absent (in either channel),zero otherwise)</span>
+0065 <span class="comment">%       confC (confidence level for C at 1-p %) - only for err(1)&gt;=1</span>
+0066 <span class="comment">%       phistd - theoretical/jackknife (depending on err(1)=1/err(1)=2) standard deviation for phi</span>
+0067 <span class="comment">%                Note that phi + 2 phistd and phi - 2 phistd will give 95% confidence</span>
+0068 <span class="comment">%                bands for phi - only for err(1)&gt;=1</span>
+0069 <span class="comment">%       Cerr  (Jackknife error bars for C - use only for Jackknife - err(1)=2)</span>
+0070 
+0071 <span class="keyword">if</span> nargin &lt; 3; error(<span class="string">'Need data1 and data2 and window parameters'</span>); <span class="keyword">end</span>;
+0072 <span class="keyword">if</span> nargin &lt; 4; params=[]; <span class="keyword">end</span>;
+0073 
+0074 <span class="keyword">if</span> length(params.tapers)==3 &amp; movingwin(1)~=params.tapers(2);
+0075     error(<span class="string">'Duration of data in params.tapers is inconsistent with movingwin(1), modify params.tapers(2) to proceed'</span>)
+0076 <span class="keyword">end</span>
+0077 
+0078 [tapers,pad,Fs,fpass,err,trialave,params]=<a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params);
+0079 <span class="keyword">if</span> nargin &lt; 5 || isempty(fscorr); fscorr=0; <span class="keyword">end</span>;
+0080 
+0081 <span class="keyword">if</span> nargout &gt; 10 &amp;&amp; err(1)~=2; 
+0082     error(<span class="string">'Cerr computed only for Jackknife. Correct inputs and run again'</span>);
+0083 <span class="keyword">end</span>;
+0084 <span class="keyword">if</span> nargout &gt; 8 &amp;&amp; err(1)==0;
+0085     error(<span class="string">'Errors computed only if err(1) is not equal to zero'</span>);
+0086 <span class="keyword">end</span>;
+0087 
+0088 [N,Ch]=<a href="../../../chronux_2_10/spectral_analysis/helper/check_consistency.html" class="code" title="function [N,C]=check_consistency(data1,data2,sp)">check_consistency</a>(data1,data2);
+0089 [mintime1,maxtime1]=<a href="minmaxsptimes.html" class="code" title="function [mintime, maxtime]=minmaxsptimes(data)">minmaxsptimes</a>(data1);
+0090 [mintime2,maxtime2]=<a href="minmaxsptimes.html" class="code" title="function [mintime, maxtime]=minmaxsptimes(data)">minmaxsptimes</a>(data2);
+0091 mintime=min(mintime1,mintime2);
+0092 maxtime=max(maxtime1,maxtime2);
+0093 
+0094 tn=mintime+movingwin(1)/2:movingwin(2):maxtime-movingwin(1)/2;
+0095 Nwin=round(Fs*movingwin(1)); <span class="comment">% number of samples in window</span>
+0096 <span class="comment">% Nstep=round(movingwin(2)*Fs); % number of samples to step through</span>
+0097 nfft=max(2^(nextpow2(Nwin)+pad),Nwin);
+0098 f=<a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>(Fs,nfft,fpass); Nf=length(f);
+0099 params.tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(tapers,Nwin,Fs); <span class="comment">% check tapers</span>
+0100 nw=length(tn);
+0101 <span class="keyword">if</span> trialave;
+0102    C=zeros(nw,Nf);
+0103    S12=zeros(nw,Nf);
+0104    S1=zeros(nw,Nf);
+0105    S2=zeros(nw,Nf);
+0106    phi=zeros(nw,Nf);
+0107    Cerr=zeros(2,nw,Nf);
+0108 <span class="comment">%    phierr=zeros(2,nw,Nf);</span>
+0109    phistd=zeros(nw,Nf);
+0110 <span class="keyword">else</span>
+0111    C=zeros(nw,Nf,Ch);
+0112    S12=zeros(nw,Nf,Ch);
+0113    S1=zeros(nw,Nf,Ch);
+0114    S2=zeros(nw,Nf,Ch);
+0115    phi=zeros(nw,Nf,Ch);
+0116    Cerr=zeros(2,nw,Nf,Ch);
+0117 <span class="comment">%    phierr=zeros(2,nw,Nf,Ch);</span>
+0118    phistd=zeros(nw,Nf,Ch);
+0119 <span class="keyword">end</span>;
+0120 zerosp=zeros(nw,Ch);
+0121 
+0122 <span class="keyword">for</span> n=1:nw;
+0123    t=linspace(tn(n)-movingwin(1)/2,tn(n)+movingwin(1)/2,Nwin);
+0124    datawin1=<a href="extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(data1,[t(1) t(end)]);datawin2=<a href="extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(data2,[t(1) t(end)]);
+0125    <span class="keyword">if</span> nargout==11;
+0126      [c,ph,s12,s1,s2,f,zsp,confc,phie,cerr]=<a href="coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>(datawin1,datawin2,params,fscorr,t);
+0127 <span class="comment">%      phierr(1,n,:,:)=squeeze(phie(1,:,:));</span>
+0128 <span class="comment">%      phierr(2,n,:,:)=squeeze(phie(2,:,:));</span>
+0129      phistd(n,:,:)=phie;
+0130      Cerr(1,n,:,:)=squeeze(cerr(1,:,:));
+0131      Cerr(2,n,:,:)=squeeze(cerr(2,:,:));
+0132    <span class="keyword">elseif</span> nargout==10;
+0133      [c,ph,s12,s1,s2,f,zsp,confc,phie]=<a href="coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>(datawin1,datawin2,params,fscorr,t);
+0134 <span class="comment">%      phierr(1,n,:,:)=squeeze(phie(1,:,:));</span>
+0135 <span class="comment">%      phierr(2,n,:,:)=squeeze(phie(2,:,:));</span>
+0136      phistd(n,:,:)=phie;
+0137    <span class="keyword">else</span>
+0138      [c,ph,s12,s1,s2,f,zsp]=<a href="coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>(datawin1,datawin2,params,fscorr,t);
+0139    <span class="keyword">end</span>;
+0140    C(n,:,:)=c;
+0141    phi(n,:,:)=ph;
+0142    S12(n,:,:)=s12;
+0143    S1(n,:,:)=s1;
+0144    S2(n,:,:)=s2;
+0145    zerosp(n,:)=zsp;
+0146 <span class="keyword">end</span>;
+0147 t=tn;
+0148 C=squeeze(C); phi=squeeze(phi);S12=squeeze(S12); S1=squeeze(S1); S2=squeeze(S2);zerosp=squeeze(zerosp);
+0149 <span class="keyword">if</span> nargout &gt; 9; confC=confc; <span class="keyword">end</span>;
+0150 <span class="keyword">if</span> nargout==11;Cerr=squeeze(Cerr);<span class="keyword">end</span>;
+0151 <span class="comment">% if nargout==10; phierr=squeeze(phierr);end</span>
+0152 <span class="keyword">if</span> nargout==10; phistd=squeeze(phistd);<span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

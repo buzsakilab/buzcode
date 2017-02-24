@@ -1,0 +1,52 @@
+function k = kurtosisFromPdf(X,P)
+
+%  k = kurtosisFromPdf computes the kurtosis of the distribution given by the pdf P
+%  over the vector of data X
+%  
+%  example: 
+%  X = [-5:5];
+%  pdf = 1/sqrt(2*pi) * exp(-(X.^2)/2);
+%  k = kurtosisFromPdf(X,pdf)
+%  
+%  gives:
+%  
+%  k =
+%  
+%      3.0000
+%  
+% as expected for a normal distribution
+% Adrien Peyrache 2007
+
+
+a = size(X);
+[n,ix] = max(a);
+
+
+
+if ix > 2
+	error('X must be a vector')
+elseif ix==1
+	if size(X,2)>1
+		error('X must be a vector')
+	end
+	
+	X = X';
+	P = P';
+end;
+
+n = length(X);
+P=P./(sum(P));
+
+mu = X*P';
+x2 = (X.*X)*P';
+x3 = (X.*X.*X)*P';
+x4 = (X.*X.*X.*X)*P';
+
+k = x4  - 4*mu*x3 + 6*mu^2*x2 - 3*mu^4;
+k = k/(x2^2);
+x2kkeyboard;
+
+
+%  keyboard
+
+

@@ -1,0 +1,1 @@
+function msgstr = GetInfo(MCC)% GetInfomsgstr = {[num2str(length(MCC.myPoints)) ' points.']};

@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of spectraMBL2005</title>
+  <meta name="keywords" content="spectraMBL2005">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html old --><!-- menu.html tutorial -->
+<h1>spectraMBL2005
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspecgramtrigc.html" class="code" title="function [S,t,f,Serr]=mtspecgramtrigc(data,E,win,movingwin,params)">mtspecgramtrigc</a>	Multi-taper event triggered time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspecgramtrigpt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgramtrigpt(data,E,win,movingwin,params,fscorr)">mtspecgramtrigpt</a>	Multi-taper event triggered time-frequency spectrum - point process times</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 [fname,pname]=uigetfile(<span class="string">'*'</span>);
+0002 eval([<span class="string">'load '</span> pname <span class="string">'\'</span> fname]);
+0003 params.tapers=[5 9]; params.pad=2; params.Fs=1000; params.fpass=[0 100]; params.trialave=1;
+0004 movingwin=[0.5 0.1]; <span class="comment">% duration of moving window used to evaluate spectrograms</span>
+0005 win=[2 2]; <span class="comment">% window around events</span>
+0006 fignum=[2 3 6 9 8 7 4 1]; <span class="comment">% figure numbers for particular directions</span>
+0007 <span class="keyword">for</span> targ=0:7;
+0008     E=targoff(find(targets==targ));
+0009     [Ssp,tsp,fsp,R]=<a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspecgramtrigpt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgramtrigpt(data,E,win,movingwin,params,fscorr)">mtspecgramtrigpt</a>(dsp(1),E,win,movingwin,params);
+0010     figure(1);
+0011     subplot(3,3,fignum(targ+1));
+0012     imagesc(t,f,10*log10(S)'); axis xy; colorbar;
+0013     figure(2);
+0014     subplot(3,3,fignum(targ+1));
+0015     plot(t,R); 
+0016     [Slfp,tlfp,flfp]=<a href="../../../chronux_2_10/spectral_analysis/continuous/mtspecgramtrigc.html" class="code" title="function [S,t,f,Serr]=mtspecgramtrigc(data,E,win,movingwin,params)">mtspecgramtrigc</a>(dlfp(:,1),E,win,movingwin,params);
+0017     figure(3);
+0018     subplot(3,3,fignum(targ+1));
+0019     imagesc(t,f,10*log10(S)'); axis xy; colorbar;
+0020 <span class="keyword">end</span>;
+0021     
+0022     
+0023     
+0024     
+0025     
+0026 
+0027</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

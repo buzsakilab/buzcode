@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Restrict</title>
+  <meta name="keywords" content="Restrict">
+  <meta name="description" content="Returns subsets of an intervalSet to which timestamps belong to">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@intervalSet</a> &gt; Restrict.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @intervalSet&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>Restrict
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Returns subsets of an intervalSet to which timestamps belong to</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [S,ix] = Start(O,tsa) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Returns subsets of an intervalSet to which timestamps belong to
+  
+      USAGE:
+      S = Restrict(O, TimeUnits)
+      
+      INPUTS: 
+      O   - an intervalSet object
+      tsa - a tsd or ts object
+      TimeUnits - a units object or the abbreviation string
+      
+      OUTPUT:
+      S  - an intervalset made of subsets of O which contained a time from tsa.
+      ix - indices of the subsets containing events from tsa</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Restrict.html" class="code" title="function [S,ix] = Start(O,tsa)">Restrict</a>	Returns subsets of an intervalSet to which timestamps belong to</li><li><a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>	Returns the length of each interval in the set</li><li><a href="subset.html" class="code" title="function A = subset(O, ix)">subset</a>	Returns subsets of an intervalSet</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Restrict.html" class="code" title="function [S,ix] = Start(O,tsa)">Restrict</a>	Returns subsets of an intervalSet to which timestamps belong to</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [S,ix] = Start(O,tsa)</a>
+0002 
+0003 <span class="comment">%  Returns subsets of an intervalSet to which timestamps belong to</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      S = Restrict(O, TimeUnits)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      INPUTS:</span>
+0009 <span class="comment">%      O   - an intervalSet object</span>
+0010 <span class="comment">%      tsa - a tsd or ts object</span>
+0011 <span class="comment">%      TimeUnits - a units object or the abbreviation string</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%      OUTPUT:</span>
+0014 <span class="comment">%      S  - an intervalset made of subsets of O which contained a time from tsa.</span>
+0015 <span class="comment">%      ix - indices of the subsets containing events from tsa</span>
+0016 
+0017 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia, 2008 Adrien Peyrache</span>
+0018 <span class="comment">% This software is released under the GNU GPL</span>
+0019 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0020 
+0021 st = O.start;
+0022 ix = [];
+0023 
+0024 <span class="keyword">for</span> i=1:<a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(st)
+0025 
+0026     r = Range(<a href="Restrict.html" class="code" title="function [S,ix] = Start(O,tsa)">Restrict</a>(tsa,<a href="subset.html" class="code" title="function A = subset(O, ix)">subset</a>(O,i)));
+0027     ix = [ix;<a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(r)&gt;0];
+0028 
+0029 <span class="keyword">end</span>
+0030 
+0031 ix2 = find(ix);
+0032 S = <a href="subset.html" class="code" title="function A = subset(O, ix)">subset</a>(O,ix2);</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

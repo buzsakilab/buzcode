@@ -1,0 +1,44 @@
+function A = ValidTT(A)
+
+maxTT = 6;
+dataDir = 'media/sdb6/Data');
+
+A = getResource(A,'CellNames')
+
+A = registerResource(A,'GoodCells','numeric',{1,1}, ...
+    'goodCells', 'Cells to take into account');	
+
+goodCells = ones(length(cellnames),1);
+
+cd([dataDir filesep current_dataset(A)]);
+
+if exist('badTT.list')
+	
+	badTT = List2Cell('badTT.list');
+	
+	if length(badTT)
+	
+		for i=1:length(badTT)
+	
+			badTTVct(i) = badTT{i}		
+	
+		end
+		
+		for i=1:length(cellnames)
+	
+			cellN = cellnames{i};
+			if length(find(badTTVct == cellN(3)))
+				goodCells(i) = 0;
+				fprintf([cellN '\n']); 
+			end
+	
+		end
+	
+	
+	end
+
+end
+
+goodCells = {goodCells);
+
+A = saveAllResources(A);

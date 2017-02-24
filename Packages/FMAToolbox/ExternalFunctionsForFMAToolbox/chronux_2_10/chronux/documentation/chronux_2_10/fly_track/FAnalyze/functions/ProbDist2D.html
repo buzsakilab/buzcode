@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of ProbDist2D</title>
+  <meta name="keywords" content="ProbDist2D">
+  <meta name="description" content="PROBDIST2D">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FAnalyze --><!-- menu.html functions -->
+<h1>ProbDist2D
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>PROBDIST2D</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function [P bins] = ProbDist2D(x, nbins); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">PROBDIST2D
+   Usage: [P bins] = [P bins] = ProbDist2D(x, nbins);
+
+ This function calculates the discrete probability distribution for a
+ variable that is in a two dimensional phase space.  Because the variable
+ exists in a two dimensional phase space, we have to bin in x^2
+ (equivalent to dividing P by x). The function simply calculates a
+ normalized histogram using 'hist', so nbins can take any form that hist
+ can take, although it does not allow for all the other hist options.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [P bins] = ProbDist2D(x, nbins);</a>
+0002 
+0003 <span class="comment">%PROBDIST2D</span>
+0004 <span class="comment">%   Usage: [P bins] = [P bins] = ProbDist2D(x, nbins);</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% This function calculates the discrete probability distribution for a</span>
+0007 <span class="comment">% variable that is in a two dimensional phase space.  Because the variable</span>
+0008 <span class="comment">% exists in a two dimensional phase space, we have to bin in x^2</span>
+0009 <span class="comment">% (equivalent to dividing P by x). The function simply calculates a</span>
+0010 <span class="comment">% normalized histogram using 'hist', so nbins can take any form that hist</span>
+0011 <span class="comment">% can take, although it does not allow for all the other hist options.</span>
+0012 
+0013 <span class="comment">%Written by Dan Valente</span>
+0014 <span class="comment">%September 2007</span>
+0015 
+0016 [H bins] = hist(x.^2, nbins);
+0017 N = sum(sum(H));
+0018 binsize = bins(3)-bins(2);
+0019 P = H./(N*binsize);
+0020 
+0021 <span class="comment">%now transform bins back to the unsquared locations.  This is really only</span>
+0022 <span class="comment">%for conviencence, by no means is it necessary.  If this line is commented</span>
+0023 <span class="comment">%out, then the plot is simply P vs. x^2 instead of P vs. x</span>
+0024 bins = sqrt(bins);  
+0025 
+0026 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

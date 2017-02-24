@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of binspikes</title>
+  <meta name="keywords" content="binspikes">
+  <meta name="description" content="bin spikes at a specified frequency sampling i.e. sampling rate 1/sampling">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>binspikes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>bin spikes at a specified frequency sampling i.e. sampling rate 1/sampling</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [dN,t]=binspikes(data,Fs,t) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> bin spikes at a specified frequency sampling i.e. sampling rate 1/sampling
+ eg: 1ms accuracy use sampling = 1000
+ Usage: [dN,t]=binspikes(data,Fs,t)
+ Inputs:
+ data   (data as a structure array of spike times; or as a single
+        vector of spike times)
+ Fs     (binning frequency)
+ t      (the minimum and maximum times to be used to form the bins - [mint maxt]
+            - optional. Default use the spike times themselves to
+              determine the location of the bins. 
+ Note: the times in data can be in any units. However, it is important
+ that all units are chosen consistently. So, if spike times are in secs,
+ Fs and t (if present) have to be in Hz and secs respectively. If spike
+ times are in number of samples, Fs has to be 1, and t has to be in number
+ of samples.
+ Outputs:
+ dN     (output binned spike counts as a matrix defined on bins starting with the
+         earliest spike across all channels and ending with the latest spike)
+ t      (lower limit of each bin)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/test/testscript.html" class="code" title="">testscript</a>	function testscript(pname,direction,movingwin,segave,params,fscorr)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dN,t]=binspikes(data,Fs,t)</a>
+0002 <span class="comment">% bin spikes at a specified frequency sampling i.e. sampling rate 1/sampling</span>
+0003 <span class="comment">% eg: 1ms accuracy use sampling = 1000</span>
+0004 <span class="comment">% Usage: [dN,t]=binspikes(data,Fs,t)</span>
+0005 <span class="comment">% Inputs:</span>
+0006 <span class="comment">% data   (data as a structure array of spike times; or as a single</span>
+0007 <span class="comment">%        vector of spike times)</span>
+0008 <span class="comment">% Fs     (binning frequency)</span>
+0009 <span class="comment">% t      (the minimum and maximum times to be used to form the bins - [mint maxt]</span>
+0010 <span class="comment">%            - optional. Default use the spike times themselves to</span>
+0011 <span class="comment">%              determine the location of the bins.</span>
+0012 <span class="comment">% Note: the times in data can be in any units. However, it is important</span>
+0013 <span class="comment">% that all units are chosen consistently. So, if spike times are in secs,</span>
+0014 <span class="comment">% Fs and t (if present) have to be in Hz and secs respectively. If spike</span>
+0015 <span class="comment">% times are in number of samples, Fs has to be 1, and t has to be in number</span>
+0016 <span class="comment">% of samples.</span>
+0017 <span class="comment">% Outputs:</span>
+0018 <span class="comment">% dN     (output binned spike counts as a matrix defined on bins starting with the</span>
+0019 <span class="comment">%         earliest spike across all channels and ending with the latest spike)</span>
+0020 <span class="comment">% t      (lower limit of each bin)</span>
+0021 <span class="keyword">if</span> nargin &lt; 2; error(<span class="string">'Need at least two input arguments'</span>); <span class="keyword">end</span>;
+0022 dt=1/Fs;
+0023 dtmp=<span class="string">''</span>;
+0024 <span class="keyword">if</span> isstruct(data);
+0025    C=length(data);
+0026    fnames=fieldnames(data);
+0027    <span class="keyword">if</span> nargin &lt;3 || isempty(t);
+0028        mintime=zeros(1,C);
+0029        maxtime=zeros(1,C);
+0030        <span class="keyword">for</span> ch=1:C
+0031          eval([<span class="string">'dtmp=data(ch).'</span> fnames{1} <span class="string">';'</span>])
+0032          mintime(ch)=min(dtmp);
+0033          maxtime(ch)=max(dtmp);
+0034        <span class="keyword">end</span>
+0035        mintime=min(mintime);
+0036        maxtime=max(maxtime);
+0037    <span class="keyword">else</span>
+0038 <span class="comment">%        maxtimech=zeros(1,C);</span>
+0039 <span class="comment">%        for ch=1:C</span>
+0040 <span class="comment">%          eval(['dtmp=data(ch).' fnames{1} ';'])</span>
+0041 <span class="comment">% %          mintimech(ch)=min(dtmp);</span>
+0042 <span class="comment">%          maxtimech(ch)=max(dtmp);</span>
+0043 <span class="comment">%        end</span>
+0044        mintime=t(1);
+0045        maxtime=t(end);
+0046 <span class="comment">%        mintimech=min(mintimech);</span>
+0047 <span class="comment">%        maxtimech=max(maxtimech);</span>
+0048 <span class="comment">%        if maxtimech &gt; max(t); t=[t maxtimech+dt]; end;</span>
+0049    <span class="keyword">end</span>
+0050    t=linspace(mintime,maxtime,1+(maxtime-mintime)/dt);
+0051    <span class="keyword">for</span> ch=1:C;
+0052        eval([<span class="string">'dtmp=data(ch).'</span> fnames{1} <span class="string">';'</span>])
+0053        x=histc(dtmp,t);
+0054        dN(:,ch)=x(:);
+0055    <span class="keyword">end</span>
+0056 <span class="keyword">else</span>
+0057    dtmp=data;
+0058    <span class="keyword">if</span> nargin &lt; 3;
+0059       mintime=min(dtmp);
+0060       maxtime=max(dtmp);
+0061    <span class="keyword">else</span>
+0062       mintime=t(1);
+0063       maxtime=t(end);
+0064    <span class="keyword">end</span>
+0065    t=linspace(mintime,maxtime,1+(maxtime-mintime)/dt);
+0066    <span class="keyword">if</span> max(dtmp)&gt;max(t); t=[t maxtime+dt]; <span class="keyword">end</span>;
+0067    x=histc(dtmp,t);
+0068    dN=x(:);
+0069 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

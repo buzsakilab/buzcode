@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of addframe</title>
+  <meta name="keywords" content="addframe">
+  <meta name="description" content="WORKED=ADDFRAME(VW)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # videoIO --><!-- ../menu.html videoIO_2006a --><!-- menu.html @videoWriter -->
+<h1>addframe
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>WORKED=ADDFRAME(VW)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>function addframe(vw,img) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">WORKED=ADDFRAME(VW)
+  Writes a video frame.  VW must be a videoWriter object and IMG a 2D
+  numeric array with 1 or 3 channels that is autoconverted to a uint8
+  image as follows: 
+
+    type    assumed range
+    ----    -------------
+    uint8   0 to 255
+    double  0 to 1
+    logical 0 to 1
+
+SEE ALSO
+  <a href="videoWriter.html" class="code" title="function vw = videoWriter(url, varargin)">videoWriter</a>
+
+Copyright (c) 2007 Gerald Dalley
+See &quot;MIT.txt&quot; in the installation directory for licensing details (especially
+when using this library on GNU/Linux).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function addframe(vw,img)</a>
+0002 <span class="comment">%WORKED=ADDFRAME(VW)</span>
+0003 <span class="comment">%  Writes a video frame.  VW must be a videoWriter object and IMG a 2D</span>
+0004 <span class="comment">%  numeric array with 1 or 3 channels that is autoconverted to a uint8</span>
+0005 <span class="comment">%  image as follows:</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%    type    assumed range</span>
+0008 <span class="comment">%    ----    -------------</span>
+0009 <span class="comment">%    uint8   0 to 255</span>
+0010 <span class="comment">%    double  0 to 1</span>
+0011 <span class="comment">%    logical 0 to 1</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%SEE ALSO</span>
+0014 <span class="comment">%  videoWriter</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%Copyright (c) 2007 Gerald Dalley</span>
+0017 <span class="comment">%See &quot;MIT.txt&quot; in the installation directory for licensing details (especially</span>
+0018 <span class="comment">%when using this library on GNU/Linux).</span>
+0019 
+0020 [h,w,d] = size(img);
+0021 
+0022 <span class="keyword">if</span> (isa(img, <span class="string">'uint8'</span>))
+0023   <span class="keyword">if</span> (h ~= vw.h || w ~= vw.w)
+0024     img = uint8(255*imresize(double(img)/255, [vw.h vw.w]));
+0025   <span class="keyword">else</span>
+0026     <span class="comment">% no changes needed</span>
+0027   <span class="keyword">end</span>
+0028   
+0029 <span class="keyword">elseif</span> (isa(img, <span class="string">'double'</span>) || islogical(img))
+0030   <span class="keyword">if</span> (h ~= vw.h || w ~= vw.w)
+0031     img = uint8(255*imresize(img, [vw.h vw.w]));
+0032   <span class="keyword">else</span>
+0033     img = uint8(255*img);
+0034   <span class="keyword">end</span>
+0035   
+0036 <span class="keyword">else</span>
+0037   error(<span class="string">'Invalid image type.'</span>);
+0038 <span class="keyword">end</span>
+0039 
+0040 <span class="keyword">if</span> (d == 1)
+0041   img = repmat(img, [1 1 3]);
+0042 <span class="keyword">end</span>
+0043 
+0044 feval(vw.plugin, <span class="string">'addframe'</span>, vw.handle, img);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

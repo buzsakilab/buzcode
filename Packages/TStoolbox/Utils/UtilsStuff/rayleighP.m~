@@ -1,0 +1,8 @@
+function rayleighP = rayleighZ(phase);
+
+nbSpk = length(phase);
+
+m = 1/nbSpk*sum(cos(phase)+i*sin(phase));
+Z = nbSpk*abs(m)^2;
+
+rayleighP = exp(-Z);

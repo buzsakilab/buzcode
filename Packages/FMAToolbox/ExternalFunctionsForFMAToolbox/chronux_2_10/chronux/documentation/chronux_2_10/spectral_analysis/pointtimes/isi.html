@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of isi</title>
+  <meta name="keywords" content="isi">
+  <meta name="description" content="Calculate the inter-spike-interval histogram">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>isi
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Calculate the inter-spike-interval histogram</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function[N,B,E] = isi(data,T,err,Nbins,plt) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Calculate the inter-spike-interval histogram                 
+    Usage: [N,B,E] = isi(data,T,err,Nbins,plt)
+    
+ Input:                                                       
+ Note that all times have to be consistent. 
+
+ data   - structure array of spike times  (required)             
+ T      - time interval of interest (default all)             
+ err    - 0 for no error bars, 1 for jackknife errors
+ 
+ Nbins  - number of bins in the isi                           
+                                                              
+ Output:                                                      
+                                                              
+ N      - count in bins                                       
+ B      - bin centres                                            
+ E      - errorbar (this is 2 sig deviation                   
+          calculated using a jackknife over trials)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="padNaN.html" class="code" title="function data=padNaN(data)">padNaN</a>	Creates a padded data matrix from input structural array of spike times</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function[N,B,E] = isi(data,T,err,Nbins,plt)</a>
+0002 <span class="comment">% Calculate the inter-spike-interval histogram</span>
+0003 <span class="comment">%    Usage: [N,B,E] = isi(data,T,err,Nbins,plt)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Input:</span>
+0006 <span class="comment">% Note that all times have to be consistent.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% data   - structure array of spike times  (required)</span>
+0009 <span class="comment">% T      - time interval of interest (default all)</span>
+0010 <span class="comment">% err    - 0 for no error bars, 1 for jackknife errors</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Nbins  - number of bins in the isi</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Output:</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% N      - count in bins</span>
+0017 <span class="comment">% B      - bin centres</span>
+0018 <span class="comment">% E      - errorbar (this is 2 sig deviation</span>
+0019 <span class="comment">%          calculated using a jackknife over trials)</span>
+0020 
+0021 
+0022 <span class="keyword">if</span> nargin &lt; 1; error(<span class="string">'I need data!'</span>); <span class="keyword">end</span>
+0023 data=<a href="padNaN.html" class="code" title="function data=padNaN(data)">padNaN</a>(data); <span class="comment">% create a zero padded data matrix from input structural array</span>
+0024 data=data'; <span class="comment">% transposes data to get it in a form compatible with Murray's routine</span>
+0025 <span class="keyword">if</span> nargin &lt; 2; T = [min(data(:,1)) max(max(data))]; <span class="keyword">end</span>
+0026 <span class="keyword">if</span> nargin &lt; 3; err = 0;<span class="keyword">end</span>
+0027 <span class="keyword">if</span> nargin &lt; 4; Nbins = -1; <span class="keyword">end</span>
+0028 <span class="keyword">if</span> nargin &lt; 5; plt = <span class="string">'r'</span>; <span class="keyword">end</span>
+0029 
+0030 <span class="keyword">if</span> isempty(T); T = [min(min(data)) max(max(data))]; <span class="keyword">end</span>
+0031 <span class="keyword">if</span> isempty(err); err = 0;<span class="keyword">end</span>
+0032 <span class="keyword">if</span> isempty(Nbins); Nbins = -1; <span class="keyword">end</span>
+0033 <span class="keyword">if</span> isempty(plt); plt = <span class="string">'r'</span>; <span class="keyword">end</span>
+0034 
+0035 <span class="comment">%  get the number of intervals in each trial and the indices of spike times</span>
+0036 <span class="comment">%  that are kept</span>
+0037 
+0038 NT = length(data(1,:)); <span class="comment">% number of trials</span>
+0039 NI=zeros(1,NT);
+0040 index(1:NT)=struct(<span class="string">'keep'</span>,[]);
+0041 <span class="keyword">for</span> n=1:NT
+0042   indx = find(data(:,n) &gt;=  T(1) &amp; data(:,n) &lt;=  T(2) <span class="keyword">...</span><span class="comment"> </span>
+0043                                  &amp; ~isnan(data(:,n)));
+0044   <span class="keyword">if</span> isempty(indx)
+0045     NI(n) = 0;
+0046   <span class="keyword">else</span>
+0047     NI(n) = length(indx)-1;
+0048     index(n).keep=indx;
+0049   <span class="keyword">end</span> 
+0050 <span class="keyword">end</span>
+0051 
+0052 
+0053 <span class="comment">% calculate intervals...</span>
+0054 
+0055 I = zeros(NT,max(NI));
+0056 IT = [];
+0057 <span class="keyword">for</span> n=1:NT
+0058   I(n,1:NI(n)) = diff(data(index(n).keep,n));
+0059   IT = [IT I(n,1:NI(n))];
+0060 <span class="keyword">end</span>
+0061 
+0062 Mx = max(IT);
+0063 <span class="keyword">if</span> Nbins == -1
+0064   Nbins = floor(sum(NI)/30);
+0065   Med = median(IT);
+0066   Nbins = max(floor(Nbins*Mx/Med),10);
+0067 <span class="keyword">end</span>
+0068 
+0069 B = linspace(0,Mx,Nbins);
+0070 
+0071 N = zeros(NT,Nbins);
+0072 <span class="keyword">for</span> n=1:NT
+0073   N(n,:) = hist(I(n,1:NI(n)),B);
+0074 <span class="keyword">end</span>
+0075 
+0076 <span class="comment">% answer...</span>
+0077 
+0078 <span class="keyword">if</span> NT &gt; 1;Ns = sum(N)/NT;<span class="keyword">else</span> Ns = N;<span class="keyword">end</span>
+0079 <span class="keyword">if</span> ~strcmp(plt,<span class="string">'n'</span>)
+0080   bar(B,NT*Ns);
+0081 <span class="keyword">end</span>
+0082 
+0083 <span class="comment">% Jackknife iver trials to estimate std...</span>
+0084 
+0085 <span class="keyword">if</span> NT &gt; 4 &amp;&amp; err == 1
+0086   MN = 0;
+0087   SN = 0;
+0088   <span class="keyword">for</span> n=1:NT
+0089     JK = (NT*Ns - N(n,:))/(NT-1);
+0090     MN = MN + JK;
+0091     SN = SN + JK.^2;   
+0092   <span class="keyword">end</span>  
+0093   MN = MN/NT;
+0094   SN = SN/NT;
+0095   E = sqrt((NT-1)*(SN - MN.^2));
+0096   <span class="keyword">if</span> ~strcmp(plt,<span class="string">'n'</span>)
+0097     hold on
+0098     errorbar(B,NT*Ns,NT*2*E,<span class="string">'r-'</span>)
+0099     hold off
+0100   <span class="keyword">end</span>
+0101 <span class="keyword">end</span>
+0102 N = NT*Ns;
+0103 
+0104 
+0105 
+0106 
+0107 
+0108 
+0109 
+0110</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

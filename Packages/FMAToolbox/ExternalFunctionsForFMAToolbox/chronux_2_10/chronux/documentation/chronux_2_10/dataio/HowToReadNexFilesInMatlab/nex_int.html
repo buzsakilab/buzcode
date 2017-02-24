@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nex_int</title>
+  <meta name="keywords" content="nex_int">
+  <meta name="description" content="nex_int(filename, varname): Read interval variable from a .nex file">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html dataio --><!-- menu.html HowToReadNexFilesInMatlab -->
+<h1>nex_int
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>nex_int(filename, varname): Read interval variable from a .nex file</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [n, ts_left, ts_right] = nex_int(filename, varname) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> nex_int(filename, varname): Read interval variable from a .nex file
+
+ [n, ts_left, ts_right] = nex_int(filename, varname)
+
+ INPUT:
+   filename - if empty string, will use File Open dialog
+   varname - variable name
+ OUTPUT:
+   n - number of intervals
+   ts_left - array of left ends of the intervals (in seconds)
+   ts_right - array of right ends of the intervals (in seconds)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [n, ts_left, ts_right] = nex_int(filename, varname)</a>
+0002 <span class="comment">% nex_int(filename, varname): Read interval variable from a .nex file</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [n, ts_left, ts_right] = nex_int(filename, varname)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% INPUT:</span>
+0007 <span class="comment">%   filename - if empty string, will use File Open dialog</span>
+0008 <span class="comment">%   varname - variable name</span>
+0009 <span class="comment">% OUTPUT:</span>
+0010 <span class="comment">%   n - number of intervals</span>
+0011 <span class="comment">%   ts_left - array of left ends of the intervals (in seconds)</span>
+0012 <span class="comment">%   ts_right - array of right ends of the intervals (in seconds)</span>
+0013 
+0014 n = 0;
+0015 ts_left = 0;
+0016 ts_right = 0;
+0017 
+0018 <span class="keyword">if</span>(nargin ~= 2)
+0019    disp(<span class="string">'2 input arguments are required'</span>)
+0020    <span class="keyword">return</span>
+0021 <span class="keyword">end</span>
+0022 
+0023 <span class="keyword">if</span>(ischar(filename) == 0)
+0024    disp(<span class="string">'input arguments should be character arrays'</span>)
+0025    <span class="keyword">return</span>
+0026 <span class="keyword">end</span>
+0027 
+0028 <span class="keyword">if</span>(ischar(varname) == 0)
+0029    disp(<span class="string">'input arguments should be character arrays'</span>)
+0030    <span class="keyword">return</span>
+0031 <span class="keyword">end</span>
+0032 
+0033 <span class="keyword">if</span>(isempty(filename))
+0034    [fname, pathname] = uigetfile(<span class="string">'*.nex'</span>, <span class="string">'Select a Nex file'</span>);
+0035     filename = strcat(pathname, fname);
+0036 <span class="keyword">end</span>
+0037 
+0038 fid = fopen(filename, <span class="string">'r'</span>);
+0039 <span class="keyword">if</span>(fid == -1)
+0040     disp(<span class="string">'cannot open file'</span>);
+0041    <span class="keyword">return</span>
+0042 <span class="keyword">end</span>
+0043 
+0044 disp(strcat(<span class="string">'file = '</span>, filename));
+0045 magic = fread(fid, 1, <span class="string">'int32'</span>);
+0046 version = fread(fid, 1, <span class="string">'int32'</span>);
+0047 comment = fread(fid, 256, <span class="string">'char'</span>);
+0048 freq = fread(fid, 1, <span class="string">'double'</span>);
+0049 tbeg = fread(fid, 1, <span class="string">'int32'</span>);
+0050 tend = fread(fid, 1, <span class="string">'int32'</span>);
+0051 nvar = fread(fid, 1, <span class="string">'int32'</span>);
+0052 fseek(fid, 260, <span class="string">'cof'</span>);
+0053 name = zeros(1, 64);
+0054 found = 0;
+0055 <span class="keyword">for</span> i=1:nvar
+0056     type = fread(fid, 1, <span class="string">'int32'</span>);
+0057     var_version = fread(fid, 1, <span class="string">'int32'</span>);
+0058     name = fread(fid, [1 64], <span class="string">'char'</span>);
+0059     offset = fread(fid, 1, <span class="string">'int32'</span>);
+0060     n = fread(fid, 1, <span class="string">'int32'</span>);
+0061     name = char(name);
+0062     name = deblank(name);
+0063     k = strcmp(name, deblank(varname));
+0064     <span class="keyword">if</span>(k == 1)
+0065         <span class="keyword">if</span> type ~= 2
+0066             disp(sprintf(<span class="string">'%s is not an interval variable'</span>, deblank(varname)));
+0067             <span class="keyword">return</span>;
+0068         <span class="keyword">end</span>
+0069         found = 1;
+0070         fseek(fid, offset, <span class="string">'bof'</span>);
+0071         ts_left = fread(fid, [1 n], <span class="string">'int32'</span>);
+0072         ts_right = fread(fid, [1 n], <span class="string">'int32'</span>);
+0073         <span class="keyword">break</span>
+0074     <span class="keyword">end</span>
+0075     dummy = fread(fid, 128, <span class="string">'char'</span>);
+0076 <span class="keyword">end</span>
+0077 
+0078 fclose(fid);
+0079 
+0080 <span class="keyword">if</span> found == 0
+0081     disp(<span class="string">'did not find variable in the file'</span>);
+0082 <span class="keyword">else</span>
+0083     ts_left = ts_left/freq;
+0084     ts_right = ts_right/freq;
+0085     disp(strcat(<span class="string">'number of intervals = '</span>, num2str(n)));
+0086 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,7 @@
+[dummy h dummy2] = fileparts(pwd);
+
+if exist([h 'm_DigMark.mat'])
+	YMProcessPosFile
+else
+	fprintf('Erreur!\n')
+end

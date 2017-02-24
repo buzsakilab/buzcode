@@ -1,0 +1,2 @@
+function A = truc(A)
+

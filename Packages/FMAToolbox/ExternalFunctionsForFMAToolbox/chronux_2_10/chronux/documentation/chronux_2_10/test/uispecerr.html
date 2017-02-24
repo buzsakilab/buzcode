@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of uispecerr</title>
+  <meta name="keywords" content="uispecerr">
+  <meta name="description" content="Function to compute lower and upper confidence intervals on the spectrum">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html test -->
+<h1>uispecerr
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Function to compute lower and upper confidence intervals on the spectrum</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Serrp,Serrj]=uispecerr(S,J,err,trialave,numsp) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Function to compute lower and upper confidence intervals on the spectrum 
+ Usage: [Serrp,Serrj]=uispecerr(S,J,err,trialave,numsp)
+ Outputs: Serrp (Serrp(1,...) - lower confidence level, Serrp(2,...) upper
+ confidence level), similarly for Serrj
+
+ Inputs:
+ S - spectrum
+ J - tapered fourier transforms 
+ err - [errtype p] (errtype=1 - asymptotic estimates; errchk=2 - Jackknife estimates; 
+                   p - p value for error estimates)
+ trialave - 0: no averaging over trials/channels
+            1 : perform trial averaging
+ numsp    - number of spikes in each channel. specify only when finite
+            size correction required (and of course, only for point
+            process data)
+
+ Outputs:
+ Serrp - population error estimates. Only for err(1)&gt;=1. 
+ Serrj - jackknife error estimates. Computed only for err(1)&gt;=2, otherwise
+ set to zero</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Serrp,Serrj]=uispecerr(S,J,err,trialave,numsp)</a>
+0002 <span class="comment">% Function to compute lower and upper confidence intervals on the spectrum</span>
+0003 <span class="comment">% Usage: [Serrp,Serrj]=uispecerr(S,J,err,trialave,numsp)</span>
+0004 <span class="comment">% Outputs: Serrp (Serrp(1,...) - lower confidence level, Serrp(2,...) upper</span>
+0005 <span class="comment">% confidence level), similarly for Serrj</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Inputs:</span>
+0008 <span class="comment">% S - spectrum</span>
+0009 <span class="comment">% J - tapered fourier transforms</span>
+0010 <span class="comment">% err - [errtype p] (errtype=1 - asymptotic estimates; errchk=2 - Jackknife estimates;</span>
+0011 <span class="comment">%                   p - p value for error estimates)</span>
+0012 <span class="comment">% trialave - 0: no averaging over trials/channels</span>
+0013 <span class="comment">%            1 : perform trial averaging</span>
+0014 <span class="comment">% numsp    - number of spikes in each channel. specify only when finite</span>
+0015 <span class="comment">%            size correction required (and of course, only for point</span>
+0016 <span class="comment">%            process data)</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Outputs:</span>
+0019 <span class="comment">% Serrp - population error estimates. Only for err(1)&gt;=1.</span>
+0020 <span class="comment">% Serrj - jackknife error estimates. Computed only for err(1)&gt;=2, otherwise</span>
+0021 <span class="comment">% set to zero</span>
+0022 <span class="keyword">if</span> nargin &lt; 4; error(<span class="string">'Need at least 4 input arguments'</span>); <span class="keyword">end</span>;
+0023 <span class="keyword">if</span> err(1)==0; error(<span class="string">'Need err=[1 p] or [2 p] for error bar calculation. Make sure you are not asking for the output of Serr'</span>); <span class="keyword">end</span>;
+0024 [nf,K,C]=size(J);
+0025 errchk=err(1);
+0026 p=err(2);
+0027 pp=1-p/2;
+0028 qq=1-pp;
+0029 
+0030 <span class="keyword">if</span> trialave
+0031    dim=K*C;
+0032    C=1;
+0033    dof=2*dim;
+0034    <span class="keyword">if</span> nargin==5; dof = fix(1/(1/dof + 1/(2*sum(numsp)))); <span class="keyword">end</span>
+0035    J=reshape(J,nf,dim);
+0036 <span class="keyword">else</span>
+0037    dim=K;
+0038    dof=2*dim*ones(1,C);
+0039    <span class="keyword">for</span> ch=1:C;
+0040      <span class="keyword">if</span> nargin==5; dof(ch) = fix(1/(1/dof + 1/(2*numsp(ch)))); <span class="keyword">end</span> 
+0041    <span class="keyword">end</span>;
+0042 <span class="keyword">end</span>;
+0043 Serrp=zeros(2,nf,C);
+0044 Serrj=zeros(2,nf,C);
+0045 <span class="keyword">if</span> errchk&gt;1=;
+0046    Qp=chi2inv(pp,dof);
+0047    Qq=chi2inv(qq,dof);
+0048    Serrp(1,:,:)=dof(ones(nf,1),:).*S./Qp(ones(nf,1),:);
+0049    Serrp(2,:,:)=dof(ones(nf,1),:).*S./Qq(ones(nf,1),:);
+0050 <span class="keyword">elseif</span> errchk&gt;=2;
+0051    tcrit=tinv(pp,dim-1);
+0052    <span class="keyword">for</span> k=1:dim;
+0053        indices=setdiff(1:dim,k);
+0054        Jjk=J(:,indices,:); <span class="comment">% 1-drop projection</span>
+0055        eJjk=squeeze(sum(Jjk.*conj(Jjk),2));
+0056        Sjk(k,:,:)=eJjk/(dim-1); <span class="comment">% 1-drop spectrum</span>
+0057    <span class="keyword">end</span>;
+0058    sigma=sqrt(dim-1)*squeeze(std(log(Sjk),1,1)); <span class="keyword">if</span> C==1; sigma=sigma'; <span class="keyword">end</span>; 
+0059    conf=repmat(tcrit,nf,C).*sigma;
+0060    conf=squeeze(conf); 
+0061    Serrj(1,:,:)=S.*exp(-conf); Serrj(2,:,:)=S.*exp(conf);
+0062 <span class="keyword">end</span>;
+0063 Serrp=squeeze(Serrp);
+0064 Serrj=squeeze(Serrj);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

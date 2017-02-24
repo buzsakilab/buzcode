@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of lfgui</title>
+  <meta name="keywords" content="lfgui">
+  <meta name="description" content="LFGUI M-file for lfgui.fig">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>lfgui
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>LFGUI M-file for lfgui.fig</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function varargout = lfgui(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> LFGUI M-file for lfgui.fig
+      LFGUI, by itself, creates a new LFGUI or raises the existing
+      singleton*.
+
+      H = LFGUI returns the handle to a new LFGUI or the handle to
+      the existing singleton*.
+
+      LFGUI('CALLBACK',hObject,eventData,handles,...) calls the local
+      function named CALLBACK in LFGUI.M with the given input arguments.
+
+      LFGUI('Property','Value',...) creates a new LFGUI or raises the
+      existing singleton*.  Starting from the left, property value pairs are
+      applied to the GUI before lfgui_OpeningFunction gets called.  An
+      unrecognized property name or invalid value makes property application
+      stop.  All inputs are passed to lfgui_OpeningFcn via varargin.
+
+      *See GUI Options on GUIDE's Tools menu.  Choose &quot;GUI allows only one
+      instance to run (singleton)&quot;.
+
+ See also: GUIDE, GUIDATA, GUIHANDLES</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function lfgui_OpeningFcn(hObject, eventdata, handles, varargin)</a></li><li><a href="#_sub2" class="code">function varargout = lfgui_OutputFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub3" class="code">function slider1_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub4" class="code">function slider1_CreateFcn(hObject, eventdata, handles)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function varargout = lfgui(varargin)</a>
+0002 <span class="comment">% LFGUI M-file for lfgui.fig</span>
+0003 <span class="comment">%      LFGUI, by itself, creates a new LFGUI or raises the existing</span>
+0004 <span class="comment">%      singleton*.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%      H = LFGUI returns the handle to a new LFGUI or the handle to</span>
+0007 <span class="comment">%      the existing singleton*.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%      LFGUI('CALLBACK',hObject,eventData,handles,...) calls the local</span>
+0010 <span class="comment">%      function named CALLBACK in LFGUI.M with the given input arguments.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%      LFGUI('Property','Value',...) creates a new LFGUI or raises the</span>
+0013 <span class="comment">%      existing singleton*.  Starting from the left, property value pairs are</span>
+0014 <span class="comment">%      applied to the GUI before lfgui_OpeningFunction gets called.  An</span>
+0015 <span class="comment">%      unrecognized property name or invalid value makes property application</span>
+0016 <span class="comment">%      stop.  All inputs are passed to lfgui_OpeningFcn via varargin.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%      *See GUI Options on GUIDE's Tools menu.  Choose &quot;GUI allows only one</span>
+0019 <span class="comment">%      instance to run (singleton)&quot;.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% See also: GUIDE, GUIDATA, GUIHANDLES</span>
+0022 
+0023 <span class="comment">% Copyright 2002-2003 The MathWorks, Inc.</span>
+0024 
+0025 <span class="comment">% Edit the above text to modify the response to help lfgui</span>
+0026 
+0027 <span class="comment">% Last Modified by GUIDE v2.5 27-Dec-2005 18:56:48</span>
+0028 
+0029 <span class="comment">% Begin initialization code - DO NOT EDIT</span>
+0030 gui_Singleton = 1;
+0031 gui_State = struct(<span class="string">'gui_Name'</span>,       mfilename, <span class="keyword">...</span>
+0032                    <span class="string">'gui_Singleton'</span>,  gui_Singleton, <span class="keyword">...</span>
+0033                    <span class="string">'gui_OpeningFcn'</span>, @<a href="#_sub1" class="code" title="subfunction lfgui_OpeningFcn(hObject, eventdata, handles, varargin)">lfgui_OpeningFcn</a>, <span class="keyword">...</span>
+0034                    <span class="string">'gui_OutputFcn'</span>,  @<a href="#_sub2" class="code" title="subfunction varargout = lfgui_OutputFcn(hObject, eventdata, handles)">lfgui_OutputFcn</a>, <span class="keyword">...</span>
+0035                    <span class="string">'gui_LayoutFcn'</span>,  [] , <span class="keyword">...</span>
+0036                    <span class="string">'gui_Callback'</span>,   []);
+0037 <span class="keyword">if</span> nargin &amp;&amp; ischar(varargin{1})
+0038     gui_State.gui_Callback = str2func(varargin{1});
+0039 <span class="keyword">end</span>
+0040 
+0041 <span class="keyword">if</span> nargout
+0042     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+0043 <span class="keyword">else</span>
+0044     gui_mainfcn(gui_State, varargin{:});
+0045 <span class="keyword">end</span>
+0046 <span class="comment">% End initialization code - DO NOT EDIT</span>
+0047 
+0048 
+0049 <span class="comment">% --- Executes just before lfgui is made visible.</span>
+0050 <a name="_sub1" href="#_subfunctions" class="code">function lfgui_OpeningFcn(hObject, eventdata, handles, varargin)</a>
+0051 <span class="comment">% This function has no output args, see OutputFcn.</span>
+0052 <span class="comment">% hObject    handle to figure</span>
+0053 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0054 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0055 <span class="comment">% varargin   command line arguments to lfgui (see VARARGIN)</span>
+0056 
+0057 fit = <a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(varargin{:});
+0058 <a href="lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>(fit);
+0059 handles.lfargs = varargin;
+0060 
+0061 <span class="comment">% Choose default command line output for lfgui</span>
+0062 handles.output = hObject;
+0063 
+0064 <span class="comment">% Update handles structure</span>
+0065 guidata(hObject, handles);
+0066 
+0067 <span class="comment">% UIWAIT makes lfgui wait for user response (see UIRESUME)</span>
+0068 <span class="comment">% uiwait(handles.figure1);</span>
+0069 
+0070 
+0071 <span class="comment">% --- Outputs from this function are returned to the command line.</span>
+0072 <a name="_sub2" href="#_subfunctions" class="code">function varargout = lfgui_OutputFcn(hObject, eventdata, handles) </a>
+0073 <span class="comment">% varargout  cell array for returning output args (see VARARGOUT);</span>
+0074 <span class="comment">% hObject    handle to figure</span>
+0075 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0076 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0077 
+0078 <span class="comment">% Get default command line output from handles structure</span>
+0079 varargout{1} = handles.output;
+0080 
+0081 
+0082 <span class="comment">% --- Executes on slider movement.</span>
+0083 <a name="_sub3" href="#_subfunctions" class="code">function slider1_Callback(hObject, eventdata, handles)</a>
+0084 <span class="comment">% hObject    handle to slider1 (see GCBO)</span>
+0085 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0086 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0087 
+0088 <span class="comment">% Hints: get(hObject,'Value') returns position of slider</span>
+0089 <span class="comment">%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider</span>
+0090 
+0091 n = get(hObject,<span class="string">'Value'</span>);
+0092 n0 = get(hObject,<span class="string">'Min'</span>);
+0093 n1 = get(hObject,<span class="string">'Max'</span>);
+0094 nn = 0.1+(n-n0)/(n1-n0);
+0095 fit = <a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(handles.lfargs{:},<span class="string">'nn'</span>,nn);
+0096 <a href="lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>(fit);
+0097 
+0098 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0099 <a name="_sub4" href="#_subfunctions" class="code">function slider1_CreateFcn(hObject, eventdata, handles)</a>
+0100 <span class="comment">% hObject    handle to slider1 (see GCBO)</span>
+0101 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0102 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0103 
+0104 <span class="comment">% Hint: slider controls usually have a light gray background, change</span>
+0105 <span class="comment">%       'usewhitebg' to 0 to use default.  See ISPC and COMPUTER.</span>
+0106 usewhitebg = 1;
+0107 <span class="keyword">if</span> usewhitebg
+0108     set(hObject,<span class="string">'BackgroundColor'</span>,[.9 .9 .9]);
+0109 <span class="keyword">else</span>
+0110     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0111 <span class="keyword">end</span>
+0112 
+0113</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

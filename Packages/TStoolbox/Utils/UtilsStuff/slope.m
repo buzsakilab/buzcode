@@ -1,0 +1,11 @@
+function pY = slope(X,Y)
+
+nbD = size(Y,2);
+pY = zeros(nbD,1);
+
+for i=1:nbD
+
+	p = polyfit(X,Y(:,i),1);
+	pY(i) = p(1);
+
+end

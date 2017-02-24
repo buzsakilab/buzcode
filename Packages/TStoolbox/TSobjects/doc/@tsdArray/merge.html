@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of merge</title>
+  <meta name="keywords" content="merge">
+  <meta name="description" content="Merges tsd's in tsdArray">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsdArray</a> &gt; merge.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsdArray&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>merge
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Merges tsd's in tsdArray</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function SO = merge(S1,S2,offset) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Merges tsd's in tsdArray</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="length.html" class="code" title="function l = length(S)">length</a>	Returns number of item in the tsdArray (overload of length function)</li><li><a href="tsdArray.html" class="code" title="function O = tsdArray(varargin)">tsdArray</a>	Constructor for the tsdArray class</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function SO = merge(S1,S2,offset)</a>
+0002 
+0003 <span class="comment">% Merges tsd's in tsdArray</span>
+0004 <span class="comment">%</span>
+0005 
+0006 <span class="keyword">if</span> <a href="length.html" class="code" title="function l = length(S)">length</a>(S1)~=<a href="length.html" class="code" title="function l = length(S)">length</a>(S2)
+0007     error(<span class="string">'must the same length'</span>)
+0008 <span class="keyword">end</span>
+0009 
+0010 SO = cell(<a href="length.html" class="code" title="function l = length(S)">length</a>(S1),1);
+0011 
+0012 <span class="keyword">for</span> ii=1:<a href="length.html" class="code" title="function l = length(S)">length</a>(S1)
+0013     keyboard
+0014     SO{ii} = ts([Range(S1.C{ii});Range(S2.C{ii})+offset]);
+0015 <span class="keyword">end</span>
+0016 SO = <a href="tsdArray.html" class="code" title="function O = tsdArray(varargin)">tsdArray</a>(SO);
+0017 
+0018     
+0019</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,251 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf340
+{\fonttbl\f0\fswiss\fcharset0 ArialMT;\f1\fnil\fcharset0 Consolas;\f2\fswiss\fcharset0 Helvetica;
+}
+{\colortbl;\red255\green255\blue255;\red51\green51\blue51;\red17\green85\blue204;\red17\green17\blue17;
+}
+\vieww12240\viewh15840\viewkind1
+\deftab720
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0\b\fs22 \cf2 Guide to setting up a probox RAID-Z (RAID 5) system in Ubuntu 14.04
+\b0 \cf0 \
+
+\b \cf2 Luke Sjulson, June 2015\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b0 \cf2 \
+These instructions describe how to make a probox raid array using the raid-z functionality of zfs, which is a next-generation filesystem with a lot of features superior to ext4fs, particularly with respect to protecting your data against corruption. zfs takes the disks in your probox and assembles them into something called a \'93zpool,\'94 which looks and acts like one giant hard drive, except that it has transparent features such as error checking, redundancy against drive failure, and on-the-fly compression. I had this running under Xubuntu 12.04 before, and these instructions should work for that as well, but I\'92ve only tested these current directions in Xubuntu 14.04.\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b \cf2 1) install zfs on your machine 
+\b0 ({\field{\*\fldinst{HYPERLINK "http://serverascode.com/2014/07/01/zfs-ubuntu-trusty.html"}}{\fldrslt \cf3 \ul \ulc3 http://serverascode.com/2014/07/01/zfs-ubuntu-trusty.html}})
+\b \
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b0 \cf2 install zfs and run the module:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo apt-get install software-properties-common\
+sudo apt-add-repository ppa:zfs-native/stable\uc0\u8232 sudo apt-get update\
+sudo apt-get install -y ubuntu-zfs\
+sudo modprobe zfs\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+tell zfs not to use more than 1 GB of RAM for cache, and also to automatically mount your drives upon boot:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo bash\
+echo "options zfs zfs_arc_max=1073741824" >> /etc/modprobe.d/zfs.conf\uc0\u8232 e\
+exit\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b \cf0 2) assemble the probox and configure your zpool\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b0 \cf0 \
+Put the drives in Probox and use gparted to make partitions. Use \'93gpt\'94 as the type of partition table. Make the primary partition the full size of the drive minus 1% of the total capacity (e.g. 30 GB for a 3 TB drive). Make only one partition per drive, and leave it unformatted. By discarding a small percentage of the drive\'92s capacity, you can replace a broken 2.999 TB HD with a new 2.998 TB HD (e.g. two drives from different manufacturers with nominal 3 TB capacity). Before closing gparted, write down which partitions you are going to use (e.g. /dev/sdb1, /dev/sdc1, etc.). The drive letters will be assigned in order from top to bottom in the probox.\
+\
+Next, find your partitions by UUID, the \'93universal unique identifier\'94 of each partition:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 ls -l /dev/disk/by-uuid\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+You can know which drive corresponds to which UUID because the device name (in terms of /dev/sda1 etc.) will go in order from top to bottom. So you\'92ll see four drives in a row, and \
+\
+then create the RAID array (a \'93zpool\'94) by entering this very long command, all in one line:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo zpool create -o ashift=12 probox_zpool raidz1 /dev/disk/by-uuid/117097d4-96f8-4600-9b20-ef0d8952817e\
+/dev/disk/by-uuid/3f980c2c-d5be-4797-a38a-a1f50b60bb4f\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+etc. where you\'92re cutting and pasting the UUID of each partition you want to be part of your RAID array. It\'92s a good idea to enter this into a text editor first, making sure this is all one long line, then cutting and pasting into the terminal.\
+\
+This creates a zpool called probox_zpool, which is mounted in your root directory as /probox_zpool. You will want to make it user writable\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo chmod a+rwx /probox_zpool\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+so you can put your data there. However, before you copy data onto the RAID array you should:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo zfs set compression=gzip-1 probox_zpool\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+this enables on-the-fly gzip1 compression, which is the lowest level of gzip. I tested different compression settings and found that this one provides decent compression of .dat files with minimal overhead. Compression supposedly makes reading the data slightly faster but at the cost of increased CPU usage, which for our purposes is usually a good tradeoff. The data compression actually occurs when the data is copied onto the zpool - if the data is already there and you enable compression, it stays uncompressed. To check your compression ratio, use:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo zfs get compressratio\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b \cf0 3) install maintenance scripts to run tests routinely and notify you of any errors\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b0 \cf0 \
+make a directory to hold the scripts\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 mkdir ~/scripts\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+then copy the scripts 
+\b run_once
+\b0  and 
+\b zfscheck
+\b0  to the scripts folder and make them executable\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 chmod u+rwx zfscheck run_once\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+edit the top two lines of zfscheck to insert your username and home directory.\
+\
+Then make sure run_once is run every time a shell is opened. This just saves your screen\'92s identifier to disk so that the script can make on-screen notifications if it detects errors\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 echo ~/scripts/run_once >> ~/.bashrc\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+then add some lines to root\'92s crontab so the disks get checked regularly. start with\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo crontab -e\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+then paste these lines into the crontab (editing the first line to give the path to where you saved the scripts):\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 SHELL=/bin/bash\uc0\u8232 0 3 * * * /home/luke/scripts/zfscheck # check for errors at 3AM daily\u8232 * 0 * * 6 /sbin/zpool scrub probox_zpool # do full drive scans weekly\u8232 \
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0\b \cf0 4) OPTIONAL: configuring zfs \'93datasets\'94 for features such as snapshots\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b0 \cf0 ZFS takes your disks and puts them together into a big virtual hard drive called a zpool. You can split the zpool up further into \'93datasets,\'94 which act like directories on the zpool. The advantage of this is that various features can be enabled or disabled at the dataset level rather than the zpool level. For example, you can have one dataset be compressed, and another one isn\'92t.\
+\
+One useful feature for our purposes is called \'93snapshots,\'94 which is the same as the \'93Time Machine\'94 feature on OS X. The idea is that the system takes regular \'93snapshots\'94 of the state of your zpool and saves some of them. If you accidentally delete a file or screw something up, you can revert the state of your drive back to the relevant snapshot. This doesn\'92t involve duplicate data being stored - every time you take a snapshot, ZFS actually stores only the changes between the current files and the prior snapshots. However, if you delete a bunch of huge files to free up disk space, that space doesn\'92t actually become available for use until the snapshots holding that data for potential recovery get deleted. You can either delete the snapshots manually, or use a utility like zfs-auto-snapshot, which saves \cf4 snapshots every 15 mins, keeping 4 snapshots; hourly snapshots every hour, keeping 24 snapshots; daily snapshots every day, keeping 31 snapshots; weekly snapshots every week, keeping 7 snapshots; monthly snapshots every month, keeping 12. \cf0 To install this:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo apt-get install zfs-auto-snapshot\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+Next, configure your datasets. You can have as many or as few as you want (down to one). What I did was create three datasets, which in retrospect was probably unnecessary:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo zfs create probox_zpool/preprocessing\
+sudo zfs create probox_zpool/processed\
+sudo zfs create probox_zpool/rawdata\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 Now, enable snapshots on your datasets:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 sudo zfs set com.sun:auto-snapshot=false probox_zpool\
+sudo zfs set com.sun:auto-snapshot=true probox_zpool/preprocessing\
+sudo zfs set com.sun:auto-snapshot=true probox_zpool/processed\
+sudo zfs set com.sun:auto-snapshot=true probox_zpool/rawdata\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+to list all existing snapshots:\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 zfs list -t snapshot\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0 \cf0 \
+To manually delete shapshots to free up space, use the 
+\f1 snapshot_cleaner 
+\f0 script\
+\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b \cf0 Misc ZFS notes\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\b0 \cf0 \
+\
+\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+\cf0 \ul \ulc0 How to replace a failing disk\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+\cf0 \ulnone \
+First, find the id (or UUID) of the disk/partition. If you built your zpool using UUIDs like I recommended above, use ls -l /dev/disk/by-UUID\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f2\fs18 \cf0 luke@box:~/temp$ ls -l /dev/disk/by-id/\uc0\u8232 total 0\u8232 lrwxrwxrwx 1 root root  9 Jul 10 09:53 ata-Crucial_CT512MX100SSD1_15020E572648 -> ../../sdb\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 ata-Crucial_CT512MX100SSD1_15020E572648-part1 -> ../../sdb1\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 ata-Crucial_CT512MX100SSD1_15020E572648-part2 -> ../../sdb2\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 ata-Crucial_CT512MX100SSD1_15020E572648-part3 -> ../../sdb3\u8232 lrwxrwxrwx 1 root root  9 Jul 10 10:16 ata-WDC_WD40EZRX-00SPEB0_WD-WCC4E5CY5FKZ -> ../../sdg\u8232 lrwxrwxrwx 1 root root 10 Jul 10 10:16 ata-WDC_WD40EZRX-00SPEB0_WD-WCC4E5CY5FKZ-part1 -> ../../sdg1\u8232 lrwxrwxrwx 1 root root  9 Jul 10 10:16 ata-WDC_WD40EZRX-00SPEB0_WD-WCC4E5DXD81J -> ../../sda\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 ata-WDC_WD40EZRX-00SPEB0_WD-WCC4E5DXD81J-part1 -> ../../sda1\u8232 lrwxrwxrwx 1 root root  9 Jul 10 10:16 usb-ST3000DM_001-1ER166_152D00539000-0:0 -> ../../sdc\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 usb-ST3000DM_001-1ER166_152D00539000-0:0-part1 -> ../../sdc1\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 usb-ST3000DM_001-1ER166_152D00539000-0:0-part2 -> ../../sdc2\u8232 lrwxrwxrwx 1 root root  9 Jul 10 10:16 usb-ST3000DM_001-1ER166_152D00539000-0:1 -> ../../sdd\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 usb-ST3000DM_001-1ER166_152D00539000-0:1-part1 -> ../../sdd1\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 usb-ST3000DM_001-1ER166_152D00539000-0:1-part2 -> ../../sdd2\u8232 lrwxrwxrwx 1 root root  9 Jul 10 10:16 usb-ST3000DM_001-1ER166_152D00539000-0:2 -> ../../sde\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 usb-ST3000DM_001-1ER166_152D00539000-0:2-part1 -> ../../sde1\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 usb-ST3000DM_001-1ER166_152D00539000-0:2-part2 -> ../../sde2\u8232 lrwxrwxrwx 1 root root  9 Jul 10 10:16 usb-ST3000DM_001-1ER166_152D00539000-0:3 -> ../../sdf\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 usb-ST3000DM_001-1ER166_152D00539000-0:3-part1 -> ../../sdf1\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 usb-ST3000DM_001-1ER166_152D00539000-0:3-part2 -> ../../sdf2\u8232 lrwxrwxrwx 1 root root  9 Jul 10 10:16 wwn-0x50014ee20bbd9e97 -> ../../sdg\u8232 lrwxrwxrwx 1 root root 10 Jul 10 10:16 wwn-0x50014ee20bbd9e97-part1 -> ../../sdg1\u8232 lrwxrwxrwx 1 root root  9 Jul 10 10:16 wwn-0x50014ee26112cf79 -> ../../sda\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 wwn-0x50014ee26112cf79-part1 -> ../../sda1\u8232 lrwxrwxrwx 1 root root  9 Jul 10 09:53 wwn-0x500a07510e572648 -> ../../sdb\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 wwn-0x500a07510e572648-part1 -> ../../sdb1\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 wwn-0x500a07510e572648-part2 -> ../../sdb2\u8232 lrwxrwxrwx 1 root root 10 Jul 10 09:53 wwn-0x500a07510e572648-part3 -> ../../sdb3\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0\fs22 \cf0 \
+Next, check your zpool to make sure you can find the failing one:\
+\uc0\u8232 luke@box:~/temp$ sudo zpool status\u8232   pool: probox_zpool\u8232  state: ONLINE\u8232   scan: scrub repaired 0 in 17h1m with 0 errors on Sat Jul  4 05:56:45 2015\u8232 config:\u8232 \u8232 	NAME                                                STATE     READ WRITE CKSUM\u8232 	probox_zpool                                        ONLINE       0     0     0\u8232 	  raidz1-0                                          ONLINE       0     0     0\u8232 	    usb-ST3000DM_001-1ER166_152D00539000-0:0-part1  ONLINE       0     0     0\u8232 	    usb-ST3000DM_001-1ER166_152D00539000-0:1-part1  ONLINE       0     0     0\u8232 	    usb-ST3000DM_001-1ER166_152D00539000-0:2-part1  ONLINE       0     0     0\u8232 	    usb-ST3000DM_001-1ER166_152D00539000-0:3-part1  ONLINE       0     0     0\u8232 \u8232 errors: No known data errors\
+\
+In my case, this is the 0:0-part1 disk that\'92s failing. Then I plugged in a new disk into a disk caddy. I made a full-disk partition on it so it would show up in /dev/disk/by-id. Then I used this command:\
+\uc0\u8232 
+\f2\fs18 luke@box:~/temp$ sudo zpool replace probox_zpool usb-ST3000DM_001-1ER166_152D00539000-0:0-part1 ata-WDC_WD40EZRX-00SPEB0_WD-WCC4E5CY5FKZ\uc0\u8232 
+\f0\fs22 \
+\
+It\'92s sudo zpool replace <zpoolname> <ID of failing partition> <ID of replacement DISK (not partition)>\
+\
+The resilvering takes many hours. When it is done, \
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f2\fs18 \cf0 sudo zfs umount -a\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0\fs22 \cf0 \
+to unmount everything, turn off your probox, and replace the failing drive.\
+\
+\
+\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+\cf0 \ul \ulc0 How to change a zpool so that it is based on ID rather than device name (e.g. \'93/dev/sda1\'94)\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+\cf0 \ulnone \
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f2\fs20 \cf0 # zpool export probox_zpool\
+# zpool import -d /dev/disk/by-id probox_zpool\
+\pard\pardeftab720\ri0\sl276\slmult1\partightenfactor0
+
+\f0\fs22 \cf0 \
+This worked for me. The problem is that plugging in a second probox might change the by-id designation. However, the problem is that if you use UUIDs, then you can only make a zpool out of partitions, not whole disks, which reduces performance.\
+}

@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of minmaxsptimes</title>
+  <meta name="keywords" content="minmaxsptimes">
+  <meta name="description" content="Find the minimum and maximum of the spike times in each channel">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>minmaxsptimes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Find the minimum and maximum of the spike times in each channel</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [mintime, maxtime]=minmaxsptimes(data) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Find the minimum and maximum of the spike times in each channel
+ Usage: [mintime, maxtime]=minmaxsptimes(data)
+ Input:
+ data  (spike times as a structural array of multiple dimensions e.g. channels; channels x trials; 
+        can also accept a 1d matrix of spike times)
+ Output:
+ mintime       (minimum of the spike time across channels)
+ maxtime       (maximum of the spike time across channels)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="CrossSpecMatpt.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatpt(data,win,T,params)">CrossSpecMatpt</a>	</li><li><a href="coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>	Multi-taper coherency - point process times</li><li><a href="coherencysegpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpt(data1,data2,win,params,segave,fscorr)">coherencysegpt</a>	Multi-taper coherency computed by segmenting two univariate point processes into chunks</li><li><a href="cohgrampt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)">cohgrampt</a>	Multi-taper time-frequency coherence - two point processes given as times</li><li><a href="cohmatrixpt.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpt(data,params,fscorr)">cohmatrixpt</a>	Multi-taper coherency matrix - point process times</li><li><a href="mtdspecgrampt.html" class="code" title="function [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params)">mtdspecgrampt</a>	Multi-taper derivative time-frequency spectrum - point process times</li><li><a href="mtdspectrumpt.html" class="code" title="function [dS,f]=mtdspectrumpt(data,phi,params,t)">mtdspectrumpt</a>	Multi-taper spectral derivative - point process times</li><li><a href="mtspecgrampt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampt(data,movingwin,params,fscorr)">mtspecgrampt</a>	Multi-taper time-frequency spectrum - point process times</li><li><a href="mtspectrumpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumpt(data,params,fscorr,t)">mtspectrumpt</a>	Multi-taper spectrum - point process times</li><li><a href="mtspectrumsegpt.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpt(data,win,params,segave,fscorr)">mtspectrumsegpt</a>	Multi-taper segmented spectrum for a univariate binned point process</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [mintime, maxtime]=minmaxsptimes(data)</a>
+0002 <span class="comment">% Find the minimum and maximum of the spike times in each channel</span>
+0003 <span class="comment">% Usage: [mintime, maxtime]=minmaxsptimes(data)</span>
+0004 <span class="comment">% Input:</span>
+0005 <span class="comment">% data  (spike times as a structural array of multiple dimensions e.g. channels; channels x trials;</span>
+0006 <span class="comment">%        can also accept a 1d matrix of spike times)</span>
+0007 <span class="comment">% Output:</span>
+0008 <span class="comment">% mintime       (minimum of the spike time across channels)</span>
+0009 <span class="comment">% maxtime       (maximum of the spike time across channels)</span>
+0010 <span class="comment">%</span>
+0011 dtmp=<span class="string">''</span>;
+0012 <span class="keyword">if</span> isstruct(data)
+0013    data=reshape(data,numel(data),1);
+0014    C=size(data,1);
+0015    fnames=fieldnames(data);
+0016    mintime=zeros(1,C); maxtime=zeros(1,C);
+0017    <span class="keyword">for</span> ch=1:C
+0018      eval([<span class="string">'dtmp=data(ch).'</span> fnames{1} <span class="string">';'</span>])
+0019      <span class="keyword">if</span> ~isempty(dtmp)
+0020         maxtime(ch)=max(dtmp);
+0021         mintime(ch)=min(dtmp);
+0022      <span class="keyword">else</span>
+0023         mintime(ch)=NaN;
+0024         maxtime(ch)=NaN;
+0025      <span class="keyword">end</span>
+0026    <span class="keyword">end</span>;
+0027    maxtime=max(maxtime); <span class="comment">% maximum time</span>
+0028    mintime=min(mintime); <span class="comment">% minimum time</span>
+0029 <span class="keyword">else</span>
+0030      dtmp=data;
+0031      <span class="keyword">if</span> ~isempty(dtmp)
+0032         maxtime=max(dtmp);
+0033         mintime=min(dtmp);
+0034      <span class="keyword">else</span>
+0035         mintime=NaN;
+0036         maxtime=NaN;
+0037      <span class="keyword">end</span>
+0038 <span class="keyword">end</span>
+0039 <span class="keyword">if</span> mintime &lt; 0 
+0040    error(<span class="string">'Minimum spike time is negative'</span>); 
+0041 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

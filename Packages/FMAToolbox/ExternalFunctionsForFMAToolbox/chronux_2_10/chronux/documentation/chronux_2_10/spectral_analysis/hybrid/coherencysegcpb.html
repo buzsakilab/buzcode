@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of coherencysegcpb</title>
+  <meta name="keywords" content="coherencysegcpb">
+  <meta name="description" content="Multi-taper coherency,cross-spectrum and individual spectra with segmenting">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html hybrid -->
+<h1>coherencysegcpb
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper coherency,cross-spectrum and individual spectra with segmenting</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpb(data1,data2,win,params,segave,fscorr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper coherency,cross-spectrum and individual spectra with segmenting
+   computed by segmenting two univariate time series into chunks - continuous and binned point process
+
+ Usage:
+ [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpb(data1,data2,win,params,segave,fscorr)
+ Input: 
+ Note units have to be consistent. See chronux.m for more information.
+       data1 (column vector, continuous data) -- required
+       data2 (column vector, binned point process data) -- required
+       win   (length of segments) - required
+       params: structure with fields tapers, pad, Fs, fpass, err
+       - optional
+           tapers : precalculated tapers from dpss or in the one of the following
+                    forms: 
+                   (1) A numeric vector [TW K] where TW is the
+                       time-bandwidth product and K is the number of
+                       tapers to be used (less than or equal to
+                       2TW-1). 
+                   (2) A numeric vector [W T p] where W is the
+                       bandwidth, T is the duration of the data and p 
+                       is an integer such that 2TW-p tapers are used. In
+                       this form there is no default i.e. to specify
+                       the bandwidth, you have to specify T and p as
+                       well. Note that the units of W and T have to be
+                       consistent: if W is in Hz, T must be in seconds
+                       and vice versa. Note that these units must also
+                       be consistent with the units of params.Fs: W can
+                       be in Hz if and only if params.Fs is in Hz.
+                       The default is to use form 1 with TW=3 and K=5
+
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+           Fs   (sampling frequency) - optional. Default 1.
+           fpass    (frequency band to be used in the calculation in the form
+                                   [fmin fmax])- optional. 
+                                   Default all frequencies between 0 and Fs/2
+           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars
+                                   [0 p] or 0 - no error bars) - optional. Default 0.
+       segave (average over segments for 1, don't average for 0)
+       fscorr   (finite size corrections, 0 (don't use finite size corrections) or 
+                1 (use finite size corrections) - optional
+                (available only for spikes). Defaults 0.
+ Output:
+       C (magnitude of coherency - frequencies x segments if segave=0; dimension frequencies if segave=1)
+       phi (phase of coherency - frequencies x segments if segave=0; dimension frequencies if segave=1)
+       S12 (cross spectrum -  frequencies x segments if segave=0; dimension frequencies if segave=1)
+       S1 (spectrum 1 - frequencies x segments if segave=0; dimension frequencies if segave=1)
+       S2 (spectrum 2 - frequencies x segments if segave=0; dimension frequencies if segave=1)
+       f (frequencies)
+       zerosp (1 for trials where no spikes were found, 0 otherwise)
+       confC (confidence level for C at 1-p %) - only for err(1)&gt;=1
+       phistd - theoretical/jackknife (depending on err(1)=1/err(1)=2) standard deviation for phi
+                Note that phi + 2 phistd and phi - 2 phistd will give 95% confidence
+                bands for phi - only for err(1)&gt;=1 
+       Cerr  (Jackknife error bars for C - use only for Jackknife - err(1)=2)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/continuous/createdatamatc.html" class="code" title="function data=createdatamatc(data,E,Fs,win)">createdatamatc</a>	Helper function to create an event triggered matrix from univariate</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/check_consistency.html" class="code" title="function [N,C]=check_consistency(data1,data2,sp)">check_consistency</a>	Helper routine to check consistency of data dimensions</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li><li><a href="coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous and binned point process data</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/createdatamatpb.html" class="code" title="function data=createdatamatpb(data,E,Fs,win)">createdatamatpb</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/test/testscript.html" class="code" title="">testscript</a>	function testscript(pname,direction,movingwin,segave,params,fscorr)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpb(data1,data2,win,params,segave,fscorr)</a>
+0002 <span class="comment">% Multi-taper coherency,cross-spectrum and individual spectra with segmenting</span>
+0003 <span class="comment">%   computed by segmenting two univariate time series into chunks - continuous and binned point process</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Usage:</span>
+0006 <span class="comment">% [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpb(data1,data2,win,params,segave,fscorr)</span>
+0007 <span class="comment">% Input:</span>
+0008 <span class="comment">% Note units have to be consistent. See chronux.m for more information.</span>
+0009 <span class="comment">%       data1 (column vector, continuous data) -- required</span>
+0010 <span class="comment">%       data2 (column vector, binned point process data) -- required</span>
+0011 <span class="comment">%       win   (length of segments) - required</span>
+0012 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass, err</span>
+0013 <span class="comment">%       - optional</span>
+0014 <span class="comment">%           tapers : precalculated tapers from dpss or in the one of the following</span>
+0015 <span class="comment">%                    forms:</span>
+0016 <span class="comment">%                   (1) A numeric vector [TW K] where TW is the</span>
+0017 <span class="comment">%                       time-bandwidth product and K is the number of</span>
+0018 <span class="comment">%                       tapers to be used (less than or equal to</span>
+0019 <span class="comment">%                       2TW-1).</span>
+0020 <span class="comment">%                   (2) A numeric vector [W T p] where W is the</span>
+0021 <span class="comment">%                       bandwidth, T is the duration of the data and p</span>
+0022 <span class="comment">%                       is an integer such that 2TW-p tapers are used. In</span>
+0023 <span class="comment">%                       this form there is no default i.e. to specify</span>
+0024 <span class="comment">%                       the bandwidth, you have to specify T and p as</span>
+0025 <span class="comment">%                       well. Note that the units of W and T have to be</span>
+0026 <span class="comment">%                       consistent: if W is in Hz, T must be in seconds</span>
+0027 <span class="comment">%                       and vice versa. Note that these units must also</span>
+0028 <span class="comment">%                       be consistent with the units of params.Fs: W can</span>
+0029 <span class="comment">%                       be in Hz if and only if params.Fs is in Hz.</span>
+0030 <span class="comment">%                       The default is to use form 1 with TW=3 and K=5</span>
+0031 <span class="comment">%</span>
+0032 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0033 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0034 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0035 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0036 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0037 <span class="comment">%                       Defaults to 0.</span>
+0038 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0039 <span class="comment">%           fpass    (frequency band to be used in the calculation in the form</span>
+0040 <span class="comment">%                                   [fmin fmax])- optional.</span>
+0041 <span class="comment">%                                   Default all frequencies between 0 and Fs/2</span>
+0042 <span class="comment">%           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars</span>
+0043 <span class="comment">%                                   [0 p] or 0 - no error bars) - optional. Default 0.</span>
+0044 <span class="comment">%       segave (average over segments for 1, don't average for 0)</span>
+0045 <span class="comment">%       fscorr   (finite size corrections, 0 (don't use finite size corrections) or</span>
+0046 <span class="comment">%                1 (use finite size corrections) - optional</span>
+0047 <span class="comment">%                (available only for spikes). Defaults 0.</span>
+0048 <span class="comment">% Output:</span>
+0049 <span class="comment">%       C (magnitude of coherency - frequencies x segments if segave=0; dimension frequencies if segave=1)</span>
+0050 <span class="comment">%       phi (phase of coherency - frequencies x segments if segave=0; dimension frequencies if segave=1)</span>
+0051 <span class="comment">%       S12 (cross spectrum -  frequencies x segments if segave=0; dimension frequencies if segave=1)</span>
+0052 <span class="comment">%       S1 (spectrum 1 - frequencies x segments if segave=0; dimension frequencies if segave=1)</span>
+0053 <span class="comment">%       S2 (spectrum 2 - frequencies x segments if segave=0; dimension frequencies if segave=1)</span>
+0054 <span class="comment">%       f (frequencies)</span>
+0055 <span class="comment">%       zerosp (1 for trials where no spikes were found, 0 otherwise)</span>
+0056 <span class="comment">%       confC (confidence level for C at 1-p %) - only for err(1)&gt;=1</span>
+0057 <span class="comment">%       phistd - theoretical/jackknife (depending on err(1)=1/err(1)=2) standard deviation for phi</span>
+0058 <span class="comment">%                Note that phi + 2 phistd and phi - 2 phistd will give 95% confidence</span>
+0059 <span class="comment">%                bands for phi - only for err(1)&gt;=1</span>
+0060 <span class="comment">%       Cerr  (Jackknife error bars for C - use only for Jackknife - err(1)=2)</span>
+0061 
+0062 <span class="keyword">if</span> nargin &lt; 3; error(<span class="string">'Need data1 and data2 and size of segment'</span>); <span class="keyword">end</span>;
+0063 <span class="keyword">if</span> nargin &lt; 4; params=[]; <span class="keyword">end</span>;
+0064 [tapers,pad,Fs,fpass,err,trialave,params]=<a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params);
+0065 clear tapers pad fpass trialave
+0066 <span class="keyword">if</span> nargin &lt; 5 || isempty(segave); segave=1;<span class="keyword">end</span>;
+0067 <span class="keyword">if</span> nargin &lt; 6 || isempty(fscorr); fscorr=0; <span class="keyword">end</span>;
+0068 <span class="keyword">if</span> nargout &gt; 7 &amp;&amp; err(1)==0;
+0069 <span class="comment">%   Errors computed only if err(1) is non-zero. Need to change params and run again.</span>
+0070     error(<span class="string">'When errors are desired, err(1) has to be non-zero.'</span>);
+0071 <span class="keyword">end</span>;
+0072 <span class="keyword">if</span> nargout &gt; 9 &amp;&amp; err(1)~=2; 
+0073     error(<span class="string">'Cerr computed only for Jackknife. Correct inputs and run again'</span>);
+0074 <span class="keyword">end</span>;
+0075 
+0076 N=<a href="../../../chronux_2_10/spectral_analysis/helper/check_consistency.html" class="code" title="function [N,C]=check_consistency(data1,data2,sp)">check_consistency</a>(data1,data2);
+0077 dt=1/Fs; <span class="comment">% sampling interval</span>
+0078 T=N*dt; <span class="comment">% length of data in seconds</span>
+0079 E=0:win:T-win; <span class="comment">% fictitious event triggers</span>
+0080 win=[0 win]; <span class="comment">% use window length to define left and right limits of windows around triggers</span>
+0081 data1=<a href="../../../chronux_2_10/spectral_analysis/continuous/createdatamatc.html" class="code" title="function data=createdatamatc(data,E,Fs,win)">createdatamatc</a>(data1,E,Fs,win); <span class="comment">% segmented data 1</span>
+0082 data2=<a href="../../../chronux_2_10/spectral_analysis/pointbinned/createdatamatpb.html" class="code" title="function data=createdatamatpb(data,E,Fs,win)">createdatamatpb</a>(data2,E,Fs,win); <span class="comment">% segmented data 2</span>
+0083 params.trialave=segave;
+0084 <span class="keyword">if</span> nargout==7;
+0085   [C,phi,S12,S1,S2,f,zerosp]=<a href="coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>(data1,data2,params,fscorr); <span class="comment">% compute coherency for segmented data</span>
+0086 <span class="keyword">elseif</span> nargout==9; 
+0087   [C,phi,S12,S1,S2,f,zerosp,confC,phistd]=<a href="coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>(data1,data2,params,fscorr); <span class="comment">% compute coherency for segmented data</span>
+0088 <span class="keyword">elseif</span> nargout==10;
+0089   [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=<a href="coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>(data1,data2,params,fscorr); <span class="comment">% compute coherency for segmented data</span>
+0090 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

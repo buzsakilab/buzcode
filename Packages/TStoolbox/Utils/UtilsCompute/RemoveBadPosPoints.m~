@@ -1,0 +1,21 @@
+function [X1, Y1, stT,stEn] = RemoveBadPosPoints(X, Y, dt, jump_thresh, mxLength)
+% [X1, Y1] = RemoveBadPosPoints(X, Y, jump_thresh)
+% removes bad points from Position tsd-s
+%
+% it removes all the points where a "jump" greater than jump_thresh
+% occurs
+% INPUTS:
+% X, Y: x and y coordinates tsd's (dirty)
+% jump_thresh: threshold for jump
+% 
+% OUTPUTS:
+% X1, Y1: x and y coordinates tsd's (clean)
+
+% batta 2001 
+% status: under construction
+  
+x = Data(X);
+y = Data(Y);
+
+for 
+

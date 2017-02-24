@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of interp_missing</title>
+  <meta name="keywords" content="interp_missing">
+  <meta name="description" content="Interpolate missing values in continuously sampled tsd">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; interp_missing.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>interp_missing
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Interpolate missing values in continuously sampled tsd</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function tsi = interp_missing(tsa, TimeUnits, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Interpolate missing values in continuously sampled tsd
+  
+      USAGE:
+      tsi = interp_missing(tsa, OptionName, OptionValue, ...) 
+      
+      INPUTS:
+      tsa - a tsd object
+      
+      OUTPUTS:
+      tsi - a tsd object, with the missing values interpolated, assuming the
+            sampling rate as the inverse of the median inter-event interval
+      
+      OPTIONS:
+      'InterpNaN' - if set to non-zero, the missing values are set to NaN</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>	Returns Data of a TSD object</li><li><a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>	Returns TSD timestamps</li><li><a href="length.html" class="code" title="function l = length(tsa)">length</a>	Returns number of elements in tsa (overoads length function)</li><li><a href="mean.html" class="code" title="function m = mean(tsa,epoch)">mean</a>	</li><li><a href="median_dt.html" class="code" title="function [mdt, n_missing] = median_dt(tsa, TimeUnits)">median_dt</a>	Find the median value of inter-event interval</li><li><a href="tsd.html" class="code" title="function tsa = tsd(t, Data, varargin)">tsd</a>	Constructor of TSD object</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="smooth.html" class="code" title="function S = smooth(tsa, l, varargin)">smooth</a>	Smooth a TSD</li><li><a href="timeDeriv.html" class="code" title="function S = timeDeriv(tsa, varargin)">timeDeriv</a>	TimeDerivative of a tsd</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function tsi = interp_missing(tsa, TimeUnits, varargin)</a>
+0002 
+0003 <span class="comment">%  Interpolate missing values in continuously sampled tsd</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      tsi = interp_missing(tsa, OptionName, OptionValue, ...)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      INPUTS:</span>
+0009 <span class="comment">%      tsa - a tsd object</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%      OUTPUTS:</span>
+0012 <span class="comment">%      tsi - a tsd object, with the missing values interpolated, assuming the</span>
+0013 <span class="comment">%            sampling rate as the inverse of the median inter-event interval</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%      OPTIONS:</span>
+0016 <span class="comment">%      'InterpNaN' - if set to non-zero, the missing values are set to NaN</span>
+0017 
+0018 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia</span>
+0019 <span class="comment">% This software is released under the GNU GPL</span>
+0020 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0021 
+0022   
+0023   
+0024   <span class="keyword">if</span> nargin == 1
+0025     TimeUnits = time_units(<span class="string">'ts'</span>);
+0026   <span class="keyword">else</span> 
+0027     TimeUnits = units(TimeUnits);
+0028   <span class="keyword">end</span>
+0029   
+0030   opt_varargin = varargin;
+0031   
+0032   defined_options = dictArray({ { <span class="string">'InterpNaN'</span>, {0, {<span class="string">'numeric'</span>} } } } );
+0033   
+0034   getOpt;
+0035   
+0036   [mdt, n_missing] = <a href="median_dt.html" class="code" title="function [mdt, n_missing] = median_dt(tsa, TimeUnits)">median_dt</a>(tsa, TimeUnits);
+0037   mdt_min = <a href="mean.html" class="code" title="function m = mean(tsa,epoch)">mean</a>(diff(<a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa)));
+0038   <span class="keyword">if</span> mdt_min &lt; mdt
+0039       warning(<span class="string">'strange tail in inter-frame intervals'</span>);
+0040       mdt_min = mdt_min / 2;
+0041   <span class="keyword">else</span>
+0042       mdt_min = mdt * 0.9;
+0043   <span class="keyword">end</span>
+0044   <span class="keyword">if</span> n_missing / <a href="length.html" class="code" title="function l = length(tsa)">length</a>(<a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa)) &gt; 0.05
+0045     warning(<span class="string">'more than 5% of points missing'</span>);
+0046   <span class="keyword">end</span>
+0047   
+0048   t = <a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa, TimeUnits);
+0049   
+0050   [nt, orig_ix] = interp_missing_c(t, mdt, mdt_min);
+0051   nd = interp1(t, <a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>(tsa), nt);
+0052 
+0053   <span class="keyword">if</span> InterpNaN
+0054     m_ix = setdiff(1:<a href="length.html" class="code" title="function l = length(tsa)">length</a>(t), orig_ix);
+0055     nd(m_ix) = NaN;
+0056   <span class="keyword">end</span>
+0057   
+0058   
+0059   tsi = <a href="tsd.html" class="code" title="function tsa = tsd(t, Data, varargin)">tsd</a>(nt, nd);
+0060</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,29 @@
+How to Build and Verify mexPlex
+-------------------------------
+
+If ReadingPLXandDDTfilesinMatlab-mexw.zip was inzipped to
+
+C:\PlexonMatlab
+
+make sure that Matlab's current directory is
+
+C:\PlexonMatlab\OfflineSDK\mexPlex
+
+In Matlab, run:
+
+res = build_and_verify_mexPlex()
+
+If res is 1, all the tests passed.
+
+If you want to build mexPlex without verification, run this in Matlab:
+
+mex -output mexPlex -outdir .. PlexMethods.cpp
+
+If you have problems compiling mex files in Matlab under Ubuntu, you may want to look at this page:
+
+https://help.ubuntu.com/community/MATLAB/R2009b
+
+
+
+
+

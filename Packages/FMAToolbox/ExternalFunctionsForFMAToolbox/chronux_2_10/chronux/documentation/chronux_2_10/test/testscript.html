@@ -1,0 +1,402 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of testscript</title>
+  <meta name="keywords" content="testscript">
+  <meta name="description" content="function testscript(pname,direction,movingwin,segave,params,fscorr)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html test -->
+<h1>testscript
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function testscript(pname,direction,movingwin,segave,params,fscorr)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> function testscript(pname,direction,movingwin,segave,params,fscorr)
+
+ This script runs a sequence of analysis steps using the test
+ data contained in data. The data consists of a single tetrode
+ recording from macaque area LIP during a memory saccade experiment
+ a la Pesaran et al (2002). The data is already separated into
+ spikes and LFPs. LFPs are contained in variable dlfp, spikes from two
+ neurons are in in a struct array dsp, and event information is in
+ the following set of variables:
+
+ trialtimes - start times of trials
+ fixon - fixation light comes on
+ fixacq - fixation acquired
+ targon - target light on
+ targoff - target light off
+ fixoff - fixation off
+ saccade - saccade
+
+ Note that spikes and event times are in seconds and the sampling
+ frequency for the LFP in this experiment was 1kHz.
+
+ the script takes the following input argument - 
+ pname - path name on your computer where the data file LIPdata is stored.
+ direction - target direction to be analysed (0-7)
+
+ The remaining parameters control various computations and are discussed
+ in chronux.m - type Help chronux.m for more information.
+ 
+ if nargin &lt; 4;
+     error('Need 6 input parameters - see help');
+ end;
+ if nargin &lt; 5 | isempty(params);
+    [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params);
+ end;
+ if nargin &lt; 6 | isempty(fscorr);
+     fscorr=1;
+ end;</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../chronux_2_10/spectral_analysis/continuous/coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/coherencysegc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencysegc(data1,data2,win,params)">coherencysegc</a>	Multi-taper coherency, cross-spectrum and individual spectra with segmenting - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/cohgramc.html" class="code" title="function [C,phi,S12,S1,S2,t,f,confC,phistd,Cerr]=cohgramc(data1,data2,movingwin,params)">cohgramc</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra - continuous processes</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/cohmatrixc.html" class="code" title="function [C,phi,S12,f,confC,phistd,Cerr]=cohmatrixc(data,params)">cohmatrixc</a>	Multi-taper coherency,cross-spectral matrix - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtdspecgramc.html" class="code" title="function [dS,t,f]=mtdspecgramc(data,movingwin,phi,params)">mtdspecgramc</a>	Multi-taper derivative of the time-frequency spectrum - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtdspectrumc.html" class="code" title="function [dS,f]=mtdspectrumc(data,phi,params)">mtdspectrumc</a>	Multi-taper frequency derivative of the spectrum - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>	Multi-taper time-frequency spectrum - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtspecgramtrigc.html" class="code" title="function [S,t,f,Serr]=mtspecgramtrigc(data,E,win,movingwin,params)">mtspecgramtrigc</a>	Multi-taper event triggered time-frequency spectrum - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>	Multi-taper spectrum - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumsegc.html" class="code" title="function [S,f,varS,C,Serr]=mtspectrumsegc(data,win,params,segave)">mtspectrumsegc</a>	Multi-taper segmented spectrum for a univariate continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumtrigc.html" class="code" title="function [S,f,Serr]=mtspectrumtrigc(data,E,win,params)">mtspectrumtrigc</a>	Multi-taper event triggered time-frequency spectrum - continuous process</li><li><a href="../../chronux_2_10/spectral_analysis/hybrid/coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous and binned point process data</li><li><a href="../../chronux_2_10/spectral_analysis/hybrid/coherencycpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpt(data1,data2,params,fscorr,t)">coherencycpt</a>	Multi-taper coherency,cross-spectrum and individual spectra -continuous data and point process as times</li><li><a href="../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpb(data1,data2,win,params,segave,fscorr)">coherencysegcpb</a>	Multi-taper coherency,cross-spectrum and individual spectra with segmenting</li><li><a href="../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpt(data1,data2,win,params,segave,fscorr)">coherencysegcpt</a>	Multi-taper coherency,cross-spectrum and individual spectra computed by segmenting</li><li><a href="../../chronux_2_10/spectral_analysis/hybrid/cohgramcpb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpb(data1,data2,movingwin,params,fscorr)">cohgramcpb</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="../../chronux_2_10/spectral_analysis/hybrid/cohgramcpt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpt(data1,data2,movingwin,params,fscorr)">cohgramcpt</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/coherencypb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypb(data1,data2,params,fscorr)">coherencypb</a>	Multi-taper coherency,cross-spectrum and individual spectra - binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/coherencysegpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpb(data1,data2,win,params,segave,fscorr)">coherencysegpb</a>	Multi-taper coherency,cross-spectrum and individual spectra computed by segmenting</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/cohgrampb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampb(data1,data2,movingwin,params,fscorr)">cohgrampb</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra - two binned point processes</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/cohmatrixpb.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpb(data,params,fscorr)">cohmatrixpb</a>	Multi-taper coherency matrix - binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/mtdspecgrampb.html" class="code" title="function [dS,t,f]=mtdspecgrampb(data,movingwin,phi,params)">mtdspecgrampb</a>	Multi-taper derivatives of time-frequency spectrum - binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/mtdspectrumpb.html" class="code" title="function [dS,f]=mtdspectrumpb(data,phi,params)">mtdspectrumpb</a>	Multi-taper spectral derivative - binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspecgrampb.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampb(data,movingwin,params,fscorr)">mtspecgrampb</a>	Multi-taper time-frequency spectrum - binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspecgramtrigpb.html" class="code" title="function [S,t,f,R,Serr]=mtspecgramtrigpb(data,E,win,movingwin,params,fscorr)">mtspecgramtrigpb</a>	Multi-taper event triggered time-frequency spectrum - binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumpb(data,params,fscorr)">mtspectrumpb</a>	Multi-taper spectrum - binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumsegpb.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpb(data,win,params,segave,fscorr)">mtspectrumsegpb</a>	Multi-taper segmented spectrum for a univariate binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumtrigpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumtrigpb(data,E,win,params,fscorr)">mtspectrumtrigpb</a>	Multi-taper event triggered time-frequency spectrum - binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>	bin spikes at a specified frequency sampling i.e. sampling rate 1/sampling</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>	Multi-taper coherency - point process times</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/coherencysegpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpt(data1,data2,win,params,segave,fscorr)">coherencysegpt</a>	Multi-taper coherency computed by segmenting two univariate point processes into chunks</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/cohgrampt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)">cohgrampt</a>	Multi-taper time-frequency coherence - two point processes given as times</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/cohmatrixpt.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpt(data,params,fscorr)">cohmatrixpt</a>	Multi-taper coherency matrix - point process times</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/createdatamatpt.html" class="code" title="function data=createdatamatpt(data,E,win)">createdatamatpt</a>	Helper function to create an event triggered matrix from a single</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>	Extract segements of spike times between t(1) and t(2)</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/mtdspecgrampt.html" class="code" title="function [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params)">mtdspecgrampt</a>	Multi-taper derivative time-frequency spectrum - point process times</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/mtdspectrumpt.html" class="code" title="function [dS,f]=mtdspectrumpt(data,phi,params,t)">mtdspectrumpt</a>	Multi-taper spectral derivative - point process times</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspecgrampt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampt(data,movingwin,params,fscorr)">mtspecgrampt</a>	Multi-taper time-frequency spectrum - point process times</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspecgramtrigpt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgramtrigpt(data,E,win,movingwin,params,fscorr)">mtspecgramtrigpt</a>	Multi-taper event triggered time-frequency spectrum - point process times</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumpt(data,params,fscorr,t)">mtspectrumpt</a>	Multi-taper spectrum - point process times</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumsegpt.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpt(data,win,params,segave,fscorr)">mtspectrumsegpt</a>	Multi-taper segmented spectrum for a univariate binned point process</li><li><a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumtrigpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumtrigpt(data,E,win,params,fscorr)">mtspectrumtrigpt</a>	Multi-taper time-frequency spectrum - point process times</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% function testscript(pname,direction,movingwin,segave,params,fscorr)</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This script runs a sequence of analysis steps using the test</span>
+0004 <span class="comment">% data contained in data. The data consists of a single tetrode</span>
+0005 <span class="comment">% recording from macaque area LIP during a memory saccade experiment</span>
+0006 <span class="comment">% a la Pesaran et al (2002). The data is already separated into</span>
+0007 <span class="comment">% spikes and LFPs. LFPs are contained in variable dlfp, spikes from two</span>
+0008 <span class="comment">% neurons are in in a struct array dsp, and event information is in</span>
+0009 <span class="comment">% the following set of variables:</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% trialtimes - start times of trials</span>
+0012 <span class="comment">% fixon - fixation light comes on</span>
+0013 <span class="comment">% fixacq - fixation acquired</span>
+0014 <span class="comment">% targon - target light on</span>
+0015 <span class="comment">% targoff - target light off</span>
+0016 <span class="comment">% fixoff - fixation off</span>
+0017 <span class="comment">% saccade - saccade</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Note that spikes and event times are in seconds and the sampling</span>
+0020 <span class="comment">% frequency for the LFP in this experiment was 1kHz.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% the script takes the following input argument -</span>
+0023 <span class="comment">% pname - path name on your computer where the data file LIPdata is stored.</span>
+0024 <span class="comment">% direction - target direction to be analysed (0-7)</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% The remaining parameters control various computations and are discussed</span>
+0027 <span class="comment">% in chronux.m - type Help chronux.m for more information.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% if nargin &lt; 4;</span>
+0030 <span class="comment">%     error('Need 6 input parameters - see help');</span>
+0031 <span class="comment">% end;</span>
+0032 <span class="comment">% if nargin &lt; 5 | isempty(params);</span>
+0033 <span class="comment">%    [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params);</span>
+0034 <span class="comment">% end;</span>
+0035 <span class="comment">% if nargin &lt; 6 | isempty(fscorr);</span>
+0036 <span class="comment">%     fscorr=1;</span>
+0037 <span class="comment">% end;</span>
+0038 pname=<span class="string">'data'</span>;
+0039 params.Fs=1000; <span class="comment">% sampling frequency</span>
+0040 params.fpass=[10 100]; <span class="comment">% band of frequencies to be kept</span>
+0041 params. tapers=[3 5]; <span class="comment">% taper parameters</span>
+0042 params.pad=2; <span class="comment">% pad factor for fft</span>
+0043 params.err=[2 0.05];
+0044 params.trialave=1;
+0045 movingwin=[0.5 0.05];
+0046 segave=1;
+0047 direction=5;
+0048 
+0049 wintrig=[5*movingwin(1) 5*movingwin(1)];
+0050 winseg=2*movingwin(1);
+0051 <span class="comment">%</span>
+0052 <span class="comment">% Load data</span>
+0053 <span class="comment">%</span>
+0054 eval([<span class="string">'load LIPdata.mat'</span>]);
+0055 <span class="comment">% %</span>
+0056 <span class="comment">% % Create rearranged data blocks for further analysis: We are going to</span>
+0057 <span class="comment">% % extract segments of data centered on the target off times from the first channel of LFP data and the from one of the two spike trains</span>
+0058 <span class="comment">% %</span>
+0059 <span class="comment">% %</span>
+0060 <span class="comment">% indx1=find(targets==5);indx2=find(targets==1); % trials to preferred and antipreferred direction</span>
+0061 <span class="comment">% E1=targon(indx1); E2=targon(indx2); % target on times trials to preferred adn anti-preferred directions</span>
+0062 <span class="comment">% dlfp1=createdatamatc(dlfp(:,1),E1,Fs,wintrig);dlfp2=createdatamatc(dlfp(:,1),E2,Fs,wintrig); % extract event triggered segments of the first LFP channel</span>
+0063 <span class="comment">% dsp1=createdatamatpt(dsp(1),E1,wintrig); dsp2=createdatamatpt(dsp(1),E2,wintrig); % the same for one of the spike trains</span>
+0064 
+0065 <span class="comment">% compute spectrum of the first few seconds of LFP channels 1-2</span>
+0066 NT=round(params.Fs*10*movingwin(1));
+0067 data=dlfp(1:NT,:); data1=data(:,1:2);
+0068 [S,f,Serr]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>(data1,params);
+0069 figure;
+0070 plot(f,10*log10(S),f,10*log10(Serr(1,:)),f,10*log10(Serr(2,:))); xlabel(<span class="string">'Frequency Hz'</span>); ylabel(<span class="string">'Spectrum'</span>);
+0071 <span class="comment">%%% pause</span>
+0072 
+0073 <span class="comment">% compute derivative of the spectrum for the same data</span>
+0074 phi=[0 pi/2];
+0075 [dS,f]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtdspectrumc.html" class="code" title="function [dS,f]=mtdspectrumc(data,phi,params)">mtdspectrumc</a>(data1,phi,params);
+0076 figure;
+0077 plot(f,dS(1,:),f,dS(2,:)); xlabel(<span class="string">'frequency Hz'</span>); ylabel(<span class="string">'Derivatives'</span>); legend(<span class="string">'Time'</span>,<span class="string">'Frequency'</span>);
+0078 <span class="comment">%%% pause</span>
+0079 
+0080 <span class="comment">% compute coherency between  channels 1-2 and  3-4</span>
+0081 data1=data(:,1:2);data2=data(:,3:4);
+0082 [C,phi,S12,S1,S2,f,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/continuous/coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>(data1,data2,params); 
+0083 figure;plot(f,C,f,Cerr(1,:),f,Cerr(2,:));xlabel(<span class="string">'frequency'</span>); ylabel(<span class="string">'Coherency'</span>);
+0084 <span class="comment">%%% pause</span>
+0085 
+0086 <span class="comment">% coherency matrix of data1</span>
+0087 [C,phi,S12,f,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/continuous/cohmatrixc.html" class="code" title="function [C,phi,S12,f,confC,phistd,Cerr]=cohmatrixc(data,params)">cohmatrixc</a>(data1,params);
+0088 
+0089 <span class="comment">% compute spectrogram for 1-2</span>
+0090 [S,t,f,Serr]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>(data1,movingwin,params);
+0091 figure;imagesc(t,f,10*log10(S)'); axis xy; colorbar
+0092 <span class="comment">%%% pause</span>
+0093 
+0094 <span class="comment">% compute time-frequency derivative of the spectrogram for 1-2</span>
+0095 phi=[0 pi/2];
+0096 [dS,t,f]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtdspecgramc.html" class="code" title="function [dS,t,f]=mtdspecgramc(data,movingwin,phi,params)">mtdspecgramc</a>(data1,movingwin,phi,params);
+0097 <span class="comment">% pause</span>
+0098 <span class="comment">% figure;subplot(211);imagesc(t,f,squeeze(dS(1,:,:))'); axis xy; colorbar;</span>
+0099 <span class="comment">% subplot(212);imagesc(t,f,squeeze(dS(2,:,:))'); axis xy; colorbar;</span>
+0100 <span class="comment">% %%% pause</span>
+0101 
+0102 <span class="comment">% compute coherogram between 1-2 and 3-4</span>
+0103 NT=round(movingwin(1)*Fs);
+0104 [C,phi,S12,S1,S2,t,f,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/continuous/cohgramc.html" class="code" title="function [C,phi,S12,S1,S2,t,f,confC,phistd,Cerr]=cohgramc(data1,data2,movingwin,params)">cohgramc</a>(data1,data2,movingwin,params);
+0105 figure;imagesc(t,f,C'); axis xy; colorbar;
+0106 <span class="comment">%%% pause</span>
+0107 
+0108 <span class="comment">% compute segmented spectrum of 1</span>
+0109 NT=10*round(winseg*Fs);
+0110 data1=dlfp(1:NT,1);
+0111 [S,f,varS,C,Serr]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumsegc.html" class="code" title="function [S,f,varS,C,Serr]=mtspectrumsegc(data,win,params,segave)">mtspectrumsegc</a>(data1,winseg,params,segave);
+0112 figure; subplot(211);plot(f,10*log(S));
+0113 imagesc(f,f,C); axis xy;colorbar;
+0114 <span class="comment">%%% pause</span>
+0115 
+0116 <span class="comment">% compute segmented coherency between 1 and 2</span>
+0117 NT=10*round(winseg*Fs);
+0118 data1=dlfp(1:NT,1); data2=dlfp(1:NT,2);
+0119 [C,phi,S12,S1,S2,f,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/continuous/coherencysegc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencysegc(data1,data2,win,params)">coherencysegc</a>(data1,data2,winseg,params);
+0120 figure; subplot(311); plot(f,C);subplot(312); plot(f,10*log10(S1)); subplot(313);plot(f,10*log10(S2))
+0121 <span class="comment">%%% pause</span>
+0122 
+0123 <span class="comment">% compute spectrum of channel 1 triggered to events E</span>
+0124 E1=targon(find(targets==direction)); 
+0125 data1=dlfp(:,1); 
+0126 [S,f,Serr]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtspectrumtrigc.html" class="code" title="function [S,f,Serr]=mtspectrumtrigc(data,E,win,params)">mtspectrumtrigc</a>(data1,E1,wintrig,params);
+0127 figure;plot(f,10*log10(S)'); axis xy; colorbar;
+0128 <span class="comment">%%% pause</span>
+0129 
+0130 <span class="comment">% compute spectrogram of channel 1 triggered to events E</span>
+0131 E1=targon(find(targets==direction)); 
+0132 data1=dlfp(:,1); 
+0133 [S,t,f,Serr]=<a href="../../chronux_2_10/spectral_analysis/continuous/mtspecgramtrigc.html" class="code" title="function [S,t,f,Serr]=mtspecgramtrigc(data,E,win,movingwin,params)">mtspecgramtrigc</a>(data1,E1,wintrig,movingwin,params);
+0134 figure; imagesc(t,f,10*log10(S)'); axis xy; colorbar;
+0135 <span class="comment">%%% pause</span>
+0136 
+0137 <span class="comment">%</span>
+0138 <span class="comment">% Analysis - point process stored as times</span>
+0139 <span class="comment">%</span>
+0140 
+0141 <span class="comment">% dsp contains 2 channels of spikes</span>
+0142 
+0143 data=<a href="../../chronux_2_10/spectral_analysis/pointtimes/extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(dsp,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds and compute their spectrum</span>
+0144 [S,f,R,Serr]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumpt(data,params,fscorr,t)">mtspectrumpt</a>(data,params);
+0145 figure; plot(f,10*log10(S),f,10*log10(Serr(1,:)),f,10*log10(Serr(2,:)));line(get(gca,<span class="string">'xlim'</span>),[10*log10(R) 10*log10(R)]);
+0146 <span class="comment">%%% pause</span>
+0147 
+0148 <span class="comment">%</span>
+0149 <span class="comment">% Compute the derivative of the spectrum</span>
+0150 <span class="comment">%</span>
+0151 phi=[0 pi/2];
+0152 [dS,f]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/mtdspectrumpt.html" class="code" title="function [dS,f]=mtdspectrumpt(data,phi,params,t)">mtdspectrumpt</a>(data,phi,params);
+0153 figure; plot(f,dS);
+0154 <span class="comment">%%% pause</span>
+0155 
+0156 <span class="comment">%</span>
+0157 <span class="comment">% Compute the derivative of the time-frequency spectrum</span>
+0158 <span class="comment">%</span>
+0159 data=<a href="../../chronux_2_10/spectral_analysis/pointtimes/extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(dsp,[20 30]);
+0160 data1=data(1); data2=data(2);fscorr=[];t=[];
+0161 [C,phi,S12,S1,S2,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>(data1,data2,params);
+0162 figure; plot(f,C);
+0163 <span class="comment">%%% pause</span>
+0164 
+0165 <span class="comment">%</span>
+0166 <span class="comment">% Compute event triggered average spectrum for one of the directions</span>
+0167 <span class="comment">%</span>
+0168 E1=targon(find(targets==direction));
+0169 data=dsp(1); 
+0170 [S,f,R,Serr]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumtrigpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumtrigpt(data,E,win,params,fscorr)">mtspectrumtrigpt</a>(data,E1,wintrig,params);
+0171 figure;plot(f,10*log10(S),f,10*log10(Serr(1,:)),f,10*log10(Serr(2,:))); line(get(gca,<span class="string">'xlim'</span>),[10*log10(R) 10*log10(R)]); 
+0172 <span class="comment">%%% pause</span>
+0173 
+0174 <span class="comment">%</span>
+0175 <span class="comment">% Compute the matrix of coherencies</span>
+0176 <span class="comment">%</span>
+0177 data=<a href="../../chronux_2_10/spectral_analysis/pointtimes/extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(dsp,[20 30]);
+0178 [C,phi,S12,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/cohmatrixpt.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpt(data,params,fscorr)">cohmatrixpt</a>(data,params,fscorr);
+0179 
+0180 <span class="comment">%</span>
+0181 <span class="comment">% Event triggered spectrogram - first way way</span>
+0182 <span class="comment">%</span>
+0183 data=<a href="../../chronux_2_10/spectral_analysis/pointtimes/createdatamatpt.html" class="code" title="function data=createdatamatpt(data,E,win)">createdatamatpt</a>(dsp(1),E1,wintrig);
+0184 [S,t,f,R,Serr]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspecgrampt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampt(data,movingwin,params,fscorr)">mtspecgrampt</a>(data,movingwin,params);
+0185 figure;imagesc(t,f,10*log10(S)'); axis xy; colorbar;
+0186 <span class="comment">%%% pause</span>
+0187 
+0188 <span class="comment">%</span>
+0189 <span class="comment">% Derivative of the time-frequency spectrum</span>
+0190 <span class="comment">%</span>
+0191 data=<a href="../../chronux_2_10/spectral_analysis/pointtimes/createdatamatpt.html" class="code" title="function data=createdatamatpt(data,E,win)">createdatamatpt</a>(dsp(1),E1,wintrig);
+0192 phi=[0 pi/2];
+0193 [dS,t,f]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/mtdspecgrampt.html" class="code" title="function [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params)">mtdspecgrampt</a>(data,movingwin,phi,params);
+0194 figure; subplot(211); imagesc(t,f,squeeze(dS(1,:,:))'); axis xy; colorbar;
+0195 subplot(212); imagesc(t,f,squeeze(dS(2,:,:))'); axis xy; colorbar;
+0196 
+0197 <span class="comment">%</span>
+0198 <span class="comment">% Coherogram between the two spike trains</span>
+0199 <span class="comment">%</span>
+0200 data1=<a href="../../chronux_2_10/spectral_analysis/pointtimes/createdatamatpt.html" class="code" title="function data=createdatamatpt(data,E,win)">createdatamatpt</a>(dsp(1),E1,wintrig);
+0201 data2=<a href="../../chronux_2_10/spectral_analysis/pointtimes/createdatamatpt.html" class="code" title="function data=createdatamatpt(data,E,win)">createdatamatpt</a>(dsp(2),E1,wintrig);
+0202 [C,phi,S12,S1,S2,t,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/cohgrampt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)">cohgrampt</a>(data1,data2,movingwin,params,fscorr);
+0203 figure;imagesc(t,f,C');axis xy; colorbar
+0204 <span class="comment">% %%% pause</span>
+0205 
+0206 <span class="comment">%</span>
+0207 <span class="comment">% Event Triggered spectrogram another way</span>
+0208 <span class="comment">%</span>
+0209 data=dsp(1);
+0210 [S,t,f,R,Serr]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspecgramtrigpt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgramtrigpt(data,E,win,movingwin,params,fscorr)">mtspecgramtrigpt</a>(data,E1,wintrig,movingwin,params);
+0211 imagesc(t,f,10*log10(S)'); axis xy; colorbar
+0212 <span class="comment">%</span>
+0213 <span class="comment">% Segmented spectrum</span>
+0214 <span class="comment">%</span>
+0215 data=<a href="../../chronux_2_10/spectral_analysis/pointtimes/extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(dsp,[20 30]);
+0216 data=data(1);
+0217 [S,f,R,varS]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumsegpt.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpt(data,win,params,segave,fscorr)">mtspectrumsegpt</a>(data,winseg,params);
+0218 plot(f,10*log10(S)); line(get(gca,<span class="string">'xlim'</span>),[10*log10(R) 10*log10(R)]);
+0219 <span class="comment">%</span>
+0220 <span class="comment">% Segmented coherency</span>
+0221 <span class="comment">%</span>
+0222 data=<a href="../../chronux_2_10/spectral_analysis/pointtimes/extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(dsp,[20 30]);
+0223 data1=data(1);data2=data(2);
+0224 [C,phi,S12,S1,S2,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/coherencysegpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpt(data1,data2,win,params,segave,fscorr)">coherencysegpt</a>(data1,data2,winseg,params);
+0225 figure; subplot(311); plot(f,C);subplot(312); plot(f,10*log10(S1));subplot(313); plot(f,10*log10(S2))
+0226 <span class="comment">%</span>
+0227 <span class="comment">% Analysis - hybrid: one continous and one point process stored as times</span>
+0228 <span class="comment">%</span>
+0229 offset=1;
+0230 data1=dlfp(20000:30000,1); data2=<a href="../../chronux_2_10/spectral_analysis/pointtimes/extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(dsp,[20 30],offset);data2=data2(1).times;
+0231 [C,phi,S12,S1,S2,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/hybrid/coherencycpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpt(data1,data2,params,fscorr,t)">coherencycpt</a>(data1,data2,params);
+0232 figure; subplot(311); plot(f,C);subplot(312); plot(f,10*log10(S1));subplot(313); plot(f,10*log10(S2))
+0233 
+0234 
+0235 data1=dlfp(20000:30000,1); data2=<a href="../../chronux_2_10/spectral_analysis/pointtimes/extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(dsp,[20 30],offset);data2=data2(1).times;
+0236 [C,phi,S12,S1,S2,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpt(data1,data2,win,params,segave,fscorr)">coherencysegcpt</a>(data1,data2,winseg,params,segave,fscorr);
+0237 figure; subplot(311); plot(f,C);subplot(312); plot(f,10*log10(S1));subplot(313); plot(f,10*log10(S2))
+0238 
+0239 
+0240 data1=dlfp(20000:30000,1); data2=<a href="../../chronux_2_10/spectral_analysis/pointtimes/extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(dsp,[20 30],offset);data2=data2(1).times;
+0241 [C,phi,S12,S1,S2,t,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/hybrid/cohgramcpt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpt(data1,data2,movingwin,params,fscorr)">cohgramcpt</a>(data1,data2,movingwin,params,fscorr);
+0242 figure; subplot(311); imagesc(t,f,C');axis xy; colorbar; subplot(312);imagesc(t,f,10*log10(S1)');axis xy; colorbar; subplot(313); imagesc(t,f,10*log10(S2)');axis xy; colorbar
+0243 
+0244 
+0245 <span class="comment">%  Analysis: Binned spike counts</span>
+0246 
+0247 [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds</span>
+0248 
+0249 data=dN;
+0250 [S,f,R,Serr]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumpb(data,params,fscorr)">mtspectrumpb</a>(data,params);
+0251 plot(f,10*log10(S),f,10*log10(Serr(1,:)), f,10*log10(Serr(2,:))); <span class="comment">%line(get(gca,'xlim'),[10*log10(R) 10*log10(R)]);</span>
+0252 
+0253 data=dN;
+0254 phi=[0 pi/2];
+0255 [dS,f]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/mtdspectrumpb.html" class="code" title="function [dS,f]=mtdspectrumpb(data,phi,params)">mtdspectrumpb</a>(data,phi,params);
+0256 figure; plot(f,dS); 
+0257 
+0258 data=dN;
+0259 data1=data(:,1); data2=data(:,2);fscorr=[];t=[];
+0260 [C,phi,S12,S1,S2,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/coherencypb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypb(data1,data2,params,fscorr)">coherencypb</a>(data1,data2,params);
+0261 figure; subplot(311); plot(f,C);subplot(312); plot(f,10*log10(S1)); subplot(313); plot(f,10*log10(S2));
+0262 
+0263 E=targon(find(targets==direction)); E=E(find(E&gt;20 &amp; E&lt;450)); [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 500]);data=dN(:,1);
+0264 [S,f,R,Serr]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumtrigpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumtrigpb(data,E,win,params,fscorr)">mtspectrumtrigpb</a>(data,E,wintrig,params);
+0265 figure;plot(f,10*log10(S),f,10*log10(Serr(1,:)),f,10*log10(Serr(2,:)));
+0266 
+0267 [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds</span>
+0268 data=dN;
+0269 [C,phi,S12,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/cohmatrixpb.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpb(data,params,fscorr)">cohmatrixpb</a>(data,params,fscorr);
+0270 
+0271 [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds</span>
+0272 data=dN;
+0273 [S,t,f,R,Serr]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspecgrampb.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampb(data,movingwin,params,fscorr)">mtspecgrampb</a>(data,movingwin,params);
+0274 figure;imagesc(t,f,10*log10(S)'); axis xy; colorbar
+0275 
+0276 clear R Serr Cerr S C phierr dN dS data1 data2
+0277 
+0278 [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds</span>
+0279 data=dN;
+0280 phi=[0 pi/2];
+0281 [dS,t,f]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/mtdspecgrampb.html" class="code" title="function [dS,t,f]=mtdspecgrampb(data,movingwin,phi,params)">mtdspecgrampb</a>(data,movingwin,phi,params);
+0282 
+0283 [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds</span>
+0284 data=dN;
+0285 data1=data(:,1); data2=data(:,2);
+0286 [C,phi,S12,S1,S2,t,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/cohgrampb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampb(data1,data2,movingwin,params,fscorr)">cohgrampb</a>(data1,data2,movingwin,params,fscorr);
+0287 
+0288 [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs); <span class="comment">% extract spikes</span>
+0289 dN=dN(:,1);
+0290 E=E(1:6);
+0291 data=dN;
+0292 [S,t,f,R,Serr]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspecgramtrigpb.html" class="code" title="function [S,t,f,R,Serr]=mtspecgramtrigpb(data,E,win,movingwin,params,fscorr)">mtspecgramtrigpb</a>(data,E,wintrig,movingwin,params);
+0293 
+0294 [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds</span>
+0295 data=dN;
+0296 data=data(:,1);
+0297 [S,f,R,varS]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumsegpb.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpb(data,win,params,segave,fscorr)">mtspectrumsegpb</a>(data,winseg,params,segave,fscorr);
+0298 figure; plot(f,10*log10(S)); line(get(gca,<span class="string">'xlim'</span>),10*log10([R R])); 
+0299 
+0300 [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds</span>
+0301 data=dN;
+0302 data1=data(:,1);data2=data(:,2);
+0303 [C,phi,S12,S1,S2,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/pointbinned/coherencysegpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpb(data1,data2,win,params,segave,fscorr)">coherencysegpb</a>(data1,data2,winseg,params);
+0304 
+0305 <span class="comment">%</span>
+0306 <span class="comment">% Analysis - hybrid: one continous and one point process stored as counts</span>
+0307 <span class="comment">%</span>
+0308 data1=dlfp(20000:30000,:);data1=data1(:,1:2); [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds</span>
+0309 data2=dN; data2=data2(1:<span class="keyword">end</span>,:);
+0310 [C,phi,S12,S1,S2,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/hybrid/coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>(data1,data2,params);
+0311 
+0312 data1=data1(:,1); data2=data2(:,1);
+0313 [C,phi,S12,S1,S2,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpb(data1,data2,win,params,segave,fscorr)">coherencysegcpb</a>(data1,data2,winseg,params,segave,fscorr);
+0314 
+0315 
+0316 data1=dlfp(20000:30000,:); data1=data1(:,1:2);
+0317 [dN,t]=<a href="../../chronux_2_10/spectral_analysis/pointtimes/binspikes.html" class="code" title="function [dN,t]=binspikes(data,Fs,t)">binspikes</a>(dsp,params.Fs,[20 30]); <span class="comment">% extract spikes occurring between 20 and 30 seconds</span>
+0318 data2=dN; data2=data2(1:<span class="keyword">end</span>,:);
+0319 [C,phi,S12,S1,S2,t,f,zerosp,confC,phierr,Cerr]=<a href="../../chronux_2_10/spectral_analysis/hybrid/cohgramcpb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpb(data1,data2,movingwin,params,fscorr)">cohgramcpb</a>(data1,data2,movingwin,params,fscorr);
+0320</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

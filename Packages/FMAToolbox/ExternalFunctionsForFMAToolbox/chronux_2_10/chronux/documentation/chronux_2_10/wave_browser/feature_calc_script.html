@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of feature_calc_script</title>
+  <meta name="keywords" content="feature_calc_script">
+  <meta name="description" content="feature_calc_script">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html wave_browser -->
+<h1>feature_calc_script
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>feature_calc_script</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> feature_calc_script</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="acoustic_features_MB.html" class="code" title="function [Feat,S,t,f]=acoustic_features_MB(data,movingwin,params)">acoustic_features_MB</a>	Usage:</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% feature_calc_script</span>
+0002 
+0003 tmp=dir;
+0004 nfiles=length(tmp);
+0005 names=cell(nfiles,1); <span class="keyword">for</span> j=1:nfiles, names(j)=cellstr(tmp(j).name); <span class="keyword">end</span>; 
+0006 wavnames=regexp(names,<span class="string">'.*wav$'</span>,<span class="string">'match'</span>);
+0007 ind=~cellfun(<span class="string">'isempty'</span>,wavnames);
+0008 wavnames=wavnames(ind);
+0009 segnames=regexp(names,<span class="string">'.*wav.seg.txt$'</span>,<span class="string">'match'</span>);
+0010 ind=~cellfun(<span class="string">'isempty'</span>,segnames);
+0011 segnames=segnames(ind);
+0012 
+0013 nwaves=length(wavnames);
+0014 
+0015 movingwin=[0.01 0.005];
+0016 params.tapers=[2 3]; params.pad=1; params.Fs=44100; params.fpass=[5000 20000];
+0017 <span class="keyword">for</span> i=1:nwaves, 
+0018     data=wavread(wavnames{i}{1});
+0019     [Feat S t f]= <a href="acoustic_features_MB.html" class="code" title="function [Feat,S,t,f]=acoustic_features_MB(data,movingwin,params)">acoustic_features_MB</a>(data,movingwin,params);
+0020     sname=[wavnames{i}{1} <span class="string">'.sp'</span>];
+0021     save(char(sname),<span class="string">'S'</span>,<span class="string">'t'</span>,<span class="string">'f'</span>,<span class="string">'Feat'</span>,<span class="string">'-mat'</span>);
+0022 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

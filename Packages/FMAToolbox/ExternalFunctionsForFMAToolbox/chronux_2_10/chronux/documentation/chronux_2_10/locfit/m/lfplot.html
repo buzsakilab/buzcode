@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of lfplot</title>
+  <meta name="keywords" content="lfplot">
+  <meta name="description" content="Plot (for one or two dimensions) a locfit() fit.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>lfplot
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Plot (for one or two dimensions) a locfit() fit.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function lfplot(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Plot (for one or two dimensions) a locfit() fit.
+
+ Usage:
+   fit = locfit(x,y);
+   lfplot(fit);
+
+ Plot the fitted smooth curve, and add a scatterplot of the data.
+
+ Required argument:
+   fit  (produced by locfit()).
+
+ Optional arguments:
+   'nodata'  - don't add data to plot.
+   'contour' - for 2-d predictors, use contour instead of surf.
+   'direct'  - fit directly, instead of using interpolation
+               (see the predict() function).
+   'what'    - locfit what argument ('coef', 'infl', 'vari', 'band' etc).
+   Any additional arguments are passed to Matlab's plot(), contour()
+     or surf() function as appropriate.
+
+ To add confidence bands, use the lfband() function.
+
+ Author: Catherine Loader.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="invlink.html" class="code" title="function y0 = invlink(y,fali)">invlink</a>	inverse link function for locfit.</li><li><a href="lfmarg.html" class="code" title="function xfit = lfmarg(fit)">lfmarg</a>	computes grid margins from a locfit object, used for plotting.</li><li><a href="plotbyfactor.html" class="code" title="function plotbyfactor(x,y,f)">plotbyfactor</a>	</li><li><a href="predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>	Interpolate a fit produced by locfit().</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/Book/fig11_1.html" class="code" title="">fig11_1</a>	Local Regression and Likelihood, Figure 11.1</li><li><a href="../../../chronux_2_10/locfit/Book/fig11_4.html" class="code" title="">fig11_4</a>	Local Regression and Likelihood, Figure 11.4.</li><li><a href="../../../chronux_2_10/locfit/Book/fig11_5.html" class="code" title="">fig11_5</a>	Local Regression and Likelihood, Figure 11.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig1_1.html" class="code" title="">fig1_1</a>	Local Regression and Likelihood, Figure 1.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_2.html" class="code" title="">fig2_2</a>	Local Regression and Likelihood, Figure 2.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_3.html" class="code" title="">fig2_3</a>	Local Regression and Likelihood, Figure 2.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_4.html" class="code" title="">fig2_4</a>	Local Regression and Likelihood, Figure 2.4.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_5.html" class="code" title="">fig2_5</a>	Local Regression and Likelihood, Figure 2.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_6.html" class="code" title="">fig2_6</a>	Local Regression and Likelihood, Figure 2.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig3_1.html" class="code" title="">fig3_1</a>	Local Regression and Likelihood, Figure 3.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig4_1.html" class="code" title="">fig4_1</a>	Local Regression and Likelihood, Figure 4.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig4_2.html" class="code" title="">fig4_2</a>	Local Regression and Likelihood, Figure 4.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_1.html" class="code" title="">fig5_1</a>	Local Regression and Likelihood, Figure 5.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_2.html" class="code" title="">fig5_2</a>	Local Regression and Likelihood, Figure 5.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_3.html" class="code" title="">fig5_3</a>	Local Regression and Likelihood, Figure 5.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_4.html" class="code" title="">fig5_4</a>	Local Regression and Likelihood, Figure 5.4.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_5.html" class="code" title="">fig5_5</a>	Local Regression and Likelihood, Figure 5.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_2.html" class="code" title="">fig6_2</a>	Local Regression and Likelihood, Figure 6.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_3.html" class="code" title="">fig6_3</a>	Local Regression and Likelihood, Figure 6.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_5.html" class="code" title="">fig6_5</a>	Local Regression and Likelihood, Figure 6.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_7.html" class="code" title="">fig6_7</a>	Local Regression and Likelihood, Figure 6.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_1.html" class="code" title="">fig7_1</a>	Local Regression and Likelihood, Figure 7.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_2.html" class="code" title="">fig7_2</a>	Local Regression and Likelihood, Figure 7.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_3.html" class="code" title="">fig7_3</a>	Local Regression and Likelihood, Figure 7.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_4.html" class="code" title="">fig7_4</a>	Local Regression and Likelihood, Figure 7.4.</li><li><a href="../../../chronux_2_10/locfit/Book/fig8_1.html" class="code" title="">fig8_1</a>	Local Regression and Likelihood, Figure 8.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig8_3.html" class="code" title="">fig8_3</a>	Local Regression and Likelihood, Figure 8.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig9_2.html" class="code" title="">fig9_2</a>	Local Regression and Likelihood, Figure 9.2.</li><li><a href="../../../chronux_2_10/locfit/Neuro/lfex1.html" class="code" title="">lfex1</a>	Local Estimation a spike firing rate (in spikes per unit time).</li><li><a href="../../../chronux_2_10/locfit/Neuro/lfex2.html" class="code" title="">lfex2</a>	Model the success probability of successive trials of a monkey</li><li><a href="lfgui.html" class="code" title="function varargout = lfgui(varargin)">lfgui</a>	LFGUI M-file for lfgui.fig</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/den_jack.html" class="code" title="function [m,ll,ul,llj,ulj]=den_jack(X,family,varargin)">den_jack</a>	Function to compute smooth estimates of the mean of x using locfit,</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function lfplot(varargin)</a>
+0002  
+0003 <span class="comment">% Plot (for one or two dimensions) a locfit() fit.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Usage:</span>
+0006 <span class="comment">%   fit = locfit(x,y);</span>
+0007 <span class="comment">%   lfplot(fit);</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Plot the fitted smooth curve, and add a scatterplot of the data.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Required argument:</span>
+0012 <span class="comment">%   fit  (produced by locfit()).</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Optional arguments:</span>
+0015 <span class="comment">%   'nodata'  - don't add data to plot.</span>
+0016 <span class="comment">%   'contour' - for 2-d predictors, use contour instead of surf.</span>
+0017 <span class="comment">%   'direct'  - fit directly, instead of using interpolation</span>
+0018 <span class="comment">%               (see the predict() function).</span>
+0019 <span class="comment">%   'what'    - locfit what argument ('coef', 'infl', 'vari', 'band' etc).</span>
+0020 <span class="comment">%   Any additional arguments are passed to Matlab's plot(), contour()</span>
+0021 <span class="comment">%     or surf() function as appropriate.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% To add confidence bands, use the lfband() function.</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% Author: Catherine Loader.</span>
+0026 
+0027 fit = varargin{1};
+0028 data = fit.data;
+0029 xdata = data.x;
+0030 n = size(xdata,1);
+0031 d = size(xdata,2);
+0032 fali = fit.fit_points.family_link;
+0033 ydata = data.y;
+0034 wdata = data.weights;
+0035 cdata = data.censor;
+0036 <span class="keyword">if</span> (length(cdata)==1) cdata = zeros(n,1); <span class="keyword">end</span>;
+0037 showdata = (fit.evaluation_structure.derivative==0);
+0038 ppargs = {};
+0039 plotargs = {};
+0040 
+0041 type = <span class="string">'s'</span>;
+0042 na = 2;
+0043 <span class="keyword">while</span> na &lt;= length(varargin)
+0044   inc = 0;
+0045   <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'contour'</span>))
+0046     type = <span class="string">'c'</span>;
+0047     inc = 1;
+0048   <span class="keyword">end</span>;
+0049   <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'what'</span>))
+0050     ppargs = {ppargs{:}, <span class="string">'what'</span>, varargin{na+1}};
+0051     showdata = 0;
+0052     inc = 2;
+0053   <span class="keyword">end</span>;
+0054   <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'nodata'</span>))
+0055     showdata = 0;
+0056     inc = 1;
+0057   <span class="keyword">end</span>;
+0058   <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'direct'</span>))
+0059     ppargs = {ppargs{:} <span class="string">'direct'</span>};
+0060     inc = 1;
+0061   <span class="keyword">end</span>;
+0062   <span class="keyword">if</span> (inc==0)
+0063     plotargs = {plotargs{:} varargin{na}};
+0064     inc = 1;
+0065   <span class="keyword">end</span>;
+0066   na = na+inc;
+0067 <span class="keyword">end</span>;
+0068 
+0069 xfit = <a href="lfmarg.html" class="code" title="function xfit = lfmarg(fit)">lfmarg</a>(fit);
+0070 yfit = <a href="predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit,xfit,ppargs{:});
+0071 yfit = <a href="invlink.html" class="code" title="function y0 = invlink(y,fali)">invlink</a>(yfit,fali);
+0072 fam = mod(fali(1),64);
+0073 <span class="keyword">if</span> (fam&gt;4)
+0074   ydata = ydata ./ wdata;
+0075 <span class="keyword">end</span>;
+0076 
+0077 <span class="keyword">if</span> (d==1)
+0078   plot(xfit{1},yfit,plotargs{:});
+0079   <span class="keyword">if</span> (showdata)
+0080     hold on;
+0081     <span class="keyword">if</span> (length(ydata)==1) ydata = zeros(n,1); <span class="keyword">end</span>;
+0082     <a href="plotbyfactor.html" class="code" title="function plotbyfactor(x,y,f)">plotbyfactor</a>(xdata,ydata,cdata);
+0083     hold off;
+0084   <span class="keyword">end</span>;
+0085 <span class="keyword">end</span>;
+0086 
+0087 <span class="keyword">if</span> (d==2)
+0088   x1 = xfit{1};
+0089   x2 = xfit{2};
+0090   yfit = reshape(yfit,length(x1),length(x2));
+0091   <span class="keyword">if</span> (type==<span class="string">'c'</span>)
+0092     [C h] = contour(x1,x2,yfit',plotargs{:});
+0093     clabel(C,h);
+0094     <span class="keyword">if</span> (showdata)
+0095       hold on;
+0096       <a href="plotbyfactor.html" class="code" title="function plotbyfactor(x,y,f)">plotbyfactor</a>(xdata(:,1),xdata(:,2),cdata);
+0097       hold off;
+0098     <span class="keyword">end</span>;
+0099   <span class="keyword">else</span>
+0100     surf(x1,x2,yfit',plotargs{:});
+0101   <span class="keyword">end</span>;
+0102 <span class="keyword">end</span>;
+0103 
+0104 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

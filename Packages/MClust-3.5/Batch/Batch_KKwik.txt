@@ -1,0 +1,38 @@
+%% Batch processing command file:
+%%
+%% Keywords start with a double dash and are not case sensitive: --Keyword
+%%
+%% Comments start with a % character and are ignored till end of line
+%% Each line starts exactly with one keyword and a list of values (if any)
+%%
+
+
+%% Filenames and Directories
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+--BeginGlobals
+  --ProcessingDirectory        .      
+  --FeatureDataDir 	       FD
+  --FindFilesSearchString      *.ntt			% batch process all files matching this search string
+            
+  --ClusterAlgorithm		KlustaKwik		% use BBClust or KlustaKwik
+  --LoadingEngine		LoadTT_NeuralynxNT	% replace with your LoadingEngine
+
+  --UseFeatures			Energy EnergyD1
+  --ExtraFeatures		Peak Valley
+
+  %--RemoveFromBatchList    	TT1.dat    	% blank separated list of filename.ext to be excluded
+  %--AddToBatchList   	    	TT1.dat	        % blank separated list of filename.ext to be included
+--EndGlobals
+
+--BeginDefaults                            	% defaults for all N-trode files unless overridden 
+  --ChannelValidity           1 1 1 1      	% 4 values: 1 for valid, 0 for invalid channels
+  --SubSampleToNSpikes        2000000   	% approx number of spikes to which files will be subsampled 
+  --KKwik_MinClusters 	      20
+  --KKwik_MaxClusters         30
+--EndDefaults
+
+
+%--File  TT1.dat                         %  override defaults for individual files
+%    --ChannelValidity         0 1 1 1  
+%    --KKwik_MinClusters       10
+%    --KKwik_MaxClusters       15

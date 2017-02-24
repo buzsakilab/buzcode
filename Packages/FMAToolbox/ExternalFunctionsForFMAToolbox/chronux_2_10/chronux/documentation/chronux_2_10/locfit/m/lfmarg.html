@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of lfmarg</title>
+  <meta name="keywords" content="lfmarg">
+  <meta name="description" content="computes grid margins from a locfit object, used for plotting.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>lfmarg
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>computes grid margins from a locfit object, used for plotting.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function xfit = lfmarg(fit) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> computes grid margins from a locfit object, used for plotting.
+ this function is called from lfplot and lfband, will not normally
+ be called directly by users.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/Book/fig6_1.html" class="code" title="">fig6_1</a>	Local Regression and Likelihood, Figure 6.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_5.html" class="code" title="">fig7_5</a>	Local Regression and Likelihood, Figure 7.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_6.html" class="code" title="">fig7_6</a>	Local Regression and Likelihood, Figure 7.6.</li><li><a href="lfband.html" class="code" title="function lfband(fit,varargin)">lfband</a>	adds confidence bands around the plot of a locfit() fit.</li><li><a href="lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/den_jack.html" class="code" title="function [m,ll,ul,llj,ulj]=den_jack(X,family,varargin)">den_jack</a>	Function to compute smooth estimates of the mean of x using locfit,</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function xfit = lfmarg(fit)</a>
+0002 
+0003 <span class="comment">% computes grid margins from a locfit object, used for plotting.</span>
+0004 <span class="comment">% this function is called from lfplot and lfband, will not normally</span>
+0005 <span class="comment">% be called directly by users.</span>
+0006 
+0007 box = fit.fit_points.fit_limits;
+0008 d = size(box,1);
+0009 xfit = cell(1,d);
+0010 mg = 10*ones(1,d);
+0011 <span class="keyword">if</span> (d==1) mg = 200; <span class="keyword">end</span>;
+0012 <span class="keyword">if</span> (d==2) mg = [51 50]; <span class="keyword">end</span>;
+0013 <span class="keyword">for</span> i=1:d
+0014     xfit{i} = box(i,1) + (box(i,2)-box(i,1))*(0:mg(i))'/mg(i);
+0015 <span class="keyword">end</span>;
+0016 
+0017 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

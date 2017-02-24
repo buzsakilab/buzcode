@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of shift</title>
+  <meta name="keywords" content="shift">
+  <meta name="description" content="Shifts intervalSet">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@intervalSet</a> &gt; shift.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @intervalSet&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>shift
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Shifts intervalSet</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function A = shift(O, shift, TimeUnits) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Shifts intervalSet
+      
+      USAGE:
+      A = shift(A, shift, TimeUnits) 
+      
+      INPUTS:
+      A - an intervalSet object
+      shift - the time to shift the intervalSet of
+      TimeUnits - the time units of shift</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="intervalSet.html" class="code" title="function O = intervalSet(varargin)">intervalSet</a>	Constructor for intervalSet objects</li><li><a href="shift.html" class="code" title="function A = shift(O, shift, TimeUnits)">shift</a>	Shifts intervalSet</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="cat.html" class="code" title="function R = cat(varargin)">cat</a>	Concatenates IntervalSet objects</li><li><a href="shift.html" class="code" title="function A = shift(O, shift, TimeUnits)">shift</a>	Shifts intervalSet</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function A = shift(O, shift, TimeUnits)</a>
+0002 
+0003 <span class="comment">%  Shifts intervalSet</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      A = shift(A, shift, TimeUnits)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      INPUTS:</span>
+0009 <span class="comment">%      A - an intervalSet object</span>
+0010 <span class="comment">%      shift - the time to shift the intervalSet of</span>
+0011 <span class="comment">%      TimeUnits - the time units of shift</span>
+0012 
+0013 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia</span>
+0014 <span class="comment">% This software is released under the GNU GPL</span>
+0015 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0016 
+0017   <span class="keyword">if</span> nargin &lt; 2 | nargin &gt; 3
+0018     error(<span class="string">'Call with two or three arguments'</span>);
+0019   <span class="keyword">end</span>
+0020   
+0021   <span class="keyword">if</span> nargin == 2
+0022     TimeUnits = time_units(<span class="string">'ts'</span>);
+0023   <span class="keyword">end</span>  
+0024   
+0025   cnvrt = convert(O.units, TimeUnits)
+0026   
+0027   <a href="shift.html" class="code" title="function A = shift(O, shift, TimeUnits)">shift</a> = <a href="shift.html" class="code" title="function A = shift(O, shift, TimeUnits)">shift</a> * cnvrt;
+0028   
+0029   A = <a href="intervalSet.html" class="code" title="function O = intervalSet(varargin)">intervalSet</a>(O.start + <a href="shift.html" class="code" title="function A = shift(O, shift, TimeUnits)">shift</a>, O.stop + <a href="shift.html" class="code" title="function A = shift(O, shift, TimeUnits)">shift</a>);
+0030   
+0031</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

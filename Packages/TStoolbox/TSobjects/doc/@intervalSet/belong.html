@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of belong</title>
+  <meta name="keywords" content="belong">
+  <meta name="description" content="Tells whether timestamps belong to a intervalSet">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@intervalSet</a> &gt; belong.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @intervalSet&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>belong
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Tells whether timestamps belong to a intervalSet</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function ok = belong(is,t) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Tells whether timestamps belong to a intervalSet
+      
+      USAGE:
+      ok = belong(is,t) 
+      
+      returns 1 if t belongs to the interval is, 0 otherwise
+      
+      INPUTS:
+      is - an interval set
+      t  - a time expressed in the same Time_Unit, or a vector of times
+      
+      OUTPUTS:
+      ok - a boolean variable, or a vector of booleans</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="End.html" class="code" title="function S = End(O, TimeUnits)">End</a>	Ending time of the intervalSet object</li><li><a href="Start.html" class="code" title="function S = Start(O, TimeUnits)">Start</a>	Starting times of for each interval in the set</li><li><a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>	Returns the length of each interval in the set</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function ok = belong(is,t)</a>
+0002 
+0003 <span class="comment">%  Tells whether timestamps belong to a intervalSet</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      ok = belong(is,t)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      returns 1 if t belongs to the interval is, 0 otherwise</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%      INPUTS:</span>
+0011 <span class="comment">%      is - an interval set</span>
+0012 <span class="comment">%      t  - a time expressed in the same Time_Unit, or a vector of times</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%      OUTPUTS:</span>
+0015 <span class="comment">%      ok - a boolean variable, or a vector of booleans</span>
+0016 
+0017 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia &amp; Adrien Peyrache</span>
+0018 <span class="comment">% This software is released under the GNU GPL</span>
+0019 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0020 
+0021   <span class="keyword">if</span> (size(t,1)~=1 &amp; size(t,2)~=1 ) | <a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(size(t))&gt;2
+0022     error(<span class="string">'t must be a vector'</span>);
+0023   <span class="keyword">end</span>  
+0024   st = <a href="Start.html" class="code" title="function S = Start(O, TimeUnits)">Start</a>(is);
+0025   en = <a href="End.html" class="code" title="function S = End(O, TimeUnits)">End</a>(is);
+0026 
+0027 
+0028   ok=zeros(size(t));
+0029   <span class="keyword">for</span> i=1:<a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(t)
+0030     <span class="keyword">for</span> j=1:<a href="length.html" class="code" title="function L = length(O, TimeUnits, varargin)">length</a>(st)
+0031        <span class="keyword">if</span> t(i)&gt;=st(j) &amp; t(i)&lt;=en(j)    
+0032         ok(i)=1;
+0033        <span class="keyword">end</span>
+0034     <span class="keyword">end</span>
+0035   <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

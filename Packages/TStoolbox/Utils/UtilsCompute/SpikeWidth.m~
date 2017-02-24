@@ -1,0 +1,44 @@
+function [p2v, hp,pkratio] = SpikeWidth(meanWaveF,Fs)
+
+% USAGE:
+%     [peak2val,halfPkWidth] = SpikeWidth(meanWaveF,Fs)
+% 
+% INPUT:
+%     meanWaveF: a N by M matrix of a single cell averaved waveforms from N
+%     electrodes , M samples
+%     Fs: sampling rate (in Hz)
+%     
+
+nbE = size(meanWaveF,1);
+if nbE>1
+    spkPow = sum(meanWaveF.^2,2);
+    [dummy,mxIx] = max(spkPow);
+    w = meanWaveF(mxIx,:);
+else
+    w = meanWaveF;
+end
+if ~any(isnan(w))
+        wu = w;
+    	wu = resample(wu,10,1);
+        nSamples = length(wu);
+
+    	t = [0:1/(Fs):(nSamples-1)/(Fs)]*1000;
+        [minVal,minPos] = min(wu);
+    	[maxVal1,maxPos1] = max(wu(1:minPos));
+       	[maxVal2,maxPos2] = max(wu(minPos+1:end));
+        maxPos2 = maxPos2+minPos;
+        pkratio = (maxPos2-maxPos1)/(maxPos2+maxPos1);
+        
+    	wun = wu/maxVal;
+        ix = match(0.2,wun(minPos+1:maxPos),0.05,1);
+    	if ~isempty(ix)
+          hp = t(maxPos)-t(maxPos-ix(1));
+    	  p2v = t(maxPos)-t(minPos);
+        end
+        
+
+else      
+    hp = 0;
+    p2v=0;
+end
+  

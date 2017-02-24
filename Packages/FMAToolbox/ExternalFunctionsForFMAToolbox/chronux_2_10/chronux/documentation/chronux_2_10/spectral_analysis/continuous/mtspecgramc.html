@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtspecgramc</title>
+  <meta name="keywords" content="mtspecgramc">
+  <meta name="description" content="Multi-taper time-frequency spectrum - continuous process">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>mtspecgramc
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper time-frequency spectrum - continuous process</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [S,t,f,Serr]=mtspecgramc(data,movingwin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper time-frequency spectrum - continuous process
+
+ Usage:
+ [S,t,f,Serr]=mtspecgramc(data,movingwin,params)
+ Input: 
+ Note units have to be consistent. Thus, if movingwin is in seconds, Fs
+ has to be in Hz. see chronux.m for more information.
+       data        (in form samples x channels/trials) -- required
+       movingwin         (in the form [window winstep] i.e length of moving
+                                                 window and step size)
+                                                 Note that units here have
+                                                 to be consistent with
+                                                 units of Fs - required
+       params: structure with fields tapers, pad, Fs, fpass, err, trialave
+       - optional
+           tapers : precalculated tapers from dpss or in the one of the following
+                    forms: 
+                    (1) A numeric vector [TW K] where TW is the
+                        time-bandwidth product and K is the number of
+                        tapers to be used (less than or equal to
+                        2TW-1). 
+                    (2) A numeric vector [W T p] where W is the
+                        bandwidth, T is the duration of the data and p 
+                        is an integer such that 2TW-p tapers are used. In
+                        this form there is no default i.e. to specify
+                        the bandwidth, you have to specify T and p as
+                        well. Note that the units of W and T have to be
+                        consistent: if W is in Hz, T must be in seconds
+                        and vice versa. Note that these units must also
+                        be consistent with the units of params.Fs: W can
+                        be in Hz if and only if params.Fs is in Hz.
+                        The default is to use form 1 with TW=3 and K=5
+                     Note that T has to be equal to movingwin(1).
+
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+           Fs   (sampling frequency) - optional. Default 1.
+           fpass    (frequency band to be used in the calculation in the form
+                                   [fmin fmax])- optional. 
+                                   Default all frequencies between 0 and Fs/2
+           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars
+                                   [0 p] or 0 - no error bars) - optional. Default 0.
+           trialave (average over trials/channels when 1, don't average when 0) - optional. Default 0
+ Output:
+       S       (spectrum in form time x frequency x channels/trials if trialave=0; 
+               in the form time x frequency if trialave=1)
+       t       (times)
+       f       (frequencies)
+       Serr    (error bars) only for err(1)&gt;=1</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>	Multi-taper spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>	Helper function that gets the frequency grid associated with a given fft based computation</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="mtspecgramtrigc.html" class="code" title="function [S,t,f,Serr]=mtspecgramtrigc(data,E,win,movingwin,params)">mtspecgramtrigc</a>	Multi-taper event triggered time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/specscope/specscope.html" class="code" title="function outdata=specscope(indata)">specscope</a>	record and plot audio spectrogram</li><li><a href="../../../chronux_2_10/spectral_analysis/specscope/specscopepp.html" class="code" title="function outdata=specscopepp(indata)">specscopepp</a>	</li><li><a href="../../../chronux_2_10/test/testscript.html" class="code" title="">testscript</a>	function testscript(pname,direction,movingwin,segave,params,fscorr)</li><li><a href="../../../chronux_2_10/test/testspecgram.html" class="code" title="function testspecgram(data)">testspecgram</a>	cd 'C:\Documents and Settings\Admin\Desktop\';</li><li><a href="../../../chronux_2_10/wave_browser/acoustic_features_MB.html" class="code" title="function [Feat,S,t,f]=acoustic_features_MB(data,movingwin,params)">acoustic_features_MB</a>	Usage:</li><li><a href="../../../chronux_2_10/wave_browser/classify_spectra.html" class="code" title="function varargout = classify_spectra(varargin)">classify_spectra</a>	CLASSIFY_SPECTRA M-file for classify_spectra.fig</li><li><a href="../../../chronux_2_10/wave_browser/wave_browser.html" class="code" title="function varargout = wave_browser(varargin)">wave_browser</a>	WAVE_BROWSER M-file for wave_browser.fig</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)</a>
+0002 <span class="comment">% Multi-taper time-frequency spectrum - continuous process</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage:</span>
+0005 <span class="comment">% [S,t,f,Serr]=mtspecgramc(data,movingwin,params)</span>
+0006 <span class="comment">% Input:</span>
+0007 <span class="comment">% Note units have to be consistent. Thus, if movingwin is in seconds, Fs</span>
+0008 <span class="comment">% has to be in Hz. see chronux.m for more information.</span>
+0009 <span class="comment">%       data        (in form samples x channels/trials) -- required</span>
+0010 <span class="comment">%       movingwin         (in the form [window winstep] i.e length of moving</span>
+0011 <span class="comment">%                                                 window and step size)</span>
+0012 <span class="comment">%                                                 Note that units here have</span>
+0013 <span class="comment">%                                                 to be consistent with</span>
+0014 <span class="comment">%                                                 units of Fs - required</span>
+0015 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass, err, trialave</span>
+0016 <span class="comment">%       - optional</span>
+0017 <span class="comment">%           tapers : precalculated tapers from dpss or in the one of the following</span>
+0018 <span class="comment">%                    forms:</span>
+0019 <span class="comment">%                    (1) A numeric vector [TW K] where TW is the</span>
+0020 <span class="comment">%                        time-bandwidth product and K is the number of</span>
+0021 <span class="comment">%                        tapers to be used (less than or equal to</span>
+0022 <span class="comment">%                        2TW-1).</span>
+0023 <span class="comment">%                    (2) A numeric vector [W T p] where W is the</span>
+0024 <span class="comment">%                        bandwidth, T is the duration of the data and p</span>
+0025 <span class="comment">%                        is an integer such that 2TW-p tapers are used. In</span>
+0026 <span class="comment">%                        this form there is no default i.e. to specify</span>
+0027 <span class="comment">%                        the bandwidth, you have to specify T and p as</span>
+0028 <span class="comment">%                        well. Note that the units of W and T have to be</span>
+0029 <span class="comment">%                        consistent: if W is in Hz, T must be in seconds</span>
+0030 <span class="comment">%                        and vice versa. Note that these units must also</span>
+0031 <span class="comment">%                        be consistent with the units of params.Fs: W can</span>
+0032 <span class="comment">%                        be in Hz if and only if params.Fs is in Hz.</span>
+0033 <span class="comment">%                        The default is to use form 1 with TW=3 and K=5</span>
+0034 <span class="comment">%                     Note that T has to be equal to movingwin(1).</span>
+0035 <span class="comment">%</span>
+0036 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0037 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0038 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0039 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0040 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0041 <span class="comment">%                       Defaults to 0.</span>
+0042 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0043 <span class="comment">%           fpass    (frequency band to be used in the calculation in the form</span>
+0044 <span class="comment">%                                   [fmin fmax])- optional.</span>
+0045 <span class="comment">%                                   Default all frequencies between 0 and Fs/2</span>
+0046 <span class="comment">%           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars</span>
+0047 <span class="comment">%                                   [0 p] or 0 - no error bars) - optional. Default 0.</span>
+0048 <span class="comment">%           trialave (average over trials/channels when 1, don't average when 0) - optional. Default 0</span>
+0049 <span class="comment">% Output:</span>
+0050 <span class="comment">%       S       (spectrum in form time x frequency x channels/trials if trialave=0;</span>
+0051 <span class="comment">%               in the form time x frequency if trialave=1)</span>
+0052 <span class="comment">%       t       (times)</span>
+0053 <span class="comment">%       f       (frequencies)</span>
+0054 <span class="comment">%       Serr    (error bars) only for err(1)&gt;=1</span>
+0055 
+0056 <span class="keyword">if</span> nargin &lt; 2; error(<span class="string">'Need data and window parameters'</span>); <span class="keyword">end</span>;
+0057 <span class="keyword">if</span> nargin &lt; 3; params=[]; <span class="keyword">end</span>;
+0058 
+0059 [tapers,pad,Fs,fpass,err,trialave,params]=<a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params);
+0060 <span class="keyword">if</span> length(params.tapers)==3 &amp; movingwin(1)~=params.tapers(2);
+0061     error(<span class="string">'Duration of data in params.tapers is inconsistent with movingwin(1), modify params.tapers(2) to proceed'</span>)
+0062 <span class="keyword">end</span>
+0063 
+0064 <span class="keyword">if</span> nargout &gt; 3 &amp;&amp; err(1)==0; 
+0065 <span class="comment">%   Cannot compute error bars with err(1)=0. change params and run again.</span>
+0066     error(<span class="string">'When Serr is desired, err(1) has to be non-zero.'</span>);
+0067 <span class="keyword">end</span>;
+0068 data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data);
+0069 [N,Ch]=size(data);
+0070 Nwin=round(Fs*movingwin(1)); <span class="comment">% number of samples in window</span>
+0071 Nstep=round(movingwin(2)*Fs); <span class="comment">% number of samples to step through</span>
+0072 nfft=max(2^(nextpow2(Nwin)+pad),Nwin);
+0073 f=<a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>(Fs,nfft,fpass); Nf=length(f);
+0074 params.tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(tapers,Nwin,Fs); <span class="comment">% check tapers</span>
+0075 
+0076 winstart=1:Nstep:N-Nwin+1;
+0077 nw=length(winstart); 
+0078 
+0079 <span class="keyword">if</span> trialave
+0080     S = zeros(nw,Nf);
+0081     <span class="keyword">if</span> nargout==4; Serr=zeros(2,nw,Nf); <span class="keyword">end</span>;
+0082 <span class="keyword">else</span>
+0083     S = zeros(nw,Nf,Ch);
+0084     <span class="keyword">if</span> nargout==4; Serr=zeros(2,nw,Nf,Ch); <span class="keyword">end</span>;
+0085 <span class="keyword">end</span>
+0086 
+0087 <span class="keyword">for</span> n=1:nw;
+0088    indx=winstart(n):winstart(n)+Nwin-1;
+0089    datawin=data(indx,:);
+0090    <span class="keyword">if</span> nargout==4
+0091      [s,f,serr]=<a href="mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>(datawin,params);
+0092      Serr(1,n,:,:)=squeeze(serr(1,:,:));
+0093      Serr(2,n,:,:)=squeeze(serr(2,:,:));
+0094    <span class="keyword">else</span>
+0095      [s,f]=<a href="mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>(datawin,params);
+0096    <span class="keyword">end</span>
+0097    S(n,:,:)=s;
+0098 <span class="keyword">end</span>;
+0099 S=squeeze(S); 
+0100 <span class="keyword">if</span> nargout==4;Serr=squeeze(Serr);<span class="keyword">end</span>;
+0101 winmid=winstart+round(Nwin/2);
+0102 t=winmid/Fs;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

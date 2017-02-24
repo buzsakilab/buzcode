@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of tsd</title>
+  <meta name="keywords" content="tsd">
+  <meta name="description" content="Constructor of TSD object">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; tsd.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>tsd
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Constructor of TSD object</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function tsa = tsd(t, Data, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Constructor of TSD object
+  
+      USAGE:
+      tsa = tsd(t,data, 'optionName1', optionValue1,... )
+  
+  tsd is a class of &quot;timestamped arrays&quot;
+  composed of an array of timestamp (column vector), and an array of data
+  associated to each timestamp (first index corresponding to time).
+  data maybe empty, for 0-dimensional data (for example ts
+  data). Othewise first dimension must be same as length of timestamp
+  vector
+  timestamps are assumed to be sorted. If this is not the case, the
+  constructor failes, unless the fixOrder option is set
+  options may include the following:
+  'TimeUnits' - the unit in which the time is expressed (defaults to
+           ts=1/10000s)
+  'DataUnits' - the unit in which data are expressed (for the moment same
+           for all the data) 
+  'fixOrder'    - if set to nonzero, constructor will reorder the timestamps,
+            in the case they are not sorted.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>	Returns Data of a TSD object</li><li><a href="Name.html" class="code" title="function n = Name(tsa)">Name</a>	Returns name propery of object</li><li><a href="length.html" class="code" title="function l = length(tsa)">length</a>	Returns number of elements in tsa (overoads length function)</li><li><a href="size.html" class="code" title="function sz = size(TSA)">size</a>	Return the size of the data component (overoad of the size function)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="CrossCorr.html" class="code" title="function Cr = CrossCorr(tsa, tsb, binsize, nbins, varargin)">CrossCorr</a>	Computes cross-correlation between TSD objects</li><li><a href="FindPeaks.html" class="code" title="function p = peaks(tsa, varargin)">FindPeaks</a>	Get peaks in data</li><li><a href="Restrict.html" class="code" title="function [R, il] = Restrict(tsa, varargin)">Restrict</a>	Restrict TSD to a new timestamp</li><li><a href="abs.html" class="code" title="function a = abs(tsa)">abs</a>	Absolute value of the data</li><li><a href="cat.html" class="code" title="function tsdOUT = cat(varargin)">cat</a>	Concatenation of TSD objects</li><li><a href="classify.html" class="code" title="function [tout, N] = classify(tsa, is, col)">classify</a>	Breaks a TSD object in many tsds according to the value of data</li><li><a href="find.html" class="code" title="function O = find(tsa, find_string)">find</a>	Selects points in a TSD object based on conditions</li><li><a href="horzcat.html" class="code" title="function s = horzcat(a, b, varargin)">horzcat</a>	Horizontal concatenation of TSDs (overload of the [a, b] operator)</li><li><a href="instantRate.html" class="code" title="function ir = instantRate(tsa, TimeUnits)">instantRate</a>	Computes instantaneous rate as the inverse of inter-event interval</li><li><a href="interp_missing.html" class="code" title="function tsi = interp_missing(tsa, TimeUnits, varargin)">interp_missing</a>	Interpolate missing values in continuously sampled tsd</li><li><a href="intervalCount.html" class="code" title="function ic = intervalCount(tsa, is, varargin)">intervalCount</a>	Counts instances of tsa in each subset of an interval</li><li><a href="intervalFun.html" class="code" title="function im = intervalFun(tsa, is, func, varargin)">intervalFun</a>	im = intervalFun(tsa, is, func, options) computes mean of tsa data in each of the intervals in isw</li><li><a href="intervalMean.html" class="code" title="function im = intervalMean(tsa, is, varargin)">intervalMean</a>	Computes mean of of data in each of subset of a given interval</li><li><a href="intervalRate.html" class="code" title="function ic = intervalRate(tsa, is, TimeUnits, varargin)">intervalRate</a>	Returns rates of a TSD in each subset of an interval</li><li><a href="intervalSplit.html" class="code" title="function S = intervalSplit(tsa, is, varargin);">intervalSplit</a>	Returns a cell array of tsd object, one for each subset of a given interval</li><li><a href="max.html" class="code" title="function maxTsd = max(tsa,is)">max</a>	Returns the maximal value(s) and time(s) of a TSD object (overoads the max function)</li><li><a href="mean.html" class="code" title="function m = mean(tsa,epoch)">mean</a>	</li><li><a href="minus.html" class="code" title="function s = minus(a,b)">minus</a>	Overload of the - operator</li><li><a href="peaks.html" class="code" title="function p = peaks(tsa, varargin)">peaks</a>	Get peaks in data</li><li><a href="plus.html" class="code" title="function s = plus(a,b)">plus</a>	Overload of the + operator</li><li><a href="rdivide.html" class="code" title="function s = rdivide(a,b)">rdivide</a>	Overload of the ./ operator for two tsd objects</li><li><a href="realign.html" class="code" title="function O = realign(tsa, varargin)">realign</a>	Realign timestamps</li><li><a href="smooth.html" class="code" title="function S = smooth(tsa, l, varargin)">smooth</a>	Smooth a TSD</li><li><a href="subset.html" class="code" title="function tss = subset(tsa, ix);">subset</a>	Returns tsd of a subset of input</li><li><a href="threshold.html" class="code" title="function t = threshold(tsa, thr, varargin)">threshold</a>	Threshold crossings</li><li><a href="timeDeriv.html" class="code" title="function S = timeDeriv(tsa, varargin)">timeDeriv</a>	TimeDerivative of a tsd</li><li><a href="times.html" class="code" title="function s = times(a,b)">times</a>	Overload of the .* operator</li><li><a href="triggeredMeanData.html" class="code" title="function [tmd] = triggeredMeanData(tsa, events, tmax, varargin)">triggeredMeanData</a>	Event-triggered mean  of the Data component, triggered on events (TODO)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function tsa = tsd(t, Data, varargin)</a>
+0002   
+0003 <span class="comment">% Constructor of TSD object</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      tsa = tsd(t,data, 'optionName1', optionValue1,... )</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%  tsd is a class of &quot;timestamped arrays&quot;</span>
+0009 <span class="comment">%  composed of an array of timestamp (column vector), and an array of data</span>
+0010 <span class="comment">%  associated to each timestamp (first index corresponding to time).</span>
+0011 <span class="comment">%  data maybe empty, for 0-dimensional data (for example ts</span>
+0012 <span class="comment">%  data). Othewise first dimension must be same as length of timestamp</span>
+0013 <span class="comment">%  vector</span>
+0014 <span class="comment">%  timestamps are assumed to be sorted. If this is not the case, the</span>
+0015 <span class="comment">%  constructor failes, unless the fixOrder option is set</span>
+0016 <span class="comment">%  options may include the following:</span>
+0017 <span class="comment">%  'TimeUnits' - the unit in which the time is expressed (defaults to</span>
+0018 <span class="comment">%           ts=1/10000s)</span>
+0019 <span class="comment">%  'DataUnits' - the unit in which data are expressed (for the moment same</span>
+0020 <span class="comment">%           for all the data)</span>
+0021 <span class="comment">%  'fixOrder'    - if set to nonzero, constructor will reorder the timestamps,</span>
+0022 <span class="comment">%            in the case they are not sorted.</span>
+0023 
+0024 <span class="comment">% ADR</span>
+0025 <span class="comment">% version L4.0</span>
+0026 <span class="comment">% status: PROMOTED</span>
+0027 
+0028 <span class="comment">% version by Francesco P. Battaglia 2004</span>
+0029   
+0030 
+0031 <span class="keyword">if</span> nargin == 0
+0032  tsa.time_unit = time_units(<span class="string">'ts'</span>);
+0033  tsa.data_unit = units(<span class="string">'none'</span>,<span class="string">'none'</span>);
+0034  tsa.t = NaN;
+0035  tsa.data = NaN;
+0036  tsa.name = <span class="string">''</span>;
+0037  tsa = class(tsa, <span class="string">'tsd'</span>);
+0038  <span class="keyword">return</span>
+0039 <span class="keyword">end</span> 
+0040 
+0041 
+0042 <span class="keyword">if</span> nargin &lt; 2
+0043   error(<span class="string">'tsd constructor must be called with T, Data'</span>);
+0044 <span class="keyword">end</span>
+0045 
+0046 
+0047 <span class="comment">% default option values</span>
+0048 fixOrder = 0;
+0049 
+0050 
+0051 defined_options = <span class="keyword">...</span>
+0052     dictArray({ { <span class="string">'TimeUnits'</span>, { time_units(<span class="string">'ts'</span>), {<span class="string">'units'</span>, <span class="string">'char'</span> } } }, 
+0053         { <span class="string">'DataUnits'</span>, { units(<span class="string">'none'</span>, <span class="string">'none'</span>), { <span class="string">'units'</span> } } },
+0054         { <span class="string">'fixOrder'</span>, { 0, { <span class="string">'numeric'</span> } } },
+0055         { <span class="string">'keepUnordered'</span>, { 0, { <span class="string">'numeric'</span> } } },
+0056             { <span class="string">'Name'</span>, { <span class="string">''</span>, { <span class="string">'char'</span> } } } } );     
+0057 
+0058 opt_varargin = varargin;
+0059 
+0060 getOpt;
+0061 
+0062           
+0063 tsa.time_unit = time_units(TimeUnits);
+0064 tsa.data_unit = DataUnits;
+0065 
+0066 
+0067 <span class="keyword">if</span> isempty(t)
+0068   t = zeros(0,1);
+0069 <span class="keyword">end</span>
+0070 
+0071   
+0072 <span class="keyword">if</span> all(<a href="size.html" class="code" title="function sz = size(TSA)">size</a>(t) ~= 1) 
+0073   error(<span class="string">'t must b row or column error'</span>);
+0074 <span class="keyword">end</span>
+0075 
+0076 <span class="keyword">if</span> <a href="size.html" class="code" title="function sz = size(TSA)">size</a>(<a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>, 1) ~= <a href="length.html" class="code" title="function l = length(tsa)">length</a>(t) &amp; (~isempty(<a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>))
+0077   error(<span class="string">'Data must be N x X x Y x ..., where N is length(t), or empty'</span>);
+0078 <span class="keyword">end</span>
+0079 
+0080 
+0081 t = t(:);
+0082 
+0083 <span class="keyword">if</span> any(diff(t) &lt; 0)
+0084   <span class="keyword">if</span> fixOrder
+0085     [t, ix] = sort(t);
+0086     <a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a> = SelectAlongFirstDimension(<a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>, ix);
+0087   <span class="keyword">elseif</span> ~keepUnordered
+0088     error(<span class="string">'timestamps are not sorted!'</span>);
+0089   <span class="keyword">end</span>
+0090 <span class="keyword">end</span>
+0091 
+0092 
+0093 
+0094 
+0095 tsa.t = t;
+0096 tsa.data = <a href="Data.html" class="code" title="function v = Data(tsa, ix)">Data</a>;
+0097 tsa.name = <a href="Name.html" class="code" title="function n = Name(tsa)">Name</a>;
+0098 tsa = class(tsa, <span class="string">'tsd'</span>);
+0099</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

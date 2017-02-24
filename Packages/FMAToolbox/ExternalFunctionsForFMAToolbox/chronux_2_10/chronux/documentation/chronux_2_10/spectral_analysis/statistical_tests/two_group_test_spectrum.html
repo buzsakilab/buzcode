@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of two_group_test_spectrum</title>
+  <meta name="keywords" content="two_group_test_spectrum">
+  <meta name="description" content="function [dz,vdz,Adz]=two_group_test_spectrum(J1,J2,p,plt,f)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html statistical_tests -->
+<h1>two_group_test_spectrum
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [dz,vdz,Adz]=two_group_test_spectrum(J1,J2,p,plt,f)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [dz,vdz,Adz]=two_group_test_spectrum(J1,J2,p,plt,f) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> function [dz,vdz,Adz]=two_group_test_spectrum(J1,J2,p,plt,f)
+ Test the null hypothesis (H0) that data sets J1, J2 in 
+ two conditions c1,c2 have equal population spectrum
+
+ Usage:
+ [dz,vdz,Adz]=two_sample_test_spectrum(J1,J2,p)
+
+ Inputs:
+ J1   tapered fourier transform in condition 1
+ J2   tapered fourier transform in condition 2
+ p      p value for test (default: 0.05)
+ plt    'y' for plot and 'n' for no plot
+ f      frequencies (useful for plotting)
+
+
+ Dimensions: J1: frequencies x number of samples in condition 1
+             J2: frequencies x number of samples in condition 2
+              number of samples = number of trials x number of tapers
+ Outputs:
+ dz    test statistic (will be distributed as N(0,1) under H0
+ vdz   Arvesen estimate of the variance of dz
+ Adz   1/0 for accept/reject null hypothesis of equal population
+       coherences based dz ~ N(0,1)
+ 
+ 
+ Note: all outputs are functions of frequency
+
+ References: Arvesen, Jackkknifing U-statistics, Annals of Mathematical
+ Statisitics, vol 40, no. 6, pg 2076-2100 (1969)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dz,vdz,Adz]=two_group_test_spectrum(J1,J2,p,plt,f)</a>
+0002 <span class="comment">% function [dz,vdz,Adz]=two_group_test_spectrum(J1,J2,p,plt,f)</span>
+0003 <span class="comment">% Test the null hypothesis (H0) that data sets J1, J2 in</span>
+0004 <span class="comment">% two conditions c1,c2 have equal population spectrum</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Usage:</span>
+0007 <span class="comment">% [dz,vdz,Adz]=two_sample_test_spectrum(J1,J2,p)</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Inputs:</span>
+0010 <span class="comment">% J1   tapered fourier transform in condition 1</span>
+0011 <span class="comment">% J2   tapered fourier transform in condition 2</span>
+0012 <span class="comment">% p      p value for test (default: 0.05)</span>
+0013 <span class="comment">% plt    'y' for plot and 'n' for no plot</span>
+0014 <span class="comment">% f      frequencies (useful for plotting)</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Dimensions: J1: frequencies x number of samples in condition 1</span>
+0018 <span class="comment">%             J2: frequencies x number of samples in condition 2</span>
+0019 <span class="comment">%              number of samples = number of trials x number of tapers</span>
+0020 <span class="comment">% Outputs:</span>
+0021 <span class="comment">% dz    test statistic (will be distributed as N(0,1) under H0</span>
+0022 <span class="comment">% vdz   Arvesen estimate of the variance of dz</span>
+0023 <span class="comment">% Adz   1/0 for accept/reject null hypothesis of equal population</span>
+0024 <span class="comment">%       coherences based dz ~ N(0,1)</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% Note: all outputs are functions of frequency</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% References: Arvesen, Jackkknifing U-statistics, Annals of Mathematical</span>
+0030 <span class="comment">% Statisitics, vol 40, no. 6, pg 2076-2100 (1969)</span>
+0031 
+0032 <span class="keyword">if</span> nargin &lt; 2; error(<span class="string">'Need four sets of Fourier transforms'</span>); <span class="keyword">end</span>;
+0033 <span class="keyword">if</span> nargin &lt; 4 || isempty(plt); plt=<span class="string">'n'</span>; <span class="keyword">end</span>;
+0034 <span class="comment">%</span>
+0035 <span class="comment">% Test for matching dimensionalities</span>
+0036 <span class="comment">%</span>
+0037 m1=size(J1,2); <span class="comment">% number of samples, condition 1</span>
+0038 m2=size(J2,2); <span class="comment">% number of samples, condition 2</span>
+0039 dof1=m1; <span class="comment">% degrees of freedom, condition 1</span>
+0040 dof2=m2; <span class="comment">% degrees of freedom, condition 2</span>
+0041 <span class="keyword">if</span> nargin &lt; 5 || isempty(f); f=size(J1,1); <span class="keyword">end</span>;
+0042 <span class="keyword">if</span> nargin &lt; 3 || isempty(p); p=0.05; <span class="keyword">end</span>; <span class="comment">% set the default p value</span>
+0043 
+0044 <span class="comment">%</span>
+0045 <span class="comment">% Compute the individual condition spectra, coherences</span>
+0046 <span class="comment">%</span>
+0047 S1=conj(J1).*J1; <span class="comment">% spectrum, condition 1</span>
+0048 S2=conj(J2).*J2; <span class="comment">% spectrum, condition 2</span>
+0049 
+0050 Sm1=squeeze(mean(S1,2)); <span class="comment">% mean spectrum, condition 1</span>
+0051 Sm2=squeeze(mean(S2,2)); <span class="comment">% mean spectrum, condition 2</span>
+0052 <span class="comment">%</span>
+0053 <span class="comment">% Compute the statistic dz, and the probability of observing the value dz</span>
+0054 <span class="comment">% given an N(0,1) distribution i.e. under the null hypothesis</span>
+0055 <span class="comment">%</span>
+0056 bias1=psi(dof1)-log(dof1); bias2=psi(dof2)-log(dof2); <span class="comment">% bias from Thomson &amp; Chave</span>
+0057 var1=psi(1,dof1); var2=psi(1,dof2); <span class="comment">% variance from Thomson &amp; Chave</span>
+0058 z1=log(Sm1)-bias1; <span class="comment">% Bias-corrected Fisher z, condition 1</span>
+0059 z2=log(Sm2)-bias2; <span class="comment">% Bias-corrected Fisher z, condition 2</span>
+0060 dz=(z1-z2)/sqrt(var1+var2); <span class="comment">% z statistic</span>
+0061 
+0062 <span class="comment">% Bug fix</span>
+0063 <span class="comment">% pdz=normpdf(dz,0,1); % probability of observing value dz</span>
+0064 pdz = 2*normcdf(-abs(dz),0,1); <span class="comment">% probability of observing value dz</span>
+0065 
+0066 <span class="comment">%</span>
+0067 <span class="comment">% The remaining portion of the program computes Jackknife estimates of the mean (mdz) and variance (vdz) of dz</span>
+0068 <span class="comment">%</span>
+0069 samples1=[1:m1];
+0070 samples2=[1:m2];
+0071 <span class="comment">%</span>
+0072 <span class="comment">% Leave one out of one sample</span>
+0073 <span class="comment">%</span>
+0074 bias11=psi(dof1-1)-log(dof1-1); var11=psi(1,dof1-1);
+0075 <span class="keyword">for</span> i=1:m1;
+0076     ikeep=setdiff(samples1,i); <span class="comment">% all samples except i</span>
+0077     Sm1=squeeze(mean(S1(:,ikeep),2)); <span class="comment">% 1 drop mean spectrum, data 1, condition 1</span>
+0078     z1i(:,i)=log(Sm1)-bias11; <span class="comment">% 1 drop, bias-corrected Fisher z, condition 1</span>
+0079     dz1i(:,i)=(z1i(:,i)-z2)/sqrt(var11+var2); <span class="comment">% 1 drop, z statistic, condition 1</span>
+0080     ps1(:,i)=m1*dz-(m1-1)*dz1i(:,i);
+0081 <span class="keyword">end</span>; 
+0082 ps1m=mean(ps1,2);
+0083 bias21=psi(dof2-1)-log(dof2-1); var21=psi(1,dof2-1);
+0084 <span class="keyword">for</span> j=1:m2;
+0085     jkeep=setdiff(samples2,j); <span class="comment">% all samples except j</span>
+0086     Sm2=squeeze(mean(S2(:,jkeep),2)); <span class="comment">% 1 drop mean spectrum, data 2, condition 2</span>
+0087     z2j(:,j)=log(Sm2)-bias21; <span class="comment">% 1 drop, bias-corrected Fisher z, condition 2</span>
+0088     dz2j(:,j)=(z1-z2j(:,j))/sqrt(var1+var21); <span class="comment">% 1 drop, z statistic, condition 2</span>
+0089     ps2(:,j)=m2*dz-(m2-1)*dz2j(:,j);
+0090 <span class="keyword">end</span>;
+0091 <span class="comment">%</span>
+0092 <span class="comment">% Leave one out, both samples</span>
+0093 <span class="comment">% and pseudo values</span>
+0094 <span class="comment">% for i=1:m1;</span>
+0095 <span class="comment">%     for j=1:m2;</span>
+0096 <span class="comment">%         dzij(:,i,j)=(z1i(:,i)-z2j(:,j))/sqrt(var11+var21);</span>
+0097 <span class="comment">%         dzpseudoval(:,i,j)=m1*m2*dz-(m1-1)*m2*dz1i(:,i)-m1*(m2-1)*dz2j(:,j)+(m1-1)*(m2-1)*dzij(:,i,j);</span>
+0098 <span class="comment">%     end;</span>
+0099 <span class="comment">% end;</span>
+0100 <span class="comment">%</span>
+0101 <span class="comment">% Jackknife mean and variance</span>
+0102 <span class="comment">%</span>
+0103 <span class="comment">% dzah=sum(sum(dzpseudoval,3),2)/(m1*m2);</span>
+0104 ps2m=mean(ps2,2);
+0105 <span class="comment">% dzar=(sum(ps1,2)+sum(ps2,2))/(m1+m2);</span>
+0106 vdz=sum((ps1-ps1m(:,ones(1,m1))).*(ps1-ps1m(:,ones(1,m1))),2)/(m1*(m1-1))+sum((ps2-ps2m(:,ones(1,m2))).*(ps2-ps2m(:,ones(1,m2))),2)/(m2*(m2-1));
+0107 <span class="comment">% vdzah=sum(sum((dzpseudoval-dzah(:,ones(1,m1),ones(1,m2))).*(dzpseudoval-dzah(:,ones(1,m1),ones(1,m2))),3),2)/(m1*m2);</span>
+0108 <span class="comment">%</span>
+0109 <span class="comment">% Test whether H0 is accepted at the specified p value</span>
+0110 <span class="comment">%</span>
+0111 Adz=zeros(size(dz));
+0112 x=norminv([p/2 1-p/2],0,1);
+0113 indx=find(dz&gt;=x(1) &amp; dz&lt;=x(2)); 
+0114 Adz(indx)=1;
+0115 
+0116 <span class="comment">% Adzar=zeros(size(dzar));</span>
+0117 <span class="comment">% indx=find(dzar&gt;=x(1) &amp; dzar&lt;=x(2));</span>
+0118 <span class="comment">% Adzar(indx)=1;</span>
+0119 <span class="comment">%</span>
+0120 <span class="comment">% Adzah=zeros(size(dzah));</span>
+0121 <span class="comment">% indx=find(dzah&gt;=x(1) &amp; dzah&lt;=x(2));</span>
+0122 <span class="comment">% Adzah(indx)=1;</span>
+0123 <span class="keyword">if</span> strcmp(plt,<span class="string">'y'</span>);
+0124     <span class="keyword">if</span> isempty(f) || nargin &lt; 5;
+0125         f=linspace(0,1,length(dz));
+0126     <span class="keyword">end</span>;
+0127     <span class="comment">%</span>
+0128     <span class="comment">% Compute the coherences</span>
+0129     <span class="comment">%</span>
+0130     S1=squeeze(mean(conj(J1).*J1,2));
+0131     S2=squeeze(mean(conj(J2).*J2,2));
+0132     <span class="comment">%</span>
+0133     <span class="comment">% Plot the coherence</span>
+0134     <span class="comment">%</span>
+0135     subplot(311); 
+0136     plot(f,S1,f,S2); legend(<span class="string">'Data 1'</span>,<span class="string">'Data 2'</span>);
+0137     set(gca,<span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'Fontsize'</span>, 16);
+0138     ylabel(<span class="string">'Spectra'</span>);
+0139     title(<span class="string">'Two group test for spectrum'</span>);
+0140     subplot(312);
+0141     plot(f,dz);
+0142     set(gca,<span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'Fontsize'</span>, 16);
+0143     ylabel(<span class="string">'Test statistic'</span>);
+0144     conf=norminv(1-p/2,0,1);
+0145     line(get(gca,<span class="string">'xlim'</span>),[conf conf]);
+0146     line(get(gca,<span class="string">'xlim'</span>),[-conf -conf]);
+0147     subplot(313);
+0148     plot(f,vdz);
+0149     set(gca,<span class="string">'FontName'</span>,<span class="string">'Times New Roman'</span>,<span class="string">'Fontsize'</span>, 16);
+0150     xlabel(<span class="string">'frequency'</span>); ylabel(<span class="string">'Jackknifed variance'</span>);
+0151 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

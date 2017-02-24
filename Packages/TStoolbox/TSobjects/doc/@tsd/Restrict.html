@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Restrict</title>
+  <meta name="keywords" content="Restrict">
+  <meta name="description" content="Restrict TSD to a new timestamp">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; Restrict.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>Restrict
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Restrict TSD to a new timestamp</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [R, il] = Restrict(tsa, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Restrict TSD to a new timestamp
+  
+  USAGE:
+ R = Restrict(tsa, varargin) 
+
+  There are two main ways to invoke this function: in the first an array
+  of timestamps is specified, and the tsd made out of the points in tsa that
+  approximated those timestamps is returned 
+  for these usage call like this
+  R = Restrict(tsa, k, 'OptionName', 'OptionValue'), where k may be a
+  numerical array, or a ts, tsd object
+  The option 'align' specifies the type of approximation to
+  produce. possible values are
+  'prev': returns the points that immediately preceded each of the
+  timestamps
+  'next': returns the points that immediately followed each of the
+  timestamps
+  'closest': returns the points that best approximated the timestamps
+  'equal': returns the points that had the same time as the
+  timestamps. If perfect alignment cannot be achieved for all the points,
+  it returns an error.
+  
+  In the other use, a series of intervals is specified, and the
+  Restrict-ed tsd returns the datapoints included in those intervals. For
+  this use call like:
+  R = Restrict(tsa, t0, t1, 'OptionName', 'OptionValue'), with t0, t1
+  start and end of restrict intervals or
+  R = Restrict(tsa, is, 'OptionName', 'OptionValue')
+  with is intervalSet object containing the restriciting intervals
+  [R, ix] = Restrict(tsa, ...) returns, as second output, the indices of
+  the selected points</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>	Returns TSD timestamps</li><li><a href="length.html" class="code" title="function l = length(tsa)">length</a>	Returns number of elements in tsa (overoads length function)</li><li><a href="tsd.html" class="code" title="function tsa = tsd(t, Data, varargin)">tsd</a>	Constructor of TSD object</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="RestrictThreshold.html" class="code" title="function [tso, ix] = RestrictThreshold(tsa, thr, varargin)">RestrictThreshold</a>	Restricts TSD to values above (below) threshold</li><li><a href="rate.html" class="code" title="function r = rate(tsa, varargin)">rate</a>	TODO: overlap with intervalRate</li><li><a href="smooth.html" class="code" title="function S = smooth(tsa, l, varargin)">smooth</a>	Smooth a TSD</li><li><a href="thresholdHysteresis.html" class="code" title="function t = thresholdHysteresis(tsa, thr1, thr2, varargin)">thresholdHysteresis</a>	Hysteresis thresholding</li><li><a href="timeDeriv.html" class="code" title="function S = timeDeriv(tsa, varargin)">timeDeriv</a>	TimeDerivative of a tsd</li><li><a href="triggeredDataMat.html" class="code" title="function M = triggeredDataMat(tsa, t, nbBins,varargin);">triggeredDataMat</a>	Returns a event-by-events matrix of Data component triggered on a reference (TODO!)</li><li><a href="triggeredMeanData.html" class="code" title="function [tmd] = triggeredMeanData(tsa, events, tmax, varargin)">triggeredMeanData</a>	Event-triggered mean  of the Data component, triggered on events (TODO)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [R, il] = Restrict(tsa, varargin)</a>
+0002 
+0003 <span class="comment">%  Restrict TSD to a new timestamp</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%  USAGE:</span>
+0006 <span class="comment">% R = Restrict(tsa, varargin)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%  There are two main ways to invoke this function: in the first an array</span>
+0009 <span class="comment">%  of timestamps is specified, and the tsd made out of the points in tsa that</span>
+0010 <span class="comment">%  approximated those timestamps is returned</span>
+0011 <span class="comment">%  for these usage call like this</span>
+0012 <span class="comment">%  R = Restrict(tsa, k, 'OptionName', 'OptionValue'), where k may be a</span>
+0013 <span class="comment">%  numerical array, or a ts, tsd object</span>
+0014 <span class="comment">%  The option 'align' specifies the type of approximation to</span>
+0015 <span class="comment">%  produce. possible values are</span>
+0016 <span class="comment">%  'prev': returns the points that immediately preceded each of the</span>
+0017 <span class="comment">%  timestamps</span>
+0018 <span class="comment">%  'next': returns the points that immediately followed each of the</span>
+0019 <span class="comment">%  timestamps</span>
+0020 <span class="comment">%  'closest': returns the points that best approximated the timestamps</span>
+0021 <span class="comment">%  'equal': returns the points that had the same time as the</span>
+0022 <span class="comment">%  timestamps. If perfect alignment cannot be achieved for all the points,</span>
+0023 <span class="comment">%  it returns an error.</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">%  In the other use, a series of intervals is specified, and the</span>
+0026 <span class="comment">%  Restrict-ed tsd returns the datapoints included in those intervals. For</span>
+0027 <span class="comment">%  this use call like:</span>
+0028 <span class="comment">%  R = Restrict(tsa, t0, t1, 'OptionName', 'OptionValue'), with t0, t1</span>
+0029 <span class="comment">%  start and end of restrict intervals or</span>
+0030 <span class="comment">%  R = Restrict(tsa, is, 'OptionName', 'OptionValue')</span>
+0031 <span class="comment">%  with is intervalSet object containing the restriciting intervals</span>
+0032 <span class="comment">%  [R, ix] = Restrict(tsa, ...) returns, as second output, the indices of</span>
+0033 <span class="comment">%  the selected points</span>
+0034   
+0035   
+0036 <span class="comment">% the current version is an evolution of A. David Redish's code</span>
+0037 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia</span>
+0038 <span class="comment">% This software is released under the GNU GPL</span>
+0039 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0040 <span class="comment">% released under the GPL</span>
+0041   
+0042 
+0043 <span class="comment">% persistent mex_count;</span>
+0044 
+0045 <span class="comment">% $$$ if isempty(mex_count)</span>
+0046 <span class="comment">% $$$   mex_count = 0;</span>
+0047 <span class="comment">% $$$ end</span>
+0048 <span class="comment">% $$$</span>
+0049   
+0050 restrict_type = <span class="string">''</span>;
+0051 align_type = <span class="string">'closest'</span>;
+0052 
+0053 <span class="keyword">while</span> <a href="length.html" class="code" title="function l = length(tsa)">length</a>(varargin) &gt; 0
+0054   v = varargin{1};
+0055   varargin = varargin(2:end);
+0056   
+0057   <span class="keyword">if</span> isa(v, <span class="string">'numeric'</span>) | isa(v, <span class="string">'tsd'</span>)
+0058     <span class="keyword">if</span> ~isempty(restrict_type)
+0059       error(<span class="string">'Can only specify align or intervals'</span>);
+0060     <span class="keyword">end</span>
+0061     st = v;
+0062     time_type = 0;
+0063     <span class="keyword">if</span> <a href="length.html" class="code" title="function l = length(tsa)">length</a>(varargin) &gt; 0
+0064         <span class="keyword">if</span> isa(varargin{1}, <span class="string">'numeric'</span>) | isa(varargin{1}, <span class="string">'tsd'</span>) <span class="comment">% then it is interbals</span>
+0065             v = varargin{1};
+0066             varargin = varargin(2:end);
+0067             en = v;
+0068             restrict_type = <span class="string">'intervals'</span>;
+0069         <span class="keyword">else</span>
+0070             restrict_type = <span class="string">'align'</span>;
+0071         <span class="keyword">end</span>
+0072     <span class="keyword">else</span>
+0073         restrict_type = <span class="string">'align'</span>;
+0074     <span class="keyword">end</span>
+0075 
+0076     
+0077   <span class="keyword">elseif</span> isa(v, <span class="string">'intervalSet'</span>) <span class="comment">%intervals expressed in intervalSet</span>
+0078     <span class="keyword">if</span> ~isempty(restrict_type)
+0079       error(<span class="string">'Can only specify align or intervals'</span>);
+0080     <span class="keyword">end</span>
+0081     st = v;
+0082     restrict_type = <span class="string">'iset'</span>;
+0083   <span class="keyword">elseif</span> isa(v, <span class="string">'char'</span>) <span class="comment">% read in option</span>
+0084     <span class="keyword">if</span> <a href="length.html" class="code" title="function l = length(tsa)">length</a>(varargin) &gt; 0
+0085       ov = varargin{1};
+0086       varargin = varargin(2:end);
+0087     <span class="keyword">else</span>
+0088       error(<span class="string">'must specify value for option'</span>);
+0089     <span class="keyword">end</span>
+0090     
+0091     time_type = 0;
+0092     
+0093     <span class="keyword">switch</span>(v)
+0094         <span class="keyword">case</span> <span class="string">'align'</span>
+0095             <span class="keyword">if</span> ~isa(ov, <span class="string">'char'</span>)
+0096                 error(<span class="string">'value for option align must be string'</span>)
+0097             <span class="keyword">end</span>
+0098             <span class="keyword">switch</span>(ov)
+0099                 <span class="keyword">case</span> {<span class="string">'prev'</span>, <span class="string">'next'</span>, <span class="string">'closest'</span>, <span class="string">'equal'</span>} <span class="comment">% option will be ignored for int</span>
+0100                     align_type = ov;
+0101                 <span class="keyword">otherwise</span>
+0102                     error(<span class="string">'Unrecognized option value'</span>);
+0103             <span class="keyword">end</span>
+0104         <span class="keyword">case</span> <span class="string">'time'</span>
+0105             <span class="keyword">switch</span>(ov)
+0106                 <span class="keyword">case</span> <span class="string">'original'</span>
+0107                     time_type = 0;
+0108                 <span class="keyword">case</span> <span class="string">'align'</span>
+0109                     time_type = 1;
+0110             <span class="keyword">end</span>
+0111             <span class="comment">% put more options here</span>
+0112         <span class="keyword">otherwise</span>
+0113             error(<span class="string">'Unrecognized option'</span>);
+0114     <span class="keyword">end</span>
+0115   <span class="keyword">end</span>
+0116 <span class="keyword">end</span>
+0117 
+0118 <span class="keyword">if</span> isempty(restrict_type)
+0119   error(<span class="string">'Must specify arguments to Restrict!'</span>);
+0120 <span class="keyword">end</span>
+0121 
+0122 <span class="keyword">if</span> strcmp(restrict_type, <span class="string">'intervals'</span>)
+0123   st = intervalSet(st, en);
+0124   restrict_type = <span class="string">'iset'</span>;
+0125 <span class="keyword">end</span>
+0126 
+0127 
+0128 <span class="keyword">switch</span>(restrict_type)
+0129  <span class="keyword">case</span> <span class="string">'iset'</span>
+0130 <span class="comment">% $$$   mex_count = mex_count+1;</span>
+0131 <span class="comment">% $$$   display(mex_count);</span>
+0132 <span class="comment">% $$$   if mex_count == 456</span>
+0133 <span class="comment">% $$$     42;</span>
+0134 <span class="comment">% $$$     keyboard;</span>
+0135 <span class="comment">% $$$   end</span>
+0136   
+0137 
+0138   <span class="keyword">if</span> ~isempty(Start(st, tsa.time_unit))
+0139     ix = Restrict_idx_iSet(<a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa, tsa.time_unit), <span class="keyword">...</span>
+0140                Start(st, tsa.time_unit), <span class="keyword">...</span>
+0141                End(st, tsa.time_unit));
+0142   <span class="keyword">else</span> 
+0143     ix = zeros(0,1);
+0144   <span class="keyword">end</span>
+0145   
+0146     
+0147  <span class="keyword">case</span> <span class="string">'align'</span>
+0148   <span class="keyword">if</span> isa(st, <span class="string">'tsd'</span>);
+0149     st = <a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(st, <span class="string">'ts'</span>);
+0150   <span class="keyword">end</span>
+0151   
+0152   <span class="keyword">if</span> (~isempty(st)) &amp; <a href="length.html" class="code" title="function l = length(tsa)">length</a>(tsa) &gt; 0 
+0153     ix = Restrict_idx_align(<a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa, <span class="string">'ts'</span>), st, align_type);
+0154   <span class="keyword">else</span>
+0155     ix = zeros(0,1);
+0156   <span class="keyword">end</span>
+0157   
+0158 <span class="keyword">end</span>
+0159 
+0160 tt = tsa.t(ix);
+0161 <span class="keyword">if</span> strcmp(restrict_type, <span class="string">'align'</span>) &amp; time_type == 1
+0162     tt = st;
+0163 <span class="keyword">end</span>
+0164 
+0165 
+0166 <span class="keyword">if</span> isa(tsa, <span class="string">'ts'</span>)
+0167   R = ts(tt);
+0168 <span class="keyword">else</span>
+0169   R = <a href="tsd.html" class="code" title="function tsa = tsd(t, Data, varargin)">tsd</a>(tt, SelectAlongFirstDimension(tsa.data, ix));
+0170 <span class="keyword">end</span>
+0171 
+0172 <span class="keyword">if</span> nargout == 2
+0173   il = ix;
+0174 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of configure_classify</title>
+  <meta name="keywords" content="configure_classify">
+  <meta name="description" content="CONFIGURE_CLASSIFY M-file for configure_classify.fig">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html wave_browser -->
+<h1>configure_classify
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>CONFIGURE_CLASSIFY M-file for configure_classify.fig</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function varargout = configure_classify(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> CONFIGURE_CLASSIFY M-file for configure_classify.fig
+      CONFIGURE_CLASSIFY, by itself, creates a new CONFIGURE_CLASSIFY or raises the existing
+      singleton*.
+
+      H = CONFIGURE_CLASSIFY returns the handle to a new CONFIGURE_CLASSIFY or the handle to
+      the existing singleton*.
+
+      CONFIGURE_CLASSIFY('CALLBACK',hObject,eventData,handles,...) calls the local
+      function named CALLBACK in CONFIGURE_CLASSIFY.M with the given input arguments.
+
+      CONFIGURE_CLASSIFY('Property','Value',...) creates a new CONFIGURE_CLASSIFY or raises the
+      existing singleton*.  Starting from the left, property value pairs are
+      applied to the GUI before configure_classify_OpeningFunction gets called.  An
+      unrecognized property name or invalid value makes property application
+      stop.  All inputs are passed to configure_classify_OpeningFcn via varargin.
+
+      *See GUI Options on GUIDE's Tools menu.  Choose &quot;GUI allows only one
+      instance to run (singleton)&quot;.
+
+ See also: GUIDE, GUIDATA, GUIHANDLES</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="classify_spectra.html" class="code" title="function varargout = classify_spectra(varargin)">classify_spectra</a>	CLASSIFY_SPECTRA M-file for classify_spectra.fig</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function configure_classify_OpeningFcn(hObject, eventdata, handles, varargin)</a></li><li><a href="#_sub2" class="code">function varargout = configure_classify_OutputFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub3" class="code">function WinSize_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub4" class="code">function WinSize_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub5" class="code">function OKButton_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub6" class="code">function CancelButton_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub7" class="code">function StepSize_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub8" class="code">function StepSize_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub9" class="code">function TW_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub10" class="code">function TW_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub11" class="code">function MinFreq_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub12" class="code">function MinFreq_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub13" class="code">function MaxFreq_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub14" class="code">function MaxFreq_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub15" class="code">function ZoomLowerFreq_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub16" class="code">function ZoomLowerFreq_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub17" class="code">function ZoomUpperFreq_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub18" class="code">function ZoomUpperFreq_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub19" class="code">function ClassifiedWidth_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub20" class="code">function ClassifiedWidth_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub21" class="code">function ClassifiedHeight_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub22" class="code">function ClassifiedHeight_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub23" class="code">function Frequency_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub24" class="code">function Frequency_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub25" class="code">function FixedCheckbox_Callback(hObject, eventdata, handles)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function varargout = configure_classify(varargin)</a>
+0002 <span class="comment">% CONFIGURE_CLASSIFY M-file for configure_classify.fig</span>
+0003 <span class="comment">%      CONFIGURE_CLASSIFY, by itself, creates a new CONFIGURE_CLASSIFY or raises the existing</span>
+0004 <span class="comment">%      singleton*.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%      H = CONFIGURE_CLASSIFY returns the handle to a new CONFIGURE_CLASSIFY or the handle to</span>
+0007 <span class="comment">%      the existing singleton*.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%      CONFIGURE_CLASSIFY('CALLBACK',hObject,eventData,handles,...) calls the local</span>
+0010 <span class="comment">%      function named CALLBACK in CONFIGURE_CLASSIFY.M with the given input arguments.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%      CONFIGURE_CLASSIFY('Property','Value',...) creates a new CONFIGURE_CLASSIFY or raises the</span>
+0013 <span class="comment">%      existing singleton*.  Starting from the left, property value pairs are</span>
+0014 <span class="comment">%      applied to the GUI before configure_classify_OpeningFunction gets called.  An</span>
+0015 <span class="comment">%      unrecognized property name or invalid value makes property application</span>
+0016 <span class="comment">%      stop.  All inputs are passed to configure_classify_OpeningFcn via varargin.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%      *See GUI Options on GUIDE's Tools menu.  Choose &quot;GUI allows only one</span>
+0019 <span class="comment">%      instance to run (singleton)&quot;.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% See also: GUIDE, GUIDATA, GUIHANDLES</span>
+0022 
+0023 <span class="comment">% Copyright 2002-2003 The MathWorks, Inc.</span>
+0024 
+0025 <span class="comment">% Edit the above text to modify the response to help configure_classify</span>
+0026 
+0027 <span class="comment">% Last Modified by GUIDE v2.5 01-May-2006 23:22:44</span>
+0028 
+0029 <span class="comment">% Begin initialization code - DO NOT EDIT</span>
+0030 gui_Singleton = 1;
+0031 gui_State = struct(<span class="string">'gui_Name'</span>,       mfilename, <span class="keyword">...</span>
+0032                    <span class="string">'gui_Singleton'</span>,  gui_Singleton, <span class="keyword">...</span>
+0033                    <span class="string">'gui_OpeningFcn'</span>, @<a href="#_sub1" class="code" title="subfunction configure_classify_OpeningFcn(hObject, eventdata, handles, varargin)">configure_classify_OpeningFcn</a>, <span class="keyword">...</span>
+0034                    <span class="string">'gui_OutputFcn'</span>,  @<a href="#_sub2" class="code" title="subfunction varargout = configure_classify_OutputFcn(hObject, eventdata, handles)">configure_classify_OutputFcn</a>, <span class="keyword">...</span>
+0035                    <span class="string">'gui_LayoutFcn'</span>,  [] , <span class="keyword">...</span>
+0036                    <span class="string">'gui_Callback'</span>,   []);
+0037 <span class="keyword">if</span> nargin &amp;&amp; ischar(varargin{1})
+0038     gui_State.gui_Callback = str2func(varargin{1});
+0039 <span class="keyword">end</span>
+0040 
+0041 <span class="keyword">if</span> nargout
+0042     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+0043 <span class="keyword">else</span>
+0044     gui_mainfcn(gui_State, varargin{:});
+0045 <span class="keyword">end</span>
+0046 <span class="comment">% End initialization code - DO NOT EDIT</span>
+0047 
+0048 
+0049 <span class="comment">% --- Executes just before configure_classify is made visible.</span>
+0050 <a name="_sub1" href="#_subfunctions" class="code">function configure_classify_OpeningFcn(hObject, eventdata, handles, varargin)</a>
+0051 <span class="comment">% This function has no output args, see OutputFcn.</span>
+0052 <span class="comment">% hObject    handle to figure</span>
+0053 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0054 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0055 <span class="comment">% varargin   command line arguments to configure_classify (see VARARGIN)</span>
+0056 
+0057 
+0058 <span class="comment">% Choose default command line output for configure_classify</span>
+0059 handles.output = hObject;
+0060 
+0061 <span class="comment">% Update handles structure</span>
+0062 guidata(hObject, handles);
+0063 
+0064 <span class="comment">% UIWAIT makes configure_classify wait for user response (see UIRESUME)</span>
+0065 <span class="comment">% uiwait(handles.figure1);</span>
+0066 <span class="comment">% configure_classify(0,7500,400,500,44100,[0.01 0.001],[3 5],[0 20000])</span>
+0067 
+0068 handles.lowerfreq = varargin{1};  <span class="comment">% Lower frequency for zooming</span>
+0069 handles.upperfreq = varargin{2}; <span class="comment">% Upper frequency for zooming</span>
+0070 
+0071 handles.classified_height = varargin{3} ; <span class="comment">% the height of the image in the classified axes</span>
+0072 handles.classified_width = varargin{4};  <span class="comment">% the width of the image in the classified axes</span>
+0073 
+0074 handles.Fs = varargin{5}; <span class="comment">% Frequency of audio sampling per second</span>
+0075 handles.movingwin = varargin{6}; <span class="comment">% Size of the moving window in seconds; the first number is the window size and the second is the step size</span>
+0076 handles.tapers = varargin{7}; <span class="comment">% Tapers for smoothing</span>
+0077 handles.fpass = varargin{8}; <span class="comment">% Range of frequency sampling</span>
+0078 
+0079 handles.fixed = varargin{9}; <span class="comment">% Fixed scaling of the classified axes</span>
+0080 
+0081 set(handles.ZoomLowerFreq,<span class="string">'String'</span>,num2str(handles.lowerfreq));
+0082 set(handles.ZoomUpperFreq,<span class="string">'String'</span>,num2str(handles.upperfreq));
+0083 set(handles.ClassifiedWidth,<span class="string">'String'</span>,num2str(handles.classified_width));
+0084 set(handles.ClassifiedHeight,<span class="string">'String'</span>,num2str(handles.classified_height));
+0085 set(handles.Frequency,<span class="string">'String'</span>,num2str(handles.Fs));
+0086 set(handles.WinSize,<span class="string">'String'</span>,num2str(handles.movingwin(1) * 1000));
+0087 set(handles.StepSize,<span class="string">'String'</span>,num2str(handles.movingwin(2) * 1000));
+0088 set(handles.TW,<span class="string">'String'</span>,num2str(handles.tapers(1)));
+0089 set(handles.MinFreq,<span class="string">'String'</span>,num2str(handles.fpass(1)));
+0090 set(handles.MaxFreq,<span class="string">'String'</span>,num2str(handles.fpass(2)));
+0091 
+0092 set(handles.FixedCheckbox,<span class="string">'Value'</span>,handles.fixed);
+0093 
+0094 <span class="comment">% set(handles.ZoomLowerFreq,'Enable','off');</span>
+0095 <span class="comment">% set(handles.ZoomUpperFreq,'Enable','off');</span>
+0096 <span class="comment">% set(handles.ClassifiedWidth,'Enable','off');</span>
+0097 <span class="comment">% set(handles.ClassifiedHeight,'Enable','off');</span>
+0098 <span class="comment">% set(handles.Frequency,'Enable','off');</span>
+0099 <span class="comment">% set(handles.WinSize,'Enable','off');</span>
+0100 <span class="comment">% set(handles.StepSize,'Enable','off');</span>
+0101 <span class="comment">% set(handles.TW,'Enable','off');</span>
+0102 <span class="comment">% set(handles.MinFreq,'Enable','off');</span>
+0103 <span class="comment">% set(handles.MaxFreq,'Enable','off');</span>
+0104 
+0105 uiwait(handles.figure1);
+0106 
+0107 
+0108 <span class="comment">% --- Outputs from this function are returned to the command line.</span>
+0109 <a name="_sub2" href="#_subfunctions" class="code">function varargout = configure_classify_OutputFcn(hObject, eventdata, handles) </a>
+0110 <span class="comment">% varargout  cell array for returning output args (see VARARGOUT);</span>
+0111 <span class="comment">% hObject    handle to figure</span>
+0112 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0113 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0114 
+0115 <span class="comment">% Get default command line output from handles structure</span>
+0116 varargout{1} = handles.output;
+0117 
+0118 <a href="../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>;
+0119 
+0120 <a name="_sub3" href="#_subfunctions" class="code">function WinSize_Callback(hObject, eventdata, handles)</a>
+0121 <span class="comment">% hObject    handle to WinSize (see GCBO)</span>
+0122 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0123 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0124 
+0125 <span class="comment">% Hints: get(hObject,'String') returns contents of WinSize as text</span>
+0126 <span class="comment">%        str2double(get(hObject,'String')) returns contents of WinSize as a double</span>
+0127 
+0128 
+0129 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0130 <a name="_sub4" href="#_subfunctions" class="code">function WinSize_CreateFcn(hObject, eventdata, handles)</a>
+0131 <span class="comment">% hObject    handle to WinSize (see GCBO)</span>
+0132 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0133 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0134 
+0135 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0136 <span class="comment">%       See ISPC and COMPUTER.</span>
+0137 <span class="keyword">if</span> ispc
+0138     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0139 <span class="keyword">else</span>
+0140     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0141 <span class="keyword">end</span>
+0142 
+0143 
+0144 <span class="comment">% --- Executes on button press in OKButton.</span>
+0145 <a name="_sub5" href="#_subfunctions" class="code">function OKButton_Callback(hObject, eventdata, handles)</a>
+0146 <span class="comment">% hObject    handle to OKButton (see GCBO)</span>
+0147 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0148 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0149 
+0150 lowerfreq = str2num(get(handles.ZoomLowerFreq,<span class="string">'String'</span>));  <span class="comment">% Lower frequency for zooming</span>
+0151 upperfreq = str2num(get(handles.ZoomUpperFreq,<span class="string">'String'</span>)); <span class="comment">% Upper frequency for zooming</span>
+0152 
+0153 classified_height = str2num(get(handles.ClassifiedHeight,<span class="string">'String'</span>)); <span class="comment">% the height of the image in the classified axes</span>
+0154 classified_width = str2num(get(handles.ClassifiedWidth,<span class="string">'String'</span>));  <span class="comment">% the width of the image in the classified axes</span>
+0155 
+0156 Fs = str2num(get(handles.Frequency,<span class="string">'String'</span>)); <span class="comment">% Frequency of audio sampling per second</span>
+0157 
+0158 winsizeS = str2num(get(handles.WinSize,<span class="string">'String'</span>)) / 1000;
+0159 stepS = str2num(get(handles.StepSize,<span class="string">'String'</span>)) / 1000;
+0160 movingwin = [winsizeS stepS]; <span class="comment">% Size of the moving window in seconds; the first number is the window size and the second is the step size</span>
+0161 
+0162 tw = str2num(get(handles.TW,<span class="string">'String'</span>));
+0163 
+0164 fpasslower = str2num(get(handles.MinFreq,<span class="string">'String'</span>)); <span class="comment">% Range of frequency sampling</span>
+0165 fpassupper = str2num(get(handles.MaxFreq,<span class="string">'String'</span>));
+0166 fpass = [fpasslower fpassupper];
+0167 
+0168 ierror = 1; <span class="comment">% Indicates no errors encountered</span>
+0169 
+0170 <span class="keyword">if</span> isempty(classified_height) || (classified_height &lt; 1)
+0171     ierror = 0;
+0172 <span class="keyword">end</span>
+0173     
+0174 <span class="keyword">if</span> isempty(tw) || tw &lt; 0
+0175     ierror = 0;
+0176 <span class="keyword">end</span>
+0177 
+0178 <span class="keyword">if</span> isempty(lowerfreq) || lowerfreq &lt; 0
+0179     ierror = 0;
+0180 <span class="keyword">end</span>
+0181 
+0182 <span class="keyword">if</span> isempty(fpasslower) || fpasslower &lt; 0
+0183     ierror = 0;
+0184 <span class="keyword">end</span>
+0185 
+0186 <span class="keyword">if</span> isempty(fpassupper) || fpassupper &lt; fpasslower
+0187     ierror = 0;
+0188 <span class="keyword">end</span>
+0189 
+0190 <span class="keyword">if</span> isempty(upperfreq) || lowerfreq &gt; upperfreq 
+0191     ierror = 0;
+0192 <span class="keyword">end</span>
+0193 
+0194 <span class="keyword">if</span> isempty(winsizeS) || winsizeS &lt; 0
+0195     ierror = 0;
+0196 <span class="keyword">end</span>
+0197 
+0198 <span class="keyword">if</span> isempty(stepS) || stepS &lt; 0
+0199     ierror = 0
+0200 <span class="keyword">end</span>
+0201 
+0202 <span class="keyword">if</span> isempty(tw) || tw &lt; 0
+0203     ierror = 0
+0204 <span class="keyword">else</span>
+0205     tapers = [tw,floor(2*tw-1)]; <span class="comment">% Tapers for smoothing</span>
+0206 <span class="keyword">end</span>
+0207 
+0208 fixed = get(handles.FixedCheckbox,<span class="string">'Value'</span>);
+0209 
+0210 <span class="keyword">if</span> ierror == 0
+0211     ;
+0212 <span class="keyword">else</span>
+0213     handles.output = {lowerfreq,upperfreq,classified_height,classified_width,Fs,movingwin,tapers,fpass,fixed};
+0214     guidata(hObject,handles);
+0215     uiresume(handles.figure1);
+0216 <span class="keyword">end</span>
+0217 
+0218 
+0219 <span class="comment">%uiresume;</span>
+0220 <span class="comment">%close;</span>
+0221 
+0222 <span class="comment">% --- Executes on button press in CancelButton.</span>
+0223 <a name="_sub6" href="#_subfunctions" class="code">function CancelButton_Callback(hObject, eventdata, handles)</a>
+0224 <span class="comment">% hObject    handle to CancelButton (see GCBO)</span>
+0225 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0226 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0227 
+0228 handles.output = 0;
+0229 guidata(hObject,handles);
+0230 uiresume(handles.figure1);
+0231 
+0232 <a name="_sub7" href="#_subfunctions" class="code">function StepSize_Callback(hObject, eventdata, handles)</a>
+0233 <span class="comment">% hObject    handle to StepSize (see GCBO)</span>
+0234 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0235 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0236 
+0237 <span class="comment">% Hints: get(hObject,'String') returns contents of StepSize as text</span>
+0238 <span class="comment">%        str2double(get(hObject,'String')) returns contents of StepSize as a double</span>
+0239 
+0240 
+0241 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0242 <a name="_sub8" href="#_subfunctions" class="code">function StepSize_CreateFcn(hObject, eventdata, handles)</a>
+0243 <span class="comment">% hObject    handle to StepSize (see GCBO)</span>
+0244 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0245 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0246 
+0247 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0248 <span class="comment">%       See ISPC and COMPUTER.</span>
+0249 <span class="keyword">if</span> ispc
+0250     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0251 <span class="keyword">else</span>
+0252     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0253 <span class="keyword">end</span>
+0254 
+0255 
+0256 
+0257 <a name="_sub9" href="#_subfunctions" class="code">function TW_Callback(hObject, eventdata, handles)</a>
+0258 <span class="comment">% hObject    handle to TW (see GCBO)</span>
+0259 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0260 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0261 
+0262 <span class="comment">% Hints: get(hObject,'String') returns contents of TW as text</span>
+0263 <span class="comment">%        str2double(get(hObject,'String')) returns contents of TW as a double</span>
+0264 
+0265 
+0266 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0267 <a name="_sub10" href="#_subfunctions" class="code">function TW_CreateFcn(hObject, eventdata, handles)</a>
+0268 <span class="comment">% hObject    handle to TW (see GCBO)</span>
+0269 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0270 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0271 
+0272 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0273 <span class="comment">%       See ISPC and COMPUTER.</span>
+0274 <span class="keyword">if</span> ispc
+0275     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0276 <span class="keyword">else</span>
+0277     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0278 <span class="keyword">end</span>
+0279 
+0280 
+0281 
+0282 <a name="_sub11" href="#_subfunctions" class="code">function MinFreq_Callback(hObject, eventdata, handles)</a>
+0283 <span class="comment">% hObject    handle to MinFreq (see GCBO)</span>
+0284 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0285 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0286 
+0287 <span class="comment">% Hints: get(hObject,'String') returns contents of MinFreq as text</span>
+0288 <span class="comment">%        str2double(get(hObject,'String')) returns contents of MinFreq as a double</span>
+0289 
+0290 
+0291 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0292 <a name="_sub12" href="#_subfunctions" class="code">function MinFreq_CreateFcn(hObject, eventdata, handles)</a>
+0293 <span class="comment">% hObject    handle to MinFreq (see GCBO)</span>
+0294 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0295 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0296 
+0297 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0298 <span class="comment">%       See ISPC and COMPUTER.</span>
+0299 <span class="keyword">if</span> ispc
+0300     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0301 <span class="keyword">else</span>
+0302     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0303 <span class="keyword">end</span>
+0304 
+0305 
+0306 
+0307 <a name="_sub13" href="#_subfunctions" class="code">function MaxFreq_Callback(hObject, eventdata, handles)</a>
+0308 <span class="comment">% hObject    handle to MaxFreq (see GCBO)</span>
+0309 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0310 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0311 
+0312 <span class="comment">% Hints: get(hObject,'String') returns contents of MaxFreq as text</span>
+0313 <span class="comment">%        str2double(get(hObject,'String')) returns contents of MaxFreq as a double</span>
+0314 
+0315 
+0316 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0317 <a name="_sub14" href="#_subfunctions" class="code">function MaxFreq_CreateFcn(hObject, eventdata, handles)</a>
+0318 <span class="comment">% hObject    handle to MaxFreq (see GCBO)</span>
+0319 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0320 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0321 
+0322 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0323 <span class="comment">%       See ISPC and COMPUTER.</span>
+0324 <span class="keyword">if</span> ispc
+0325     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0326 <span class="keyword">else</span>
+0327     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0328 <span class="keyword">end</span>
+0329 
+0330 
+0331 
+0332 <a name="_sub15" href="#_subfunctions" class="code">function ZoomLowerFreq_Callback(hObject, eventdata, handles)</a>
+0333 <span class="comment">% hObject    handle to ZoomLowerFreq (see GCBO)</span>
+0334 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0335 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0336 
+0337 <span class="comment">% Hints: get(hObject,'String') returns contents of ZoomLowerFreq as text</span>
+0338 <span class="comment">%        str2double(get(hObject,'String')) returns contents of ZoomLowerFreq as a double</span>
+0339 
+0340 
+0341 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0342 <a name="_sub16" href="#_subfunctions" class="code">function ZoomLowerFreq_CreateFcn(hObject, eventdata, handles)</a>
+0343 <span class="comment">% hObject    handle to ZoomLowerFreq (see GCBO)</span>
+0344 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0345 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0346 
+0347 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0348 <span class="comment">%       See ISPC and COMPUTER.</span>
+0349 <span class="keyword">if</span> ispc
+0350     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0351 <span class="keyword">else</span>
+0352     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0353 <span class="keyword">end</span>
+0354 
+0355 
+0356 
+0357 <a name="_sub17" href="#_subfunctions" class="code">function ZoomUpperFreq_Callback(hObject, eventdata, handles)</a>
+0358 <span class="comment">% hObject    handle to ZoomUpperFreq (see GCBO)</span>
+0359 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0360 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0361 
+0362 <span class="comment">% Hints: get(hObject,'String') returns contents of ZoomUpperFreq as text</span>
+0363 <span class="comment">%        str2double(get(hObject,'String')) returns contents of ZoomUpperFreq as a double</span>
+0364 
+0365 
+0366 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0367 <a name="_sub18" href="#_subfunctions" class="code">function ZoomUpperFreq_CreateFcn(hObject, eventdata, handles)</a>
+0368 <span class="comment">% hObject    handle to ZoomUpperFreq (see GCBO)</span>
+0369 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0370 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0371 
+0372 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0373 <span class="comment">%       See ISPC and COMPUTER.</span>
+0374 <span class="keyword">if</span> ispc
+0375     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0376 <span class="keyword">else</span>
+0377     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0378 <span class="keyword">end</span>
+0379 
+0380 
+0381 
+0382 <a name="_sub19" href="#_subfunctions" class="code">function ClassifiedWidth_Callback(hObject, eventdata, handles)</a>
+0383 <span class="comment">% hObject    handle to ClassifiedWidth (see GCBO)</span>
+0384 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0385 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0386 
+0387 <span class="comment">% Hints: get(hObject,'String') returns contents of ClassifiedWidth as text</span>
+0388 <span class="comment">%        str2double(get(hObject,'String')) returns contents of ClassifiedWidth as a double</span>
+0389 
+0390 
+0391 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0392 <a name="_sub20" href="#_subfunctions" class="code">function ClassifiedWidth_CreateFcn(hObject, eventdata, handles)</a>
+0393 <span class="comment">% hObject    handle to ClassifiedWidth (see GCBO)</span>
+0394 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0395 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0396 
+0397 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0398 <span class="comment">%       See ISPC and COMPUTER.</span>
+0399 <span class="keyword">if</span> ispc
+0400     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0401 <span class="keyword">else</span>
+0402     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0403 <span class="keyword">end</span>
+0404 
+0405 
+0406 
+0407 <a name="_sub21" href="#_subfunctions" class="code">function ClassifiedHeight_Callback(hObject, eventdata, handles)</a>
+0408 <span class="comment">% hObject    handle to ClassifiedHeight (see GCBO)</span>
+0409 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0410 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0411 
+0412 <span class="comment">% Hints: get(hObject,'String') returns contents of ClassifiedHeight as text</span>
+0413 <span class="comment">%        str2double(get(hObject,'String')) returns contents of ClassifiedHeight as a double</span>
+0414 
+0415 
+0416 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0417 <a name="_sub22" href="#_subfunctions" class="code">function ClassifiedHeight_CreateFcn(hObject, eventdata, handles)</a>
+0418 <span class="comment">% hObject    handle to ClassifiedHeight (see GCBO)</span>
+0419 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0420 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0421 
+0422 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0423 <span class="comment">%       See ISPC and COMPUTER.</span>
+0424 <span class="keyword">if</span> ispc
+0425     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0426 <span class="keyword">else</span>
+0427     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0428 <span class="keyword">end</span>
+0429 
+0430 
+0431 
+0432 
+0433 
+0434 <a name="_sub23" href="#_subfunctions" class="code">function Frequency_Callback(hObject, eventdata, handles)</a>
+0435 <span class="comment">% hObject    handle to Frequency (see GCBO)</span>
+0436 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0437 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0438 
+0439 <span class="comment">% Hints: get(hObject,'String') returns contents of Frequency as text</span>
+0440 <span class="comment">%        str2double(get(hObject,'String')) returns contents of Frequency as a double</span>
+0441 
+0442 
+0443 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0444 <a name="_sub24" href="#_subfunctions" class="code">function Frequency_CreateFcn(hObject, eventdata, handles)</a>
+0445 <span class="comment">% hObject    handle to Frequency (see GCBO)</span>
+0446 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0447 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0448 
+0449 <span class="comment">% Hint: edit controls usually have a white background on Windows.</span>
+0450 <span class="comment">%       See ISPC and COMPUTER.</span>
+0451 <span class="keyword">if</span> ispc
+0452     set(hObject,<span class="string">'BackgroundColor'</span>,<span class="string">'white'</span>);
+0453 <span class="keyword">else</span>
+0454     set(hObject,<span class="string">'BackgroundColor'</span>,get(0,<span class="string">'defaultUicontrolBackgroundColor'</span>));
+0455 <span class="keyword">end</span>
+0456 
+0457 
+0458 
+0459 
+0460 <span class="comment">% --- Executes on button press in FixedCheckbox.</span>
+0461 <a name="_sub25" href="#_subfunctions" class="code">function FixedCheckbox_Callback(hObject, eventdata, handles)</a>
+0462 <span class="comment">% hObject    handle to FixedCheckbox (see GCBO)</span>
+0463 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0464 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0465 
+0466 <span class="comment">% Hint: get(hObject,'Value') returns toggle state of FixedCheckbox</span>
+0467 
+0468 handles.fixed = get(hObject,<span class="string">'Value'</span>);
+0469 guidata(gcbo,handles);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

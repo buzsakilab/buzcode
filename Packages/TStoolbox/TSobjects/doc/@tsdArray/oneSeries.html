@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of oneSeries</title>
+  <meta name="keywords" content="oneSeries">
+  <meta name="description" content="Sorts all the points in each element in the tsdArray, and returns a single tsd with all the points">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsdArray</a> &gt; oneSeries.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsdArray&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>oneSeries
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Sorts all the points in each element in the tsdArray, and returns a single tsd with all the points</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function TSO = oneSeries(S) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Sorts all the points in each element in the tsdArray, and returns a single tsd with all the points 
+  
+      USAGE:
+      tso = oneSeries(tsa)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="length.html" class="code" title="function l = length(S)">length</a>	Returns number of item in the tsdArray (overload of length function)</li><li><a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>	Returns size of tsdArray (overlaod of size function)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function TSO = oneSeries(S)</a>
+0002 
+0003 <span class="comment">% Sorts all the points in each element in the tsdArray, and returns a single tsd with all the points</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      tso = oneSeries(tsa)</span>
+0007 
+0008 <span class="comment">% copyright (c) 2004 Francesco P. Battaglia</span>
+0009 <span class="comment">% This software is released under the GNU GPL</span>
+0010 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0011 
+0012 
+0013   sz = <a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>(S.C{1});
+0014   sz = sz(2:end);
+0015   <span class="keyword">if</span> sz == 0
+0016       sz = 1;
+0017   <span class="keyword">end</span>
+0018   
+0019   <span class="keyword">for</span> i = 2:<a href="length.html" class="code" title="function l = length(S)">length</a>(S.C)
+0020     good = 0;
+0021     <span class="keyword">try</span>
+0022       sz2 = <a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>(S.C{i});
+0023       sz2 = sz2(2:end);
+0024       <span class="keyword">if</span> sum(sz2) == 0 
+0025           S.C{i} = ts(zeros([0 sz]));
+0026           sz2 = <a href="size.html" class="code" title="function sz = size(O, varargin)">size</a>(S.C{i});
+0027           sz2 = sz2(2:end);
+0028       <span class="keyword">end</span>
+0029       
+0030       <span class="keyword">if</span> all(sz2 == sz) 
+0031         good = 1;
+0032       <span class="keyword">end</span>
+0033     <span class="keyword">catch</span>
+0034       ;
+0035     <span class="keyword">end</span>
+0036     <span class="keyword">if</span> ~good
+0037       error([<span class="string">'incompatible data size with tsdArray: '</span> num2str(i)]);
+0038     <span class="keyword">end</span>
+0039   <span class="keyword">end</span>
+0040   
+0041   
+0042   d = Data(S.C{1});
+0043   t = Range(S.C{1});
+0044   
+0045   <span class="keyword">for</span> i = 2:<a href="length.html" class="code" title="function l = length(S)">length</a>(S.C)
+0046     t = [t; Range(S.C{i})];
+0047     d  = cat(1, d, Data(S.C{i}));
+0048   <span class="keyword">end</span>
+0049   
+0050   [t, ix] = sort(t);
+0051   
+0052   d = SelectAlongFirstDimension(d, ix);
+0053   
+0054   TSO = tsd(t, d);
+0055   
+0056   
+0057</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

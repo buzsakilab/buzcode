@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of unique</title>
+  <meta name="keywords" content="unique">
+  <meta name="description" content="Eliminates points with the same timestamps">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">@tsd</a> &gt; unique.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for @tsd&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>unique
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Eliminates points with the same timestamps</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function t = unique(tsa) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Eliminates points with the same timestamps
+      
+      USAGE:
+      t = unique(tsa) 
+      
+      INPUTS:  
+      tsa: a tsd object</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>	Returns TSD timestamps</li><li><a href="subset.html" class="code" title="function tss = subset(tsa, ix);">subset</a>	Returns tsd of a subset of input</li><li><a href="unique.html" class="code" title="function t = unique(tsa)">unique</a>	Eliminates points with the same timestamps</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="thresholdHysteresis.html" class="code" title="function t = thresholdHysteresis(tsa, thr1, thr2, varargin)">thresholdHysteresis</a>	Hysteresis thresholding</li><li><a href="unique.html" class="code" title="function t = unique(tsa)">unique</a>	Eliminates points with the same timestamps</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function t = unique(tsa)</a>
+0002 
+0003 <span class="comment">%  Eliminates points with the same timestamps</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%      USAGE:</span>
+0006 <span class="comment">%      t = unique(tsa)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%      INPUTS:</span>
+0009 <span class="comment">%      tsa: a tsd object</span>
+0010 
+0011 <span class="comment">% copyright (c) 2006 Francesco P. Battaglia</span>
+0012 <span class="comment">% This software is released under the GNU GPL</span>
+0013 <span class="comment">% www.gnu.org/copyleft/gpl.html</span>
+0014 
+0015 
+0016  tim = <a href="Range.html" class="code" title="function R = Range(tsa, tsflag)">Range</a>(tsa);
+0017  [tt, ix, j] = <a href="unique.html" class="code" title="function t = unique(tsa)">unique</a>(tim);
+0018 
+0019 
+0020  t = <a href="subset.html" class="code" title="function tss = subset(tsa, ix);">subset</a>(tsa, ix);
+0021</pre></div>
+<hr><address>Generated on Wed 16-Oct-2013 16:05:38 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

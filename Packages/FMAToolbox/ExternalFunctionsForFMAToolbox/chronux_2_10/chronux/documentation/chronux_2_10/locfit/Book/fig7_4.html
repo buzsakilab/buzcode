@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig7_4</title>
+  <meta name="keywords" content="fig7_4">
+  <meta name="description" content="Local Regression and Likelihood, Figure 7.4.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig7_4
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 7.4.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 7.4.
+
+ Censored Local Likelihood
+
+ Author: Catherine Loader
+
+ NEED: this is given problems for unknown reasons. something
+ to do with censored observations and the ibeta routine.
+ if i replace this by
+ res[ZLIK] = th*y-y*log(p)
+ res[ZDLL] = y*p
+ res[ZDDLL] = y*p*(1-p)
+ works fine. Memory leak somewhere??
+ also works if i ignore censoring.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 7.4.</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Censored Local Likelihood</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Author: Catherine Loader</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% NEED: this is given problems for unknown reasons. something</span>
+0008 <span class="comment">% to do with censored observations and the ibeta routine.</span>
+0009 <span class="comment">% if i replace this by</span>
+0010 <span class="comment">% res[ZLIK] = th*y-y*log(p)</span>
+0011 <span class="comment">% res[ZDLL] = y*p</span>
+0012 <span class="comment">% res[ZDDLL] = y*p*(1-p)</span>
+0013 <span class="comment">% works fine. Memory leak somewhere??</span>
+0014 <span class="comment">% also works if i ignore censoring.</span>
+0015 
+0016 
+0017 load border;
+0018 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(day,runs,<span class="string">'cens'</span>,no,<span class="string">'family'</span>,<span class="string">'geom'</span>,<span class="string">'alpha'</span>,0.7);
+0019 figure(<span class="string">'Name'</span>,<span class="string">'fig7_4: censored local likelihood;'</span> );
+0020 <a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>(fit);
+0021 xlabel(<span class="string">'Date'</span>);
+0022 ylabel(<span class="string">'Runs'</span>);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

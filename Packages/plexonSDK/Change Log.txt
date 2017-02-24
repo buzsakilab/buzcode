@@ -1,0 +1,59 @@
+Matlab Offline Files SDK
+
+Change Log
+
+
+Version 1.1.0, 5/10/04
+•	Initial release of dll-based package
+
+Version 1.1.1, 1/7/05
+•	Update to handle version 105 .plx files.
+
+Version 1.2.0, 2/7/05
+•	Changed plx_ad: before this version plx_ad returned each data block as a separate fragment, now each fragment is a collection of data blocks without time gaps
+•	Added plx_ad_v: functionality is similar to plx_ad but it returns A/D samples converted to millivolts
+•	Added plx_ad_span_v: functionality is similar to plx_ad_span but it returns A/D samples converted to millivolts
+•	Routines that return [n, arrayOfData] now will always create arrayOfData. If they cannot fill it (e.g. calling plx_chan_thresholds on a data file that has no spike channels), they will print an error message, set n=0, and set arrayOfData to some nonsense value. Routines affected: plx_adchan_freqs, plx_adchan_gains, plx_adchan_names, plx_chan_filters, plx_chan_gains, plx_chan_names, plx_chan_thresholds, plx_event_names.
+
+Version 1.2.1, 5/10/05
+•	Added plx_waves_v: functionality is similar to plx_waves but it returns waveform samples converted to millivolts.
+•	Added missing argument to the comment that defines plx_information.
+
+Version 1.3.0, 11/17/05
+•	Added plx_vt_interpret: takes output of plx_event_ts and produces an array of coordinates.
+•	Added ddt_v: functionality is similar to ddt but it returns samples converted to millivolts.
+Version 1.4.0, 1/10/06
+•	Added plx_close: closes any open .plx files
+•	Added plx_adchan_samplecounts: reads analog channel sample counts for .PLX file.
+Version 1.4.1, 2/21/06
+•	Added processing of disabled channels in .DDT files.
+•	Added support of arbitrary spike channels to .PLX processing.
+Version 1.4.2, 3/13/06
+•	Added plx_ad_gap_info: reads information on A/D channel.
+•	Fixed bug in ddt_v that caused voltages to be 2x too small
+Version 1.4.3, 3/28/06
+•	Fixed bug in ddt_v for DDT v103
+Version 1.4.4, 4/4/06
+•	Added ddt_write_v
+Version 1.4.5, 10/23/06
+•	Added plx_chanmap: returns map of raw DSP channel numbers
+•	Allow up to 256 analog channels
+Version 1.5.0, 1/3/07
+•	Added plx_ad_chanmap: returns map of raw analog channel numbers
+Version 1.6.0,  4/2/10
+•	Added large channel count support (which changed syntax of plx_info command), added plx_ev_chanmap, added R2010a and 64-bit support.
+Version 1.7.0, 10/5/11
+•	Added more checking of input parameters. Refactored C++ source code so that it compiles in Windows and Linux. Added source code and verification tests.
+•	Added Matlab Executable file for 32-bit Linux
+Version 1.7.1, 2/8/12
+•	Changed error checking for the plx file header. Plx files with invalid file header waveform frequency can now be opened. Added verification tests.
+•	Matlab Executable file for Linux is not included.
+Version 1.8.0, 11/8/12
+•	Added routines to read data from pl2 files. 
+•	Modified existing plx routines so that they can read data both from plx files and from pl2 files.
+Version 1.8.1, 06/20/13
+•	Added routines to read data block-by-block from pl2 files. 
+Version 1.8.2, 07/22/13
+•	Added routine to report mexPlex version. In PlexMethods.cpp, added defines for building the code under MacOS.
+Version 1.8.3, 08/29/13
+•	Fixed bug in internalPL2EventTs.m that caused incorrect event timestamps and values reported for some PL2 files.
