@@ -47,21 +47,21 @@ for ii=1:length(t)
      if isnan(Fx)
         Fx=0;
     end
-    Sx(ii) = sqrt(Mxy*Mx/(Mxy+Mx))*(Fxy-Fx);
-    Sy(ii) = sqrt(Mxy*My/(Mxy+My))*(Fxy-Fy);    
+    Sx(ii) = sqrt((Mxy*Mx)/(Mxy+Mx))*(Fxy-Fx);
+    Sy(ii) = sqrt((Mxy*My)/(Mxy+My))*(Fxy-Fy);    
 end
 
 f = (tR-tC)/(tMax-tC);
-px = P(max(Sx(t<2)),f);
-py = P(max(Sy(t<2)),f);
+px = P(max(Sx),f);
+py = P(max(Sy),f);
 
 h = px<0.95 & py<0.95;
 
 if 0
 figure(1),clf
-plot(Sx)
+plot(t,Sx)
 hold on
-plot(Sy,'r')
+plot(t,Sy,'r')
 end
 
 function P=P(t,f)

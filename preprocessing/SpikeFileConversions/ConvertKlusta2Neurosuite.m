@@ -1,4 +1,4 @@
-function [fet clu spktimes wav]= ConvertKlusta2Neurosuite(shank,basepath,basename,wvformExtract,saveFiles,numCores)
++function [fet clu spktimes wav]= ConvertKlusta2Neurosuite(shank,basepath,basename,wvformExtract,saveFiles,numCores)
 % Converts .kwik/kwx files from Klusta into klusters-compatible
 % fet,res,clu,spk files.  Works on a single shank of a recording, assumes a
 % 16bit .dat and an .xml file is present in "basepath" (home folder) and 
