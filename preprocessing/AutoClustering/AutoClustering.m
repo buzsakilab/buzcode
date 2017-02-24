@@ -37,6 +37,9 @@ function AutoClustering(fbasename,elec,varargin)
 % Adrien Peyrache, 2012
 % David Tingley, 2017 updated
 
+% The default behavior of this program is to take the output from KlustaKwik 
+% or the newer klusta-3.0 (.kwik) algorithms, organize this data for easier 
+% manual cluster cutting, and save to the klusta-3.0 (.kwik) format
 
 dbstop if error
 % Parameters
@@ -203,26 +206,17 @@ else
     
     %reorder clusters here
     [clu log] = renumberclu(clu,log);
-    
  
     % Here we select only clusters that correspond to putative units and that
     % have at least 20 spikes (otherwise errormatrix calculation fails)
     goodCluIx = ismember(clu,find(cluster_names < 1000 & h>20)); 
     goodCluIx(noiseIx) = 0;
-    
-    % if there is anything to compare...
-    mergehistory = [];
- 
-    if length(unique(clu(goodCluIx)))>1
-%         if max(clu(goodCluIx)) ~= max(clu(clu<1000))
-%                 ix = clu == max(clu(goodCluIx));
-%                 clu(ix) = max(clu(clu<1000))+1;
-%         end
+     
+    if length(unique(clu(goodCluIx)))>1  % if we have more than one putative cluster...
         newclu = clu(goodCluIx);
         newres = res(goodCluIx);
         newfet = fet(goodCluIx,:);
-        if doMerge
-            % merge similar clusters which are neither noise nor MUA
+        if doMerge  % merge similar clusters which are neither noise nor MUA
             try
                 [newclu mergehistory] = mergeclu_slow(newclu,newres,newfet,tR,tC,rogThres);
                 % log changes
@@ -230,13 +224,10 @@ else
                 for ii=1:size(mergehistory,1)
                     log = [log sprintf('%d + %d -> %d\n',mergehistory(ii,1),mergehistory(ii,2),mergehistory(ii,3))];
                 end
-                if ~isempty(mergehistory) % for debugging
-                   disp('clusters were merged') 
-                end
             catch
                 warning(['merging failed: ' lasterr])
             end            
-        else
+        else   % if we're not going to try merging, the resort clusters by similarity
             em = errormatrix(fet(goodCluIx,:),newclu);
             ems = max(em,em');   
             y = squareform((1-ems)-diag(diag(1-ems)),'tovector');
@@ -247,10 +238,8 @@ else
                 newclu = updateclu(newclu,cluIx(perm(ii)),max(cluIx)+ii+1);
             end
         end
-        clu(goodCluIx) = newclu;        
-    end
-    cluster_names = unique(clu);
-    
+        clu(goodCluIx) = newclu; % re-insert any merges or resorting of cluster ID's        
+    end    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Display final results (requires function CrossCorr, not in the
@@ -279,21 +268,13 @@ else
     end
     end
 
-    % reorder clusters here
-    cluster_names = unique(clu);
-    for i=1:length(cluster_names)
-        if cluster_names(i) ~= 0
-        clu(find(clu==cluster_names(i))) = i+2;
-         log = [log sprintf('%d -> %d; reordering clusters\n',cluster_names(i),i)];
-        end
-    end
+     % reorder clusters here
+    [clu log] = renumberclu(clu,log);
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Write new clu file
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if rewriteclu
-%         fid = fopen([fbasename '.clu.' num2str(elec)],'w');
-%         fprintf(fid,'%i\n',[length(unique(clu));clu]);
-%         fclose(fid);
         h5write(tkwik,['/channel_groups/' num2str(elec) '/spikes/clusters/main'],uint32(clu));
         if length(cluster_names) > length(kwikinfo.Groups)
             error('we added to the number of clusters?')
