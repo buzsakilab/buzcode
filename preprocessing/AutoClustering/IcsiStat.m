@@ -1,6 +1,4 @@
 function [h px py] = IcsiStat(rgx,rgy,icsi,tR,tC,tMax)
-
-
 % USAGE:
 %    [h px py] = IcsiStat(rgx,rgy,icsi,tR,tC,tMax)
 %    
@@ -18,6 +16,7 @@ function [h px py] = IcsiStat(rgx,rgy,icsi,tR,tC,tMax)
 %     h: binary value telling of the test was successfully passed or not.
 %     
 % Adrien Peyrache, 2012
+% David Tingley, 2017 fixed icsi bug
 
 t = [0:0.0001:tMax];
 Sx = zeros(length(t),1);

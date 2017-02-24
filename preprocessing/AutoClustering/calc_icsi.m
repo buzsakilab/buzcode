@@ -1,4 +1,4 @@
-function icsi = icsi(rgx,rgy)
+function icsi = calc_icsi(rgx,rgy)
 
 % icsi computes the common inter-spike interval (see Fee et al., J Neurosci. Meth., 1996)
 % Adrien Peyrache, 2012
@@ -6,7 +6,7 @@ function icsi = icsi(rgx,rgy)
 % rewritten 1/4/2017 by David Tingley 
 
 temp = [rgx;rgy];
-icsi = sort(temp);
+icsi = diff(sort(temp));
 
 % lx = length(rgx);
 % ly = length(rgy);

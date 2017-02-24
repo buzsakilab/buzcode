@@ -221,7 +221,7 @@ else
         newfet = fet(goodCluIx,:);
         if doMerge  % merge similar clusters which are neither noise nor MUA
             try
-                [newclu mergehistory] = mergeclu_slow(newclu,newres,newfet,tR,tC,rogThres);
+                [newclu mergehistory] = mergeclu_slow(newclu,newres,newfet,tR,tC,rogThres,samplingRate);
                 % log changes
                 log = [log sprintf('merge_slow.m was run\n')];
                 for ii=1:size(mergehistory,1)
