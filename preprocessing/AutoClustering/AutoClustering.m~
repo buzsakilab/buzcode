@@ -35,7 +35,7 @@ function AutoClustering(fbasename,elec,varargin)
 % Neurosci. Meth., 1996)
 %
 % Adrien Peyrache, 2012
-% David Tingley, 2017 updated
+% updated 
 
 
 dbstop if error
@@ -47,6 +47,7 @@ if ~isempty(varargin)
     if any(double(int16(dim))~=dim)
         error('Number of dimensions must be an integer')
     end
+      
     if size(dim,1) ~= length(elec) && length(dim) ~=1
         error('Number of dimensions must be a vector of the same length as electrode vecotr or a single value')
     end
@@ -59,7 +60,7 @@ end
 
 samplingRate = 20000;
 % Load spike waveforms? Used for detection of electrical artifacts
-loadspk = 0;
+loadspk = 1;
 % Refractory period in msec
 tR = 1.5./1000;
 % Censored period in msec (specific to the spike detection process)
@@ -72,6 +73,8 @@ devMinThres = .3;
 devMaxThres = 10;
 
 powThresh = .85;
+% Use isolation dist and L ratio quality metrics to identify artifact
+useMetrics = 0;
 
 isoMinTresh = 1;
 lratioMinThresh = 10e-5;
@@ -150,7 +153,7 @@ else
                devFromMean > devMaxThres]);  % enforces variability across channels (muscle)
     fff = find([fractRogue > rogThres]);  % enforces refractory period 
 
-    if loadspk
+    if useMetrics
         for ii=1:length(cluster_names)
             if length(find(clu==cluster_names(ii))) > 50
                 [L(ii) LRatio(ii)] = L_Ratio(fet,find(clu==cluster_names(ii)));
@@ -200,9 +203,33 @@ else
             pause
         end
     end
-    
+
+    % Here we compute # of spike per cell. Some code for the errormatrix fails
+    % when the cluster is defined by only a few samples. We'll put a
+    % threshopld a bit later on the total # of spikes.
+    h = hist(clu,double(unique(clu)));
+    h = h(:);
+
+    % Update the clu indices
+%     if loadspk
+%         for ii=1:length(noiseIx)
+%             clu = updateclu(clu,noiseIx(ii),1000+ii);
+%             log = [log sprintf('%d -> %d; Looks like electrical artifact\n',noiseIx(ii),1000+ii)];
+%         end
+%     end
+%     for ii=1:length(muaIx)
+%         clu = updateclu(clu,muaIx(ii),0+ii);
+%         log = [log sprintf('%d -> %d; Looks like MUA\n',muaIx(ii),0+ii)];
+%     end
+
     %reorder clusters here
-    [clu log] = renumberclu(clu,log);
+    cluster_names = unique(clu);
+    for i=1:length(cluster_names)
+        if cluster_names(i) ~= 0
+        clu(find(clu==cluster_names(i))) = i;
+         log = [log sprintf('%d -> %d; reordering clusters\n',cluster_names(i),i)];
+        end
+    end
     
  
     % Here we select only clusters that correspond to putative units and that
