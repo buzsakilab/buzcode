@@ -148,12 +148,11 @@ else
         fractRogue(ii) = FractionRogueSpk(rg,tR,tC);    
 %         meanPw(ii) = nanmean(pw(clu==cluster_names(ii)))/nanmean(pw);   
     end
-
-    ff = find([devFromMean < devMinThres |...
-               devFromMean > devMaxThres]);  % enforces variability across channels (muscle)
-    fff = find([fractRogue > rogThres]);  % enforces refractory period 
-
     if loadspk
+        ff = find([devFromMean < devMinThres |...
+             devFromMean > devMaxThres]);  % enforces variability across channels (muscle)
+        fff = find([fractRogue > rogThres]);  % enforces refractory period 
+        
         for ii=1:length(cluster_names)
             if length(find(clu==cluster_names(ii))) > 50
                 [L(ii) LRatio(ii)] = L_Ratio(fet,find(clu==cluster_names(ii)));
@@ -168,8 +167,11 @@ else
                 LRatio > lratioMaxThresh &...
                 iso < isoMinTresh |...
                 iso > isoMaxTresh]);          % finds large artefacts 
+        noiseIx = find(ismember(clu,cluster_names(unique([f,ff,fff]))));
+    else
+        noiseIx = [];
     end
-    noiseIx = find(ismember(clu,cluster_names(unique([f,ff,fff]))));
+    
     % takes all muscle/electrical artefact and merges to a single
     % garbage cluster
     badCluIdx = unique(clu(noiseIx));
@@ -209,6 +211,7 @@ else
  
     % Here we select only clusters that correspond to putative units and that
     % have at least 20 spikes (otherwise errormatrix calculation fails)
+    h = hist(clu,length(unique(clu)));
     goodCluIx = ismember(clu,find(cluster_names < 1000 & h>20)); 
     goodCluIx(noiseIx) = 0;
      

@@ -1,4 +1,4 @@
-function [fxy fcorr] = crossrefract(rgx,rgy,tR,tC);
+function [fxy fcorr] = crossrefract(rgx,rgy,tR,tC)
 
 % USAGE:
 %   [fxy fcorr] = CROSSREFRACT(rgx,rgy,tR,tC)
