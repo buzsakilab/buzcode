@@ -84,16 +84,19 @@
 % be useful for those wishing to pre-create the '.eegstates.mat' file as 
 % part of their data pre-processing.
 %
+% Dependency: Does require LoadXml.m from XmlTree
+% http://www.artefact.tk/software/matlab/xml/
+%
 %created by Andres Grosmark at Gyuri Buzsaki's lab, 12/2012.
 %Improvements by Brendon Watson
 %Many subfunctions, mostly from Anton Sirota, but also from Adrien Peyrache
 %and others have been included as subfunctions of this script to reduce
 %dependency issues.
+%
 
 
 
 function TheStateEditor(baseName, inputData, supressGUI, makePortable)
-
 
 %% get baseName if doesn't exist, save
 
@@ -111,7 +114,7 @@ if exist('Chs', 'var') & exist('rawEeg', 'var') & exist('MotionType', 'var') & ~
 end
 
 if ~exist('eegFS', 'var')
-        eegFS = 1250;
+        eegFS = 1250;%this is dangerous, creates some problems I'll try to fix below, BW
 end
 LoadFromPortable = 0;
 if ~exist('baseName','var')
@@ -181,7 +184,8 @@ if ~exist('spikeInfo', 'var')
     spikeInfo = 0;
 end
 
-FO.downsample = 4; %displays only every fourth eeg point to save memory
+
+FO.downsampleGoal = 312.5;% display Hz goal, to save memory... will calculate downsample factor to match (ie 4 if 1250hz lfp file)
 FO.baseName = baseName;
 FO.eegShow = 2; %show 2 seconds of eeg
 FO.maxFreq = 40; %default starting frequency extent
@@ -229,7 +233,6 @@ if ~(exist('rawEeg', 'var') & exist('Chs', 'var') & exist('nCh', 'var') & exist(
 end
 
 
-
 %% check for prior processing
 states = [];
 if FileExistsIn([baseName,'.eegstates.mat'])
@@ -242,6 +245,12 @@ if FileExistsIn([baseName,'.eegstates.mat'])
     else
         if ~exist('rawEeg', 'var')
             rawEeg = {};
+            if isfield(StateInfo,'eegFS')
+                eegFS = StateInfo.eegFS;%this was missing and caused probs with default 1250Hz assumption if data not at 1250hz
+            else %allows compatibility with old files...
+                eegFS = 1250;
+                StateInfo.eegFS = eegFS;%...should fix them too
+            end
             Chs = StateInfo.Chs;
             nCh = StateInfo.nCh;
             disp([baseName, '.eegstates.mat loaded']);
@@ -288,12 +297,12 @@ if FileExistsIn([baseName,'.eegstates.mat'])
 
 else
     StateInfo = [];
+    info1 = LoadParIn([baseName, '.xml']);
+    eegFS = info1.lfpSampleRate;
 
     if ~exist('nCh', 'var')
- 
-            info1 = LoadXmlIn([baseName, '.xml']);
+%             info1 = LoadXmlIn([baseName, '.xml']);
             nCh = info1.nChannels;
-  
     end
     if supressLoadGUI == 0
         
@@ -316,7 +325,11 @@ else
         
         
         annotation('textbox',  'Position', [0.02, 0.65, 0.9, 0.07], 'string', ['\bf\fontsize{10}Choose a motion signal to use:'], 'EdgeColor', 'none');
-        mOptions = 'None|Load From .whl file (head tracking)|Load from eeg ch(s) (accelerometer/motion pad)|Load from eeg ch(s) (MEG)|Load from TimeValue Pair .mat (_EMGCorr.mat)|Load from .mat file';
+        if exist([baseName '_EMGCorr.mat'],'file');
+            mOptions = {'Load from TimeValue Pair .mat (_EMGCorr.mat)';'None';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from .mat file'};
+        else
+            mOptions = {'None';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from TimeValue Pair .mat (_EMGCorr.mat)';'Load from .mat file'};
+        end
         mInput = uicontrol('style', 'popupmenu', 'string', mOptions );
         set(mInput, 'Units', 'normalized', 'Position', [0.37, 0.5, 0.62, 0.1]);
         
@@ -334,11 +347,10 @@ else
         
         uiwait(inputFig);
         Chs = get(Channels1, 'string');
-        mIn = get(mInput, 'Value');
+        mIn = mOptions{get(mInput, 'Value')};
         mChs = get(mChannels1, 'string');
         
-        
-        
+       
         clf(inputFig);
         close(inputFig);
         if answer1 == 0;
@@ -348,21 +360,20 @@ else
     if ischar(Chs)
         Chs = str2num(Chs);
     end
-    if exist('MotionType', 'var') & ~exist('mIn', 'var')
-        switch MotionType
-            case 'none'
-                mIn = 1;
-            case  'Whl'
-                mIn = 2;
-            case 'Channels (accelerometer)'
-                mIn = 3;
-            case 'Channels (MEG)'
-                mIn = 4';
-            case 'File'
-                mIn = 5;
-        end
-        
-    end
+%     if exist('MotionType', 'var') & ~exist('mIn', 'var')
+%         switch MotionType
+%             case 'none'
+%                 mIn = 1;
+%             case  'Whl'
+%                 mIn = 2;
+%             case 'Channels (accelerometer)'
+%                 mIn = 3;
+%             case 'Channels (MEG)'
+%                 mIn = 4';
+%             case 'File'
+%                 mIn = 5;
+%         end
+%     end
     
     
     if ~iscell(Chs)
@@ -380,14 +391,14 @@ else
         
         disp(['Loading eeg channels: ', int2str(Chs)]);
         
-        try
-            %First try Anton's LoadBinary
-            eeg1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
-        catch
+%         try
+%             %First try Anton's LoadBinary
+%             eeg1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+%         catch
             %Otherwise try to use Micheal Zugaro
             eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
             eeg1 = single(eeg1);
-        end
+%         end
         disp('Done.');
         for i = 1:length(Chs)
             
@@ -447,7 +458,8 @@ else
         end
         
         
-        if mIn == 3
+        if strcmp(mIn,'Load from eeg ch(s) (accelerometer/motion pad)')
+        %         if mIn == 3
             if ischar(mChs)
                 mChs  = str2num(mChs);
             end
@@ -457,13 +469,14 @@ else
                 return;
             end
         end
+       
         
         MotionType = [];
         switch(mIn)
-            case 1
+            case 'None'
                 motion = [];
                 MotionType = 'none';
-            case 2
+            case 'Load From .whl file (head tracking)'
                 disp('Loading and preprocessing motion data from .whl file...');
                 motion = LoadFromWhl(baseName, fspec{1}.to);
                 if sum(isnan(motion)) ~= 0
@@ -473,19 +486,19 @@ else
                 MotionType = 'Whl';
                 mChs = [];
                 disp('Done.');
-            case 3
+            case 'Load from eeg ch(s) (accelerometer/motion pad)'
                 disp(['Loading and preprocessing motion data from channel(s) ', int2str(mChs), '...']);
                 if exist('motionSignal', 'var')
                     meeg = motionSignal;
                 else
-                    try
-                        %First try Anton's LoadBinary
-                        meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
-                    catch
+%                     try
+%                         %First try Anton's LoadBinary
+%                         meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+%                     catch
                         %Otherwise try to use Micheal Zugaro
                         meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
                         meeg = single(meeg);
-                    end
+%                     end
                 end
                 meeg = abs(zscore(meeg')');
                 meeg = sum(meeg, 1);
@@ -502,7 +515,7 @@ else
                 end
                 MotionType = 'Channels (accelerometer)';
                 disp('Done.');
-            case 4
+            case 'Load from eeg ch(s) (MEG)'
                 disp(['Loading and preprocessing meg data from channel(s) ', int2str(mChs), '...']);
                 if exist('motionSignal', 'var')
                     meeg = motionSignal;
@@ -537,7 +550,7 @@ else
                 MotionType = 'Channels (MEG)';
                 disp('Done.');
                 
-            case 5
+            case 'Load from TimeValue Pair .mat (_EMGCorr.mat)'
                 MotionType = 'TimeVal';
                 varname = [];
 %                 b = msgbox(['Note: Motion vector must be 1xn where n is the number of time bins in seconds (n = ', int2str(length(fspec{1}.to)), ')']);
@@ -554,8 +567,8 @@ else
                         n{a} = w(a).name;
                     end;
                     varname = listdlg('ListString',n,'SelectionMode','Single','Name','Variable choice','PromptString','Choose variable to load');
+                    varname = n{varname};
                 end
-                varname = n{varname};
                 
                 tos = fspec{1}.to;
                 if isempty(varname);
@@ -564,7 +577,7 @@ else
                     motion = LoadTimeStampValuePairs(tos,fullfile(path,name),varname);
                 end
                 
-            case 6
+            case 'Load from .mat file'
                 MotionType = 'File';
                 b = msgbox(['Note: Motion vector must be 1xn where n is the number of time bins in seconds (n = ', int2str(length(fspec{1}.to)), ')']);
                 uiwait(b);
@@ -588,6 +601,7 @@ else
     StateInfo.MotionType = MotionType;
     StateInfo.fspec = fspec;
     StateInfo.motion = motion;
+    StateInfo.eegFS = eegFS;
     if makePortable == 1
         StateInfo.rawEeg = rawEeg;
     end
@@ -610,6 +624,12 @@ else
     catch
         warndlg(['Failed to save ' , baseName, '.eegstates.mat']);
     end
+end
+
+if eegFS>FO.downsampleGoal;
+    FO.downsample = round(eegFS/FO.downsampleGoal);
+else
+    FO.downsample = 1;
 end
 
 disp('So far so good. Now, loading StateEditor GUI. This is going to be great!');
@@ -650,10 +670,10 @@ if isempty(States)
 end
 
 
-
-    for i = 1:nCh
-        FO.eeg{i} = (eeg{i}(1:FO.downsample:end)/2150)/1000;
-    end
+for i = 1:nCh
+    FO.eeg{i} = eeg{i}(1:FO.downsample:end);
+%     FO.eeg{i} = (eeg{i}(1:FO.downsample:end)/2150)/1000;%why was this division?? To convert to volts in some old system?  
+end
 
 FO.clickPoint = [];
 FO.startLine = {};
@@ -2509,7 +2529,9 @@ if isempty(FO.Events)
 else
     updateEventLines(FO.Events(FO.Events(:, 1) == EN, 2));
 end
-modifyStates(1, newS.(st), 0);
+if isfield(newS,'states')
+    modifyStates(1, newS.(st), 0);
+end
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
 FO.madeChanges = 0;
 guidata(FO.fig, FO); 
@@ -2977,27 +2999,121 @@ motion = ResampleTolerant(vals,length(tos),length(times));
 end
 
 
-function [xml] = LoadXmlIn(fbasename)
+% function [xml] = LoadXmlIn(fbasename)
+% 
+% xml = [];
+% 
+% f1 = fopen([fbasename], 'r');
+% r1=[];
+% tline = fgetl(f1);
+% while ischar(tline)
+%     r1 = [r1 {tline}];
+%     tline = fgetl(f1);
+% %     disp(tline)
+% end
+% b = strfind(r1, '<nChannels>');
+% a = find(~cellfun('isempty', b));
+% a = min(a);
+% q1 = find(r1{a} == '>', 1, 'first');
+% q2 = find(r1{a} == '<', 1, 'last');
+% 
+% %sampling rate
+% sr = strfind(r1,'<samplingRate>');
+% sr = find(~cellfun('isempty', sr));
+% sr = sr(1);
+% 
+% xml.nChannels = str2num(r1{a}((q1 + 1):(q2 - 1)));
+% end
+% 
+% % general recursive parsing will have to wait.
 
-xml = [];
+function Par = LoadParIn(FileName, varargin)
+% LoadPar(FileName)
+% loads the specified par file and returns a structure with these elements:
+%
+% .FileName      -> name of file loaded from
+% .nChannels     -> number of total channels
+% .nBits         -> number of bits of the file
+% .SampleTime    -> time, in microseconds, of 1 sample (ie 1e6 / sample rate)
+% .HiPassFreq    -> High pass filter frequency
+% .nElecGps      -> number of electrodes (i.e. electrode groups)
+% .ElecGp        -> a cell array giving the channels in the electrodes
+%                    e.g. if .ElectrodeGroup{3} = [2 3 4 5], electrode 3
+%                    is a tetrode for channels 2 3 4 and 5. 
+% channel numbers here are from 0. be carefull.
+[SpecInfo] = DefaultArgsIn(varargin,{1});
 
-f1 = fopen([fbasename], 'r+');
-r1=[];
-tline = fgetl(f1);
-while ischar(tline)
-    r1 = [r1 {tline}];
-    tline = fgetl(f1);
+if ~isempty(strfind(FileName,'.par'))
+    FileBase = FileName(1:strfind(FileName,'.par')-1);
+elseif ~isempty(strfind(FileName,'.xml'))
+    FileBase = FileName(1:strfind(FileName,'.xml')-1);
+else 
+    FileBase = FileName;
 end
-b = strfind(r1, '<nChannels>');
-a = find(~cellfun('isempty', b));
-a = min(a);
-q1 = find(r1{a} == '>', 1, 'first');
-q2 = find(r1{a} == '<', 1, 'last');
-xml.nChannels = str2num(r1{a}((q1 + 1):(q2 - 1)));
+
+
+if FileExistsIn([FileBase '.xml']) %& ~isempty(strfind(FileName,'.xml'))
+    Par = LoadXml(FileBase);
+elseif FileExistsIn([FileBase '.par'])
+
+
+    % open file
+
+    fp = fopen([FileBase '.par'], 'r');
+    Par.FileName = FileBase;
+
+    % read in nChannels and nBits
+    Line = fgets(fp);
+    A = sscanf(Line, '%d %d');
+    Par.nChannels = A(1);
+    Par.nBits = A(2);
+
+    % read in SampleTime and HiPassFreq
+    Line = fgets(fp);
+    A = sscanf(Line, '%d %f', 2);
+    Par.SampleTime = A(1);
+    Par.HiPassFreq = A(2);
+
+    % read in nElectrodes
+    Line = fgets(fp);
+    if Line==-1
+        fclose(fp);
+        return;
+    end
+    A = sscanf(Line, '%d', 1);
+    Par.nElecGps = A(1);
+
+    % read in ElectrodeGroup
+    for i=1:Par.nElecGps
+        Line = fgets(fp);
+        A = sscanf(Line, '%d');
+        Par.ElecGp{i} = A(2:end);
+    end;
+    fclose(fp);
+else
+    error('Par or Xml file do not exist!');
 end
 
-% general recursive parsing will have to wait.
+if SpecInfo
+    if FileExistsIn([FileBase '.eeg.par'])
+        if ~isfield(Par,'nElecGps')
+            ParTmp = LoadPar([FileBase '.par']);
+        else
+            ParTmp = Par;
+        end
 
+        EegPar=LoadEegPar(FileBase);
+        for el=1:ParTmp.nElecGps
+            for eegel=1:EegPar.nElec
+                if ~isempty(intersect(ParTmp.ElecGp{el},EegPar.ElecChannels{eegel}))
+                    Par.ElecLoc{el} = EegPar.ElecLoc{eegel};
+                end
+            end
+        end
+   
+    end
+end
+end
 
 
 function [c] = convtrimIn(a,b)
@@ -4448,11 +4564,12 @@ end
 
 h = figure('position',[940 5 480 720]);
 
-ax1 = subplot(3,1,1);hold on;
+ax1 = subplot(3,1,1,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.swhistbins,histsandthreshs.swhist)
-swline = imline(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1));
-set(swline,'UserData','swline')
-id = addNewPositionCallback(swline,@(pos) title(mat2str(pos,3)));
+swline = plot(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1),'tag','bw');
+% swline = imline(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1));
+% set(swline,'UserData','swline')
+% id = addNewPositionCallback(swline,@(pos) title(mat2str(pos,3)));
 xlabel('SWS Band Power')
 ylabel('Counts (sec)')
 ResetToInitButton_sw = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.95, 0.15, 0.05]);
@@ -4460,11 +4577,14 @@ set(ResetToInitButton_sw,'Callback',@ResetToInitSw);
 ResetToOrigButton_sw = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.85, 0.9, 0.15, 0.05]);
 set(ResetToOrigButton_sw,'Callback',@ResetToOrigSw);
 
-ax2 = subplot(3,1,2);hold on;
+title('Click in plots to reset X value of thresholds')
+
+ax2 = subplot(3,1,2,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.EMGhistbins,histsandthreshs.EMGhist)
-EMGline = imline(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2));
-set(EMGline,'UserData','EMGline')
-id = addNewPositionCallback(EMGline,@(pos) title(mat2str(pos,3)));
+EMGline = plot(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2),'tag','bw');
+% EMGline = imline(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2));
+% set(EMGline,'UserData','EMGline')
+% id = addNewPositionCallback(EMGline,@(pos) title(mat2str(pos,3)));
 xlabel('EMG (300-600Hz Correlation)')
 ylabel('Counts (sec)')
 ResetToInitButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.62, 0.15, 0.05]);
@@ -4472,11 +4592,12 @@ set(ResetToInitButton_EMG,'Callback',@ResetToInitEMG);
 ResetToOrigButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.85, 0.57, 0.15, 0.05]);
 set(ResetToOrigButton_EMG,'Callback',@ResetToOrigEMG);
 
-ax3 = subplot(3,1,3);hold on;
+ax3 = subplot(3,1,3,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.THhistbins,histsandthreshs.THhist)
-THline = imline(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3));
-set(THline,'UserData','THline')
-id = addNewPositionCallback(THline,@(pos) title(mat2str(pos,3)));
+THline = plot(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3),'tag','bw');
+% THline = imline(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3));
+% set(THline,'UserData','THline')
+% id = addNewPositionCallback(THline,@(pos) title(mat2str(pos,3)));
 xlabel('Theta ratio (5-10Hz/2-15Hz)')
 ylabel('Counts (sec)')
 ResetToInitButton_TH = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.29, 0.15, 0.05]);
@@ -4507,6 +4628,16 @@ end
 % guidata(FO.fig,FO)
 
 end
+
+
+function ClickSetsLineXIn(obj,ev)
+cp = get(obj,'CurrentPoint');
+newx = cp(1);
+lo = findobj('parent',obj,'type','line','tag','bw');
+set(lo,'XData',[newx newx])
+
+end
+
 
 function histsandthreshs = SSHistogramsAndThresholds_In(baseName)
 % Get initial histograms and thresholds as calculated by Dan's code
@@ -4600,37 +4731,11 @@ histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthr
 end
 
 
-% function badtimes = GetBadTimes_In(baseName)
-% 
-% load([baseName '_StateScoreLFP.mat'],'swLFP','sf_LFP')
-% 
-% if sf_LFP == 1250
-%     downsamplefactor = 5;
-% else
-%     display('sf not 1250... if only you made this able to set its own downsample...')
-%     downsamplefactor = 2;
-% end
-% swLFP = downsample(swLFP,downsamplefactor);
-% 
-% freqlist = logspace(0,2,100);
-% %freqlist = linspace(0.5,55.5,111);
-% window = 10;
-% noverlap = 9;
-% window = window*sf_LFP;
-% noverlap = noverlap*sf_LFP;
-% [FFTspec,FFTfreqs,t_FFT] = spectrogram(swLFP,window,noverlap,freqlist,sf_LFP);
-% FFTspec = abs(FFTspec);
-% [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
-% 
-%     %% Remove transients before calculating SW histogram
-%     %this should be it's own whole section - removing/detecting transients
-% totz = zscore(abs(sum(zFFTspec')));
-% badtimes = find(totz>5);
-
 function [states,StateIntervals] = ReClusterStates_In(obj,ev)
 % Recluster based on Dan Levenstein's state clustering... as in Watson 2016
 % and further developed by D Levenstein
 % Code here is based on Dan's code as of July 6, 2016
+% git repository at https://github.com/dlevenstein/Sleep-State-Score/blob/master/ClusterStates.m
 
 obj = findobj('tag','StateEditorMaster');
 FO = guidata(obj(end));
@@ -4640,11 +4745,11 @@ baseName = FO.baseName;
 % swthresh = FO.histsandthreshs.swthresh;
 % EMGthresh = FO.histsandthreshs.EMGthresh;
 % THthresh = FO.histsandthreshs.THthresh;
-swthresh = getPosition(FO.AutoClusterFig.swline);
+swthresh = get(FO.AutoClusterFig.swline,'XData');
 swthresh = swthresh(1,1);
-EMGthresh = getPosition(FO.AutoClusterFig.EMGline);
+EMGthresh = get(FO.AutoClusterFig.EMGline,'XData');
 EMGthresh = EMGthresh(1,1);
-THthresh = getPosition(FO.AutoClusterFig.THline);
+THthresh = get(FO.AutoClusterFig.THline,'XData');
 THthresh = THthresh(1,1);
 FO.histsandthreshs.swthresh = swthresh;
 FO.histsandthreshs.EMGthresh = EMGthresh;
@@ -4690,7 +4795,7 @@ IDX = NREMtimes+2*REMtimes+1;
 
 
 %% Minimum Interuptions
-INT = IDXtoINT(IDX,3);
+INT = IDXtoINT_In(IDX,3);
 
 %Make the following repeated chunks of code into a single function.
 
@@ -4698,10 +4803,10 @@ INT = IDXtoINT(IDX,3);
 Sints = INT{2};
 Slengths = Sints(:,2)-Sints(:,1);
 shortSints = {Sints(find(Slengths<=minSWS),:)};
-shortSidx = INTtoIDX(shortSints,length(IDX));
+shortSidx = INTtoIDX_In(shortSints,length(IDX));
 %Change Short SWS to Wake
 IDX(shortSidx==1) = 1;   
-INT = IDXtoINT(IDX,3);
+INT = IDXtoINT_In(IDX,3);
 
 %NonMOV next to REM   (to REM)
 Wints = INT{1};
@@ -4717,10 +4822,10 @@ Wlengths = Wints(:,2)-Wints(:,1);
 shortWRints = find(Wlengths(WRtrans)<=minWnexttoREM);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Wints(shortWRints,:)};
-shortWRidx = INTtoIDX(shortWRints,length(IDX));
+shortWRidx = INTtoIDX_In(shortWRints,length(IDX));
 %Convert wake to rem
 IDX(shortWRidx==1) = 3;
-INT = IDXtoINT(IDX,3);
+INT = IDXtoINT_In(IDX,3);
 
 
 %NonMOV in REM   (to REM)
@@ -4737,11 +4842,11 @@ Wlengths = Wints(:,2)-Wints(:,1);
 shortWRints = find(Wlengths(WRtrans)<=minWinREM);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Wints(shortWRints,:)};
-shortWRidx = INTtoIDX(shortWRints,length(IDX));
+shortWRidx = INTtoIDX_In(shortWRints,length(IDX));
 %Convert wake to rem
 IDX(shortWRidx==1) = 3;
 IDX(IDX==6) = 1; %Convert NonMOV to WAKE
-INT = IDXtoINT(IDX,3);
+INT = IDXtoINT_In(IDX,3);
 
 
 %REM in WAKE   (to WAKE)
@@ -4758,44 +4863,44 @@ Rlengths = Rints(:,2)-Rints(:,1);
 shortWRints = find(Rlengths(WRtrans)<=minREMinW);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Rints(shortWRints,:)};
-shortWRidx = INTtoIDX(shortWRints,length(IDX));
+shortWRidx = INTtoIDX_In(shortWRints,length(IDX));
 %Convert REM to WAKE
 IDX(shortWRidx==1) = 1;
-INT = IDXtoINT(IDX,3);
+INT = IDXtoINT_In(IDX,3);
 
 %REM (only applies to REM in the middle of SWS)    (to WAKE)
 Rints = INT{3};
 Rlengths = Rints(:,2)-Rints(:,1);
 shortRints = {Rints(find(Rlengths<=minREM),:)};
-shortRidx = INTtoIDX(shortRints,length(IDX));
+shortRidx = INTtoIDX_In(shortRints,length(IDX));
 
 IDX(shortRidx==1) = 1;
-INT = IDXtoINT(IDX,3);
+INT = IDXtoINT_In(IDX,3);
 
 %WAKE   (to SWS)     essentiall a minimum MA time
 Wints = INT{1};
 Wlengths = Wints(:,2)-Wints(:,1);
 shortWints = {Wints(find(Wlengths<=minWAKE),:)};
-shortWidx = INTtoIDX(shortWints,length(IDX));
+shortWidx = INTtoIDX_In(shortWints,length(IDX));
 IDX(shortWidx==1) = 2;
 
-INT = IDXtoINT(IDX,3);
+INT = IDXtoINT_In(IDX,3);
 
 %SWS  (to NonMOV)
 Sints = INT{2};
 Slengths = Sints(:,2)-Sints(:,1);
 shortSints = {Sints(find(Slengths<=minSWS),:)};
-shortSidx = INTtoIDX(shortSints,length(IDX));
+shortSidx = INTtoIDX_In(shortSints,length(IDX));
 %Change Short SWS to Wake
 IDX(shortSidx==1) = 1;   
-INT = IDXtoINT(IDX,3);
+INT = IDXtoINT_In(IDX,3);
 
 
 %% Pad time to match recording time
 offset = t_clus(1)-1;
 INT = cellfun(@(x) x+offset,INT,'UniformOutput',false);
 
-IDX = INTtoIDX(INT,reclength);
+IDX = INTtoIDX_In(INT,reclength);
 t_IDX = 1:length(IDX);
 IDX = IDX';
 
@@ -4865,7 +4970,7 @@ FO = guidata(obj(end));
 baseName = FO.baseName;
 y = [0 max(FO.histsandthreshs_orig.swhist)];
 x = [FO.histsandthreshs_orig.swthresh FO.histsandthreshs_orig.swthresh];
-setPosition(FO.AutoClusterFig.swline,x,y);
+set(FO.AutoClusterFig.swline,'XData',x);
 end
 
 function ResetToOrigEMG(obj,ev)
@@ -4874,7 +4979,7 @@ FO = guidata(obj(end));
 baseName = FO.baseName;
 y = [0 max(FO.histsandthreshs_orig.EMGhist)];
 x = [FO.histsandthreshs_orig.EMGthresh FO.histsandthreshs_orig.EMGthresh];
-setPosition(FO.AutoClusterFig.EMGline,x,y);
+set(FO.AutoClusterFig.EMGline,'XData',x);
 end
 
 function ResetToOrigTH(obj,ev)
@@ -4883,7 +4988,7 @@ FO = guidata(obj(end));
 baseName = FO.baseName;
 y = [0 max(FO.histsandthreshs_orig.THhist)];
 x = [FO.histsandthreshs_orig.THthresh FO.histsandthreshs_orig.THthresh];
-setPosition(FO.AutoClusterFig.THline,x,y);
+set(FO.AutoClusterFig.THline,'XData',x);
 end
 
 function ResetToInitSw(obj,ev)
@@ -4892,7 +4997,7 @@ FO = guidata(obj(end));
 baseName = FO.baseName;
 y = [0 max(FO.AutoClusterFig.histsandthreshs_init.swhist)];
 x = [FO.AutoClusterFig.histsandthreshs_init.swthresh FO.AutoClusterFig.histsandthreshs_init.swthresh];
-setPosition(FO.AutoClusterFig.swline,x,y);
+set(FO.AutoClusterFig.swline,'XData',x);
 end
 
 function ResetToInitEMG(obj,ev)
@@ -4901,7 +5006,7 @@ FO = guidata(obj(end));
 baseName = FO.baseName;
 y = [0 max(FO.AutoClusterFig.histsandthreshs_init.EMGhist)];
 x = [FO.AutoClusterFig.histsandthreshs_init.EMGthresh FO.AutoClusterFig.histsandthreshs_init.EMGthresh];
-setPosition(FO.AutoClusterFig.EMGline,x,y);
+set(FO.AutoClusterFig.EMGline,'XData',x);
 end
 
 function ResetToInitTH(obj,ev)
@@ -4910,5 +5015,117 @@ FO = guidata(obj(end));
 baseName = FO.baseName;
 y = [0 max(FO.AutoClusterFig.histsandthreshs_init.THhist)];
 x = [FO.AutoClusterFig.histsandthreshs_init.THthresh FO.AutoClusterFig.histsandthreshs_init.THthresh];
-setPosition(FO.AutoClusterFig.THline,x,y);
+set(FO.AutoClusterFig.THline,'XData',x);
 end
+
+function [ INT ] = IDXtoINT_In( IDX ,numstates)
+%IDXtoINT_In(IDX) Converts state indices to state on/offsets
+%
+%INPUT
+%   IDX:    [t x 1] vector of state indices, where states are identified by
+%           integers starting from 1. Times with IDX 0 will not be counted
+%           in any interval INT
+%   numstates (optional)  number of interval types (for use
+%
+%OUTPUT
+%   INT:    {nstates} cell array of intervals - start and end times
+%
+%DLevenstein 2015-16
+%%
+if ~exist('numstates','var')
+    numstates = max(IDX);
+end
+states = 1:numstates;
+if isrow(IDX)
+    IDX = IDX';
+end
+IDX = [0; IDX; 0];
+for ss = 1:numstates
+    statetimes = IDX==states(ss);
+    INT{ss} = [find(diff(statetimes)==1) find(diff(statetimes)==-1)-1];
+end
+
+end
+
+function [ IDX ] = INTtoIDX_In(INT,len,sf)
+%[IDX] = INTtoIDX_In(INT,len,sf) Converts state on/offsets to vector of indices
+%
+%INPUT
+%   INT:    {nstates} cell array of [nintervals x 2] start and end times.
+%                       (optional) can be TSObject intervalSet
+%   len:    length of index vector
+%   sf:     desired sampling frequency of the output vector
+%
+%OUTPUT
+%   IDX:    [len x 1] vector of state indices, where states are identified by
+%           integers starting from 1, 0 are unmarked.
+%
+%Last Updated: 11/15/15
+%DLevenstein
+%%
+if isa(INT,'intervalSet')
+    INT = {[Start(INT,'s'), End(INT,'s')]};
+end
+if exist('sf','var')
+    INT = cellfun(@(X) X*sf,INT,'UniformOutput',false);
+end
+IDX = zeros(len,1);
+numstates = length(INT);
+for ss = 1:numstates
+    stateints = INT{ss};
+    numints = length(stateints(:,1));
+    for ii = 1:numints
+        IDX(stateints(ii,1):stateints(ii,2))=ss;
+    end
+end
+switch numstates
+    case 1
+        IDX = logical(IDX);
+    otherwise
+end
+
+end
+
+function newvals = ResampleTolerant(vals,length1,length2)
+% Wrapper around the resample function that allows it to work even if
+% the product of the lengths are long enough to overwhelm the resample.m 
+% limit of 2^31
+% Works by finding a rational number approximation of the requested length
+% ratio... to within a particular tolerance.
+% INPUTS
+% vals = vector of values to be resampled
+% length1 = desired length
+% length2 = initial length (often equals length(vals))
+%
+% Dan Levenstein code made into a function by Brendon Watson
+% August 2016
+
+
+if length1*length2 < 2^31 % if no need to change factors don't
+    newvals = resample(vals,length1,length2);
+else
+    newvals = [1 1];
+    
+    resamplefact = length1/length2;
+    tol = 0.0001;
+    while length(newvals(:,1)) ~= length1
+        [P,Q] = rat(resamplefact,tol);
+        if P==0
+            tol = tol/10;
+            continue
+        end
+        if P*Q >=2^20 | tol<1e-300  %Avoid crashing resample...
+            vals([1,end],:) = [];
+            length2 = length2-2;
+            resamplefact = length1/length2;
+            tol = 0.0001;
+            continue
+        end
+        newvals = resample(vals,P,Q);
+        tol = tol/10;
+    end
+end
+
+end
+
+
