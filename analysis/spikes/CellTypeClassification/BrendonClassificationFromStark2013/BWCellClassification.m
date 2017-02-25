@@ -54,7 +54,7 @@ for a = 1:length(allshanks);
     clu = LoadClu(cluname);
     for b = 1:length(cellsthisshank)
         spikesthiscell = find(clu == intrashankclunums(b));        
-        Waveforms = LoadSpikeWaveforms_BW(spkname,numChannels,nSamples,spikesthiscell);%load one cell at a time
+        Waveforms = LoadSpikeWaveforms(spkname,numChannels,nSamples,spikesthiscell);%load one cell at a time
         meanwaves = squeeze(mean(Waveforms,1));
         AllWaves{thisshank}(:,:,end+1) = meanwaves;
         [dummy,maxwaveidx] = max(abs(max(meanwaves,[],2)-min(meanwaves,[],2)));
