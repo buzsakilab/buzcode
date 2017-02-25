@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtpowerandfstatc</title>
+  <meta name="keywords" content="mtpowerandfstatc">
+  <meta name="description" content="Multi-taper computation of the power and the fstatistic for a particular frequency - continuous process">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>mtpowerandfstatc
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper computation of the power and the fstatistic for a particular frequency - continuous process</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [P,Fstat,f0]=mtpowerandfstatc(data,params,f0) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper computation of the power and the fstatistic for a particular frequency - continuous process
+
+ Usage:
+
+ [P,Fstat,f0]=mtpowerandfstatc(data,params,f0)
+ Input: 
+ Note units have to be consistent. See chronux.m for more information.
+       data (in form samples x channels/trials or a single vector) -- required
+       params: structure with fields tapers, pad, Fs, fpass, err, trialave
+       -optional
+           tapers : precalculated tapers from dpss or in the one of the following
+                    forms: 
+                    (1) A numeric vector [TW K] where TW is the
+                        time-bandwidth product and K is the number of
+                        tapers to be used (less than or equal to
+                        2TW-1). 
+                    (2) A numeric vector [W T p] where W is the
+                        bandwidth, T is the duration of the data and p 
+                        is an integer such that 2TW-p tapers are used. In
+                        this form there is no default i.e. to specify
+                        the bandwidth, you have to specify T and p as
+                        well. Note that the units of W and T have to be
+                        consistent: if W is in Hz, T must be in seconds
+                        and vice versa. Note that these units must also
+                        be consistent with the units of params.Fs: W can
+                        be in Hz if and only if params.Fs is in Hz.
+                        The default is to use form 1 with TW=3 and K=5
+
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+           Fs   (sampling frequency) - optional. Default 1.
+       f0  (frequency of calculation)
+ Output:
+       P       (integrated power within the frequency range of interest (trapezoidal integration))
+       Fstat   (F-statistic)
+       f0      (frequency)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [P,Fstat,f0]=mtpowerandfstatc(data,params,f0)</a>
+0002 <span class="comment">% Multi-taper computation of the power and the fstatistic for a particular frequency - continuous process</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage:</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% [P,Fstat,f0]=mtpowerandfstatc(data,params,f0)</span>
+0007 <span class="comment">% Input:</span>
+0008 <span class="comment">% Note units have to be consistent. See chronux.m for more information.</span>
+0009 <span class="comment">%       data (in form samples x channels/trials or a single vector) -- required</span>
+0010 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass, err, trialave</span>
+0011 <span class="comment">%       -optional</span>
+0012 <span class="comment">%           tapers : precalculated tapers from dpss or in the one of the following</span>
+0013 <span class="comment">%                    forms:</span>
+0014 <span class="comment">%                    (1) A numeric vector [TW K] where TW is the</span>
+0015 <span class="comment">%                        time-bandwidth product and K is the number of</span>
+0016 <span class="comment">%                        tapers to be used (less than or equal to</span>
+0017 <span class="comment">%                        2TW-1).</span>
+0018 <span class="comment">%                    (2) A numeric vector [W T p] where W is the</span>
+0019 <span class="comment">%                        bandwidth, T is the duration of the data and p</span>
+0020 <span class="comment">%                        is an integer such that 2TW-p tapers are used. In</span>
+0021 <span class="comment">%                        this form there is no default i.e. to specify</span>
+0022 <span class="comment">%                        the bandwidth, you have to specify T and p as</span>
+0023 <span class="comment">%                        well. Note that the units of W and T have to be</span>
+0024 <span class="comment">%                        consistent: if W is in Hz, T must be in seconds</span>
+0025 <span class="comment">%                        and vice versa. Note that these units must also</span>
+0026 <span class="comment">%                        be consistent with the units of params.Fs: W can</span>
+0027 <span class="comment">%                        be in Hz if and only if params.Fs is in Hz.</span>
+0028 <span class="comment">%                        The default is to use form 1 with TW=3 and K=5</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0031 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0032 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0033 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0034 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0035 <span class="comment">%                       Defaults to 0.</span>
+0036 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0037 <span class="comment">%       f0  (frequency of calculation)</span>
+0038 <span class="comment">% Output:</span>
+0039 <span class="comment">%       P       (integrated power within the frequency range of interest (trapezoidal integration))</span>
+0040 <span class="comment">%       Fstat   (F-statistic)</span>
+0041 <span class="comment">%       f0      (frequency)</span>
+0042 
+0043 <span class="keyword">if</span> nargin &lt; 1; error(<span class="string">'Need data'</span>); <span class="keyword">end</span>;
+0044 <span class="keyword">if</span> nargin &lt; 2; params=[]; <span class="keyword">end</span>;
+0045 [tapers,pad,Fs,fpass,err,trialave,params]=<a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params);
+0046 clear fpass err trialave params
+0047 data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data);
+0048 [N,C]=size(data);
+0049 tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(tapers,N,Fs); <span class="comment">% calculate the tapers</span>
+0050 [N,K]=size(tapers);
+0051 nfft=max(2^(nextpow2(N)+pad),N);<span class="comment">% number of points in fft</span>
+0052 <span class="comment">%[f0,findx]=getfgrid(Fs,nfft,f0);% frequency grid to be returned</span>
+0053 
+0054 tapers=tapers(:,:,ones(1,C)); <span class="comment">% add channel indices to tapers</span>
+0055 data=data(:,:,ones(1,K)); <span class="comment">% add taper indices to data</span>
+0056 data=permute(data,[1 3 2]); <span class="comment">% reshape data to get dimensions to match those of tapers</span>
+0057 data_proj=data.*tapers; <span class="comment">% product of data with tapers in the form time x tapers x channels</span>
+0058 t=(0:N-1)'/Fs;
+0059 fourier=exp(-i*2*pi*f0*t);
+0060 fourier=fourier(:,ones(1,K),ones(1,C));
+0061 J=squeeze(sum(fourier.*data_proj))/Fs; 
+0062 
+0063 Kodd=1:2:K;
+0064 Keven=2:2:K;
+0065 tapers=tapers(:,:,ones(1,C)); <span class="comment">% add channel indices to the tapers - t x K x C</span>
+0066 H0 = squeeze(sum(tapers(:,Kodd,:),1)); <span class="comment">% calculate sum of tapers for even prolates - K x C</span>
+0067 
+0068 <span class="keyword">if</span> C==1; H0=H0'; J=J'; <span class="keyword">end</span>;
+0069 P=squeeze(mean(J.*conj(J),1));
+0070 Jp=J(Kodd,:); <span class="comment">% drop the even ffts</span>
+0071 H0sq=sum(H0.*H0,1);<span class="comment">% sum of squares of H0^2 across taper indices - dimensions C</span>
+0072 JpH0=sum(Jp.*H0,1);<span class="comment">% sum of the product of Jp and H0 across taper indices - f x C\</span>
+0073 A=squeeze(JpH0./H0sq); <span class="comment">% amplitudes for all frequencies and channels</span>
+0074 Kp=size(Jp,1); <span class="comment">% number of even prolates</span>
+0075 Ap=A(ones(1,Kp),:); <span class="comment">% add the taper index to C</span>
+0076 Jhat=Ap.*H0; <span class="comment">% fitted value for the fft</span>
+0077 
+0078 num=(K-1).*(abs(A).^2).*squeeze(H0sq);<span class="comment">%numerator for F-statistic</span>
+0079 den=squeeze(sum(abs(Jp-Jhat).^2,1)+sum(abs(J(Keven,:)).^2,1));<span class="comment">% denominator for F-statistic</span>
+0080 Fstat=num./den; <span class="comment">% F-statisitic</span>
+0081</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

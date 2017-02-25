@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of predict</title>
+  <meta name="keywords" content="predict">
+  <meta name="description" content="Interpolate a fit produced by locfit().">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>predict
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Interpolate a fit produced by locfit().</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [y, se] = predict(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Interpolate a fit produced by locfit().
+
+ predict(fit)    produces the fitted values at locfit's selected points.
+ predict(fit,x)  interpolates the fits to points specified by x.
+
+ Input arguments:
+   fit   The locfit() fit.
+   x     Points to interpolate at. May be a matrix with d columns,
+         or cell with d components (each a vector). In the former
+         case, a fitted value is computed for each row of x.
+         In the latter, the components of x are interpreted as
+         grid margins.
+         Can also specify 'data' (evaluate at data points);
+         or 'fitp' (extract the fitted points).
+  'band',value
+         Type of standard errors to compute. Default is 'band','n', for none.
+         Other choices are 'band','g' (use a global s to estimate the resiudal
+         standard deviation, so standard errors are s*||l(x)||);
+         'band','l' (use a local s(x), so std. errors are s(x)*||l(x)||);
+         'band','p' (prediction errors, so s*sqrt(1+||l(x)||^2).
+  'direct'
+         Compute the local fit directly (rather than using local
+         regression, at each point specified by the x argument.
+  'kappa',vector
+         Vector of constants for simultaneous confidence bands,
+         computed by the kappa0() function.
+  'level',value
+         Coverage probability for confidence intervals and bands.
+         Default is 0.95.
+
+  Output is a vector of fitted values (if 'band','n'), or a cell
+  with fitted value, standard error vectors, and matrix of lower
+  and upper confidence limits.
+
+  Note that for local likelihood fits, back-transformation is
+  not performed, so that (e.g.) for Poisson regression with the
+  log-link, the output estimates the log-mean, and its standard errors.
+  Likewise, for density estimation, the output is log(density).
+
+  Author: Catherine Loader.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/Book/fig11_1.html" class="code" title="">fig11_1</a>	Local Regression and Likelihood, Figure 11.1</li><li><a href="../../../chronux_2_10/locfit/Book/fig13_1.html" class="code" title="">fig13_1</a>	Local Regression and Likelihood, Figure 13.1</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_6.html" class="code" title="">fig5_6</a>	Local Regression and Likelihood, Figure 5.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_1.html" class="code" title="">fig6_1</a>	Local Regression and Likelihood, Figure 6.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_6.html" class="code" title="">fig6_6</a>	Local Regression and Likelihood, Figure 6.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_5.html" class="code" title="">fig7_5</a>	Local Regression and Likelihood, Figure 7.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_6.html" class="code" title="">fig7_6</a>	Local Regression and Likelihood, Figure 7.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig8_1.html" class="code" title="">fig8_1</a>	Local Regression and Likelihood, Figure 8.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig8_2.html" class="code" title="">fig8_2</a>	Local Regression and Likelihood, Figure 8.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig9_2.html" class="code" title="">fig9_2</a>	Local Regression and Likelihood, Figure 9.2.</li><li><a href="fitted.html" class="code" title="function y = fitted(fit)">fitted</a>	Fitted values from a locfit object.</li><li><a href="lfband.html" class="code" title="function lfband(fit,varargin)">lfband</a>	adds confidence bands around the plot of a locfit() fit.</li><li><a href="lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="locfit_all.html" class="code" title="function out=locfit_all(varargin)">locfit_all</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="residuals.html" class="code" title="function y = residuals(fit,type)">residuals</a>	Residuals (or a few other things) from a locfit() fit.</li><li><a href="scb.html" class="code" title="function z=scb(x,y,varargin)">scb</a>	Simultaneous Confidence Bands</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/den_jack.html" class="code" title="function [m,ll,ul,llj,ulj]=den_jack(X,family,varargin)">den_jack</a>	Function to compute smooth estimates of the mean of x using locfit,</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y, se] = predict(varargin)</a>
+0002 
+0003 <span class="comment">% Interpolate a fit produced by locfit().</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% predict(fit)    produces the fitted values at locfit's selected points.</span>
+0006 <span class="comment">% predict(fit,x)  interpolates the fits to points specified by x.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Input arguments:</span>
+0009 <span class="comment">%   fit   The locfit() fit.</span>
+0010 <span class="comment">%   x     Points to interpolate at. May be a matrix with d columns,</span>
+0011 <span class="comment">%         or cell with d components (each a vector). In the former</span>
+0012 <span class="comment">%         case, a fitted value is computed for each row of x.</span>
+0013 <span class="comment">%         In the latter, the components of x are interpreted as</span>
+0014 <span class="comment">%         grid margins.</span>
+0015 <span class="comment">%         Can also specify 'data' (evaluate at data points);</span>
+0016 <span class="comment">%         or 'fitp' (extract the fitted points).</span>
+0017 <span class="comment">%  'band',value</span>
+0018 <span class="comment">%         Type of standard errors to compute. Default is 'band','n', for none.</span>
+0019 <span class="comment">%         Other choices are 'band','g' (use a global s to estimate the resiudal</span>
+0020 <span class="comment">%         standard deviation, so standard errors are s*||l(x)||);</span>
+0021 <span class="comment">%         'band','l' (use a local s(x), so std. errors are s(x)*||l(x)||);</span>
+0022 <span class="comment">%         'band','p' (prediction errors, so s*sqrt(1+||l(x)||^2).</span>
+0023 <span class="comment">%  'direct'</span>
+0024 <span class="comment">%         Compute the local fit directly (rather than using local</span>
+0025 <span class="comment">%         regression, at each point specified by the x argument.</span>
+0026 <span class="comment">%  'kappa',vector</span>
+0027 <span class="comment">%         Vector of constants for simultaneous confidence bands,</span>
+0028 <span class="comment">%         computed by the kappa0() function.</span>
+0029 <span class="comment">%  'level',value</span>
+0030 <span class="comment">%         Coverage probability for confidence intervals and bands.</span>
+0031 <span class="comment">%         Default is 0.95.</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">%  Output is a vector of fitted values (if 'band','n'), or a cell</span>
+0034 <span class="comment">%  with fitted value, standard error vectors, and matrix of lower</span>
+0035 <span class="comment">%  and upper confidence limits.</span>
+0036 <span class="comment">%</span>
+0037 <span class="comment">%  Note that for local likelihood fits, back-transformation is</span>
+0038 <span class="comment">%  not performed, so that (e.g.) for Poisson regression with the</span>
+0039 <span class="comment">%  log-link, the output estimates the log-mean, and its standard errors.</span>
+0040 <span class="comment">%  Likewise, for density estimation, the output is log(density).</span>
+0041 <span class="comment">%</span>
+0042 <span class="comment">%  Author: Catherine Loader.</span>
+0043 
+0044 <span class="keyword">if</span> (nargin&lt;1)
+0045     error(<span class="string">'predict requires fit argument'</span>);
+0046 <span class="keyword">end</span>;
+0047 
+0048 fit = varargin{1};
+0049 
+0050 <span class="keyword">if</span> (nargin==1) x = <span class="string">'fitp'</span>; <span class="keyword">else</span> x = varargin{2}; <span class="keyword">end</span>;
+0051 
+0052 band = <span class="string">'n'</span>;
+0053 what = <span class="string">'coef'</span>;
+0054 rest = <span class="string">'none'</span>;
+0055 dir  = 0;
+0056 level = 0.95;
+0057 d = size(fit.data.x,2);
+0058 kap = [zeros(1,d) 1];
+0059 
+0060 na = 3;
+0061 <span class="keyword">while</span> na &lt;= nargin
+0062   inc = 0;
+0063   <span class="keyword">if</span> strcmp(varargin{na},<span class="string">'band'</span>)
+0064     band = varargin{na+1};
+0065     inc = 2;
+0066   <span class="keyword">end</span>;
+0067   <span class="keyword">if</span> strcmp(varargin{na},<span class="string">'what'</span>)
+0068     what = varargin{na+1};
+0069     inc = 2;
+0070   <span class="keyword">end</span>;
+0071   <span class="keyword">if</span> strcmp(varargin{na},<span class="string">'restyp'</span>)
+0072     rest = varargin{na+1};
+0073     inc = 2;
+0074   <span class="keyword">end</span>;
+0075   <span class="keyword">if</span> strcmp(varargin{na},<span class="string">'direct'</span>)
+0076     dir = 1;
+0077     inc = 1;
+0078   <span class="keyword">end</span>;
+0079   <span class="keyword">if</span> strcmp(varargin{na},<span class="string">'kappa'</span>)
+0080     kap = varargin{na+1};
+0081     inc = 2;
+0082   <span class="keyword">end</span>;
+0083   <span class="keyword">if</span> strcmp(varargin{na},<span class="string">'level'</span>)
+0084     level = varargin{na+1};
+0085     inc = 2;
+0086   <span class="keyword">end</span>;
+0087   <span class="keyword">if</span> (inc == 0)
+0088     disp(varargin{na});
+0089     error(<span class="string">'Unknown argument'</span>);
+0090   <span class="keyword">end</span>;
+0091   na = na+inc;
+0092 <span class="keyword">end</span>;
+0093 
+0094 [y se cb] = mexpp(x,fit,band,what,rest,dir,kap,level);
+0095 <span class="keyword">if</span> (band==<span class="string">'n'</span>)
+0096     y = y;
+0097 <span class="keyword">else</span>
+0098     y = {y se cb};
+0099 <span class="keyword">end</span>;
+0100 
+0101 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

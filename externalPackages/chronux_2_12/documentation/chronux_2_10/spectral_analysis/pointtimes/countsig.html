@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of countsig</title>
+  <meta name="keywords" content="countsig">
+  <meta name="description" content="Give the program two spike data sets and one">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>countsig
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Give the program two spike data sets and one</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function[H,P,M1,M2,N1,N2] = countsig(data1,data2,T1,T2,parametric,p,quiet) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Give the program two spike data sets and one 
+ or two time intervals and it will decide if  
+ the counts are significantly different.      
+ this is either with a non-parametric method  
+ or with a sqrt transformation followed by a   
+ t-test                                       
+ Usage: [H,P,M1,M2,N1,N2] = countsig(data1,data2,T1,T2,parametric,p,quiet)
+                                              
+ Input:                                       
+ Note that all times have to be consistent. If data
+ is in seconds, so must be sig and t. If data is in 
+ samples, so must sig and t. The default is seconds.
+
+ data1      - structure array of spike times (required)  
+ data2      - structure array of spike times (required)  
+ T1         - time interval (default all)     
+ T2         - time interval (default T1)      
+ parametric - 0 = non-parametric (Wilcoxon)   
+            - 1 = ttest on sqrt of counts     
+            - 2 = Poisson assumption          
+              (default = 0)                   
+ p          - significance level (0.05)       
+ quiet      - 1 = no display 0 = display      
+                                              
+ Output:                                      
+                                              
+ H          - 1 if different 0 if not         
+ P          - prob of result if same          
+ M1         - mean count for data1            
+ M2         - mean count for data2            
+ N1         - counts for data1                
+ N2         - counts for data2</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="padNaN.html" class="code" title="function data=padNaN(data)">padNaN</a>	Creates a padded data matrix from input structural array of spike times</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function[H,P,M1,M2,N1,N2] = countsig(data1,data2,T1,T2,parametric,p,quiet)</a>
+0002 <span class="comment">% Give the program two spike data sets and one</span>
+0003 <span class="comment">% or two time intervals and it will decide if</span>
+0004 <span class="comment">% the counts are significantly different.</span>
+0005 <span class="comment">% this is either with a non-parametric method</span>
+0006 <span class="comment">% or with a sqrt transformation followed by a</span>
+0007 <span class="comment">% t-test</span>
+0008 <span class="comment">% Usage: [H,P,M1,M2,N1,N2] = countsig(data1,data2,T1,T2,parametric,p,quiet)</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Input:</span>
+0011 <span class="comment">% Note that all times have to be consistent. If data</span>
+0012 <span class="comment">% is in seconds, so must be sig and t. If data is in</span>
+0013 <span class="comment">% samples, so must sig and t. The default is seconds.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% data1      - structure array of spike times (required)</span>
+0016 <span class="comment">% data2      - structure array of spike times (required)</span>
+0017 <span class="comment">% T1         - time interval (default all)</span>
+0018 <span class="comment">% T2         - time interval (default T1)</span>
+0019 <span class="comment">% parametric - 0 = non-parametric (Wilcoxon)</span>
+0020 <span class="comment">%            - 1 = ttest on sqrt of counts</span>
+0021 <span class="comment">%            - 2 = Poisson assumption</span>
+0022 <span class="comment">%              (default = 0)</span>
+0023 <span class="comment">% p          - significance level (0.05)</span>
+0024 <span class="comment">% quiet      - 1 = no display 0 = display</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% Output:</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% H          - 1 if different 0 if not</span>
+0029 <span class="comment">% P          - prob of result if same</span>
+0030 <span class="comment">% M1         - mean count for data1</span>
+0031 <span class="comment">% M2         - mean count for data2</span>
+0032 <span class="comment">% N1         - counts for data1</span>
+0033 <span class="comment">% N2         - counts for data2</span>
+0034 
+0035 
+0036 <span class="keyword">if</span> nargin &lt; 2;error(<span class="string">'I need 2 sets of spike data'</span>);<span class="keyword">end</span>
+0037 data1=<a href="padNaN.html" class="code" title="function data=padNaN(data)">padNaN</a>(data1); <span class="comment">% create a zero padded data matrix from input structural array</span>
+0038 data2=<a href="padNaN.html" class="code" title="function data=padNaN(data)">padNaN</a>(data2); <span class="comment">% create a zero padded data matrix from input structural array</span>
+0039 data1=data1'; data2=data2'; <span class="comment">% transpose data to get it into a form acceptable to Murray's routine</span>
+0040 <span class="keyword">if</span> nargin &lt; 3, 
+0041    T1 = [min(data1(:,1)) max(max(data1))]; 
+0042 <span class="keyword">end</span>
+0043 <span class="keyword">if</span> nargin &lt; 4, 
+0044    T2 = T1; 
+0045 <span class="keyword">end</span>
+0046 <span class="keyword">if</span> nargin &lt; 5, 
+0047    parametric = 0;
+0048 <span class="keyword">end</span>  
+0049 <span class="keyword">if</span> nargin &lt; 6; p = 0.05;<span class="keyword">end</span>
+0050 <span class="keyword">if</span> nargin &lt; 7; quiet = 0; <span class="keyword">end</span>
+0051 
+0052 <span class="keyword">if</span> isempty(T1), 
+0053    T1 = [min(data1(:,1)) max(max(data1))]; 
+0054 <span class="keyword">end</span>
+0055 <span class="keyword">if</span> isempty(T2) 
+0056    T2 = T1; 
+0057 <span class="keyword">end</span>
+0058 <span class="keyword">if</span> isempty(parametric),
+0059    parametric = 0;
+0060 <span class="keyword">end</span>  
+0061 <span class="keyword">if</span> isempty(p) 
+0062    p = 0.05;
+0063 <span class="keyword">end</span>
+0064 <span class="keyword">if</span> isempty(quiet), 
+0065     quiet = 0; 
+0066 <span class="keyword">end</span>
+0067 
+0068 NT1 = length(data1(:,1));
+0069 NT2 = length(data2(:,2));
+0070 
+0071 <span class="keyword">if</span> (NT1 &lt; 4 || NT2 &lt; 4) &amp;&amp; parametric ~= 2,
+0072   disp(<span class="string">'Low number of trials : switch to Poisson test'</span>)
+0073   parametric = 2;
+0074 <span class="keyword">end</span>
+0075 
+0076 <span class="keyword">if</span> abs((T1(2)-T1(1)) - (T1(2)-T1(1))) &gt; 10.^-6
+0077   error(<span class="string">'Time intervals for analysis are different'</span>)
+0078 <span class="keyword">end</span>
+0079 
+0080 <span class="comment">% get counts...</span>
+0081 N1=zeros(1,NT1);
+0082 <span class="keyword">for</span> n=1:NT1
+0083   N1(n) = length(find(data1(n,:) &gt;=  T1(1) &amp; <span class="keyword">...</span>
+0084           data1(n,:) &lt;=  T1(2) &amp; ~isnan(data1(n,:))));
+0085 <span class="keyword">end</span>
+0086 N2=zeros(1,NT2);
+0087 <span class="keyword">for</span> n=1:NT2
+0088   N2(n) = length(find(data2(n,:) &gt;=  T2(1) &amp; <span class="keyword">...</span>
+0089           data2(n,:) &lt;=  T2(2) &amp; ~isnan(data1(n,:))));
+0090 <span class="keyword">end</span>
+0091 M1 = mean(N1);
+0092 M2 = mean(N2);
+0093 
+0094 <span class="comment">% do non parametric test...</span>
+0095 
+0096 <span class="keyword">if</span> parametric == 0
+0097   [P H] = ranksum(N1,N2,p);
+0098 <span class="keyword">end</span>
+0099 
+0100 <span class="comment">% parametric test (with stabilizing transform)...</span>
+0101 
+0102 <span class="comment">%  use sqrt transformation from</span>
+0103 <span class="comment">%  Cox and Lewis to make data more Gaussian</span>
+0104 <span class="comment">%  the statistical analysis of series of events pg 44</span>
+0105 
+0106 <span class="keyword">if</span> parametric == 1
+0107   X = sqrt(N1 +0.25);
+0108   Y = sqrt(N2 +0.25);
+0109   [H,P] = ttest2(X,Y,p,0);
+0110 <span class="keyword">end</span>
+0111 
+0112 <span class="comment">%  Poisson test.  Use method from Zar</span>
+0113 <span class="comment">%  pg 580 Ed 3.  Z bahaves as a normal variate under</span>
+0114 <span class="comment">%  null of same process mean and Poisson processes</span>
+0115 
+0116 <span class="keyword">if</span> parametric == 2
+0117   X = sum(N1);
+0118   Y = sum(N2);
+0119   Z = abs(X-Y)./sqrt(X+Y);
+0120   P = 2*(1-normcdf(Z));
+0121   <span class="keyword">if</span> P &lt; p; H = 1;<span class="keyword">else</span> H = 0;<span class="keyword">end</span>
+0122 <span class="keyword">end</span>  
+0123 
+0124 <span class="keyword">if</span> quiet == 0
+0125   <span class="keyword">if</span> H == 1
+0126     disp(<span class="string">'Counts are signifcantly different'</span>)
+0127   <span class="keyword">else</span>
+0128     disp(<span class="string">'Counts are not signifcantly different'</span>) 
+0129   <span class="keyword">end</span>
+0130   disp([<span class="string">'Mean count for data1 = '</span> num2str(M1)])
+0131   disp([<span class="string">'Mean count for data2 = '</span> num2str(M2)])
+0132   disp([<span class="string">'P value = '</span> num2str(P)])
+0133 <span class="keyword">end</span>
+0134 
+0135 
+0136 
+0137 
+0138 
+0139 
+0140 
+0141 
+0142 
+0143 
+0144</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of spence21</title>
+  <meta name="keywords" content="spence21">
+  <meta name="description" content="function for Spencer's 21-point graduation rule.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>spence21
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function for Spencer's 21-point graduation rule.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function yhat=spence21(y) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> function for Spencer's 21-point graduation rule.
+ set out following Spencer's hand-calculation method,
+ which isn't the shortest computer program!</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/Book/fig1_2.html" class="code" title="">fig1_2</a>	Local Regression and Likelihood, Figure 1.2.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function yhat=spence21(y)</a>
+0002 <span class="comment">% function for Spencer's 21-point graduation rule.</span>
+0003 <span class="comment">% set out following Spencer's hand-calculation method,</span>
+0004 <span class="comment">% which isn't the shortest computer program!</span>
+0005 
+0006 oten = ones(10,1);
+0007 n = length(y);
+0008 y = [ oten*y(1); y; oten*y(n) ];
+0009 
+0010 n = length(y);
+0011 k = 4:(n-3);
+0012 y1 = -y(k-3) + y(k-1) + 2*y(k) + y(k+1) -y(k+3);
+0013 
+0014 n = length(y1);
+0015 k = 4:(n-3);
+0016 y2 = y1(k-3)+y1(k-2)+y1(k-1)+y1(k)+y1(k+1)+y1(k+2)+y1(k+3);
+0017 
+0018 n = length(y2);
+0019 k = 3:(n-2);
+0020 y3 = y2(k-2)+y2(k-1)+y2(k)+y2(k+1)+y2(k+2);
+0021 
+0022 n = length(y3);
+0023 k = 3:(n-2);
+0024 y4 = y3(k-2)+y3(k-1)+y3(k)+y3(k+1)+y3(k+2);
+0025 
+0026 yhat = y4/350;
+0027 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

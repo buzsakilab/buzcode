@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of load_scope</title>
+  <meta name="keywords" content="load_scope">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html specscope -->
+<h1>load_scope
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function load_scope(files,refresh_rate,sample_frequency) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="start_display.html" class="code" title="function start_display(ring,fig)">start_display</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function load_scope(files,refresh_rate,sample_frequency)</a>
+0002 <a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a> all
+0003 shot_size=round(sample_frequency/refresh_rate);
+0004 ring=zeros(shot_size*20,1)';
+0005 
+0006 fig = figure(<span class="string">'Position'</span>,[500,500,800,600],<span class="keyword">...</span>
+0007         <span class="string">'NumberTitle'</span>,<span class="string">'off'</span>,<span class="keyword">...</span>
+0008         <span class="string">'Name'</span>,<span class="string">'Scope'</span>,<span class="keyword">...</span>
+0009         <span class="string">'doublebuffer'</span>,<span class="string">'on'</span>,<span class="keyword">...</span>
+0010         <span class="string">'HandleVisibility'</span>,<span class="string">'on'</span>,<span class="keyword">...</span>
+0011     <span class="string">'Renderer'</span>, <span class="string">'openGL'</span>);
+0012 
+0013 plot_ref=plot(zeros(10,1));
+0014 
+0015 
+0016 <span class="keyword">for</span> i=1:length(files)
+0017     <span class="comment">%files{i};</span>
+0018     fid=fopen(files{i},<span class="string">'r'</span>);
+0019     fseek(fid,0,1);
+0020     e_o_f=ftell(fid);
+0021     fseek(fid,0,-1);
+0022     
+0023     
+0024     <span class="keyword">while</span> (ftell(fid)&lt;e_o_f)
+0025         tic
+0026         [data,c]=fread(fid,shot_size,<span class="string">'short'</span>);
+0027         data=(data/10000)';
+0028         <span class="comment">%data=rand(1,length(data));</span>
+0029         ring=[ring data];
+0030         ring(1:length(data))=[];
+0031         <a href="start_display.html" class="code" title="function start_display(ring,fig)">start_display</a>(ring,plot_ref);
+0032         stop_time=toc;
+0033         <span class="keyword">while</span> stop_time&lt;(1/refresh_rate)
+0034             stop_time=toc;
+0035             
+0036         <span class="keyword">end</span>
+0037     <span class="keyword">end</span>
+0038     fclose(fid)
+0039     
+0040 <span class="keyword">end</span>
+0041     
+0042</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of extractdatapb</title>
+  <meta name="keywords" content="extractdatapb">
+  <meta name="description" content="Extract segements of binned point process data between t(1) and t(2)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointbinned -->
+<h1>extractdatapb
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Extract segements of binned point process data between t(1) and t(2)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function data=extractdatapb(data,Fs,t) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Extract segements of binned point process data between t(1) and t(2)
+ Usage: data=extractdatapb(data,Fs,t)
+
+ Input:
+ data: binned point process data in the form samples x channels or single
+ vector
+ Fs: sampling frequency
+ t   : time as a 2d vector [t(1) t(2)]
+ Note that sampling frequency and t have to be in consistent units
+ Output:
+ data: data between t(1) and t(2)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function data=extractdatapb(data,Fs,t)</a>
+0002 <span class="comment">% Extract segements of binned point process data between t(1) and t(2)</span>
+0003 <span class="comment">% Usage: data=extractdatapb(data,Fs,t)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Input:</span>
+0006 <span class="comment">% data: binned point process data in the form samples x channels or single</span>
+0007 <span class="comment">% vector</span>
+0008 <span class="comment">% Fs: sampling frequency</span>
+0009 <span class="comment">% t   : time as a 2d vector [t(1) t(2)]</span>
+0010 <span class="comment">% Note that sampling frequency and t have to be in consistent units</span>
+0011 <span class="comment">% Output:</span>
+0012 <span class="comment">% data: data between t(1) and t(2)</span>
+0013 
+0014 <span class="keyword">if</span> nargin &lt; 3; 
+0015     error(<span class="string">'need all three arguments'</span>);
+0016 <span class="keyword">end</span>;
+0017 <span class="keyword">if</span> t(1) &lt; 0 || t(2)&lt;=t(1);
+0018     error(<span class="string">'times cannot be negative and t(2) has to be greater than t(1)'</span>);
+0019 <span class="keyword">end</span>;
+0020 data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data);
+0021 N=size(data,1);
+0022 tt=(0:N-1)/Fs;
+0023 indx=find(tt&gt;=t(1) &amp; tt&lt;=t(2));
+0024 data=data(indx,:);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

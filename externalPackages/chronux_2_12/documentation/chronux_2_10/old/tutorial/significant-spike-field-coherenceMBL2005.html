@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of significant-spike-field-coherenceMBL2005</title>
+  <meta name="keywords" content="significant-spike-field-coherenceMBL2005">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html old --><!-- menu.html tutorial -->
+<h1>significant-spike-field-coherenceMBL2005
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/continuous/createdatamatc.html" class="code" title="function data=createdatamatc(data,E,Fs,win)">createdatamatc</a>	Helper function to create an event triggered matrix from univariate</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/cohgramcpt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpt(data1,data2,movingwin,params,fscorr)">cohgramcpt</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="../../../chronux_2_10/spectral_analysis/plots/plotsig.html" class="code" title="function plotsig(C,sig,t,f,c)">plotsig</a>	Function to plot C where it is higher than a threshold sig</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/createdatamatpt.html" class="code" title="function data=createdatamatpt(data,E,win)">createdatamatpt</a>	Helper function to create an event triggered matrix from a single</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 [fname,pname]=uigetfile(<span class="string">'*'</span>);
+0002 eval([<span class="string">'load '</span> pname <span class="string">'\'</span> fname]);
+0003 params.tapers=[5 9]; params.pad=2; params.Fs=1000; params.fpass=[0 100]; params.trialave=1;params.err=[1 0.05];
+0004 movingwin=[0.5 0.1]; <span class="comment">% duration of moving window used to evaluate spectrograms</span>
+0005 win=[2 2]; <span class="comment">% window around events</span>
+0006 fignum=[2 3 6 9 8 7 4 1]; <span class="comment">% figure numbers for particular directions</span>
+0007 <span class="keyword">for</span> targ=0:7;
+0008     E=targoff(find(targets==targ));
+0009     datasp=<a href="../../../chronux_2_10/spectral_analysis/pointtimes/createdatamatpt.html" class="code" title="function data=createdatamatpt(data,E,win)">createdatamatpt</a>(dsp(1),E,win);
+0010     datalfp=<a href="../../../chronux_2_10/spectral_analysis/continuous/createdatamatc.html" class="code" title="function data=createdatamatc(data,E,Fs,win)">createdatamatc</a>(dlfp(:,1),E,Fs,win);
+0011     [C,phi,S12,S1,S2,t,f,zerosp,confC,phierr]=<a href="../../../chronux_2_10/spectral_analysis/hybrid/cohgramcpt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpt(data1,data2,movingwin,params,fscorr)">cohgramcpt</a>(datalfp,datasp,movingwin,params); <span class="comment">% Note cohgramcpt does give you spectra but not the errors.</span>
+0012     subplot(3,3,fignum(targ+1));<a href="../../../chronux_2_10/spectral_analysis/plots/plotsig.html" class="code" title="function plotsig(C,sig,t,f,c)">plotsig</a>(C,confC,t,f); axis xy; colorbar;
+0013 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

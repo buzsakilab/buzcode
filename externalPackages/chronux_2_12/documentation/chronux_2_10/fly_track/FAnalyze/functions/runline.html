@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of runline</title>
+  <meta name="keywords" content="runline">
+  <meta name="description" content="Running line fit (local linear regression)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FAnalyze --><!-- menu.html functions -->
+<h1>runline
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>Running line fit (local linear regression)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function y_line=runline(y,n,dn) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Running line fit (local linear regression)
+
+ Usage: y_line=runline(y,n,dn);
+
+ Inputs: 
+ y: input 1-d time series (real)
+ n: length of running window in samples
+ dn: stepsize of window in samples
+ 
+ Outputs:
+ y_line: local line fit to data</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="FAnalyze.html" class="code" title="function varargout = FAnalyze(varargin)">FAnalyze</a>	FANALYZE</li><li><a href="../../../../chronux_2_10/spectral_analysis/continuous/locdetrend.html" class="code" title="function data=locdetrend(data,Fs,movingwin)">locdetrend</a>	Remove running line fit (using local linear regression)-continuous</li><li><a href="../../../../chronux_2_10/spectral_analysis/continuous/locsmooth.html" class="code" title="function data=locsmooth(data,Fs,Tw,Ts)">locsmooth</a>	Running line fit (using local linear regression) - 1d only, continuous</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function y_line=runline(y,n,dn)</a>
+0002 <span class="comment">% Running line fit (local linear regression)</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage: y_line=runline(y,n,dn);</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Inputs:</span>
+0007 <span class="comment">% y: input 1-d time series (real)</span>
+0008 <span class="comment">% n: length of running window in samples</span>
+0009 <span class="comment">% dn: stepsize of window in samples</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Outputs:</span>
+0012 <span class="comment">% y_line: local line fit to data</span>
+0013 
+0014 y=y(:);
+0015 nt=length(y);
+0016 y_line=zeros(nt,1);
+0017 norm=y_line;
+0018 nwin=ceil((nt-n)/dn);
+0019 yfit=zeros(nwin,n);
+0020 xwt=((1:n)-n/2)/(n/2);
+0021 wt=(1-abs(xwt).^3).^3;
+0022 <span class="keyword">for</span> j=1:nwin, 
+0023     tseg=y(dn*(j-1)+1:dn*(j-1)+n);
+0024     y1=mean(tseg); 
+0025     y2=mean((1:n)'.*tseg)*2/(n+1);
+0026     a=(y2-y1)*6/(n-1); b=y1-a*(n+1)/2;
+0027     yfit(j,:)=(1:n)*a+b;
+0028     y_line((j-1)*dn+(1:n))=y_line((j-1)*dn+(1:n))+(yfit(j,:).*wt)';
+0029     norm((j-1)*dn+(1:n))=norm((j-1)*dn+(1:n))+wt';
+0030 <span class="keyword">end</span>
+0031 mask=find(norm&gt;0); y_line(mask)=y_line(mask)./norm(mask);
+0032 indx=(nwin-1)*dn+n-1;
+0033 npts=length(y)-indx+1;
+0034 y_line(indx:end)=(n+1:n+npts)'*a+b;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

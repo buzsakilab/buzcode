@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of close</title>
+  <meta name="keywords" content="close">
+  <meta name="description" content="VR=CLOSE(VR)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # videoIO --><!-- ../menu.html videoIO_2007a --><!-- menu.html @videoReader -->
+<h1>close
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>VR=CLOSE(VR)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>function vr = close(vr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">VR=CLOSE(VR)
+  Closes video VR and releases any system resources necessary to access it
+  (e.g. threads, file handles, etc.).  Do NOT just clear a videoReader
+  object without first closing its handle:
+
+    % BAD code--typically will leak system resources
+    vr = videoReader(...);
+    ...
+    clear vr; % leaks resources
+
+    % GOOD code
+    vr = videoReader(...);
+    vr = close(vr);
+    clear vr; % okay, but not needed
+
+  After calling CLOSE, VR should not be used any more.
+    vr = videoReader(...);
+    vr = close(vr);
+    next(vr); % BAD
+    vr = videoReader(...);
+    close(vr); % BAD: should reassign result to vr to be safe
+    next(vr); % BAD
+  
+SEE ALSO
+  <a href="videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>
+
+Copyright (c) 2006 Gerald Dalley
+See &quot;MIT.txt&quot; in the installation directory for licensing details (especially
+when using this library on GNU/Linux).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+<li><a href="../../../../../chronux_2_10/fly_track/FTrack/functions/FTrack.html" class="code" title="function varargout = FTrack(varargin)">FTrack</a>	FTRACK</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/videoread.html" class="code" title="function mov=videoread(fname,varargin)">videoread</a>	VIDEOREAD Read an video file in a mannter compatible with Matlab's</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/videoread.html" class="code" title="function mov=videoread(fname,varargin)">videoread</a>	VIDEOREAD Read an video file in a mannter compatible with Matlab's</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/videoread.html" class="code" title="function mov=videoread(fname,varargin)">videoread</a>	VIDEOREAD Read an video file in a mannter compatible with Matlab's</li><li><a href="../../../../../chronux_2_10/spectral_analysis/specscope/load_scope.html" class="code" title="function load_scope(files,refresh_rate,sample_frequency)">load_scope</a>	</li><li><a href="../../../../../chronux_2_10/spectral_analysis/specscope/rtf.html" class="code" title="function rtf(plot_frq,flag_save)">rtf</a>	</li><li><a href="../../../../../chronux_2_10/spectral_analysis/specscope/specscope.html" class="code" title="function outdata=specscope(indata)">specscope</a>	record and plot audio spectrogram</li><li><a href="../../../../../chronux_2_10/spectral_analysis/specscope/specscopepp.html" class="code" title="function outdata=specscopepp(indata)">specscopepp</a>	</li><li><a href="../../../../../chronux_2_10/wave_browser/auto_classify.html" class="code" title="function varargout = auto_classify(varargin)">auto_classify</a>	AUTO_CLASSIFY M-file for auto_classify.fig</li><li><a href="../../../../../chronux_2_10/wave_browser/classify_spectra.html" class="code" title="function varargout = classify_spectra(varargin)">classify_spectra</a>	CLASSIFY_SPECTRA M-file for classify_spectra.fig</li><li><a href="../../../../../chronux_2_10/wave_browser/configure_classify.html" class="code" title="function varargout = configure_classify(varargin)">configure_classify</a>	CONFIGURE_CLASSIFY M-file for configure_classify.fig</li><li><a href="../../../../../chronux_2_10/wave_browser/wave_browser.html" class="code" title="function varargout = wave_browser(varargin)">wave_browser</a>	WAVE_BROWSER M-file for wave_browser.fig</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function vr = close(vr)</a>
+0002 <span class="comment">%VR=CLOSE(VR)</span>
+0003 <span class="comment">%  Closes video VR and releases any system resources necessary to access it</span>
+0004 <span class="comment">%  (e.g. threads, file handles, etc.).  Do NOT just clear a videoReader</span>
+0005 <span class="comment">%  object without first closing its handle:</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%    % BAD code--typically will leak system resources</span>
+0008 <span class="comment">%    vr = videoReader(...);</span>
+0009 <span class="comment">%    ...</span>
+0010 <span class="comment">%    clear vr; % leaks resources</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%    % GOOD code</span>
+0013 <span class="comment">%    vr = videoReader(...);</span>
+0014 <span class="comment">%    vr = close(vr);</span>
+0015 <span class="comment">%    clear vr; % okay, but not needed</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%  After calling CLOSE, VR should not be used any more.</span>
+0018 <span class="comment">%    vr = videoReader(...);</span>
+0019 <span class="comment">%    vr = close(vr);</span>
+0020 <span class="comment">%    next(vr); % BAD</span>
+0021 <span class="comment">%    vr = videoReader(...);</span>
+0022 <span class="comment">%    close(vr); % BAD: should reassign result to vr to be safe</span>
+0023 <span class="comment">%    next(vr); % BAD</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">%SEE ALSO</span>
+0026 <span class="comment">%  videoReader</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">%Copyright (c) 2006 Gerald Dalley</span>
+0029 <span class="comment">%See &quot;MIT.txt&quot; in the installation directory for licensing details (especially</span>
+0030 <span class="comment">%when using this library on GNU/Linux).</span>
+0031 
+0032 feval(vr.plugin, <span class="string">'close'</span>, vr.handle);
+0033 vr.handle = nan;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

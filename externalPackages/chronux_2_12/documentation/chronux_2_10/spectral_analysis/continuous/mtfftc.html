@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtfftc</title>
+  <meta name="keywords" content="mtfftc">
+  <meta name="description" content="Multi-taper fourier transform - continuous data">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>mtfftc
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper fourier transform - continuous data</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function J=mtfftc(data,tapers,nfft,Fs) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper fourier transform - continuous data
+
+ Usage:
+ J=mtfftc(data,tapers,nfft,Fs) - all arguments required
+ Input: 
+       data (in form samples x channels/trials or a single vector) 
+       tapers (precalculated tapers from dpss) 
+       nfft (length of padded data)
+       Fs   (sampling frequency)
+                                   
+ Output:
+       J (fft in form frequency index x taper index x channels/trials)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/old/CrossSpecMat.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMat(data,win,params)">CrossSpecMat</a>	</li><li><a href="CrossSpecMatc.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatc(data,win,params)">CrossSpecMatc</a>	Multi-taper cross-spectral matrix - another routine, allows for multiple trials and channels</li><li><a href="coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous process</li><li><a href="coherencyc_unequal_length_trials.html" class="code" title="function [Cmn,Phimn,Smn,Smm,f,ConfC,PhiStd,Cerr] = coherencyc_unequal_length_trials( data, movingwin, params, sMarkers )">coherencyc_unequal_length_trials</a>	This routine computes the average multi-taper coherence for a given set of unequal length segments. It is</li><li><a href="cohmatrixc.html" class="code" title="function [C,phi,S12,f,confC,phistd,Cerr]=cohmatrixc(data,params)">cohmatrixc</a>	Multi-taper coherency,cross-spectral matrix - continuous process</li><li><a href="ftestc.html" class="code" title="function [Fval,A,f,sig,sd] = ftestc(data,params,p,plt)">ftestc</a>	computes the F-statistic for sine wave in locally-white noise (continuous data).</li><li><a href="mtdspectrumc.html" class="code" title="function [dS,f]=mtdspectrumc(data,phi,params)">mtdspectrumc</a>	Multi-taper frequency derivative of the spectrum - continuous process</li><li><a href="mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>	Multi-taper spectrum - continuous process</li><li><a href="mtspectrumc_unequal_length_trials.html" class="code" title="function [ S, f, Serr ]= mtspectrumc_unequal_length_trials( data, movingwin, params, sMarkers )">mtspectrumc_unequal_length_trials</a>	This routine computes the multi-taper spectrum for a given set of unequal length segments. It is</li><li><a href="mtspectrumsegc.html" class="code" title="function [S,f,varS,C,Serr]=mtspectrumsegc(data,win,params,segave)">mtspectrumsegc</a>	Multi-taper segmented spectrum for a univariate continuous process</li><li><a href="nonst_stat.html" class="code" title="function sigma = nonst_stat(data,A,sumV,params)">nonst_stat</a>	Nonstationarity test - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous and binned point process data</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpt(data1,data2,params,fscorr,t)">coherencycpt</a>	Multi-taper coherency,cross-spectrum and individual spectra -continuous data and point process as times</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function J=mtfftc(data,tapers,nfft,Fs)</a>
+0002 <span class="comment">% Multi-taper fourier transform - continuous data</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage:</span>
+0005 <span class="comment">% J=mtfftc(data,tapers,nfft,Fs) - all arguments required</span>
+0006 <span class="comment">% Input:</span>
+0007 <span class="comment">%       data (in form samples x channels/trials or a single vector)</span>
+0008 <span class="comment">%       tapers (precalculated tapers from dpss)</span>
+0009 <span class="comment">%       nfft (length of padded data)</span>
+0010 <span class="comment">%       Fs   (sampling frequency)</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Output:</span>
+0013 <span class="comment">%       J (fft in form frequency index x taper index x channels/trials)</span>
+0014 <span class="keyword">if</span> nargin &lt; 4; error(<span class="string">'Need all input arguments'</span>); <span class="keyword">end</span>;
+0015 data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data);
+0016 [NC,C]=size(data); <span class="comment">% size of data</span>
+0017 [NK K]=size(tapers); <span class="comment">% size of tapers</span>
+0018 <span class="keyword">if</span> NK~=NC; error(<span class="string">'length of tapers is incompatible with length of data'</span>); <span class="keyword">end</span>;
+0019 tapers=tapers(:,:,ones(1,C)); <span class="comment">% add channel indices to tapers</span>
+0020 data=data(:,:,ones(1,K)); <span class="comment">% add taper indices to data</span>
+0021 data=permute(data,[1 3 2]); <span class="comment">% reshape data to get dimensions to match those of tapers</span>
+0022 data_proj=data.*tapers; <span class="comment">% product of data with tapers</span>
+0023 J=fft(data_proj,nfft)/Fs;   <span class="comment">% fft of projected data</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

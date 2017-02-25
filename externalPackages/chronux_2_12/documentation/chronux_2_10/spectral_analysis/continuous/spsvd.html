@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of spsvd</title>
+  <meta name="keywords" content="spsvd">
+  <meta name="description" content="Space frequency SVD of input data - continuous processes">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>spsvd
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Space frequency SVD of input data - continuous processes</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [sv,sp,fm] = spsvd(data,params,mdkp) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Space frequency SVD of input data - continuous processes
+ Usage: [sv,sp,fm] = spsvd(data,params,mdkp)
+ Inputs:
+ data       (data matrix in timexchannels form)-required
+       params      structure containing parameters - params has the
+       following fields: tapers, Fs, fpass, pad
+           tapers : precalculated tapers from dpss or in the one of the following
+                    forms: 
+                   (1) A numeric vector [TW K] where TW is the
+                       time-bandwidth product and K is the number of
+                       tapers to be used (less than or equal to
+                       2TW-1). 
+                   (2) A numeric vector [W T p] where W is the
+                       bandwidth, T is the duration of the data and p 
+                       is an integer such that 2TW-p tapers are used. In
+                       this form there is no default i.e. to specify
+                       the bandwidth, you have to specify T and p as
+                       well. Note that the units of W and T have to be
+                       consistent: if W is in Hz, T must be in seconds
+                       and vice versa. Note that these units must also
+                       be consistent with the units of params.Fs: W can
+                       be in Hz if and only if params.Fs is in Hz.
+                       The default is to use form 1 with TW=3 and K=5
+
+            Fs             (sampling frequency) -- optional. Defaults to 1.
+           fpass       (frequency band to be used in the calculation in the form
+                                   [fmin fmax])- optional. 
+                                   Default all frequencies between 0 and Fs/2
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+ mdkp       (number of dimensions to be kept)-optional. Default is the
+               maximum possible modes determined by taper parameters
+
+ Outputs:
+ sv sp fm  : singular values, space modes, frequency modes</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>	Helper function that gets the frequency grid associated with a given fft based computation</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [sv,sp,fm] = spsvd(data,params,mdkp)</a>
+0002 <span class="comment">% Space frequency SVD of input data - continuous processes</span>
+0003 <span class="comment">% Usage: [sv,sp,fm] = spsvd(data,params,mdkp)</span>
+0004 <span class="comment">% Inputs:</span>
+0005 <span class="comment">% data       (data matrix in timexchannels form)-required</span>
+0006 <span class="comment">%       params      structure containing parameters - params has the</span>
+0007 <span class="comment">%       following fields: tapers, Fs, fpass, pad</span>
+0008 <span class="comment">%           tapers : precalculated tapers from dpss or in the one of the following</span>
+0009 <span class="comment">%                    forms:</span>
+0010 <span class="comment">%                   (1) A numeric vector [TW K] where TW is the</span>
+0011 <span class="comment">%                       time-bandwidth product and K is the number of</span>
+0012 <span class="comment">%                       tapers to be used (less than or equal to</span>
+0013 <span class="comment">%                       2TW-1).</span>
+0014 <span class="comment">%                   (2) A numeric vector [W T p] where W is the</span>
+0015 <span class="comment">%                       bandwidth, T is the duration of the data and p</span>
+0016 <span class="comment">%                       is an integer such that 2TW-p tapers are used. In</span>
+0017 <span class="comment">%                       this form there is no default i.e. to specify</span>
+0018 <span class="comment">%                       the bandwidth, you have to specify T and p as</span>
+0019 <span class="comment">%                       well. Note that the units of W and T have to be</span>
+0020 <span class="comment">%                       consistent: if W is in Hz, T must be in seconds</span>
+0021 <span class="comment">%                       and vice versa. Note that these units must also</span>
+0022 <span class="comment">%                       be consistent with the units of params.Fs: W can</span>
+0023 <span class="comment">%                       be in Hz if and only if params.Fs is in Hz.</span>
+0024 <span class="comment">%                       The default is to use form 1 with TW=3 and K=5</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">%            Fs             (sampling frequency) -- optional. Defaults to 1.</span>
+0027 <span class="comment">%           fpass       (frequency band to be used in the calculation in the form</span>
+0028 <span class="comment">%                                   [fmin fmax])- optional.</span>
+0029 <span class="comment">%                                   Default all frequencies between 0 and Fs/2</span>
+0030 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0031 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0032 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0033 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0034 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0035 <span class="comment">%                       Defaults to 0.</span>
+0036 <span class="comment">% mdkp       (number of dimensions to be kept)-optional. Default is the</span>
+0037 <span class="comment">%               maximum possible modes determined by taper parameters</span>
+0038 <span class="comment">%</span>
+0039 <span class="comment">% Outputs:</span>
+0040 <span class="comment">% sv sp fm  : singular values, space modes, frequency modes</span>
+0041 
+0042 
+0043 <span class="keyword">if</span> nargin &lt; 1; error(<span class="string">'Need data'</span>); <span class="keyword">end</span>;
+0044 <span class="keyword">if</span> nargin &lt; 2 || isempty(params); params=[]; <span class="keyword">end</span>;
+0045 [tapers,pad,Fs,fpass,err,trialave,params]=<a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params);
+0046 clear err trialave params
+0047 [N,NCHAN]=size(data);
+0048 tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(tapers,N,Fs);
+0049 nfft=max(2^(nextpow2(N)+pad),N);<span class="comment">% number of points in fft</span>
+0050 [N,K]=size(tapers);
+0051 <span class="keyword">if</span> nargin&lt;3 || isempty(mdkp); mdkp=min(K,NCHAN);
+0052 <span class="keyword">elseif</span> mdkp &gt; min(K,NCHAN); error(<span class="string">'mdkp has to be less than both K and NCHAN'</span>);<span class="keyword">end</span>;
+0053 
+0054 tvec=(1:N)';
+0055 tvec=repmat(tvec,[1 K]);
+0056 tvec=tvec*2*pi*i;
+0057 f=<a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>(Fs,nfft,fpass);
+0058 nf=length(f);
+0059 sp=zeros(NCHAN,nf,mdkp);
+0060 sp=sp+i*sp;
+0061 fm=zeros(K,nf,mdkp);
+0062 fm=fm+i*fm;
+0063 sv=zeros(nf,min([K,NCHAN]));
+0064 <span class="keyword">for</span> j=1:nf 
+0065 <span class="comment">%     for k=1:K</span>
+0066 <span class="comment">%       proj(:,k)=tapers(:,k).*exp(-f0*tvec');</span>
+0067 <span class="comment">%     end</span>
+0068     proj=tapers.*exp(-f(j)*tvec);
+0069     tmp=data'*proj; <span class="comment">% projected data</span>
+0070     [u,s,v]= svd(tmp,0); <span class="comment">% svd</span>
+0071     <span class="keyword">for</span> mk=1:mdkp, 
+0072       sp(:,j,mk)=u(:,mk)';
+0073       fm(:,j,mk)=v(:,mk)';
+0074     <span class="keyword">end</span>  
+0075     sv(j,:)=diag(s);
+0076 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

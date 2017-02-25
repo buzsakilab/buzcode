@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig8_2</title>
+  <meta name="keywords" content="fig8_2">
+  <meta name="description" content="Local Regression and Likelihood, Figure 8.2.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig8_2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 8.2.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 8.2.
+
+ Discrimination/Classification, simple example using
+ density estimation.
+
+ First, compute density estimates fit0, fit1 ('family','rate'
+ - output is in events per unit area) for each class in the
+ training sample. The ratio fit1/(fit1+fit0) estimates the
+ posterior probability that an observation comes from population 1.
+
+ plotting the classification boundary is slightly tricky - it depends
+ on both fits, so lfplot() can't be used. Instead, both fits must be
+ evaluated on the same grid of values, which is then used to make a
+ contour plot.
+
+ Author: Catherine Loader</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>	Interpolate a fit produced by locfit().</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 8.2.</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Discrimination/Classification, simple example using</span>
+0004 <span class="comment">% density estimation.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% First, compute density estimates fit0, fit1 ('family','rate'</span>
+0007 <span class="comment">% - output is in events per unit area) for each class in the</span>
+0008 <span class="comment">% training sample. The ratio fit1/(fit1+fit0) estimates the</span>
+0009 <span class="comment">% posterior probability that an observation comes from population 1.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% plotting the classification boundary is slightly tricky - it depends</span>
+0012 <span class="comment">% on both fits, so lfplot() can't be used. Instead, both fits must be</span>
+0013 <span class="comment">% evaluated on the same grid of values, which is then used to make a</span>
+0014 <span class="comment">% contour plot.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Author: Catherine Loader</span>
+0017 
+0018 load cltrain;
+0019 u0 = find(y==0);
+0020 u1 = find(y==1);
+0021 fit0 = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>([x1(u0) x2(u0)],y(u0),<span class="string">'family'</span>,<span class="string">'rate'</span>,<span class="string">'scale'</span>,0);
+0022 fit1 = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>([x1(u1) x2(u1)],y(u1),<span class="string">'family'</span>,<span class="string">'rate'</span>,<span class="string">'scale'</span>,0);
+0023 
+0024 v0 = -3+6*(0:50)'/50;
+0025 v1 = -2.2+4.2*(0:49)'/49;
+0026 <span class="comment">% predict returns log(rate)</span>
+0027 z = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit0,{v0 v1})-<a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit1,{v0 v1});
+0028 z = reshape(z,51,50);
+0029 figure(<span class="string">'Name'</span>,<span class="string">'fig8_2: classification'</span>);
+0030 contour(v0,v1,z',[0 0]);
+0031 hold on;
+0032 plot(x1(u0),x2(u0),<span class="string">'.'</span>);
+0033 plot(x1(u1),x2(u1),<span class="string">'.'</span>,<span class="string">'color'</span>,<span class="string">'red'</span>);
+0034 hold off;
+0035 
+0036 p0 = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit0,[x1 x2]);
+0037 p1 = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit1,[x1 x2]);
+0038 py = (p1 &gt; p0);
+0039 disp(<span class="string">'Classification table for training data'</span>);
+0040 tabulate(10*y+py);
+0041 
+0042 load cltest;
+0043 p0 = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit0,[x1 x2]);
+0044 p1 = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit1,[x1 x2]);
+0045 py = (p1 &gt; p0);
+0046 disp(<span class="string">'Classification table for test data'</span>);
+0047 tabulate(10*y+py);
+0048</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

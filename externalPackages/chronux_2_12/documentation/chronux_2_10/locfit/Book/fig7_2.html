@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig7_2</title>
+  <meta name="keywords" content="fig7_2">
+  <meta name="description" content="Local Regression and Likelihood, Figure 7.2.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig7_2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 7.2.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 7.2.
+
+ Conditional Hazard Rate Estimation.
+ When hazard rate estimation is performed with multiple x variables,
+ the result is an estimate of the conditional hazard rate for the
+ first variable, given the levels of the remaining variables.
+
+ The surface plot looks more dramatic than the contour plot in the book!
+
+ Author: Catherine Loader</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 7.2.</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Conditional Hazard Rate Estimation.</span>
+0004 <span class="comment">% When hazard rate estimation is performed with multiple x variables,</span>
+0005 <span class="comment">% the result is an estimate of the conditional hazard rate for the</span>
+0006 <span class="comment">% first variable, given the levels of the remaining variables.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% The surface plot looks more dramatic than the contour plot in the book!</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Author: Catherine Loader</span>
+0011 
+0012 load livmet;
+0013 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>([t dm],<span class="string">'cens'</span>,1-z,<span class="string">'scale'</span>,0,<span class="string">'deg'</span>,1,<span class="string">'family'</span>,<span class="string">'hazard'</span>,<span class="string">'alpha'</span>,0.5,<span class="string">'xlim'</span>,[0 1;10000 20]);
+0014 figure(<span class="string">'Name'</span>,<span class="string">'fig7_2: Conditional hazard rate estimation'</span> );
+0015 <a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>(fit);
+0016 xlabel(<span class="string">'Survival Time (Months)'</span>);
+0017 ylabel(<span class="string">'Diameter (c.m.)'</span>);
+0018 zlabel(<span class="string">'Hazard Rate'</span>);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig5_6</title>
+  <meta name="keywords" content="fig5_6">
+  <meta name="description" content="Local Regression and Likelihood, Figure 5.6.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig5_6
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 5.6.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 5.6.
+ Author: Catherine Loader
+
+ Cumulative Distribution Function
+
+ This function uses cdfplot() from Matlab's add-on statistics toolbox.
+
+ NEED:
+   predict should backtr by default?</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>	Interpolate a fit produced by locfit().</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 5.6.</span>
+0002 <span class="comment">% Author: Catherine Loader</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Cumulative Distribution Function</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% This function uses cdfplot() from Matlab's add-on statistics toolbox.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% NEED:</span>
+0009 <span class="comment">%   predict should backtr by default?</span>
+0010 
+0011 load geyser;
+0012 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(geyser,<span class="string">'nn'</span>,0.1,<span class="string">'h'</span>,1.2,<span class="string">'renorm'</span>,1);
+0013 x = (1:0.01:6)';
+0014 z = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit,x);
+0015 figure(<span class="string">'Name'</span>,<span class="string">'fig5_6: Cumulative distribution function'</span> );
+0016 plot(x,0.01*cumsum(exp(z)));
+0017 xlabel(<span class="string">'Eruption Duration (Minutes)'</span>);
+0018 ylabel(<span class="string">'Cumulative Distribution Function'</span>);
+0019 hold on;
+0020 cdfplot(geyser);
+0021 hold off;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

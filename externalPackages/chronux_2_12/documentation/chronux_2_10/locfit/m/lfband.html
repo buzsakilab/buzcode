@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of lfband</title>
+  <meta name="keywords" content="lfband">
+  <meta name="description" content="adds confidence bands around the plot of a locfit() fit.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>lfband
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>adds confidence bands around the plot of a locfit() fit.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function lfband(fit,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> adds confidence bands around the plot of a locfit() fit.
+
+ for 2-d fits, produces separate surface plots of upper and
+ lower confidence limits.
+
+ Bands are based on 95% pointwise coverage, using a single
+ (i.e. global) estimate of sigma^2.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="invlink.html" class="code" title="function y0 = invlink(y,fali)">invlink</a>	inverse link function for locfit.</li><li><a href="lfmarg.html" class="code" title="function xfit = lfmarg(fit)">lfmarg</a>	computes grid margins from a locfit object, used for plotting.</li><li><a href="predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>	Interpolate a fit produced by locfit().</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/Book/fig4_1.html" class="code" title="">fig4_1</a>	Local Regression and Likelihood, Figure 4.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig4_2.html" class="code" title="">fig4_2</a>	Local Regression and Likelihood, Figure 4.2.</li><li><a href="../../../chronux_2_10/locfit/Neuro/lfex1.html" class="code" title="">lfex1</a>	Local Estimation a spike firing rate (in spikes per unit time).</li><li><a href="../../../chronux_2_10/locfit/Neuro/lfex2.html" class="code" title="">lfex2</a>	Model the success probability of successive trials of a monkey</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/den_jack.html" class="code" title="function [m,ll,ul,llj,ulj]=den_jack(X,family,varargin)">den_jack</a>	Function to compute smooth estimates of the mean of x using locfit,</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function lfband(fit,varargin)</a>
+0002 
+0003 <span class="comment">% adds confidence bands around the plot of a locfit() fit.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% for 2-d fits, produces separate surface plots of upper and</span>
+0006 <span class="comment">% lower confidence limits.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Bands are based on 95% pointwise coverage, using a single</span>
+0009 <span class="comment">% (i.e. global) estimate of sigma^2.</span>
+0010 
+0011 xfit = <a href="lfmarg.html" class="code" title="function xfit = lfmarg(fit)">lfmarg</a>(fit);
+0012 <span class="comment">% placing 'band','g' before varargin{:} ensures that</span>
+0013 <span class="comment">% user-provided 'band' has precedence.</span>
+0014 ypp = <a href="predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit,xfit,<span class="string">'band'</span>,<span class="string">'g'</span>,varargin{:});
+0015 yfit = ypp{1};
+0016 se = ypp{2};
+0017 bands = ypp{3};
+0018 
+0019 data = fit.data;
+0020 xdata = data.x;
+0021 p = size(xdata,2);
+0022 cv = 1.96;
+0023 fali = fit.fit_points.family_link;
+0024 cl = <a href="invlink.html" class="code" title="function y0 = invlink(y,fali)">invlink</a>(bands(:,1),fali);
+0025 cu = <a href="invlink.html" class="code" title="function y0 = invlink(y,fali)">invlink</a>(bands(:,2),fali);
+0026 
+0027 <span class="keyword">if</span> (p==1)
+0028   hold on;
+0029   plot(xfit{1},cu,<span class="string">':'</span>);
+0030   plot(xfit{1},cl,<span class="string">':'</span>);
+0031   hold off;
+0032 <span class="keyword">end</span>;
+0033 
+0034 <span class="keyword">if</span> (p==2)
+0035   x1 = xfit{1};
+0036   x2 = xfit{2};
+0037   figure(1);
+0038   surf(x1,x2,reshape(cl,length(x1),length(x2))');
+0039   figure(2);
+0040   surf(x1,x2,reshape(cu,length(x1),length(x2))');
+0041 <span class="keyword">end</span>;
+0042 
+0043 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

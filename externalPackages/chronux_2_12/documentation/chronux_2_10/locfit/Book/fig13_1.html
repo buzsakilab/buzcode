@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig13_1</title>
+  <meta name="keywords" content="fig13_1">
+  <meta name="description" content="Local Regression and Likelihood, Figure 13.1">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig13_1
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 13.1</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 13.1
+
+ Author: Catherine Loader</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>	Interpolate a fit produced by locfit().</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 13.1</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Author: Catherine Loader</span>
+0004 
+0005 load mmsamp;
+0006 
+0007 figure(<span class="string">'Name'</span>,<span class="string">'fig13_1a'</span>);
+0008 plot(x,y,<span class="string">'o'</span>);
+0009 hold on;
+0010 
+0011 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(x,y,<span class="string">'deg'</span>,1,<span class="string">'kern'</span>,<span class="string">'minmax'</span>,<span class="string">'alpha'</span>,4000,<span class="string">'ev'</span>,<span class="string">'grid'</span>,<span class="string">'mg'</span>,200,<span class="string">'ll'</span>,0,<span class="string">'ur'</span>,1);
+0012 xev = fit.fit_points.evaluation_points';
+0013 yev = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit,<span class="string">'fitp'</span>);
+0014 plot(xev,yev);
+0015 
+0016 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(x,y,<span class="string">'deg'</span>,1,<span class="string">'h'</span>,0.05,<span class="string">'ev'</span>,<span class="string">'grid'</span>,<span class="string">'mg'</span>,100,<span class="string">'ll'</span>,0,<span class="string">'ur'</span>,1);
+0017 xev = fit.fit_points.evaluation_points';
+0018 yev = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit,<span class="string">'fitp'</span>);
+0019 plot(xev,yev,<span class="string">'red'</span>);
+0020 
+0021 xx = 0:0.01:1;
+0022 yy = 2-5*xx+5*exp(-(20*xx-10).*(20*xx-10));
+0023 plot(xx,yy,<span class="string">'green'</span>);
+0024 
+0025 legend(<span class="string">'Data'</span>,<span class="string">'Minimax'</span>,<span class="string">'Constant h'</span>,<span class="string">'True Mean'</span>);
+0026 
+0027 hold off;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

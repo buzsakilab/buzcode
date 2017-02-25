@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of next</title>
+  <meta name="keywords" content="next">
+  <meta name="description" content="WORKED=NEXT(VR)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # videoIO --><!-- ../menu.html videoIO_2007a --><!-- menu.html @videoReader -->
+<h1>next
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>WORKED=NEXT(VR)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>function worked = next(vr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">WORKED=NEXT(VR)
+  Advances to the next frame in the video.  Returns 0 if the next frame is
+  not available.  
+
+  After the videoReader constructor is called, NEXT, SEEK, or STEP should
+  be called at least once before GETFRAME is called. 
+
+  See videoReader/getinfo for more details on how many frames can be read
+  from a video. 
+  
+SEE ALSO
+  <a href="videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>
+
+Copyright (c) 2006 Gerald Dalley
+See &quot;MIT.txt&quot; in the installation directory for licensing details (especially
+when using this library on GNU/Linux).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+<li><a href="../../../../../chronux_2_10/fly_track/FTrack/functions/FlyTracker.html" class="code" title="function [x, y, orientation] = FlyTracker(filename, FrameRange,NBackFrames, opt1, sqrsize,alpha, ellipse)">FlyTracker</a>	FLYTRACKER</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getnext.html" class="code" title="function frame = getnext(vr)">getnext</a>	FRAME=GETNEXT(VR)</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/videoread.html" class="code" title="function mov=videoread(fname,varargin)">videoread</a>	VIDEOREAD Read an video file in a mannter compatible with Matlab's</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/getnext.html" class="code" title="function frame = getnext(vr)">getnext</a>	FRAME=GETNEXT(VR)</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/videoread.html" class="code" title="function mov=videoread(fname,varargin)">videoread</a>	VIDEOREAD Read an video file in a mannter compatible with Matlab's</li><li><a href="getnext.html" class="code" title="function frame = getnext(vr)">getnext</a>	FRAME=GETNEXT(VR)</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/videoread.html" class="code" title="function mov=videoread(fname,varargin)">videoread</a>	VIDEOREAD Read an video file in a mannter compatible with Matlab's</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function worked = next(vr)</a>
+0002 <span class="comment">%WORKED=NEXT(VR)</span>
+0003 <span class="comment">%  Advances to the next frame in the video.  Returns 0 if the next frame is</span>
+0004 <span class="comment">%  not available.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%  After the videoReader constructor is called, NEXT, SEEK, or STEP should</span>
+0007 <span class="comment">%  be called at least once before GETFRAME is called.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%  See videoReader/getinfo for more details on how many frames can be read</span>
+0010 <span class="comment">%  from a video.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%SEE ALSO</span>
+0013 <span class="comment">%  videoReader</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%Copyright (c) 2006 Gerald Dalley</span>
+0016 <span class="comment">%See &quot;MIT.txt&quot; in the installation directory for licensing details (especially</span>
+0017 <span class="comment">%when using this library on GNU/Linux).</span>
+0018 
+0019 worked = feval(vr.plugin, <span class="string">'next'</span>, vr.handle);
+0020</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

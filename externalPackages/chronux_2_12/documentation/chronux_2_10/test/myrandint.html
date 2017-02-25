@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of myrandint</title>
+  <meta name="keywords" content="myrandint">
+  <meta name="description" content="MYRANDINT(M,N,RANGE) is an M-by-N matrix with random integer entries">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html test -->
+<h1>myrandint
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>MYRANDINT(M,N,RANGE) is an M-by-N matrix with random integer entries</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function ranInt = myrandint(outputRow,outputCol,outputRange,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> MYRANDINT(M,N,RANGE) is an M-by-N matrix with random integer entries 
+ drawn with replacement from elements of vector RANGE.  The elements in
+ vector RANGE do not need to be contiguous or unique.  (Actually, they do
+ not even need to be integers: The function works the exact same way with
+ noninteger elements, but a warning is generated to alert the user that 
+ noninteger elements are being sampled.) 
+
+ To specify a contiguous integer range from Xlow to Xhi, use RANGE = [Xlow:Xhi].  
+ 
+ MYRANDINT(M,N,RANGE,'noreplace') is an M-by-N matrix with random integers 
+ drawn without replacement.
+
+ This function is based around RAND and RANDPERM, and is intended as a
+ modest imitation of Comm Toolbox's RANDINT.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="testAvg3.html" class="code" title="">testAvg3</a>	This is a calling routine to test & check out the power spectrum &</li><li><a href="testAvg4.html" class="code" title="">testAvg4</a>	This is a calling routine to test & check out the power spectrum &</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function ranInt = myrandint(outputRow,outputCol,outputRange,varargin)</a>
+0002 <span class="comment">% MYRANDINT(M,N,RANGE) is an M-by-N matrix with random integer entries</span>
+0003 <span class="comment">% drawn with replacement from elements of vector RANGE.  The elements in</span>
+0004 <span class="comment">% vector RANGE do not need to be contiguous or unique.  (Actually, they do</span>
+0005 <span class="comment">% not even need to be integers: The function works the exact same way with</span>
+0006 <span class="comment">% noninteger elements, but a warning is generated to alert the user that</span>
+0007 <span class="comment">% noninteger elements are being sampled.)</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% To specify a contiguous integer range from Xlow to Xhi, use RANGE = [Xlow:Xhi].</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% MYRANDINT(M,N,RANGE,'noreplace') is an M-by-N matrix with random integers</span>
+0012 <span class="comment">% drawn without replacement.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% This function is based around RAND and RANDPERM, and is intended as a</span>
+0015 <span class="comment">% modest imitation of Comm Toolbox's RANDINT.</span>
+0016 
+0017 
+0018 <span class="keyword">if</span> isequal(size(outputRange),[1 2]) &amp;&amp; ~isequal(outputRange(1),outputRange(2)-1),
+0019     warning(<span class="string">'To specify a range [low high] use [low:high].'</span>)
+0020 <span class="keyword">end</span>
+0021 <span class="keyword">if</span> ~isequal(round(outputRange),outputRange),
+0022     warning(<span class="string">'Specified RANGE contains noninteger values.'</span>)
+0023 <span class="keyword">end</span>
+0024 <span class="keyword">if</span> ~isequal(length(outputRange),length(outputRange(:))),
+0025     error(<span class="string">'Range must be a vector of integer values.'</span>)
+0026 <span class="keyword">end</span>
+0027 
+0028 numElements = outputRow*outputCol;
+0029 
+0030 <span class="keyword">if</span> isempty(varargin),
+0031     
+0032     ranInt = zeros(outputRow,outputCol);
+0033     randIx = floor((length(outputRange))*rand(size(ranInt))) + 1;
+0034     ranInt = outputRange(randIx);
+0035     <span class="keyword">if</span> ~isequal(size(randIx),size(ranInt)),
+0036         ranInt = reshape(ranInt,size(randIx));
+0037     <span class="keyword">end</span>
+0038     
+0039 <span class="keyword">elseif</span> isequal(varargin{1},<span class="string">'noreplace'</span>),
+0040     
+0041     <span class="keyword">if</span> numElements &gt; length(outputRange),
+0042         error(<span class="string">'Not enough elements in range to sample without replacement.'</span>)
+0043     <span class="keyword">else</span>
+0044         <span class="comment">% Generate full range of integers</span>
+0045         XfullShuffle = outputRange(randperm(length(outputRange)));
+0046         <span class="comment">% Select the first bunch:</span>
+0047         ranInt = reshape(XfullShuffle(1:numElements),outputRow,outputCol);     
+0048     <span class="keyword">end</span>    
+0049     
+0050 <span class="keyword">else</span>
+0051     error(<span class="string">'Valid argument is ''noreplace''.'</span>)
+0052 <span class="keyword">end</span>
+0053 
+0054</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

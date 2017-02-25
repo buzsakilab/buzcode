@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of backtr</title>
+  <meta name="keywords" content="backtr">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>backtr
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function z=backtr(y,fit) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Inverse-link transformation of y.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="fitted.html" class="code" title="function y = fitted(fit)">fitted</a>	Fitted values from a locfit object.</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function z=backtr(y,fit)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Inverse-link transformation of y.</span>
+0004 
+0005 fali = fit.fit_points.family_link;
+0006 link = fali(2);
+0007 <span class="keyword">switch</span> link
+0008   <span class="keyword">case</span> 3
+0009     z=y;
+0010   <span class="keyword">case</span> 4
+0011     z=exp(y);
+0012   <span class="keyword">case</span> 5
+0013     z = y;
+0014     i = find(y&lt;=0);
+0015     <span class="keyword">if</span> (length(i)&gt;0)
+0016       z(i) = exp(y(i))./(1+exp(y(i)));
+0017     <span class="keyword">end</span>;
+0018     i = find(y&gt;0);
+0019     <span class="keyword">if</span> (length(i)&gt;0)
+0020       z(i) = 1./(1+exp(-y(i)));
+0021     <span class="keyword">end</span>;
+0022   <span class="keyword">case</span> 6
+0023     z=1./y;
+0024   <span class="keyword">case</span> 7
+0025     z=y.*abs(y);
+0026   <span class="keyword">case</span> 8
+0027     z=sin(y).^2;
+0028   <span class="keyword">otherwise</span>
+0029      disp(<span class="string">'Backtr: invalid link'</span>);
+0030      z=y;
+0031 <span class="keyword">end</span>;
+0032 
+0033 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

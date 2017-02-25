@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of CalcReorientAngle</title>
+  <meta name="keywords" content="CalcReorientAngle">
+  <meta name="description" content="CALCREORIENTANGLE">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FAnalyze --><!-- menu.html functions -->
+<h1>CalcReorientAngle
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>CALCREORIENTANGLE</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function beta = CalcReorientAngle(vtheta, moves_indx) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">CALCREORIENTANGLE
+   Usage:  beta = CalcReorientAngle(vtheta, moves_indx)
+
+ This function calculates the reorientation angle, or the change in angle 
+ of progression after the fly stops. The inputs are the angle of the 
+ velocity vector, vtheta, and an index of all the frames where the fly was
+ moving, moves_indx.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="FAnalyze.html" class="code" title="function varargout = FAnalyze(varargin)">FAnalyze</a>	FANALYZE</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function beta = CalcReorientAngle(vtheta, moves_indx)</a>
+0002 
+0003 <span class="comment">%CALCREORIENTANGLE</span>
+0004 <span class="comment">%   Usage:  beta = CalcReorientAngle(vtheta, moves_indx)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% This function calculates the reorientation angle, or the change in angle</span>
+0007 <span class="comment">% of progression after the fly stops. The inputs are the angle of the</span>
+0008 <span class="comment">% velocity vector, vtheta, and an index of all the frames where the fly was</span>
+0009 <span class="comment">% moving, moves_indx.</span>
+0010 
+0011 <span class="comment">%Written by Dan Valente</span>
+0012 <span class="comment">%modified November 2007</span>
+0013 
+0014 m = 1;
+0015 before = 0;
+0016 
+0017 <span class="keyword">for</span> i = 1:length(moves_indx)-1
+0018     <span class="keyword">if</span> (moves_indx(i)+1 ~= moves_indx(i+1))
+0019         beta(m) = 180*(vtheta(moves_indx(i))-before)/pi;
+0020         <span class="keyword">if</span> (beta(m) &gt; 180)
+0021             beta(m) = beta(m)-360;
+0022         <span class="keyword">elseif</span> (beta(m) &lt; -180)
+0023             beta(m) = beta(m)+360;
+0024         <span class="keyword">end</span>
+0025         before = vtheta(moves_indx(i+1));
+0026         m = m+1;
+0027     <span class="keyword">end</span>
+0028 <span class="keyword">end</span>
+0029 
+0030 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

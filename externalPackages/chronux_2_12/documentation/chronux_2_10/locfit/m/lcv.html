@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of lcv</title>
+  <meta name="keywords" content="lcv">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>lcv
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function g=lcv(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ likelihood cross-validation.
+
+ returned vector consists of log-likelihood, trace(H), trace(H'H)
+ and cross-validated deviance (-2 * cross-validated log-likelihood).
+
+ Author: Catherine Loader.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="rsum.html" class="code" title="function z = rsum(fit)">rsum</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="lcvplot.html" class="code" title="function g=lcvplot(alpha,varargin)">lcvplot</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function g=lcv(varargin)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% likelihood cross-validation.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% returned vector consists of log-likelihood, trace(H), trace(H'H)</span>
+0006 <span class="comment">% and cross-validated deviance (-2 * cross-validated log-likelihood).</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Author: Catherine Loader.</span>
+0009 
+0010 fit = <a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(varargin{:},<span class="string">'ev'</span>,<span class="string">'cros'</span>);
+0011 rs = <a href="rsum.html" class="code" title="function z = rsum(fit)">rsum</a>(fit);
+0012 
+0013 df0 = rs(1);
+0014 df1 = rs(2);
+0015 llk = rs(3);
+0016 
+0017 g = [llk df0 df1 -2*llk];
+0018 
+0019 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getinfo</title>
+  <meta name="keywords" content="getinfo">
+  <meta name="description" content="INFO=GETINFO(VR)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # videoIO --><!-- ../menu.html videoIO_2007a --><!-- menu.html @videoReader -->
+<h1>getinfo
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>INFO=GETINFO(VR)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>function info = getinfo(vr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">INFO=GETINFO(VR)
+  Returns a structure whose fields contain information about the opened
+  video object.  The (minimum) set of fields in the INFO structure is
+  shown below:
+    url        String specifying the data source, in the format preferred
+               by the plugin being used.  Sometimes this will be a true
+               URL, sometimes it will be a filename.
+
+    fps        Non-negative number indicating the number of frames per
+               second.  
+
+    height     Integer indicating the height of the video frames in
+               pixels.   
+
+    width      Integer indicating the width of the video frames in pixels.
+
+    numFrames  Integer indicating an estimate of the total number of 
+               frames in the video.  For typical videos, this number is
+               exact.  Users may attempt to read more than numFrames
+               frames at their own risk.  If nHiddenFinalFrames is
+               non-zero, this will typically fail (meaning next/step/seek
+               will return 0) or worse, corrupted data such as an
+               all-black frame may be returned by the codec.  Some plugins
+               and/or their codecs do not supply this information.  If the
+               number of frames is unknown, a negative number is returned.
+               Older ffmpeg versions (notably version 0.4.9-pre1) do not
+               supply this number.
+
+    fourcc     4- or fewer-character string roughly indicating the codec
+               used encode the video.  See http://www.fourcc.org for
+               additional background information and an extensive, but
+               non-comprehensive list of FourCC codes.
+
+    nHiddenFinalFrames
+               Non-negative integer.  Many codecs make it difficult or 
+               impossible to read the last few frames of a file.  When 
+               videoReader thinks that the last few cannot be read, it 
+               automatically guesses how many frames cannot be read,
+               records this number as nHiddenFinalFrames, and sets
+               numFrames to be the number of frames the file claims to
+               contain minus nHiddenFinalFrames.  An individual
+               videoReader plugin (like the ffmpegPopen2 plugin) may choose
+               to allow the user to try reading the frames that might be
+               hidden or it may choose not to allow even trying to read
+               them (like the DirectShow plugin).
+
+  Due to limitations in some file formats, it is not always possible to
+  determine all of these values (or sometimes they are not constant).  In
+  these cases, numerical values are given a value of NaN and string values
+  are blank.
+
+SEE ALSO
+  <a href="videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>
+
+Copyright (c) 2006 Gerald Dalley
+See &quot;MIT.txt&quot; in the installation directory for licensing details (especially
+when using this library on GNU/Linux).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+<li><a href="../../../../../chronux_2_10/fly_track/FTrack/functions/FTrack.html" class="code" title="function varargout = FTrack(varargin)">FTrack</a>	FTRACK</li><li><a href="../../../../../chronux_2_10/fly_track/FTrack/functions/FlyTracker.html" class="code" title="function [x, y, orientation] = FlyTracker(filename, FrameRange,NBackFrames, opt1, sqrsize,alpha, ellipse)">FlyTracker</a>	FLYTRACKER</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/videoread.html" class="code" title="function mov=videoread(fname,varargin)">videoread</a>	VIDEOREAD Read an video file in a mannter compatible with Matlab's</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/videoread.html" class="code" title="function mov=videoread(fname,varargin)">videoread</a>	VIDEOREAD Read an video file in a mannter compatible with Matlab's</li><li><a href="../../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/videoread.html" class="code" title="function mov=videoread(fname,varargin)">videoread</a>	VIDEOREAD Read an video file in a mannter compatible with Matlab's</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function info = getinfo(vr)</a>
+0002 <span class="comment">%INFO=GETINFO(VR)</span>
+0003 <span class="comment">%  Returns a structure whose fields contain information about the opened</span>
+0004 <span class="comment">%  video object.  The (minimum) set of fields in the INFO structure is</span>
+0005 <span class="comment">%  shown below:</span>
+0006 <span class="comment">%    url        String specifying the data source, in the format preferred</span>
+0007 <span class="comment">%               by the plugin being used.  Sometimes this will be a true</span>
+0008 <span class="comment">%               URL, sometimes it will be a filename.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%    fps        Non-negative number indicating the number of frames per</span>
+0011 <span class="comment">%               second.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%    height     Integer indicating the height of the video frames in</span>
+0014 <span class="comment">%               pixels.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%    width      Integer indicating the width of the video frames in pixels.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%    numFrames  Integer indicating an estimate of the total number of</span>
+0019 <span class="comment">%               frames in the video.  For typical videos, this number is</span>
+0020 <span class="comment">%               exact.  Users may attempt to read more than numFrames</span>
+0021 <span class="comment">%               frames at their own risk.  If nHiddenFinalFrames is</span>
+0022 <span class="comment">%               non-zero, this will typically fail (meaning next/step/seek</span>
+0023 <span class="comment">%               will return 0) or worse, corrupted data such as an</span>
+0024 <span class="comment">%               all-black frame may be returned by the codec.  Some plugins</span>
+0025 <span class="comment">%               and/or their codecs do not supply this information.  If the</span>
+0026 <span class="comment">%               number of frames is unknown, a negative number is returned.</span>
+0027 <span class="comment">%               Older ffmpeg versions (notably version 0.4.9-pre1) do not</span>
+0028 <span class="comment">%               supply this number.</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">%    fourcc     4- or fewer-character string roughly indicating the codec</span>
+0031 <span class="comment">%               used encode the video.  See http://www.fourcc.org for</span>
+0032 <span class="comment">%               additional background information and an extensive, but</span>
+0033 <span class="comment">%               non-comprehensive list of FourCC codes.</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">%    nHiddenFinalFrames</span>
+0036 <span class="comment">%               Non-negative integer.  Many codecs make it difficult or</span>
+0037 <span class="comment">%               impossible to read the last few frames of a file.  When</span>
+0038 <span class="comment">%               videoReader thinks that the last few cannot be read, it</span>
+0039 <span class="comment">%               automatically guesses how many frames cannot be read,</span>
+0040 <span class="comment">%               records this number as nHiddenFinalFrames, and sets</span>
+0041 <span class="comment">%               numFrames to be the number of frames the file claims to</span>
+0042 <span class="comment">%               contain minus nHiddenFinalFrames.  An individual</span>
+0043 <span class="comment">%               videoReader plugin (like the ffmpegPopen2 plugin) may choose</span>
+0044 <span class="comment">%               to allow the user to try reading the frames that might be</span>
+0045 <span class="comment">%               hidden or it may choose not to allow even trying to read</span>
+0046 <span class="comment">%               them (like the DirectShow plugin).</span>
+0047 <span class="comment">%</span>
+0048 <span class="comment">%  Due to limitations in some file formats, it is not always possible to</span>
+0049 <span class="comment">%  determine all of these values (or sometimes they are not constant).  In</span>
+0050 <span class="comment">%  these cases, numerical values are given a value of NaN and string values</span>
+0051 <span class="comment">%  are blank.</span>
+0052 <span class="comment">%</span>
+0053 <span class="comment">%SEE ALSO</span>
+0054 <span class="comment">%  videoReader</span>
+0055 <span class="comment">%</span>
+0056 <span class="comment">%Copyright (c) 2006 Gerald Dalley</span>
+0057 <span class="comment">%See &quot;MIT.txt&quot; in the installation directory for licensing details (especially</span>
+0058 <span class="comment">%when using this library on GNU/Linux).</span>
+0059 
+0060 <span class="comment">%info = feval(vr.plugin, 'getinfo', vr.handle);</span>
+0061 
+0062 [names, vals] = feval(vr.plugin, <span class="string">'getinfo'</span>, vr.handle);
+0063 info = cell2struct({vals{:}}, {names{:}}, 2);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

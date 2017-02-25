@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of locsmooth</title>
+  <meta name="keywords" content="locsmooth">
+  <meta name="description" content="Running line fit (using local linear regression) - 1d only, continuous">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>locsmooth
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Running line fit (using local linear regression) - 1d only, continuous</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function data=locsmooth(data,Fs,Tw,Ts) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">  Running line fit (using local linear regression) - 1d only, continuous
+  processes
+  Usage: data=locsmooth(data,Fs,Tw,Ts)
+  Inputs:
+ Note that units of Fs, movinwin have to be consistent.
+  data  (single vector) 
+  Fs    (sampling frequency) - optional. Default 1
+  Tw    (length of moving window) - optional.  Default. full length of data (global detrend)
+  Ts    (step size) - optional. Default Tw/2.
+ 
+ Output:
+ data   (locally smoothed data).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/fly_track/FAnalyze/functions/runline.html" class="code" title="function y_line=runline(y,n,dn)">runline</a>	Running line fit (local linear regression)</li><li><a href="runline.html" class="code" title="function y_line=runline(y,n,dn)">runline</a>	Running line fit (local linear regression)</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="evoked.html" class="code" title="function [V,t,Err] = evoked(data,Fs,win,width,plt,err)">evoked</a>	Function to calculate the evoked response given continuous data in the</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/sta.html" class="code" title="function[s,t,E] = sta(data_spk,data_lfp,smp,plt,w,T,D,err)">sta</a>	Spike Triggered Average</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function data=locsmooth(data,Fs,Tw,Ts)</a>
+0002 <span class="comment">%  Running line fit (using local linear regression) - 1d only, continuous</span>
+0003 <span class="comment">%  processes</span>
+0004 <span class="comment">%  Usage: data=locsmooth(data,Fs,Tw,Ts)</span>
+0005 <span class="comment">%  Inputs:</span>
+0006 <span class="comment">% Note that units of Fs, movinwin have to be consistent.</span>
+0007 <span class="comment">%  data  (single vector)</span>
+0008 <span class="comment">%  Fs    (sampling frequency) - optional. Default 1</span>
+0009 <span class="comment">%  Tw    (length of moving window) - optional.  Default. full length of data (global detrend)</span>
+0010 <span class="comment">%  Ts    (step size) - optional. Default Tw/2.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Output:</span>
+0013 <span class="comment">% data   (locally smoothed data).</span>
+0014 data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data);
+0015 N=size(data,1);
+0016 <span class="keyword">if</span> nargin &lt; 2; Fs=1; <span class="keyword">end</span>;
+0017 <span class="keyword">if</span> nargin &lt; 3; Tw=N/Fs; <span class="keyword">end</span>;
+0018 <span class="keyword">if</span> nargin &lt; 4; Ts=Tw/2; <span class="keyword">end</span>;
+0019 
+0020 n=round(Fs*Tw);
+0021 dn=round(Fs*Ts);
+0022 <span class="keyword">if</span> ~isreal(data) 
+0023   yr=real(data); 
+0024   yi=imag(data); 
+0025   tmp=<a href="runline.html" class="code" title="function y_line=runline(y,n,dn)">runline</a>(yr,n,dn); 
+0026   yr=tmp';
+0027   tmp=<a href="runline.html" class="code" title="function y_line=runline(y,n,dn)">runline</a>(yi,n,dn); 
+0028   yi=tmp';
+0029   data=yr+i*yi;
+0030 <span class="keyword">else</span>
+0031   tmp=<a href="runline.html" class="code" title="function y_line=runline(y,n,dn)">runline</a>(data,n,dn); 
+0032   data=tmp';
+0033 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

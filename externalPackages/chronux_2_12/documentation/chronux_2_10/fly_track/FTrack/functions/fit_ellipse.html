@@ -1,0 +1,341 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fit_ellipse</title>
+  <meta name="keywords" content="fit_ellipse">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FTrack --><!-- menu.html functions -->
+<h1>fit_ellipse
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function ellipse_t = fit_ellipse( x,y,plot_opt ) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ fit_ellipse - finds the best fit to an ellipse for the given set of points.
+
+ Format:   ellipse_t = fit_ellipse( x,y,axis_handle )
+
+ Input:    x,y         - a set of points in 2 column vectors. AT LEAST 5 points are needed !
+           axis_handle - optional. a handle to an axis, at which the estimated ellipse 
+                         will be drawn along with it's axes
+
+ Output:   ellipse_t - structure that defines the best fit to an ellipse
+                       a           - sub axis (radius) of the X axis of the non-tilt ellipse
+                       b           - sub axis (radius) of the Y axis of the non-tilt ellipse
+                       phi         - orientation in radians of the ellipse (tilt)
+                       X0          - center at the X axis of the non-tilt ellipse
+                       Y0          - center at the Y axis of the non-tilt ellipse
+                       X0_in       - center at the X axis of the tilted ellipse
+                       Y0_in       - center at the Y axis of the tilted ellipse
+                       long_axis   - size of the long axis of the ellipse
+                       short_axis  - size of the short axis of the ellipse
+                       status      - status of detection of an ellipse
+
+ Note:     if an ellipse was not detected (but a parabola or hyperbola), then
+           an empty structure is returned</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="FTrack.html" class="code" title="function varargout = FTrack(varargin)">FTrack</a>	FTRACK</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function ellipse_t = fit_ellipse( x,y,plot_opt )</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% fit_ellipse - finds the best fit to an ellipse for the given set of points.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Format:   ellipse_t = fit_ellipse( x,y,axis_handle )</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Input:    x,y         - a set of points in 2 column vectors. AT LEAST 5 points are needed !</span>
+0008 <span class="comment">%           axis_handle - optional. a handle to an axis, at which the estimated ellipse</span>
+0009 <span class="comment">%                         will be drawn along with it's axes</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Output:   ellipse_t - structure that defines the best fit to an ellipse</span>
+0012 <span class="comment">%                       a           - sub axis (radius) of the X axis of the non-tilt ellipse</span>
+0013 <span class="comment">%                       b           - sub axis (radius) of the Y axis of the non-tilt ellipse</span>
+0014 <span class="comment">%                       phi         - orientation in radians of the ellipse (tilt)</span>
+0015 <span class="comment">%                       X0          - center at the X axis of the non-tilt ellipse</span>
+0016 <span class="comment">%                       Y0          - center at the Y axis of the non-tilt ellipse</span>
+0017 <span class="comment">%                       X0_in       - center at the X axis of the tilted ellipse</span>
+0018 <span class="comment">%                       Y0_in       - center at the Y axis of the tilted ellipse</span>
+0019 <span class="comment">%                       long_axis   - size of the long axis of the ellipse</span>
+0020 <span class="comment">%                       short_axis  - size of the short axis of the ellipse</span>
+0021 <span class="comment">%                       status      - status of detection of an ellipse</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Note:     if an ellipse was not detected (but a parabola or hyperbola), then</span>
+0024 <span class="comment">%           an empty structure is returned</span>
+0025 
+0026 <span class="comment">% =====================================================================================</span>
+0027 <span class="comment">%                  Ellipse Fit using Least Squares criterion</span>
+0028 <span class="comment">% =====================================================================================</span>
+0029 <span class="comment">% We will try to fit the best ellipse to the given measurements. the mathematical</span>
+0030 <span class="comment">% representation of use will be the CONIC Equation of the Ellipse which is:</span>
+0031 <span class="comment">%</span>
+0032 <span class="comment">%    Ellipse = a*x^2 + b*x*y + c*y^2 + d*x + e*y + f = 0</span>
+0033 <span class="comment">%</span>
+0034 <span class="comment">% The fit-estimation method of use is the Least Squares method (without any weights)</span>
+0035 <span class="comment">% The estimator is extracted from the following equations:</span>
+0036 <span class="comment">%</span>
+0037 <span class="comment">%    g(x,y;A) := a*x^2 + b*x*y + c*y^2 + d*x + e*y = f</span>
+0038 <span class="comment">%</span>
+0039 <span class="comment">%    where:</span>
+0040 <span class="comment">%       A   - is the vector of parameters to be estimated (a,b,c,d,e)</span>
+0041 <span class="comment">%       x,y - is a single measurement</span>
+0042 <span class="comment">%</span>
+0043 <span class="comment">% We will define the cost function to be:</span>
+0044 <span class="comment">%</span>
+0045 <span class="comment">%   Cost(A) := (g_c(x_c,y_c;A)-f_c)'*(g_c(x_c,y_c;A)-f_c)</span>
+0046 <span class="comment">%            = (X*A+f_c)'*(X*A+f_c)</span>
+0047 <span class="comment">%            = A'*X'*X*A + 2*f_c'*X*A + N*f^2</span>
+0048 <span class="comment">%</span>
+0049 <span class="comment">%   where:</span>
+0050 <span class="comment">%       g_c(x_c,y_c;A) - vector function of ALL the measurements</span>
+0051 <span class="comment">%                        each element of g_c() is g(x,y;A)</span>
+0052 <span class="comment">%       X              - a matrix of the form: [x_c.^2, x_c.*y_c, y_c.^2, x_c, y_c ]</span>
+0053 <span class="comment">%       f_c            - is actually defined as ones(length(f),1)*f</span>
+0054 <span class="comment">%</span>
+0055 <span class="comment">% Derivation of the Cost function with respect to the vector of parameters &quot;A&quot; yields:</span>
+0056 <span class="comment">%</span>
+0057 <span class="comment">%   A'*X'*X = -f_c'*X = -f*ones(1,length(f_c))*X = -f*sum(X)</span>
+0058 <span class="comment">%</span>
+0059 <span class="comment">% Which yields the estimator:</span>
+0060 <span class="comment">%</span>
+0061 <span class="comment">%       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+0062 <span class="comment">%       |  A_least_squares = -f*sum(X)/(X'*X) -&gt;(normalize by -f) = sum(X)/(X'*X)  |</span>
+0063 <span class="comment">%       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+0064 <span class="comment">%</span>
+0065 <span class="comment">% (We will normalize the variables by (-f) since &quot;f&quot; is unknown and can be accounted for later on)</span>
+0066 <span class="comment">%</span>
+0067 <span class="comment">% NOW, all that is left to do is to extract the parameters from the Conic Equation.</span>
+0068 <span class="comment">% We will deal the vector A into the variables: (A,B,C,D,E) and assume F = -1;</span>
+0069 <span class="comment">%</span>
+0070 <span class="comment">%    Recall the conic representation of an ellipse:</span>
+0071 <span class="comment">%</span>
+0072 <span class="comment">%       A*x^2 + B*x*y + C*y^2 + D*x + E*y + F = 0</span>
+0073 <span class="comment">%</span>
+0074 <span class="comment">% We will check if the ellipse has a tilt (=orientation). The orientation is present</span>
+0075 <span class="comment">% if the coefficient of the term &quot;x*y&quot; is not zero. If so, we first need to remove the</span>
+0076 <span class="comment">% tilt of the ellipse.</span>
+0077 <span class="comment">%</span>
+0078 <span class="comment">% If the parameter &quot;B&quot; is not equal to zero, then we have an orientation (tilt) to the ellipse.</span>
+0079 <span class="comment">% we will remove the tilt of the ellipse so as to remain with a conic representation of an</span>
+0080 <span class="comment">% ellipse without a tilt, for which the math is more simple:</span>
+0081 <span class="comment">%</span>
+0082 <span class="comment">% Non tilt conic rep.:  A`*x^2 + C`*y^2 + D`*x + E`*y + F` = 0</span>
+0083 <span class="comment">%</span>
+0084 <span class="comment">% We will remove the orientation using the following substitution:</span>
+0085 <span class="comment">%</span>
+0086 <span class="comment">%   Replace x with cx+sy and y with -sx+cy such that the conic representation is:</span>
+0087 <span class="comment">%</span>
+0088 <span class="comment">%   A(cx+sy)^2 + B(cx+sy)(-sx+cy) + C(-sx+cy)^2 + D(cx+sy) + E(-sx+cy) + F = 0</span>
+0089 <span class="comment">%</span>
+0090 <span class="comment">%   where:      c = cos(phi)    ,   s = sin(phi)</span>
+0091 <span class="comment">%</span>
+0092 <span class="comment">%   and simplify...</span>
+0093 <span class="comment">%</span>
+0094 <span class="comment">%       x^2(A*c^2 - Bcs + Cs^2) + xy(2A*cs +(c^2-s^2)B -2Ccs) + ...</span>
+0095 <span class="comment">%           y^2(As^2 + Bcs + Cc^2) + x(Dc-Es) + y(Ds+Ec) + F = 0</span>
+0096 <span class="comment">%</span>
+0097 <span class="comment">%   The orientation is easily found by the condition of (B_new=0) which results in:</span>
+0098 <span class="comment">%</span>
+0099 <span class="comment">%   2A*cs +(c^2-s^2)B -2Ccs = 0  ==&gt; phi = 1/2 * atan( b/(c-a) )</span>
+0100 <span class="comment">%</span>
+0101 <span class="comment">%   Now the constants   c=cos(phi)  and  s=sin(phi)  can be found, and from them</span>
+0102 <span class="comment">%   all the other constants A`,C`,D`,E` can be found.</span>
+0103 <span class="comment">%</span>
+0104 <span class="comment">%   A` = A*c^2 - B*c*s + C*s^2                  D` = D*c-E*s</span>
+0105 <span class="comment">%   B` = 2*A*c*s +(c^2-s^2)*B -2*C*c*s = 0      E` = D*s+E*c</span>
+0106 <span class="comment">%   C` = A*s^2 + B*c*s + C*c^2</span>
+0107 <span class="comment">%</span>
+0108 <span class="comment">% Next, we want the representation of the non-tilted ellipse to be as:</span>
+0109 <span class="comment">%</span>
+0110 <span class="comment">%       Ellipse = ( (X-X0)/a )^2 + ( (Y-Y0)/b )^2 = 1</span>
+0111 <span class="comment">%</span>
+0112 <span class="comment">%       where:  (X0,Y0) is the center of the ellipse</span>
+0113 <span class="comment">%               a,b     are the ellipse &quot;radiuses&quot; (or sub-axis)</span>
+0114 <span class="comment">%</span>
+0115 <span class="comment">% Using a square completion method we will define:</span>
+0116 <span class="comment">%</span>
+0117 <span class="comment">%       F`` = -F` + (D`^2)/(4*A`) + (E`^2)/(4*C`)</span>
+0118 <span class="comment">%</span>
+0119 <span class="comment">%       Such that:    a`*(X-X0)^2 = A`(X^2 + X*D`/A` + (D`/(2*A`))^2 )</span>
+0120 <span class="comment">%                     c`*(Y-Y0)^2 = C`(Y^2 + Y*E`/C` + (E`/(2*C`))^2 )</span>
+0121 <span class="comment">%</span>
+0122 <span class="comment">%       which yields the transformations:</span>
+0123 <span class="comment">%</span>
+0124 <span class="comment">%           X0  =   -D`/(2*A`)</span>
+0125 <span class="comment">%           Y0  =   -E`/(2*C`)</span>
+0126 <span class="comment">%           a   =   sqrt( abs( F``/A` ) )</span>
+0127 <span class="comment">%           b   =   sqrt( abs( F``/C` ) )</span>
+0128 <span class="comment">%</span>
+0129 <span class="comment">% And finally we can define the remaining parameters:</span>
+0130 <span class="comment">%</span>
+0131 <span class="comment">%   long_axis   = 2 * max( a,b )</span>
+0132 <span class="comment">%   short_axis  = 2 * min( a,b )</span>
+0133 <span class="comment">%   Orientation = phi</span>
+0134 <span class="comment">%</span>
+0135 <span class="comment">%</span>
+0136 
+0137 <span class="comment">% initialize</span>
+0138 orientation_tolerance = 1e-3;
+0139 
+0140 <span class="comment">% empty warning stack</span>
+0141 warning( <span class="string">''</span> );
+0142 
+0143 <span class="comment">% prepare vectors, must be column vectors</span>
+0144 x = x(:);
+0145 y = y(:);
+0146 
+0147 <span class="comment">% remove bias of the ellipse - to make matrix inversion more accurate. (will be added later on).</span>
+0148 mean_x = mean(x);
+0149 mean_y = mean(y);
+0150 x = x-mean_x;
+0151 y = y-mean_y;
+0152 
+0153 <span class="comment">% the estimation for the conic equation of the ellipse</span>
+0154 X = [x.^2, x.*y, y.^2, x, y ];
+0155 a = sum(X)/(X'*X);
+0156 
+0157 <span class="comment">% check for warnings</span>
+0158 <span class="keyword">if</span> ~isempty( lastwarn )
+0159     disp( <span class="string">'stopped because of a warning regarding matrix inversion'</span> );
+0160     ellipse_t = [];
+0161     <span class="keyword">return</span>
+0162 <span class="keyword">end</span>
+0163 
+0164 <span class="comment">% extract parameters from the conic equation</span>
+0165 [a,b,c,d,e] = deal( a(1),a(2),a(3),a(4),a(5) );
+0166 
+0167 <span class="comment">% remove the orientation from the ellipse</span>
+0168 <span class="keyword">if</span> ( min(abs(b/a),abs(b/c)) &gt; orientation_tolerance )
+0169     
+0170     orientation_rad = 1/2 * atan( b/(c-a) );
+0171     cos_phi = cos( orientation_rad );
+0172     sin_phi = sin( orientation_rad );
+0173     [a,b,c,d,e] = deal(<span class="keyword">...</span>
+0174         a*cos_phi^2 - b*cos_phi*sin_phi + c*sin_phi^2,<span class="keyword">...</span>
+0175         0,<span class="keyword">...</span>
+0176         a*sin_phi^2 + b*cos_phi*sin_phi + c*cos_phi^2,<span class="keyword">...</span>
+0177         d*cos_phi - e*sin_phi,<span class="keyword">...</span>
+0178         d*sin_phi + e*cos_phi );
+0179     [mean_x,mean_y] = deal( <span class="keyword">...</span>
+0180         cos_phi*mean_x - sin_phi*mean_y,<span class="keyword">...</span>
+0181         sin_phi*mean_x + cos_phi*mean_y );
+0182 <span class="keyword">else</span>
+0183     orientation_rad = 0;
+0184     cos_phi = cos( orientation_rad );
+0185     sin_phi = sin( orientation_rad );
+0186 <span class="keyword">end</span>
+0187 
+0188 <span class="comment">% check if conic equation represents an ellipse</span>
+0189 test = a*c;
+0190 <span class="keyword">switch</span> (1)
+0191 <span class="keyword">case</span> (test&gt;0),  status = <span class="string">''</span>;
+0192 <span class="keyword">case</span> (test==0), status = <span class="string">'Parabola found'</span>;  warning( <span class="string">'fit_ellipse: Did not locate an ellipse'</span> );
+0193 <span class="keyword">case</span> (test&lt;0),  status = <span class="string">'Hyperbola found'</span>; warning( <span class="string">'fit_ellipse: Did not locate an ellipse'</span> );
+0194 <span class="keyword">end</span>
+0195 
+0196 <span class="comment">% if we found an ellipse return it's data</span>
+0197 <span class="keyword">if</span> (test&gt;0)
+0198     
+0199     <span class="comment">% make sure coefficients are positive as required</span>
+0200     <span class="keyword">if</span> (a&lt;0), [a,c,d,e] = deal( -a,-c,-d,-e ); <span class="keyword">end</span>
+0201     
+0202     <span class="comment">% final ellipse parameters</span>
+0203     X0          = mean_x - d/2/a;
+0204     Y0          = mean_y - e/2/c;
+0205     F           = 1 + (d^2)/(4*a) + (e^2)/(4*c);
+0206     [a,b]       = deal( sqrt( F/a ),sqrt( F/c ) );    
+0207     long_axis   = 2*max(a,b);
+0208     short_axis  = 2*min(a,b);
+0209 
+0210     <span class="comment">% rotate the axes backwards to find the center point of the original TILTED ellipse</span>
+0211     R           = [ cos_phi sin_phi; -sin_phi cos_phi ];
+0212     P_in        = R * [X0;Y0];
+0213     X0_in       = P_in(1);
+0214     Y0_in       = P_in(2);
+0215     
+0216     <span class="comment">% pack ellipse into a structure</span>
+0217     ellipse_t = struct( <span class="keyword">...</span>
+0218         <span class="string">'a'</span>,a,<span class="keyword">...</span>
+0219         <span class="string">'b'</span>,b,<span class="keyword">...</span>
+0220         <span class="string">'phi'</span>,orientation_rad,<span class="keyword">...</span>
+0221         <span class="string">'X0'</span>,X0,<span class="keyword">...</span>
+0222         <span class="string">'Y0'</span>,Y0,<span class="keyword">...</span>
+0223         <span class="string">'X0_in'</span>,X0_in,<span class="keyword">...</span>
+0224         <span class="string">'Y0_in'</span>,Y0_in,<span class="keyword">...</span>
+0225         <span class="string">'long_axis'</span>,long_axis,<span class="keyword">...</span>
+0226         <span class="string">'short_axis'</span>,short_axis,<span class="keyword">...</span>
+0227         <span class="string">'status'</span>,<span class="string">''</span> );
+0228 <span class="keyword">else</span>
+0229     <span class="comment">% report an empty structure</span>
+0230     ellipse_t = struct( <span class="keyword">...</span>
+0231         <span class="string">'a'</span>,[],<span class="keyword">...</span>
+0232         <span class="string">'b'</span>,[],<span class="keyword">...</span>
+0233         <span class="string">'phi'</span>,[],<span class="keyword">...</span>
+0234         <span class="string">'X0'</span>,[],<span class="keyword">...</span>
+0235         <span class="string">'Y0'</span>,[],<span class="keyword">...</span>
+0236         <span class="string">'X0_in'</span>,[],<span class="keyword">...</span>
+0237         <span class="string">'Y0_in'</span>,[],<span class="keyword">...</span>
+0238         <span class="string">'long_axis'</span>,[],<span class="keyword">...</span>
+0239         <span class="string">'short_axis'</span>,[],<span class="keyword">...</span>
+0240         <span class="string">'status'</span>,status );
+0241 <span class="keyword">end</span>
+0242 
+0243 <span class="comment">% check if we need to plot an ellipse with it's axes.</span>
+0244 <span class="comment">%if (nargin&gt;2) &amp; ~isempty( axis_handle ) &amp; (test&gt;0)</span>
+0245     
+0246     <span class="comment">% rotation matrix to rotate the axes with respect to an angle phi</span>
+0247     R = [ cos_phi sin_phi; -sin_phi cos_phi ];
+0248     
+0249     <span class="comment">% the axes</span>
+0250     ver_line        = [ [X0 X0]; Y0+b*[-1 1] ];
+0251     horz_line       = [ X0+a*[-1 1]; [Y0 Y0] ];
+0252     new_ver_line    = R*ver_line;
+0253     new_horz_line   = R*horz_line;
+0254     
+0255     <span class="comment">% the ellipse</span>
+0256     theta_r         = linspace(0,2*pi);
+0257     ellipse_x_r     = X0 + a*cos( theta_r );
+0258     ellipse_y_r     = Y0 + b*sin( theta_r );
+0259     xaligned_ellipse = [ellipse_x_r;ellipse_y_r];
+0260     rotated_ellipse = R * [ellipse_x_r;ellipse_y_r];
+0261     
+0262     <span class="keyword">if</span> (strcmp(plot_opt,<span class="string">'y'</span>))
+0263         <span class="comment">% draw</span>
+0264         hold on
+0265         plot( rotated_ellipse(1,:),rotated_ellipse(2,:),<span class="string">'r'</span> );
+0266         drawnow
+0267     <span class="keyword">end</span>
+0268     
+0269     ellipse_t.xaligned_ellipse = xaligned_ellipse;
+0270     ellipse_t.rotated_ellipse = rotated_ellipse;
+0271     ellipse_t.ellipse_x_r = ellipse_x_r;
+0272     ellipse_t.ellipse_y_r = ellipse_y_r;
+0273     ellipse_t.R = R;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

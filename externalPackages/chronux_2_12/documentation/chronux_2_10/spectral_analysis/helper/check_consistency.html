@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of check_consistency</title>
+  <meta name="keywords" content="check_consistency">
+  <meta name="description" content="Helper routine to check consistency of data dimensions">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html helper -->
+<h1>check_consistency
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Helper routine to check consistency of data dimensions</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [N,C]=check_consistency(data1,data2,sp) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Helper routine to check consistency of data dimensions
+ Usage: [N,C]=check_consistency(data1,data2,sp)
+ Inputs:
+ data1 - first dataset
+ data2 - second dataset
+ sp - optional argument to be input as 1 when one of the two data sets is
+ spikes times stored as a 1d array.
+ Outputs:
+ Dimensions of the datasets - data1 or data2 (note that 
+    routine stops with an error message if dimensions don't match - [N,C]
+    N left empty for structure arrays</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/continuous/coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/coherencysegc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencysegc(data1,data2,win,params)">coherencysegc</a>	Multi-taper coherency, cross-spectrum and individual spectra with segmenting - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/cohgramc.html" class="code" title="function [C,phi,S12,S1,S2,t,f,confC,phistd,Cerr]=cohgramc(data1,data2,movingwin,params)">cohgramc</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra - continuous processes</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous and binned point process data</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpt(data1,data2,params,fscorr,t)">coherencycpt</a>	Multi-taper coherency,cross-spectrum and individual spectra -continuous data and point process as times</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpb(data1,data2,win,params,segave,fscorr)">coherencysegcpb</a>	Multi-taper coherency,cross-spectrum and individual spectra with segmenting</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpt(data1,data2,win,params,segave,fscorr)">coherencysegcpt</a>	Multi-taper coherency,cross-spectrum and individual spectra computed by segmenting</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/cohgramcpb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpb(data1,data2,movingwin,params,fscorr)">cohgramcpb</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/cohgramcpt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpt(data1,data2,movingwin,params,fscorr)">cohgramcpt</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="../../../chronux_2_10/spectral_analysis/plots/plotsigdiff.html" class="code" title="function [mask,Xdiff]=plotsigdiff(X1,X1err,X2,X2err,plt,t,f)">plotsigdiff</a>	Function to plot significant differences between two time-frequency arrays X1 and X2</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/coherencypb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypb(data1,data2,params,fscorr)">coherencypb</a>	Multi-taper coherency,cross-spectrum and individual spectra - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/coherencysegpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpb(data1,data2,win,params,segave,fscorr)">coherencysegpb</a>	Multi-taper coherency,cross-spectrum and individual spectra computed by segmenting</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/cohgrampb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampb(data1,data2,movingwin,params,fscorr)">cohgrampb</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra - two binned point processes</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>	Multi-taper coherency - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/coherencysegpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpt(data1,data2,win,params,segave,fscorr)">coherencysegpt</a>	Multi-taper coherency computed by segmenting two univariate point processes into chunks</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/cohgrampt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)">cohgrampt</a>	Multi-taper time-frequency coherence - two point processes given as times</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [N,C]=check_consistency(data1,data2,sp)</a>
+0002 <span class="comment">% Helper routine to check consistency of data dimensions</span>
+0003 <span class="comment">% Usage: [N,C]=check_consistency(data1,data2,sp)</span>
+0004 <span class="comment">% Inputs:</span>
+0005 <span class="comment">% data1 - first dataset</span>
+0006 <span class="comment">% data2 - second dataset</span>
+0007 <span class="comment">% sp - optional argument to be input as 1 when one of the two data sets is</span>
+0008 <span class="comment">% spikes times stored as a 1d array.</span>
+0009 <span class="comment">% Outputs:</span>
+0010 <span class="comment">% Dimensions of the datasets - data1 or data2 (note that</span>
+0011 <span class="comment">%    routine stops with an error message if dimensions don't match - [N,C]</span>
+0012 <span class="comment">%    N left empty for structure arrays</span>
+0013 N1=[]; N2=[];
+0014 <span class="keyword">if</span> nargin &lt; 3 || isempty(sp); sp=0; <span class="keyword">end</span>;
+0015 <span class="keyword">if</span> isstruct(data1);
+0016     C1=length(data1);
+0017 <span class="keyword">else</span>
+0018     [N1,C1]=size(data1);
+0019 <span class="keyword">end</span>;
+0020 <span class="keyword">if</span> isstruct(data2);
+0021     C2=length(data2);
+0022 <span class="keyword">else</span>
+0023     [N2,C2]=size(data2);
+0024 <span class="keyword">end</span>;
+0025 <span class="keyword">if</span> C1~=C2; error(<span class="string">'inconsistent dimensions'</span>); <span class="keyword">end</span>;
+0026 <span class="keyword">if</span> sp==0;
+0027    <span class="keyword">if</span> ~isstruct(data1) &amp;&amp; ~isstruct(data2);
+0028       <span class="keyword">if</span> N1~=N2; error(<span class="string">'inconsistent dimensions'</span>); <span class="keyword">end</span>;
+0029    <span class="keyword">end</span>;
+0030 <span class="keyword">end</span>;
+0031 N=N1; C=C1;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

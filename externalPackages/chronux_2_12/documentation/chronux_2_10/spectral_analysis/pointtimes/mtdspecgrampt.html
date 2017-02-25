@@ -1,0 +1,198 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtdspecgrampt</title>
+  <meta name="keywords" content="mtdspecgrampt">
+  <meta name="description" content="Multi-taper derivative time-frequency spectrum - point process times">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointtimes -->
+<h1>mtdspecgrampt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper derivative time-frequency spectrum - point process times</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper derivative time-frequency spectrum - point process times
+
+ Usage:
+
+ [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params)
+ Input: 
+   Note that all times can be in arbitrary units. But the units have to be
+   consistent. So, if E is in secs, win, t have to be in secs, and Fs has to
+   be Hz. If E is in samples, so are win and t, and Fs=1. In case of spike
+   times, the units have to be consistent with the units of data as well.
+       data        (structure array of spike times with dimension channels/trials; 
+                   also accepts 1d array of spike times) -- required
+       movingwin         (in the form [window winstep] i.e length of moving
+                                                 window and step size.
+                                                 Note that units here have
+                                                 to be consistent with
+                                                 units of Fs
+       phi         (angle for evaluation of derivative) -- required.
+                       e.g. phi=[0,pi/2] giving the time and frequency
+                       derivatives
+       params: structure with fields tapers, pad, Fs, fpass, trialave
+       -optional
+           tapers : precalculated tapers from dpss or in the one of the following
+                    forms: 
+                   (1) A numeric vector [TW K] where TW is the
+                       time-bandwidth product and K is the number of
+                       tapers to be used (less than or equal to
+                       2TW-1). 
+                   (2) A numeric vector [W T p] where W is the
+                       bandwidth, T is the duration of the data and p 
+                       is an integer such that 2TW-p tapers are used. In
+                       this form there is no default i.e. to specify
+                       the bandwidth, you have to specify T and p as
+                       well. Note that the units of W and T have to be
+                       consistent: if W is in Hz, T must be in seconds
+                       and vice versa. Note that these units must also
+                       be consistent with the units of params.Fs: W can
+                       be in Hz if and only if params.Fs is in Hz.
+                       The default is to use form 1 with TW=3 and K=5
+                   Note that T has to be equal to movingwin(1).
+
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+           Fs   (sampling frequency) - optional. Default 1.
+           fpass    (frequency band to be used in the calculation in the form
+                                   [fmin fmax])- optional. 
+                                   Default all frequencies between 0 and
+                                   Fs/2
+           trialave (average over trials when 1, don't average when 0) -
+           optional. Default 0
+ Output:
+       dS      (spectral derivative in form phi x time x frequency x channels/trials if trialave=0; 
+               in form phi x time x frequency if trialave=1)
+       t       (times)
+       f       (frequencies)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>	Helper function that gets the frequency grid associated with a given fft based computation</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li><li><a href="extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>	Extract segements of spike times between t(1) and t(2)</li><li><a href="minmaxsptimes.html" class="code" title="function [mintime, maxtime]=minmaxsptimes(data)">minmaxsptimes</a>	Find the minimum and maximum of the spike times in each channel</li><li><a href="mtdspectrumpt.html" class="code" title="function [dS,f]=mtdspectrumpt(data,phi,params,t)">mtdspectrumpt</a>	Multi-taper spectral derivative - point process times</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/test/testscript.html" class="code" title="">testscript</a>	function testscript(pname,direction,movingwin,segave,params,fscorr)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params)</a>
+0002 <span class="comment">% Multi-taper derivative time-frequency spectrum - point process times</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage:</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params)</span>
+0007 <span class="comment">% Input:</span>
+0008 <span class="comment">%   Note that all times can be in arbitrary units. But the units have to be</span>
+0009 <span class="comment">%   consistent. So, if E is in secs, win, t have to be in secs, and Fs has to</span>
+0010 <span class="comment">%   be Hz. If E is in samples, so are win and t, and Fs=1. In case of spike</span>
+0011 <span class="comment">%   times, the units have to be consistent with the units of data as well.</span>
+0012 <span class="comment">%       data        (structure array of spike times with dimension channels/trials;</span>
+0013 <span class="comment">%                   also accepts 1d array of spike times) -- required</span>
+0014 <span class="comment">%       movingwin         (in the form [window winstep] i.e length of moving</span>
+0015 <span class="comment">%                                                 window and step size.</span>
+0016 <span class="comment">%                                                 Note that units here have</span>
+0017 <span class="comment">%                                                 to be consistent with</span>
+0018 <span class="comment">%                                                 units of Fs</span>
+0019 <span class="comment">%       phi         (angle for evaluation of derivative) -- required.</span>
+0020 <span class="comment">%                       e.g. phi=[0,pi/2] giving the time and frequency</span>
+0021 <span class="comment">%                       derivatives</span>
+0022 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass, trialave</span>
+0023 <span class="comment">%       -optional</span>
+0024 <span class="comment">%           tapers : precalculated tapers from dpss or in the one of the following</span>
+0025 <span class="comment">%                    forms:</span>
+0026 <span class="comment">%                   (1) A numeric vector [TW K] where TW is the</span>
+0027 <span class="comment">%                       time-bandwidth product and K is the number of</span>
+0028 <span class="comment">%                       tapers to be used (less than or equal to</span>
+0029 <span class="comment">%                       2TW-1).</span>
+0030 <span class="comment">%                   (2) A numeric vector [W T p] where W is the</span>
+0031 <span class="comment">%                       bandwidth, T is the duration of the data and p</span>
+0032 <span class="comment">%                       is an integer such that 2TW-p tapers are used. In</span>
+0033 <span class="comment">%                       this form there is no default i.e. to specify</span>
+0034 <span class="comment">%                       the bandwidth, you have to specify T and p as</span>
+0035 <span class="comment">%                       well. Note that the units of W and T have to be</span>
+0036 <span class="comment">%                       consistent: if W is in Hz, T must be in seconds</span>
+0037 <span class="comment">%                       and vice versa. Note that these units must also</span>
+0038 <span class="comment">%                       be consistent with the units of params.Fs: W can</span>
+0039 <span class="comment">%                       be in Hz if and only if params.Fs is in Hz.</span>
+0040 <span class="comment">%                       The default is to use form 1 with TW=3 and K=5</span>
+0041 <span class="comment">%                   Note that T has to be equal to movingwin(1).</span>
+0042 <span class="comment">%</span>
+0043 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0044 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0045 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0046 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0047 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0048 <span class="comment">%                       Defaults to 0.</span>
+0049 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0050 <span class="comment">%           fpass    (frequency band to be used in the calculation in the form</span>
+0051 <span class="comment">%                                   [fmin fmax])- optional.</span>
+0052 <span class="comment">%                                   Default all frequencies between 0 and</span>
+0053 <span class="comment">%                                   Fs/2</span>
+0054 <span class="comment">%           trialave (average over trials when 1, don't average when 0) -</span>
+0055 <span class="comment">%           optional. Default 0</span>
+0056 <span class="comment">% Output:</span>
+0057 <span class="comment">%       dS      (spectral derivative in form phi x time x frequency x channels/trials if trialave=0;</span>
+0058 <span class="comment">%               in form phi x time x frequency if trialave=1)</span>
+0059 <span class="comment">%       t       (times)</span>
+0060 <span class="comment">%       f       (frequencies)</span>
+0061 
+0062 <span class="keyword">if</span> nargin &lt; 3; error(<span class="string">'Need data, window parameters and angle'</span>); <span class="keyword">end</span>;
+0063 <span class="keyword">if</span> nargin &lt; 4; params=[]; <span class="keyword">end</span>;
+0064 
+0065 <span class="keyword">if</span> length(params.tapers)==3 &amp; movingwin(1)~=params.tapers(2);
+0066     error(<span class="string">'Duration of data in params.tapers is inconsistent with movingwin(1), modify params.tapers(2) to proceed'</span>)
+0067 <span class="keyword">end</span>
+0068 
+0069 [tapers,pad,Fs,fpass,err,trialave,params]=<a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params);
+0070 clear err 
+0071 [mintime,maxtime]=<a href="minmaxsptimes.html" class="code" title="function [mintime, maxtime]=minmaxsptimes(data)">minmaxsptimes</a>(data);
+0072 tn=(mintime+movingwin(1)/2:movingwin(2):maxtime-movingwin(1)/2);
+0073 Nwin=round(Fs*movingwin(1)); <span class="comment">% number of samples in window</span>
+0074 <span class="comment">% Nstep=round(movingwin(2)*Fs); % number of samples to step through</span>
+0075 nfft=max(2^(nextpow2(Nwin)+pad),Nwin);
+0076 f=<a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>(Fs,nfft,fpass); Nf=length(f);
+0077 params.tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(tapers,Nwin,Fs); <span class="comment">% check tapers</span>
+0078 <span class="comment">%K=size(params.tapers,2);</span>
+0079 nw=length(tn);
+0080 <span class="keyword">if</span> trialave==0; dS=zeros(length(phi),nw,Nf,C); <span class="keyword">else</span> dS=zeros(length(phi),nw,Nf); <span class="keyword">end</span>;
+0081 <span class="keyword">for</span> n=1:nw;
+0082    t=linspace(tn(n)-movingwin(1)/2,tn(n)+movingwin(1)/2,Nwin);
+0083    datawin=<a href="extractdatapt.html" class="code" title="function data=extractdatapt(data,t,offset)">extractdatapt</a>(data,[t(1) t(end)]);
+0084    [ds,f]=<a href="mtdspectrumpt.html" class="code" title="function [dS,f]=mtdspectrumpt(data,phi,params,t)">mtdspectrumpt</a>(datawin,phi,params,t);
+0085    dS(:,n,:,:)=ds;
+0086 <span class="keyword">end</span>;
+0087 sz=size(ds);
+0088 dS=squeeze(dS);
+0089 <span class="comment">% if length(sz)==3;</span>
+0090 <span class="comment">%    dS=permute(dS,[2 1 3 4]);</span>
+0091 <span class="comment">% elseif length(phi)&gt;1</span>
+0092 <span class="comment">%    dS=permute(dS,[2 1 3]);</span>
+0093 <span class="comment">% end;</span>
+0094 t=tn;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

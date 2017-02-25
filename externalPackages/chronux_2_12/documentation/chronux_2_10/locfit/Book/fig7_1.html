@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig7_1</title>
+  <meta name="keywords" content="fig7_1">
+  <meta name="description" content="Local Regression and Likelihood, Figure 7.1.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig7_1
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 7.1.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 7.1.
+
+ Estimating the hazard rate for censored survival (or
+ failure time) data. Hazard rate estimation is specified
+ by 'family','hazard'.
+
+ The censoring indicator variable is passed as the 'cens'
+ argument. This should be a vector of 0's and 1's, with 1
+ indicating a censored observation, 0 uncensored.
+
+ The 'xlim' argument specifies bounds on the domain of the
+ x variable (survival times). Usually, survival times are
+ non-negative (lower bound 0), but with theoretically no
+ upper bound. The specification [0;10000] gives the lower
+ bound of 0, and the upper bound is effectively infinite.
+
+ Author: Catherine Loader
+
+ NEEDS: m argument to lfplot.
+ Also, lfplot symbols should distinguish between censored and
+ uncensored data points.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 7.1.</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Estimating the hazard rate for censored survival (or</span>
+0004 <span class="comment">% failure time) data. Hazard rate estimation is specified</span>
+0005 <span class="comment">% by 'family','hazard'.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% The censoring indicator variable is passed as the 'cens'</span>
+0008 <span class="comment">% argument. This should be a vector of 0's and 1's, with 1</span>
+0009 <span class="comment">% indicating a censored observation, 0 uncensored.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% The 'xlim' argument specifies bounds on the domain of the</span>
+0012 <span class="comment">% x variable (survival times). Usually, survival times are</span>
+0013 <span class="comment">% non-negative (lower bound 0), but with theoretically no</span>
+0014 <span class="comment">% upper bound. The specification [0;10000] gives the lower</span>
+0015 <span class="comment">% bound of 0, and the upper bound is effectively infinite.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Author: Catherine Loader</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% NEEDS: m argument to lfplot.</span>
+0020 <span class="comment">% Also, lfplot symbols should distinguish between censored and</span>
+0021 <span class="comment">% uncensored data points.</span>
+0022 
+0023 load heart;
+0024 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(surv,<span class="string">'cens'</span>,cens,<span class="string">'family'</span>,<span class="string">'hazard'</span>,<span class="string">'alpha'</span>,0.4,<span class="string">'xlim'</span>,[0;10000]);
+0025 figure(<span class="string">'Name'</span>,<span class="string">'fig7_1: Hazard rate for censored data'</span> );
+0026 <a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>(fit);
+0027 xlabel(<span class="string">'Survival Time'</span>);
+0028 ylabel(<span class="string">'Hazard Rate'</span>);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

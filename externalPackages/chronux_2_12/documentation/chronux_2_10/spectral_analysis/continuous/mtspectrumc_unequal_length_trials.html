@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtspectrumc_unequal_length_trials</title>
+  <meta name="keywords" content="mtspectrumc_unequal_length_trials">
+  <meta name="description" content="This routine computes the multi-taper spectrum for a given set of unequal length segments. It is">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>mtspectrumc_unequal_length_trials
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This routine computes the multi-taper spectrum for a given set of unequal length segments. It is</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [ S, f, Serr ]= mtspectrumc_unequal_length_trials( data, movingwin, params, sMarkers ) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This routine computes the multi-taper spectrum for a given set of unequal length segments. It is
+ based on modifications to the Chronux routines. The segments are continuously structured in the 
+ data matrix, with the segment boundaries given by markers. Below,
+ movingwin is used in a non-overlaping way to partition each segment into
+ various windows. Th spectrum is evaluated for each window, and then the
+ window spectrum estimates averaged. Further averaging is conducted by
+ repeating the process for each segment. 
+
+ Inputs: 
+
+   data = data( samples, channels )- here segments must be stacked
+   as explained in the email 
+   movingwin = [window winstep] i.e length of moving
+              window and step size. Note that units here have
+              to be consistent with units of Fs. If Fs=1 (ie normalized)
+              then [window winstep]should be in samples, or else if Fs is
+              unnormalized then they should be in time (secs). 
+   sMarkers = N x 2 array of segment start &amp; stop marks. sMarkers(n, 1) = start
+           sample index; sMarkers(n,2) = stop sample index for the nth segment
+   params = see Chronux help on mtspecgramc
+
+ Output:
+
+       S       frequency x channels
+       f       frequencies x 1
+       Serr    (error bars) only for err(1)&gt;=1</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="mtfftc.html" class="code" title="function J=mtfftc(data,tapers,nfft,Fs)">mtfftc</a>	Multi-taper fourier transform - continuous data</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>	Helper function that gets the frequency grid associated with a given fft based computation</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/specerr.html" class="code" title="function Serr=specerr(S,J,err,trialave,numsp)">specerr</a>	Function to compute lower and upper confidence intervals on the spectrum</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [ S, f, Serr ]= mtspectrumc_unequal_length_trials( data, movingwin, params, sMarkers )</a>
+0002 
+0003 <span class="comment">% This routine computes the multi-taper spectrum for a given set of unequal length segments. It is</span>
+0004 <span class="comment">% based on modifications to the Chronux routines. The segments are continuously structured in the</span>
+0005 <span class="comment">% data matrix, with the segment boundaries given by markers. Below,</span>
+0006 <span class="comment">% movingwin is used in a non-overlaping way to partition each segment into</span>
+0007 <span class="comment">% various windows. Th spectrum is evaluated for each window, and then the</span>
+0008 <span class="comment">% window spectrum estimates averaged. Further averaging is conducted by</span>
+0009 <span class="comment">% repeating the process for each segment.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Inputs:</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%   data = data( samples, channels )- here segments must be stacked</span>
+0014 <span class="comment">%   as explained in the email</span>
+0015 <span class="comment">%   movingwin = [window winstep] i.e length of moving</span>
+0016 <span class="comment">%              window and step size. Note that units here have</span>
+0017 <span class="comment">%              to be consistent with units of Fs. If Fs=1 (ie normalized)</span>
+0018 <span class="comment">%              then [window winstep]should be in samples, or else if Fs is</span>
+0019 <span class="comment">%              unnormalized then they should be in time (secs).</span>
+0020 <span class="comment">%   sMarkers = N x 2 array of segment start &amp; stop marks. sMarkers(n, 1) = start</span>
+0021 <span class="comment">%           sample index; sMarkers(n,2) = stop sample index for the nth segment</span>
+0022 <span class="comment">%   params = see Chronux help on mtspecgramc</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Output:</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">%       S       frequency x channels</span>
+0027 <span class="comment">%       f       frequencies x 1</span>
+0028 <span class="comment">%       Serr    (error bars) only for err(1)&gt;=1</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">%</span>
+0031 
+0032 iwAvg = 1; <span class="comment">% 0=no weighted average, 1=weighted average</span>
+0033 debug = 0; <span class="comment">% will display intermediate calcs.</span>
+0034 
+0035 <span class="keyword">if</span> nargin &lt; 2; error(<span class="string">'Unequal length trials:: Need data and window parameters'</span>); <span class="keyword">end</span>;
+0036 <span class="keyword">if</span> nargin &lt; 3; params=[]; <span class="keyword">end</span>;
+0037 <span class="keyword">if</span> isempty( sMarkers ), error( <span class="string">'Unequal length trials:: Need Markers...'</span> ); <span class="keyword">end</span>
+0038 [ tapers, pad, Fs, fpass, err, trialave, params ] = <a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>( params );
+0039 <span class="keyword">if</span> nargout &gt; 2 &amp;&amp; err(1)==0; 
+0040 <span class="comment">%   Cannot compute error bars with err(1)=0. change params and run again.</span>
+0041     error(<span class="string">'Unequal length trials:: When Serr is desired, err(1) has to be non-zero.'</span>);
+0042 <span class="keyword">end</span>;
+0043 
+0044 <span class="comment">% Set moving window parameters to no-overlapping</span>
+0045 <span class="keyword">if</span> abs(movingwin(2) - movingwin(1)) &gt;= 1e-6, disp( <span class="string">'avgSpectrum:: Warming: Window parameters for averaging should be non-overlapping. Set movingwin(2) = movingwin(1).'</span> ); <span class="keyword">end</span>
+0046 
+0047 wLength = round( Fs * movingwin(1) ); <span class="comment">% number of samples in window</span>
+0048 wStep = round( movingwin(2) * Fs ); <span class="comment">% number of samples to step through</span>
+0049 
+0050 <span class="comment">% Check whether window lengths satify segment length &gt; NW/2</span>
+0051 <span class="keyword">if</span> ( wLength &lt; 2*tapers(1) ), error( <span class="string">'avgSpectrum:: movingwin(1) &gt; 2*tapers(1)'</span> ); <span class="keyword">end</span>
+0052 
+0053 <span class="comment">% Left align segment markers for easier coding</span>
+0054 sM = ones( size( sMarkers, 1 ), 2 ); 
+0055 sM( :, 2 ) = sMarkers( :, 2 ) - sMarkers( :, 1 ) + 1;
+0056 
+0057 <span class="comment">% min-max segments</span>
+0058 Nmax = max( sM(:,2) ); Nmin = min( sM(:,2) );
+0059 <span class="keyword">if</span> ( Nmin &lt; 2*tapers(1) ), error( <span class="string">'avgSpectrum:: Smallest segment length &gt; 2*tapers(1). Change taper settings'</span> ); <span class="keyword">end</span>
+0060 
+0061 <span class="comment">% max time-sample length will be the window length.</span>
+0062 nfft = 2^( nextpow2( wLength ) + pad );
+0063 [ f, findx ] = <a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>( Fs, nfft, fpass); 
+0064 
+0065 <span class="comment">% Precompute all the tapers</span>
+0066 sTapers = tapers;
+0067 sTapers = <a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>( sTapers, wLength, Fs ); <span class="comment">% compute tapers for window length</span>
+0068 
+0069 nChannels = size( data, 2 ); 
+0070 nSegments = size( sMarkers, 1 );
+0071 
+0072 <span class="keyword">if</span> debug
+0073     disp( [<span class="string">'Window Length = '</span> num2str(wLength)] );
+0074     disp( [<span class="string">'Window Step = '</span> num2str(wStep)] );
+0075     disp( <span class="string">' '</span> );
+0076 <span class="keyword">end</span>
+0077 
+0078 s = zeros( length(f), nChannels );
+0079 serr = zeros( 2, length(f), nChannels );
+0080 S = zeros( length(f), nChannels );
+0081 Serr = zeros( 2, length(f), nChannels );
+0082 nWins = 0;
+0083 <span class="keyword">for</span> sg = 1 : nSegments
+0084     <span class="comment">% Window lengths &amp; steps fixed above</span>
+0085     <span class="comment">% For the given segment, compute the positions &amp; number of windows</span>
+0086     N = sM(sg,2); 
+0087     wStartPos = 1 : wStep : ( N - wLength + 1 );
+0088     nWindows = length( wStartPos );
+0089     <span class="keyword">if</span> nWindows
+0090         nWins = nWins + nWindows; <span class="comment">% for averaging purposes</span>
+0091 
+0092         w=zeros(nWindows,2);
+0093         <span class="keyword">for</span> n = 1 : nWindows
+0094             w(n,:) = [ wStartPos(n), (wStartPos(n) + wLength - 1) ]; <span class="comment">% nWindows x 2. just like segment end points</span>
+0095         <span class="keyword">end</span>
+0096 
+0097         <span class="comment">% Shift window limits back to original sample-stamps</span>
+0098         w(:, 1) = w(:,1) + (sMarkers( sg, 1 ) - 1);
+0099         w(:, 2) = w(:,2) + (sMarkers( sg, 1 ) - 1);
+0100 
+0101         <span class="keyword">if</span> debug
+0102             disp( [<span class="string">'Segment Start/Stop = '</span> num2str( w(1,1) ) <span class="string">' '</span> num2str( w(<span class="keyword">end</span>,2) ) ] );
+0103             disp( [<span class="string">'Min / Max Window Positions = '</span> num2str( min(w(:,1)) ) <span class="string">' '</span> num2str( max(w(:,1)) ) ] );
+0104             disp( [<span class="string">'Total Number of Windows = '</span> num2str(nWindows) ]);
+0105             disp( <span class="string">' '</span> );
+0106         <span class="keyword">end</span>
+0107 
+0108         <span class="comment">% Pile up window segments similar to segment pileup</span>
+0109         wData = zeros( wLength, nChannels, nWindows ); <span class="comment">%initialize to avoid fragmentation</span>
+0110         <span class="keyword">for</span> n = 1:nWindows
+0111             <span class="comment">%wData( :, :, n ) = detrend( data( w(n,1):w(n,2), : ), 'constant' );</span>
+0112             wData( :, :, n ) = detrend( data( w(n,1):w(n,2), : ) );
+0113         <span class="keyword">end</span>
+0114 
+0115         <span class="comment">% J1 = frequency x taper x nWindows</span>
+0116         <span class="comment">% J2 = frequency x taper x nWindows x nChannels</span>
+0117         J2 = zeros( length(f), tapers(2), nWindows, nChannels ); J2 = complex( J2, J2 );
+0118         <span class="keyword">for</span> c = 1 : nChannels
+0119             J1 = <a href="mtfftc.html" class="code" title="function J=mtfftc(data,tapers,nfft,Fs)">mtfftc</a>( squeeze(wData( :, c, : )), sTapers, nfft, Fs ); <span class="comment">% FFT for the tapered data</span>
+0120             J2( :, :, :, c ) = J1(findx,:,:);
+0121         <span class="keyword">end</span>
+0122         <span class="comment">% J2 = frequency x taper x nWindows x nChannels</span>
+0123         <span class="comment">% Inner mean = Average over tapers =&gt; frequency x nWindows x nChannels</span>
+0124         <span class="comment">% Outer mean = Average over windows =&gt; frequency x nChannels</span>
+0125         dim1 = [length(f), nWindows, nChannels];
+0126         dim2 = [length(f), nChannels];
+0127         <span class="comment">% s = frequency x nChannels</span>
+0128         s = reshape( squeeze( mean( reshape( squeeze( mean( conj(J2).*J2, 2 ) ), dim1), 2 ) ), dim2 );
+0129 
+0130         <span class="comment">% Now treat the various &quot;windowed data&quot; as &quot;trials&quot;</span>
+0131         <span class="comment">% serr = 2 x frequency x channels. Output from specerr = 2 x frequency x 1</span>
+0132         <span class="keyword">for</span> c = 1 : nChannels
+0133             serr( :, :, c ) = <a href="../../../chronux_2_10/spectral_analysis/helper/specerr.html" class="code" title="function Serr=specerr(S,J,err,trialave,numsp)">specerr</a>( squeeze( s(:, c ) ), squeeze( J2(:,:,:, c ) ), err, 1 );
+0134         <span class="keyword">end</span>
+0135         
+0136         <span class="keyword">if</span> iwAvg
+0137             <span class="comment">% Segment Weighted error estimates.</span>
+0138             S = S + nWindows*s;
+0139             Serr = Serr + nWindows*serr;
+0140         <span class="keyword">else</span>
+0141             S = S + s;
+0142             Serr = Serr + serr;
+0143         <span class="keyword">end</span>
+0144 
+0145     <span class="keyword">else</span>
+0146         <span class="keyword">if</span> debug, disp([<span class="string">'avgSpectrum:: Zero windows for segment: '</span> num2str(sg) ]); <span class="keyword">end</span>
+0147     <span class="keyword">end</span>
+0148 <span class="keyword">end</span>
+0149 
+0150 <span class="comment">% Segment Weighted error estimates.</span>
+0151 <span class="comment">% Only over those that had non-zero windows</span>
+0152 <span class="keyword">if</span> nWins &amp;&amp; iwAvg
+0153     S=S/nWins; Serr=Serr/nWins;
+0154 <span class="keyword">end</span>
+0155 <span class="keyword">if</span> ~nWins
+0156     <span class="keyword">if</span> debug, disp([<span class="string">'avgCoherence:: No segment long enough with movingwin parameters found. Reduce movingwin.'</span> ]); <span class="keyword">end</span>
+0157 <span class="keyword">end</span>
+0158 
+0159 
+0160 
+0161</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

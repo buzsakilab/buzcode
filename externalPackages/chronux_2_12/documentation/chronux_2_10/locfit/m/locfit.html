@@ -1,0 +1,746 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of locfit</title>
+  <meta name="keywords" content="locfit">
+  <meta name="description" content="Smoothing noisy data using Local Regression and Likelihood.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>locfit
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Smoothing noisy data using Local Regression and Likelihood.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function fit=locfit(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Smoothing noisy data using Local Regression and Likelihood.
+
+ arguments still to add: dc maxit
+
+  Usage: fit = locfit(x,y)   % local regression fit of x and y.
+         fit = locfit(x)     % density estimation of x.
+
+  Smoothing with locfit is a two-step procedure. The locfit()
+  function evaluates the local regression smooth at a set of points
+  (can be specified through an evaluation structure). Then, use
+  the predict() function to interpolate this fit to other points.
+
+  Additional arguments to locfit() are specified as 'name',value pairs, e.g.:
+  locfit( x, 'alpha',[0.7,1.5] , 'family','rate' , 'ev','grid' , 'mg',100 ); 
+
+
+  Data-related inputs:
+
+    x is a vector or matrix of the independent (or predictor) variables.
+      Rows of x represent subjects, columns represent variables.
+      Generally, local regression would be used with 1-4 independent
+      variables. In higher dimensions, the curse-of-dimensionality,
+      as well as the difficulty of visualizing higher dimensional
+      surfaces, may limit usefulness.
+
+    y is the column vector of the dependent (or response) variable.
+      For density families, 'y' is omitted. 
+ NOTE: x and y are the first two arguments. All other arguments require
+        the 'name',value notation.
+
+    'weights' Prior weights for observations (reciprocal of variance, or
+           sample size). 
+    'cens' Censoring indicators for hazard rate or censored regression.
+           The coding is '1' (or 'TRUE') for a censored observation, and
+           '0' (or 'FALSE') for uncensored observations. 
+    'base' Baseline parameter estimate. If a baseline is provided,
+           the local regression model is fitted as
+                        Y_i = b_i + m(x_i) + epsilon_i,
+           with Locfit estimating the m(x) term. For regression models,
+           this effectively subtracts b_i from Y_i. The advantage of the
+           'base' formulation is that it extends to likelihood
+           regression models. 
+    'scale' A scale to apply to each variable. This is especially
+           important for multivariate fitting, where variables may be
+           measured in non-comparable units. It is also used to specify
+           the frequency for variables with the 'a' (angular) style.
+     'sty' Character string (length d) of styles for each predictor variable.
+           n denotes `normal'; a denotes angular (or periodic); l and r
+           denotes one-sided left and right; c is conditionally parametric.
+ 
+
+  Smoothing Parameters and Bandwidths:
+  The bandwidth (or more accurately, half-width) of the smoothing window
+  controls the amount of smoothing. Locfit allows specification of constant
+  (fixed), nearest neighbor, certain locally adaptive variable bandwidths,
+  and combinations of these. Also related to the smoothing parameter
+  are the local polynmial degree and weight function.
+
+    'nn' 'Nearest neighbor' smoothing parameter. Specifying 'nn',0.5
+         means that the width of each smoothing neighborhood is chosen
+         to cover 50% of the data.
+
+     'h' A constant (or fixed) bandwidth parameter. For example, 'h',2
+         means that the smoothing windows have constant half-width
+         (or radius) 2. Note that h is applied after scaling.
+
+   'pen' penalty parameter for adaptive smoothing. Needs to be used
+         with care.
+
+  'alpha' The old way of specifying smoothing parameters, as used in
+         my book. alpha is equivalent to the vector [nn,h,pen].
+         If multiple componenents are non-zero, the largest corresponding
+         bandwidth is used. The default (if none of alpha,nn,h,pen
+         are provided) is [0.7 0 0].
+
+   'deg' Degree of local polynomial. Default: 2 (local quadratic).
+         Degrees 0 to 3 are supported by almost all parts of the
+         Locfit code. Higher degrees may work in some cases. 
+ 
+  'kern' Weight function, default = 'tcub'. Other choices are
+         'rect', 'trwt', 'tria', 'epan', 'bisq' and 'gauss'.
+         Choices may be restricted when derivatives are
+         required; e.g. for confidence bands and some bandwidth
+         selectors. 
+ 
+    'kt' Kernel type, 'sph' (default); 'prod'. In multivariate
+         problems, 'prod' uses a simplified product model which
+         speeds up computations. 
+ 
+  'acri' Criterion for adaptive bandwidth selection.
+ 
+
+  Derivative Estimation.
+  Generally I recommend caution when using derivative estimation
+  (and especially higher order derivative estimation) -- can you
+  really estimate derivatives from noisy data? Any derivative
+  estimate is inherently more dependent on an assumed smoothness
+  (expressed through the bandwidth) than the data. Warnings aside...
+
+  'deriv' Derivative estimation. 'deriv',1 specifies the first derivative
+         (or more correctly, an estimate of the local slope is returned.
+         'deriv',[1 1] specifies the second derivative. For bivariate fits
+         'deriv',2 specifies the first partial derivative wrt x2.
+         'deriv',[1 2] is mixed second-order derivative.
+ 
+  Fitting family.
+  'family' is used to specify the local likelihood family.
+         Regression-type families are 'gaussian', 'binomial',
+           'poisson', 'gamma' and 'geom'. If the family is preceded
+           by a q (e.g. 'qgauss', or 'qpois') then quasi-likelihood is
+           used; in particular, a dispersion estimate is computed.
+           Preceding by an 'r' makes an attempt at robust (outlier-resistant)
+           estimation. Combining q and r (e.g. 'family','qrpois') may
+           work, if you're lucky.
+         Density estimation-type families are 'dens', 'rate' and 'hazard'
+           (hazard or failure rate). Note that `dens' scales the output
+           to be a statistical density estimate (i.e. scaled to integrate
+           to 1). 'rate' estimates the rate or intensity function (events
+           per unit time, or events per unit area), which may be called
+           density in some fields.
+         The default family is 'qgauss' if a response (y argument) has been
+         provided, and 'dens' if no response is given.
+    'link' Link function for local likelihood fitting. Depending on the
+           family, choices may be 'ident', 'log', 'logit',
+           'inverse', 'sqrt' and 'arcsin'. 
+ 
+  Evaluation structures.
+    By default, locfit chooses a set of points, depending on the data
+    and smoothing parameters, to evaluate at. This is controlled by
+    the evaluation structure.
+      'ev' Specify the evaluation structure. Default is 'tree'.
+           Other choices include 'phull' (triangulation), 'grid' (a grid
+           of points), 'data' (each data point), 'crossval' (data,
+           but use leave-one-out cross validation), 'none' (no evaluation
+           points, effectively producing the global parametric fit).
+           Alternatively, a vector/matrix of evaluation points may be
+           provided. 
+           (kd trees not currently supported in mlocfit)
+     'll' and 'ur' -- row vectors specifying the upper and lower limits
+           for the bounding box used by the evaluation structure.
+           They default to the data range. 
+     'mg' For the 'grid' evaluation structure, 'mg' specifies the
+           number of points on each margin. Default 10. Can be either a
+           single number or vector. 
+    'cut' Refinement parameter for adaptive partitions. Default 0.8;
+           smaller values result in more refined partitions. 
+    'maxk' Controls space assignment for evaluation structures. For the
+           adaptive evaluation structures, it is impossible to be sure
+           in advance how many vertices will be generated. If you get
+           warnings about `Insufficient vertex space', Locfit's default
+           assigment can be increased by increasing 'maxk'. The default
+           is 'maxk','100'. 
+
+    'xlim' For density estimation, Locfit allows the density to be
+           supported on a bounded interval (or rectangle, in more than
+           one dimension). The format should be [ll;ul] (ie, matrix with
+           two rows, d columns) where ll is the lower left corner of
+           the rectangle, and ur is the upper right corner.
+           One-sided bounds, such as [0,infty), are not supported, but can be
+           effectively specified by specifying a very large upper
+           bound. 
+ 
+      'module' either 'name' or {'name','/path/to/module',parameters}.
+ 
+  Density Estimation
+      'renorm',1  will attempt to renormalize the local likelihood
+           density estimate so that it integrates to 1. The llde
+           (specified by 'family','dens') is scaled to estimate the
+           density, but since the estimation is pointwise, there is
+           no guarantee that the resulting density integrates exactly
+           to 1. Renormalization attempts to achieve this.
+
+  The output of locfit() is a Matlab structure:
+
+ fit.data.x (n*d)
+ fit.data.y (n*1)
+ fit.data.weights (n*1 or 1*1)
+ fit.data.censor (n*1 or 1*1)
+ fit.data.baseline (n*1 or 1*1)
+ fit.data.style (string length d)
+ fit.data.scales (1*d)
+ fit.data.xlim (2*d)
+
+ fit.evaluation_structure.type (string)
+ fit.evaluation_structure.module.name (string)
+ fit.evaluation_structure.module.directory (string)
+ fit.evaluation_structure.module.parameters (string)
+ fit.evaluation_structure.lower_left (numeric 1*d)
+ fit.evaluation_structure.upper_right (numeric 1*d)
+ fit.evaluation_structure.grid (numeric 1*d)
+ fit.evaluation_structure.cut (numeric 1*d)
+ fit.evaluation_structure.maxk
+ fit.evaluation_structure.derivative
+
+ fit.smoothing_parameters.alpha = (nn h pen) vector
+ fit.smoothing_parameters.adaptive_criterion (string)
+ fit.smoothing_parameters.degree (numeric)
+ fit.smoothing_parameters.family (string)
+ fit.smoothing_parameters.link (string)
+ fit.smoothing_parameters.kernel (string)
+ fit.smoothing_parameters.kernel_type (string)
+ fit.smoothing_parameters.deren 
+ fit.smoothing_parameters.deit
+ fit.smoothing_parameters.demint
+ fit.smoothing_parameters.debug
+
+ fit.fit_points.evaluation_points (d*nv matrix)
+ fit.fit_points.fitted_values (matrix, nv rows, many columns)
+ fit.fit_points.evaluation_vectors.cell
+ fit.fit_points.evaluation_vectors.splitvar
+ fit.fit_points.evaluation_vectors.lo
+ fit.fit_points.evaluation_vectors.hi
+ fit.fit_points.fit_limits (d*2 matrix)
+ fit.fit_points.family_link (numeric values)
+ fit.fit_points.kappa (likelihood, degrees of freedom, etc)
+
+ fit.parametric_component
+
+
+  The OLD format:
+
+    fit{1} = data.
+    fit{2} = evaluation structure.
+    fit{3} = smoothing parameter structure.
+    fit{4}{1} = fit points matrix.
+    fit{4}{2} = matrix of fitted values etc.
+           Note that these are not back-transformed, and may have the
+           parametric component removed.
+           (exact content varies according to module).
+    fit{4}{3} = various details of the evaluation points.
+    fit{4}{4} = fit limits.
+    fit{4}{5} = family,link.
+    fit{5} = parametric component values.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/Book/fig10_1.html" class="code" title="">fig10_1</a>	Local Regression and Likelihood, Figure 10.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig11_1.html" class="code" title="">fig11_1</a>	Local Regression and Likelihood, Figure 11.1</li><li><a href="../../../chronux_2_10/locfit/Book/fig11_4.html" class="code" title="">fig11_4</a>	Local Regression and Likelihood, Figure 11.4.</li><li><a href="../../../chronux_2_10/locfit/Book/fig11_5.html" class="code" title="">fig11_5</a>	Local Regression and Likelihood, Figure 11.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig13_1.html" class="code" title="">fig13_1</a>	Local Regression and Likelihood, Figure 13.1</li><li><a href="../../../chronux_2_10/locfit/Book/fig1_1.html" class="code" title="">fig1_1</a>	Local Regression and Likelihood, Figure 1.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_2.html" class="code" title="">fig2_2</a>	Local Regression and Likelihood, Figure 2.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_3.html" class="code" title="">fig2_3</a>	Local Regression and Likelihood, Figure 2.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_4.html" class="code" title="">fig2_4</a>	Local Regression and Likelihood, Figure 2.4.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_5.html" class="code" title="">fig2_5</a>	Local Regression and Likelihood, Figure 2.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig2_6.html" class="code" title="">fig2_6</a>	Local Regression and Likelihood, Figure 2.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig3_1.html" class="code" title="">fig3_1</a>	Local Regression and Likelihood, Figure 3.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig4_1.html" class="code" title="">fig4_1</a>	Local Regression and Likelihood, Figure 4.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig4_2.html" class="code" title="">fig4_2</a>	Local Regression and Likelihood, Figure 4.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig4_3.html" class="code" title="">fig4_3</a>	Local Regression and Likelihood, Figure 4.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_1.html" class="code" title="">fig5_1</a>	Local Regression and Likelihood, Figure 5.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_2.html" class="code" title="">fig5_2</a>	Local Regression and Likelihood, Figure 5.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_3.html" class="code" title="">fig5_3</a>	Local Regression and Likelihood, Figure 5.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_4.html" class="code" title="">fig5_4</a>	Local Regression and Likelihood, Figure 5.4.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_5.html" class="code" title="">fig5_5</a>	Local Regression and Likelihood, Figure 5.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig5_6.html" class="code" title="">fig5_6</a>	Local Regression and Likelihood, Figure 5.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_1.html" class="code" title="">fig6_1</a>	Local Regression and Likelihood, Figure 6.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_2.html" class="code" title="">fig6_2</a>	Local Regression and Likelihood, Figure 6.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_3.html" class="code" title="">fig6_3</a>	Local Regression and Likelihood, Figure 6.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_4.html" class="code" title="">fig6_4</a>	Local Regression and Likelihood, Figure 6.4.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_5.html" class="code" title="">fig6_5</a>	Local Regression and Likelihood, Figure 6.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_6.html" class="code" title="">fig6_6</a>	Local Regression and Likelihood, Figure 6.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig6_7.html" class="code" title="">fig6_7</a>	Local Regression and Likelihood, Figure 6.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_1.html" class="code" title="">fig7_1</a>	Local Regression and Likelihood, Figure 7.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_2.html" class="code" title="">fig7_2</a>	Local Regression and Likelihood, Figure 7.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_3.html" class="code" title="">fig7_3</a>	Local Regression and Likelihood, Figure 7.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_4.html" class="code" title="">fig7_4</a>	Local Regression and Likelihood, Figure 7.4.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_5.html" class="code" title="">fig7_5</a>	Local Regression and Likelihood, Figure 7.5.</li><li><a href="../../../chronux_2_10/locfit/Book/fig7_6.html" class="code" title="">fig7_6</a>	Local Regression and Likelihood, Figure 7.6.</li><li><a href="../../../chronux_2_10/locfit/Book/fig8_1.html" class="code" title="">fig8_1</a>	Local Regression and Likelihood, Figure 8.1.</li><li><a href="../../../chronux_2_10/locfit/Book/fig8_2.html" class="code" title="">fig8_2</a>	Local Regression and Likelihood, Figure 8.2.</li><li><a href="../../../chronux_2_10/locfit/Book/fig8_3.html" class="code" title="">fig8_3</a>	Local Regression and Likelihood, Figure 8.3.</li><li><a href="../../../chronux_2_10/locfit/Book/fig9_2.html" class="code" title="">fig9_2</a>	Local Regression and Likelihood, Figure 9.2.</li><li><a href="../../../chronux_2_10/locfit/Neuro/lfex1.html" class="code" title="">lfex1</a>	Local Estimation a spike firing rate (in spikes per unit time).</li><li><a href="../../../chronux_2_10/locfit/Neuro/lfex2.html" class="code" title="">lfex2</a>	Model the success probability of successive trials of a monkey</li><li><a href="aic.html" class="code" title="function g=aic(varargin)">aic</a>	</li><li><a href="gcv.html" class="code" title="function g=gcv(varargin)">gcv</a>	</li><li><a href="hatmatrix.html" class="code" title="function z=hatmatrix(varargin)">hatmatrix</a>	</li><li><a href="kappa0.html" class="code" title="function kap=kappa0(x,y,varargin)">kappa0</a>	Compute the constants for `tube-formula' based simultaneous</li><li><a href="lcv.html" class="code" title="function g=lcv(varargin)">lcv</a>	</li><li><a href="lf_censor.html" class="code" title="function fit = lf_censor(x,y,cens,varargin)">lf_censor</a>	</li><li><a href="lfgui.html" class="code" title="function varargout = lfgui(varargin)">lfgui</a>	LFGUI M-file for lfgui.fig</li><li><a href="lfsmooth.html" class="code" title="function yhat=lfsmooth(varargin)">lfsmooth</a>	</li><li><a href="locfit_all.html" class="code" title="function out=locfit_all(varargin)">locfit_all</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="scb.html" class="code" title="function z=scb(x,y,varargin)">scb</a>	Simultaneous Confidence Bands</li><li><a href="smooth_lf.html" class="code" title="function z=smooth_lf(x,y,varargin)">smooth_lf</a>	must (unlike R smooth.lf() function) give x and y.</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/den_jack.html" class="code" title="function [m,ll,ul,llj,ulj]=den_jack(X,family,varargin)">den_jack</a>	Function to compute smooth estimates of the mean of x using locfit,</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function fit=locfit(varargin)</a>
+0002 
+0003 <span class="comment">% Smoothing noisy data using Local Regression and Likelihood.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% arguments still to add: dc maxit</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%  Usage: fit = locfit(x,y)   % local regression fit of x and y.</span>
+0008 <span class="comment">%         fit = locfit(x)     % density estimation of x.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%  Smoothing with locfit is a two-step procedure. The locfit()</span>
+0011 <span class="comment">%  function evaluates the local regression smooth at a set of points</span>
+0012 <span class="comment">%  (can be specified through an evaluation structure). Then, use</span>
+0013 <span class="comment">%  the predict() function to interpolate this fit to other points.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%  Additional arguments to locfit() are specified as 'name',value pairs, e.g.:</span>
+0016 <span class="comment">%  locfit( x, 'alpha',[0.7,1.5] , 'family','rate' , 'ev','grid' , 'mg',100 );</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%  Data-related inputs:</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">%    x is a vector or matrix of the independent (or predictor) variables.</span>
+0022 <span class="comment">%      Rows of x represent subjects, columns represent variables.</span>
+0023 <span class="comment">%      Generally, local regression would be used with 1-4 independent</span>
+0024 <span class="comment">%      variables. In higher dimensions, the curse-of-dimensionality,</span>
+0025 <span class="comment">%      as well as the difficulty of visualizing higher dimensional</span>
+0026 <span class="comment">%      surfaces, may limit usefulness.</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">%    y is the column vector of the dependent (or response) variable.</span>
+0029 <span class="comment">%      For density families, 'y' is omitted.</span>
+0030 <span class="comment">% NOTE: x and y are the first two arguments. All other arguments require</span>
+0031 <span class="comment">%        the 'name',value notation.</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">%    'weights' Prior weights for observations (reciprocal of variance, or</span>
+0034 <span class="comment">%           sample size).</span>
+0035 <span class="comment">%    'cens' Censoring indicators for hazard rate or censored regression.</span>
+0036 <span class="comment">%           The coding is '1' (or 'TRUE') for a censored observation, and</span>
+0037 <span class="comment">%           '0' (or 'FALSE') for uncensored observations.</span>
+0038 <span class="comment">%    'base' Baseline parameter estimate. If a baseline is provided,</span>
+0039 <span class="comment">%           the local regression model is fitted as</span>
+0040 <span class="comment">%                        Y_i = b_i + m(x_i) + epsilon_i,</span>
+0041 <span class="comment">%           with Locfit estimating the m(x) term. For regression models,</span>
+0042 <span class="comment">%           this effectively subtracts b_i from Y_i. The advantage of the</span>
+0043 <span class="comment">%           'base' formulation is that it extends to likelihood</span>
+0044 <span class="comment">%           regression models.</span>
+0045 <span class="comment">%    'scale' A scale to apply to each variable. This is especially</span>
+0046 <span class="comment">%           important for multivariate fitting, where variables may be</span>
+0047 <span class="comment">%           measured in non-comparable units. It is also used to specify</span>
+0048 <span class="comment">%           the frequency for variables with the 'a' (angular) style.</span>
+0049 <span class="comment">%     'sty' Character string (length d) of styles for each predictor variable.</span>
+0050 <span class="comment">%           n denotes `normal'; a denotes angular (or periodic); l and r</span>
+0051 <span class="comment">%           denotes one-sided left and right; c is conditionally parametric.</span>
+0052 <span class="comment">%</span>
+0053 <span class="comment">%</span>
+0054 <span class="comment">%  Smoothing Parameters and Bandwidths:</span>
+0055 <span class="comment">%  The bandwidth (or more accurately, half-width) of the smoothing window</span>
+0056 <span class="comment">%  controls the amount of smoothing. Locfit allows specification of constant</span>
+0057 <span class="comment">%  (fixed), nearest neighbor, certain locally adaptive variable bandwidths,</span>
+0058 <span class="comment">%  and combinations of these. Also related to the smoothing parameter</span>
+0059 <span class="comment">%  are the local polynmial degree and weight function.</span>
+0060 <span class="comment">%</span>
+0061 <span class="comment">%    'nn' 'Nearest neighbor' smoothing parameter. Specifying 'nn',0.5</span>
+0062 <span class="comment">%         means that the width of each smoothing neighborhood is chosen</span>
+0063 <span class="comment">%         to cover 50% of the data.</span>
+0064 <span class="comment">%</span>
+0065 <span class="comment">%     'h' A constant (or fixed) bandwidth parameter. For example, 'h',2</span>
+0066 <span class="comment">%         means that the smoothing windows have constant half-width</span>
+0067 <span class="comment">%         (or radius) 2. Note that h is applied after scaling.</span>
+0068 <span class="comment">%</span>
+0069 <span class="comment">%   'pen' penalty parameter for adaptive smoothing. Needs to be used</span>
+0070 <span class="comment">%         with care.</span>
+0071 <span class="comment">%</span>
+0072 <span class="comment">%  'alpha' The old way of specifying smoothing parameters, as used in</span>
+0073 <span class="comment">%         my book. alpha is equivalent to the vector [nn,h,pen].</span>
+0074 <span class="comment">%         If multiple componenents are non-zero, the largest corresponding</span>
+0075 <span class="comment">%         bandwidth is used. The default (if none of alpha,nn,h,pen</span>
+0076 <span class="comment">%         are provided) is [0.7 0 0].</span>
+0077 <span class="comment">%</span>
+0078 <span class="comment">%   'deg' Degree of local polynomial. Default: 2 (local quadratic).</span>
+0079 <span class="comment">%         Degrees 0 to 3 are supported by almost all parts of the</span>
+0080 <span class="comment">%         Locfit code. Higher degrees may work in some cases.</span>
+0081 <span class="comment">%</span>
+0082 <span class="comment">%  'kern' Weight function, default = 'tcub'. Other choices are</span>
+0083 <span class="comment">%         'rect', 'trwt', 'tria', 'epan', 'bisq' and 'gauss'.</span>
+0084 <span class="comment">%         Choices may be restricted when derivatives are</span>
+0085 <span class="comment">%         required; e.g. for confidence bands and some bandwidth</span>
+0086 <span class="comment">%         selectors.</span>
+0087 <span class="comment">%</span>
+0088 <span class="comment">%    'kt' Kernel type, 'sph' (default); 'prod'. In multivariate</span>
+0089 <span class="comment">%         problems, 'prod' uses a simplified product model which</span>
+0090 <span class="comment">%         speeds up computations.</span>
+0091 <span class="comment">%</span>
+0092 <span class="comment">%  'acri' Criterion for adaptive bandwidth selection.</span>
+0093 <span class="comment">%</span>
+0094 <span class="comment">%</span>
+0095 <span class="comment">%  Derivative Estimation.</span>
+0096 <span class="comment">%  Generally I recommend caution when using derivative estimation</span>
+0097 <span class="comment">%  (and especially higher order derivative estimation) -- can you</span>
+0098 <span class="comment">%  really estimate derivatives from noisy data? Any derivative</span>
+0099 <span class="comment">%  estimate is inherently more dependent on an assumed smoothness</span>
+0100 <span class="comment">%  (expressed through the bandwidth) than the data. Warnings aside...</span>
+0101 <span class="comment">%</span>
+0102 <span class="comment">%  'deriv' Derivative estimation. 'deriv',1 specifies the first derivative</span>
+0103 <span class="comment">%         (or more correctly, an estimate of the local slope is returned.</span>
+0104 <span class="comment">%         'deriv',[1 1] specifies the second derivative. For bivariate fits</span>
+0105 <span class="comment">%         'deriv',2 specifies the first partial derivative wrt x2.</span>
+0106 <span class="comment">%         'deriv',[1 2] is mixed second-order derivative.</span>
+0107 <span class="comment">%</span>
+0108 <span class="comment">%  Fitting family.</span>
+0109 <span class="comment">%  'family' is used to specify the local likelihood family.</span>
+0110 <span class="comment">%         Regression-type families are 'gaussian', 'binomial',</span>
+0111 <span class="comment">%           'poisson', 'gamma' and 'geom'. If the family is preceded</span>
+0112 <span class="comment">%           by a q (e.g. 'qgauss', or 'qpois') then quasi-likelihood is</span>
+0113 <span class="comment">%           used; in particular, a dispersion estimate is computed.</span>
+0114 <span class="comment">%           Preceding by an 'r' makes an attempt at robust (outlier-resistant)</span>
+0115 <span class="comment">%           estimation. Combining q and r (e.g. 'family','qrpois') may</span>
+0116 <span class="comment">%           work, if you're lucky.</span>
+0117 <span class="comment">%         Density estimation-type families are 'dens', 'rate' and 'hazard'</span>
+0118 <span class="comment">%           (hazard or failure rate). Note that `dens' scales the output</span>
+0119 <span class="comment">%           to be a statistical density estimate (i.e. scaled to integrate</span>
+0120 <span class="comment">%           to 1). 'rate' estimates the rate or intensity function (events</span>
+0121 <span class="comment">%           per unit time, or events per unit area), which may be called</span>
+0122 <span class="comment">%           density in some fields.</span>
+0123 <span class="comment">%         The default family is 'qgauss' if a response (y argument) has been</span>
+0124 <span class="comment">%         provided, and 'dens' if no response is given.</span>
+0125 <span class="comment">%    'link' Link function for local likelihood fitting. Depending on the</span>
+0126 <span class="comment">%           family, choices may be 'ident', 'log', 'logit',</span>
+0127 <span class="comment">%           'inverse', 'sqrt' and 'arcsin'.</span>
+0128 <span class="comment">%</span>
+0129 <span class="comment">%  Evaluation structures.</span>
+0130 <span class="comment">%    By default, locfit chooses a set of points, depending on the data</span>
+0131 <span class="comment">%    and smoothing parameters, to evaluate at. This is controlled by</span>
+0132 <span class="comment">%    the evaluation structure.</span>
+0133 <span class="comment">%      'ev' Specify the evaluation structure. Default is 'tree'.</span>
+0134 <span class="comment">%           Other choices include 'phull' (triangulation), 'grid' (a grid</span>
+0135 <span class="comment">%           of points), 'data' (each data point), 'crossval' (data,</span>
+0136 <span class="comment">%           but use leave-one-out cross validation), 'none' (no evaluation</span>
+0137 <span class="comment">%           points, effectively producing the global parametric fit).</span>
+0138 <span class="comment">%           Alternatively, a vector/matrix of evaluation points may be</span>
+0139 <span class="comment">%           provided.</span>
+0140 <span class="comment">%           (kd trees not currently supported in mlocfit)</span>
+0141 <span class="comment">%     'll' and 'ur' -- row vectors specifying the upper and lower limits</span>
+0142 <span class="comment">%           for the bounding box used by the evaluation structure.</span>
+0143 <span class="comment">%           They default to the data range.</span>
+0144 <span class="comment">%     'mg' For the 'grid' evaluation structure, 'mg' specifies the</span>
+0145 <span class="comment">%           number of points on each margin. Default 10. Can be either a</span>
+0146 <span class="comment">%           single number or vector.</span>
+0147 <span class="comment">%    'cut' Refinement parameter for adaptive partitions. Default 0.8;</span>
+0148 <span class="comment">%           smaller values result in more refined partitions.</span>
+0149 <span class="comment">%    'maxk' Controls space assignment for evaluation structures. For the</span>
+0150 <span class="comment">%           adaptive evaluation structures, it is impossible to be sure</span>
+0151 <span class="comment">%           in advance how many vertices will be generated. If you get</span>
+0152 <span class="comment">%           warnings about `Insufficient vertex space', Locfit's default</span>
+0153 <span class="comment">%           assigment can be increased by increasing 'maxk'. The default</span>
+0154 <span class="comment">%           is 'maxk','100'.</span>
+0155 <span class="comment">%</span>
+0156 <span class="comment">%    'xlim' For density estimation, Locfit allows the density to be</span>
+0157 <span class="comment">%           supported on a bounded interval (or rectangle, in more than</span>
+0158 <span class="comment">%           one dimension). The format should be [ll;ul] (ie, matrix with</span>
+0159 <span class="comment">%           two rows, d columns) where ll is the lower left corner of</span>
+0160 <span class="comment">%           the rectangle, and ur is the upper right corner.</span>
+0161 <span class="comment">%           One-sided bounds, such as [0,infty), are not supported, but can be</span>
+0162 <span class="comment">%           effectively specified by specifying a very large upper</span>
+0163 <span class="comment">%           bound.</span>
+0164 <span class="comment">%</span>
+0165 <span class="comment">%      'module' either 'name' or {'name','/path/to/module',parameters}.</span>
+0166 <span class="comment">%</span>
+0167 <span class="comment">%  Density Estimation</span>
+0168 <span class="comment">%      'renorm',1  will attempt to renormalize the local likelihood</span>
+0169 <span class="comment">%           density estimate so that it integrates to 1. The llde</span>
+0170 <span class="comment">%           (specified by 'family','dens') is scaled to estimate the</span>
+0171 <span class="comment">%           density, but since the estimation is pointwise, there is</span>
+0172 <span class="comment">%           no guarantee that the resulting density integrates exactly</span>
+0173 <span class="comment">%           to 1. Renormalization attempts to achieve this.</span>
+0174 <span class="comment">%</span>
+0175 <span class="comment">%  The output of locfit() is a Matlab structure:</span>
+0176 <span class="comment">%</span>
+0177 <span class="comment">% fit.data.x (n*d)</span>
+0178 <span class="comment">% fit.data.y (n*1)</span>
+0179 <span class="comment">% fit.data.weights (n*1 or 1*1)</span>
+0180 <span class="comment">% fit.data.censor (n*1 or 1*1)</span>
+0181 <span class="comment">% fit.data.baseline (n*1 or 1*1)</span>
+0182 <span class="comment">% fit.data.style (string length d)</span>
+0183 <span class="comment">% fit.data.scales (1*d)</span>
+0184 <span class="comment">% fit.data.xlim (2*d)</span>
+0185 <span class="comment">%</span>
+0186 <span class="comment">% fit.evaluation_structure.type (string)</span>
+0187 <span class="comment">% fit.evaluation_structure.module.name (string)</span>
+0188 <span class="comment">% fit.evaluation_structure.module.directory (string)</span>
+0189 <span class="comment">% fit.evaluation_structure.module.parameters (string)</span>
+0190 <span class="comment">% fit.evaluation_structure.lower_left (numeric 1*d)</span>
+0191 <span class="comment">% fit.evaluation_structure.upper_right (numeric 1*d)</span>
+0192 <span class="comment">% fit.evaluation_structure.grid (numeric 1*d)</span>
+0193 <span class="comment">% fit.evaluation_structure.cut (numeric 1*d)</span>
+0194 <span class="comment">% fit.evaluation_structure.maxk</span>
+0195 <span class="comment">% fit.evaluation_structure.derivative</span>
+0196 <span class="comment">%</span>
+0197 <span class="comment">% fit.smoothing_parameters.alpha = (nn h pen) vector</span>
+0198 <span class="comment">% fit.smoothing_parameters.adaptive_criterion (string)</span>
+0199 <span class="comment">% fit.smoothing_parameters.degree (numeric)</span>
+0200 <span class="comment">% fit.smoothing_parameters.family (string)</span>
+0201 <span class="comment">% fit.smoothing_parameters.link (string)</span>
+0202 <span class="comment">% fit.smoothing_parameters.kernel (string)</span>
+0203 <span class="comment">% fit.smoothing_parameters.kernel_type (string)</span>
+0204 <span class="comment">% fit.smoothing_parameters.deren</span>
+0205 <span class="comment">% fit.smoothing_parameters.deit</span>
+0206 <span class="comment">% fit.smoothing_parameters.demint</span>
+0207 <span class="comment">% fit.smoothing_parameters.debug</span>
+0208 <span class="comment">%</span>
+0209 <span class="comment">% fit.fit_points.evaluation_points (d*nv matrix)</span>
+0210 <span class="comment">% fit.fit_points.fitted_values (matrix, nv rows, many columns)</span>
+0211 <span class="comment">% fit.fit_points.evaluation_vectors.cell</span>
+0212 <span class="comment">% fit.fit_points.evaluation_vectors.splitvar</span>
+0213 <span class="comment">% fit.fit_points.evaluation_vectors.lo</span>
+0214 <span class="comment">% fit.fit_points.evaluation_vectors.hi</span>
+0215 <span class="comment">% fit.fit_points.fit_limits (d*2 matrix)</span>
+0216 <span class="comment">% fit.fit_points.family_link (numeric values)</span>
+0217 <span class="comment">% fit.fit_points.kappa (likelihood, degrees of freedom, etc)</span>
+0218 <span class="comment">%</span>
+0219 <span class="comment">% fit.parametric_component</span>
+0220 <span class="comment">%</span>
+0221 <span class="comment">%</span>
+0222 <span class="comment">%  The OLD format:</span>
+0223 <span class="comment">%</span>
+0224 <span class="comment">%    fit{1} = data.</span>
+0225 <span class="comment">%    fit{2} = evaluation structure.</span>
+0226 <span class="comment">%    fit{3} = smoothing parameter structure.</span>
+0227 <span class="comment">%    fit{4}{1} = fit points matrix.</span>
+0228 <span class="comment">%    fit{4}{2} = matrix of fitted values etc.</span>
+0229 <span class="comment">%           Note that these are not back-transformed, and may have the</span>
+0230 <span class="comment">%           parametric component removed.</span>
+0231 <span class="comment">%           (exact content varies according to module).</span>
+0232 <span class="comment">%    fit{4}{3} = various details of the evaluation points.</span>
+0233 <span class="comment">%    fit{4}{4} = fit limits.</span>
+0234 <span class="comment">%    fit{4}{5} = family,link.</span>
+0235 <span class="comment">%    fit{5} = parametric component values.</span>
+0236 <span class="comment">%</span>
+0237 
+0238 
+0239 
+0240 <span class="comment">% Minimal input validation</span>
+0241 <span class="keyword">if</span> nargin &lt; 1
+0242    error( <span class="string">'At least one input argument required'</span> );
+0243 <span class="keyword">end</span>
+0244 
+0245 xdata = double(varargin{1});
+0246 d = size(xdata,2);
+0247 n = size(xdata,1);
+0248 <span class="keyword">if</span> ((nargin&gt;1) &amp;&amp; (~ischar(varargin{2})))
+0249   ydata = double(varargin{2});
+0250   <span class="keyword">if</span> (any(size(ydata) ~= [n 1])); error(<span class="string">'y must be n*1 column vector'</span>); <span class="keyword">end</span>;
+0251   family = <span class="string">'qgauss'</span>;
+0252   na = 3;
+0253 <span class="keyword">else</span>
+0254   ydata = 0;
+0255   family = <span class="string">'density'</span>;
+0256   na = 2;
+0257 <span class="keyword">end</span>;
+0258 <span class="keyword">if</span> mod(nargin-na,2)==0
+0259   error( <span class="string">'All arguments other than x, y must be name,value pairs'</span> );
+0260 <span class="keyword">end</span>
+0261 
+0262 
+0263 wdata = ones(n,1);
+0264 cdata = 0;
+0265 base  = 0;
+0266 style = <span class="string">'n'</span>;
+0267 scale = 1;
+0268 xl = zeros(2,d);
+0269 
+0270 alpha = [0 0 0];
+0271 deg = 2;
+0272 link = <span class="string">'default'</span>;
+0273 acri = <span class="string">'none'</span>;
+0274 kern = <span class="string">'tcub'</span>;
+0275 kt = <span class="string">'sph'</span>;
+0276 deren = 0;
+0277 deit  = <span class="string">'default'</span>;
+0278 demint= 20;
+0279 debug = 0;
+0280 
+0281 ev = <span class="string">'tree'</span>;
+0282 ll = zeros(1,d);
+0283 ur = zeros(1,d);
+0284 mg = 10;
+0285 maxk = 100;
+0286 deriv=0;
+0287 cut = 0.8;
+0288 mdl = struct(<span class="string">'name'</span>,<span class="string">'std'</span>, <span class="string">'directory'</span>,<span class="string">''</span>, <span class="string">'parameters'</span>,0 );
+0289 
+0290 <span class="keyword">while</span> na &lt; length(varargin)
+0291     inc = 0;
+0292     <span class="keyword">if</span> (varargin{na}==<span class="string">'y'</span>)
+0293         ydata = double(varargin{na+1});
+0294         family = <span class="string">'qgauss'</span>;
+0295         inc = 2;
+0296         <span class="keyword">if</span> (any(size(ydata) ~= [n 1])); error(<span class="string">'y must be n*1 column vector'</span>); <span class="keyword">end</span>;
+0297     <span class="keyword">end</span>
+0298     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'weights'</span>))
+0299         wdata = double(varargin{na+1});
+0300         inc = 2;
+0301         <span class="keyword">if</span> (any(size(wdata) ~= [n 1])); error(<span class="string">'weights must be n*1 column vector'</span>); <span class="keyword">end</span>;
+0302     <span class="keyword">end</span>
+0303     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'cens'</span>))
+0304         cdata = double(varargin{na+1});
+0305         inc = 2;
+0306         <span class="keyword">if</span> (any(size(cdata) ~= [n 1])); error(<span class="string">'cens must be n*1 column vector'</span>); <span class="keyword">end</span>;
+0307     <span class="keyword">end</span>
+0308     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'base'</span>)) <span class="comment">% numeric vector, n*1 or 1*1.</span>
+0309         base = double(varargin{na+1});
+0310         <span class="keyword">if</span> (length(base)==1); base = base*ones(n,1); <span class="keyword">end</span>;
+0311         inc = 2;
+0312     <span class="keyword">end</span>
+0313     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'style'</span>)) <span class="comment">% character string of length d.</span>
+0314         style = varargin{na+1};
+0315         inc = 2;
+0316     <span class="keyword">end</span>;
+0317     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'scale'</span>)) <span class="comment">% row vector, length 1 or d.</span>
+0318         scale = varargin{na+1};
+0319         <span class="keyword">if</span> (scale==0)
+0320           scale = zeros(1,d);
+0321           <span class="keyword">for</span> i=1:d
+0322             scale(i) = sqrt(var(xdata(:,i)));
+0323           <span class="keyword">end</span>;
+0324         <span class="keyword">end</span>;
+0325         inc = 2;
+0326     <span class="keyword">end</span>;
+0327     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'xlim'</span>)) <span class="comment">% 2*d numeric matrix.</span>
+0328         xl = varargin{na+1};
+0329         inc = 2;
+0330     <span class="keyword">end</span>
+0331     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'alpha'</span>)) <span class="comment">% row vector of length 1, 2 or 3.</span>
+0332         alpha = [varargin{na+1} 0 0 0];
+0333         alpha = alpha(1:3);
+0334         inc = 2;
+0335     <span class="keyword">end</span>
+0336     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'nn'</span>)) <span class="comment">% scalar</span>
+0337         alpha(1) = varargin{na+1};
+0338         inc = 2;
+0339     <span class="keyword">end</span>
+0340     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'h'</span>)) <span class="comment">% scalar</span>
+0341         alpha(2) = varargin{na+1};
+0342         inc = 2;
+0343     <span class="keyword">end</span>;
+0344     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'pen'</span>)) <span class="comment">% scalar</span>
+0345         alpha(3) = varargin{na+1};
+0346         inc = 2;
+0347     <span class="keyword">end</span>;
+0348     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'acri'</span>)) <span class="comment">% string</span>
+0349         acri = varargin{na+1};
+0350         inc = 2;
+0351     <span class="keyword">end</span>
+0352     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'deg'</span>)) <span class="comment">% positive integer.</span>
+0353         deg = varargin{na+1};
+0354         inc = 2;
+0355     <span class="keyword">end</span>;
+0356     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'family'</span>)) <span class="comment">% character string.</span>
+0357         family = varargin{na+1};
+0358         inc = 2;
+0359     <span class="keyword">end</span>;
+0360     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'link'</span>)) <span class="comment">% character string.</span>
+0361         link = varargin{na+1};
+0362         inc = 2;
+0363     <span class="keyword">end</span>;
+0364     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'kern'</span>)) <span class="comment">% character string.</span>
+0365         kern = varargin{na+1};
+0366         inc = 2;
+0367     <span class="keyword">end</span>;
+0368     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'kt'</span>)) <span class="comment">% character string.</span>
+0369         kt = varargin{na+1};
+0370         inc = 2;
+0371     <span class="keyword">end</span>;
+0372     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'ev'</span>)) <span class="comment">% char. string, or matrix with d columns.</span>
+0373         ev = varargin{na+1};
+0374         <span class="keyword">if</span> (isnumeric(ev)); ev = ev'; <span class="keyword">end</span>;
+0375         inc = 2;
+0376     <span class="keyword">end</span>;
+0377     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'ll'</span>)) <span class="comment">% row vector of length d.</span>
+0378         ll = varargin{na+1};
+0379         inc = 2;
+0380     <span class="keyword">end</span>;
+0381     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'ur'</span>)) <span class="comment">% row vector of length d.</span>
+0382         ur = varargin{na+1};
+0383         inc = 2;
+0384     <span class="keyword">end</span>;
+0385     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'mg'</span>)) <span class="comment">% row vector of length d.</span>
+0386         mg = varargin{na+1};
+0387         inc = 2;
+0388     <span class="keyword">end</span>;
+0389     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'cut'</span>)) <span class="comment">% positive scalar.</span>
+0390         cut = varargin{na+1};
+0391         inc = 2;
+0392     <span class="keyword">end</span>;
+0393     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'module'</span>)) <span class="comment">% string.</span>
+0394         mdl = struct(<span class="string">'name'</span>,varargin{na+1}, <span class="string">'directory'</span>,<span class="string">''</span>, <span class="string">'parameters'</span>,0 );
+0395         inc = 2;
+0396     <span class="keyword">end</span>;
+0397     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'maxk'</span>)) <span class="comment">% positive integer.</span>
+0398         maxk = varargin{na+1};
+0399         inc = 2;
+0400     <span class="keyword">end</span>;
+0401     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'deriv'</span>)) <span class="comment">% numeric row vector, up to deg elements.</span>
+0402         deriv = varargin{na+1};
+0403         inc = 2;
+0404     <span class="keyword">end</span>;
+0405     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'renorm'</span>)) <span class="comment">% density renormalization.</span>
+0406         deren = varargin{na+1};
+0407         inc = 2;
+0408     <span class="keyword">end</span>;
+0409     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'itype'</span>)) <span class="comment">% density - integration type.</span>
+0410         deit = varargin{na+1};
+0411         inc = 2;
+0412     <span class="keyword">end</span>;
+0413     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'mint'</span>)) <span class="comment">% density - # of integration points.</span>
+0414         demint = varargin{na+1};
+0415         inc = 2;
+0416     <span class="keyword">end</span>;
+0417     <span class="keyword">if</span> (strcmp(varargin{na},<span class="string">'debug'</span>)) <span class="comment">% debug level.</span>
+0418         debug = varargin{na+1};
+0419         inc = 2;
+0420     <span class="keyword">end</span>;
+0421     <span class="keyword">if</span> (inc==0)
+0422       disp(varargin{na});
+0423       error(<span class="string">'Unknown Input Argument.'</span>);
+0424     <span class="keyword">end</span>;
+0425     na=na+inc;
+0426 <span class="keyword">end</span>
+0427 
+0428 
+0429 fit.data.x = xdata;
+0430 fit.data.y = ydata;
+0431 fit.data.weights = wdata;
+0432 fit.data.censor = cdata;
+0433 fit.data.baseline = base;
+0434 fit.data.style = style;
+0435 fit.data.scales = scale;
+0436 fit.data.xlim = xl;
+0437 
+0438 fit.evaluation_structure.type = ev;
+0439 fit.evaluation_structure.module = mdl;
+0440 fit.evaluation_structure.lower_left = ll;
+0441 fit.evaluation_structure.upper_right = ur;
+0442 fit.evaluation_structure.grid = mg;
+0443 fit.evaluation_structure.cut = cut;
+0444 fit.evaluation_structure.maxk = maxk;
+0445 fit.evaluation_structure.derivative = deriv;
+0446 
+0447 <span class="keyword">if</span> (alpha==0); alpha = [0.7 0 0]; <span class="keyword">end</span>;
+0448 
+0449 fit.smoothing_parameters.alpha = alpha;
+0450 fit.smoothing_parameters.adaptive_criterion = acri;
+0451 fit.smoothing_parameters.degree = deg;
+0452 fit.smoothing_parameters.family = family;
+0453 fit.smoothing_parameters.link = link;
+0454 fit.smoothing_parameters.kernel = kern;
+0455 fit.smoothing_parameters.kernel_type = kt;
+0456 fit.smoothing_parameters.deren = deren;
+0457 fit.smoothing_parameters.deit = deit;
+0458 fit.smoothing_parameters.demint = demint;
+0459 fit.smoothing_parameters.debug = debug;
+0460 
+0461 [fpc pcomp] = mexlf(fit.data,fit.evaluation_structure,fit.smoothing_parameters);
+0462 fit.fit_points = fpc;
+0463 fit.parametric_component = pcomp;
+0464 
+0465 <span class="keyword">return</span>
+0466 
+0467 
+0468</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

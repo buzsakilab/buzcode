@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of test_nex</title>
+  <meta name="keywords" content="test_nex">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html dataio --><!-- menu.html HowToReadNexFilesInMatlab -->
+<h1>test_nex
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="nex_cont.html" class="code" title="function [adfreq, n, ts, fn, d] = nex_cont(filename, varname)">nex_cont</a>	nex_cont(filename, varname): Read continuous variable from a .nex file</li><li><a href="nex_info.html" class="code" title="function [nvar, names, types] = nex_info(filename)">nex_info</a>	nex_info(filename) -- read and display .nex file info</li><li><a href="nex_marker.html" class="code" title="function [n, nm, nl, ts, names, m] = nex_marker(filename, varname)">nex_marker</a>	nex_marker(filename, varname): Read a marker variable from a .nex file</li><li><a href="nex_ts.html" class="code" title="function [n, ts] = nex_ts(filename, varname)">nex_ts</a>	nex_ts(filename, varname): Read timestamps from a .nex file</li><li><a href="nex_wf.html" class="code" title="function [adfreq, n, ts, nf, w] = nex_wf(filename, varname)">nex_wf</a>	nex_wf(filename, varname): Read waveform variable from a .nex file</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 [nvar, names, types] = <a href="nex_info.html" class="code" title="function [nvar, names, types] = nex_info(filename)">nex_info</a>(<span class="string">'test.nex'</span>);
+0002 
+0003 [n, ts] = <a href="nex_ts.html" class="code" title="function [n, ts] = nex_ts(filename, varname)">nex_ts</a>(<span class="string">'test.nex'</span>, <span class="string">'neuron1'</span>);
+0004 
+0005 [adfreq, n, ts, fn, d] = <a href="nex_cont.html" class="code" title="function [adfreq, n, ts, fn, d] = nex_cont(filename, varname)">nex_cont</a>(<span class="string">'test.nex'</span>, <span class="string">'continuous1'</span>);
+0006 
+0007 [adfreq, n, ts, nf, w] = <a href="nex_wf.html" class="code" title="function [adfreq, n, ts, nf, w] = nex_wf(filename, varname)">nex_wf</a>(<span class="string">'test.nex'</span>, <span class="string">'wave1'</span>);
+0008 
+0009 [n, nm, nl, ts, names, m] = <a href="nex_marker.html" class="code" title="function [n, nm, nl, ts, names, m] = nex_marker(filename, varname)">nex_marker</a>(<span class="string">'test.nex'</span>, <span class="string">'marker1'</span>);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

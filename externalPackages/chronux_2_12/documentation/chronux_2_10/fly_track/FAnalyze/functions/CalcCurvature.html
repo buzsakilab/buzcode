@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of CalcCurvature</title>
+  <meta name="keywords" content="CalcCurvature">
+  <meta name="description" content="CALCCURVATURE">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FAnalyze --><!-- menu.html functions -->
+<h1>CalcCurvature
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>CALCCURVATURE</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function kappa = CalcCurvature(v, vtheta, indx, dt) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">CALCCURVATURE
+   Usage:  kappa = CalcCurvature(v,theta,indx,dt)
+
+ This function calculates the curvature of the path that the fly took
+ while walking in the frames indexed by indx.  The inputs are the speed v
+ , the angle of the velocity vector vtheta,the index of walking frames,and the time resolution
+ (1/sampling rate) dt. I am convinced that this function can be
+ simplified, but haven't had the time or energy to find a more efficient way.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="FAnalyze.html" class="code" title="function varargout = FAnalyze(varargin)">FAnalyze</a>	FANALYZE</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function kappa = CalcCurvature(v, vtheta, indx, dt)</a>
+0002 
+0003 <span class="comment">%CALCCURVATURE</span>
+0004 <span class="comment">%   Usage:  kappa = CalcCurvature(v,theta,indx,dt)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% This function calculates the curvature of the path that the fly took</span>
+0007 <span class="comment">% while walking in the frames indexed by indx.  The inputs are the speed v</span>
+0008 <span class="comment">% , the angle of the velocity vector vtheta,the index of walking frames,and the time resolution</span>
+0009 <span class="comment">% (1/sampling rate) dt. I am convinced that this function can be</span>
+0010 <span class="comment">% simplified, but haven't had the time or energy to find a more efficient way.</span>
+0011 
+0012 <span class="comment">%Written by Dan Valente</span>
+0013 <span class="comment">%September 2007</span>
+0014 
+0015 list = [];
+0016 phi = [];
+0017 kappa = [];
+0018 indx(end+1)=-1;
+0019 <span class="keyword">for</span> i = 1:length(indx)-1
+0020     <span class="keyword">if</span> (indx(i)+1 == indx(i+1))
+0021         list = [list indx(i)];
+0022     <span class="keyword">else</span>
+0023         list = [list indx(i)];
+0024         temp = vtheta(list)';
+0025         <span class="keyword">if</span> (length(temp)~= 1)
+0026             <span class="keyword">for</span> j = 1:length(temp)-1
+0027                 d = temp(j+1)-temp(j);
+0028                 <span class="keyword">if</span> abs(d) &gt;= pi
+0029                     <span class="keyword">if</span> (temp(j+1) &lt; 0)
+0030                         d = (temp(j+1)+2*pi)-temp(j);
+0031                     <span class="keyword">elseif</span> (temp(j+1) &gt;= 0)
+0032                         d = (temp(j+1)-2*pi)-temp(j);
+0033                     <span class="keyword">end</span>
+0034                 <span class="keyword">end</span>
+0035                 phi(j) = d/dt;
+0036             <span class="keyword">end</span>
+0037             
+0038             phi2 = phi./v(list(1:end-1))'; <span class="comment">%transpose for FAnalyze;</span>
+0039             kappa = [kappa phi2];
+0040         <span class="keyword">end</span>
+0041         list = [];
+0042         phi = [];
+0043     <span class="keyword">end</span>
+0044 <span class="keyword">end</span>
+0045 
+0046 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

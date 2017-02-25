@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of findpeaks</title>
+  <meta name="keywords" content="findpeaks">
+  <meta name="description" content="Helper function to find peaks in a given continuous valued time series x">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>findpeaks
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Helper function to find peaks in a given continuous valued time series x</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function xmax=findpeaks(data,threshold) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Helper function to find peaks in a given continuous valued time series x
+ Usage: xmax=findpeaks(data,threshold)
+ Input:
+      data     (data in time x channels/trials form or a single vector)
+      threshold (if specified returns locations of peaks at which data exceeds threshold) - optional
+ Output:
+      xmax     (locations of local maxima of data in a structure array of dimensions channels/trials)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="fitlinesc.html" class="code" title="function [datafit,Amps,freqs,Fval,sig]=fitlinesc(data,params,p,plt,f0)">fitlinesc</a>	fits significant sine waves to data (continuous data).</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function xmax=findpeaks(data,threshold)</a>
+0002 <span class="comment">% Helper function to find peaks in a given continuous valued time series x</span>
+0003 <span class="comment">% Usage: xmax=findpeaks(data,threshold)</span>
+0004 <span class="comment">% Input:</span>
+0005 <span class="comment">%      data     (data in time x channels/trials form or a single vector)</span>
+0006 <span class="comment">%      threshold (if specified returns locations of peaks at which data exceeds threshold) - optional</span>
+0007 <span class="comment">% Output:</span>
+0008 <span class="comment">%      xmax     (locations of local maxima of data in a structure array of dimensions channels/trials)</span>
+0009 <span class="keyword">if</span> nargin &lt; 1; error(<span class="string">'Need data'</span>); <span class="keyword">end</span>;
+0010 data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data);
+0011 C=size(data,2);
+0012 pp1=[data(1,:);data(1:end-1,:)];
+0013 pp2=[data(2:<span class="keyword">end</span>,:);data(<span class="keyword">end</span>,:)];
+0014 xmax(1:C)=struct(<span class="string">'loc'</span>,[]);
+0015 <span class="comment">% for ch=1:C,</span>
+0016 <span class="comment">%    if nargin ==1</span>
+0017 <span class="comment">%      xmax(ch).loc=[xmax(ch).loc; find(data(:,ch)-pp1(:,ch)&gt;0 &amp; data(:,ch)-pp2(:,ch)&gt;0)];</span>
+0018 <span class="comment">%    else</span>
+0019 <span class="comment">%      xmax(ch).loc=[xmax(ch).loc; find(data(:,ch)-pp1(:,ch)&gt;0 &amp; data(:,ch)-pp2(:,ch)&gt;0 &amp; data(:,ch)&gt;threshold)];</span>
+0020 <span class="comment">%    end</span>
+0021 <span class="comment">% end</span>
+0022 
+0023 <span class="keyword">for</span> ch=1:C,
+0024    <span class="keyword">if</span> nargin ==1
+0025      xmax(ch).loc=[xmax(ch).loc; find(data(:,ch)-pp1(:,ch)&gt;=0 &amp; data(:,ch)-pp2(:,ch)&gt;=0)];
+0026    <span class="keyword">else</span>
+0027      xmax(ch).loc=[xmax(ch).loc; find(data(:,ch)-pp1(:,ch)&gt;=0 &amp; data(:,ch)-pp2(:,ch)&gt;=0 &amp; data(:,ch)&gt;=threshold)];
+0028    <span class="keyword">end</span>
+0029 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

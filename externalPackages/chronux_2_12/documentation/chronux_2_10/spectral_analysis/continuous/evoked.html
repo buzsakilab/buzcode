@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of evoked</title>
+  <meta name="keywords" content="evoked">
+  <meta name="description" content="Function to calculate the evoked response given continuous data in the">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>evoked
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Function to calculate the evoked response given continuous data in the</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [V,t,Err] = evoked(data,Fs,win,width,plt,err) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Function to calculate the evoked response given continuous data in the
+ form time x channels
+ Usage [V,t,Err] = evoked(data,Fs,win,width,plt,err)
+ 
+ Inputs  
+   Note that all times can be in arbitrary units. But the units have to be
+   consistent. So, if win is in secs, width is in secs and Fs has to be Hz. 
+   If win is in samples, so is width and Fs=1.
+
+    data(times, channels/trials or a single vector)      (required)    
+    Fs  sampling frequency            (required)
+    win   subsection of data to be used. Default all available data
+    width (s) of smoothing kernel. Default 50 samples                  
+    plt plot 'n' for no plot, otherwise plot color. Default blue colored lines.                                  
+    err = 0/1. Default 1=calculate bootstrap errorbars.                     
+                                                         
+ Outputs                                             
+    V = evoked potential                                 
+    t = times of evaluation                              
+    Err = bootstrap statdard deviation</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="locsmooth.html" class="code" title="function data=locsmooth(data,Fs,Tw,Ts)">locsmooth</a>	Running line fit (using local linear regression) - 1d only, continuous</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [V,t,Err] = evoked(data,Fs,win,width,plt,err)</a>
+0002 <span class="comment">% Function to calculate the evoked response given continuous data in the</span>
+0003 <span class="comment">% form time x channels</span>
+0004 <span class="comment">% Usage [V,t,Err] = evoked(data,Fs,win,width,plt,err)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Inputs</span>
+0007 <span class="comment">%   Note that all times can be in arbitrary units. But the units have to be</span>
+0008 <span class="comment">%   consistent. So, if win is in secs, width is in secs and Fs has to be Hz.</span>
+0009 <span class="comment">%   If win is in samples, so is width and Fs=1.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%    data(times, channels/trials or a single vector)      (required)</span>
+0012 <span class="comment">%    Fs  sampling frequency            (required)</span>
+0013 <span class="comment">%    win   subsection of data to be used. Default all available data</span>
+0014 <span class="comment">%    width (s) of smoothing kernel. Default 50 samples</span>
+0015 <span class="comment">%    plt plot 'n' for no plot, otherwise plot color. Default blue colored lines.</span>
+0016 <span class="comment">%    err = 0/1. Default 1=calculate bootstrap errorbars.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Outputs</span>
+0019 <span class="comment">%    V = evoked potential</span>
+0020 <span class="comment">%    t = times of evaluation</span>
+0021 <span class="comment">%    Err = bootstrap statdard deviation</span>
+0022 
+0023 <span class="keyword">if</span> nargin &lt; 2;error(<span class="string">'Data, sampling frequency required'</span>);<span class="keyword">end</span>
+0024 data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data);
+0025 N=size(data,1);
+0026 data=data';
+0027 <span class="keyword">if</span> nargin &lt;3; win = [0 (N-1)/Fs];<span class="keyword">end</span>
+0028 <span class="keyword">if</span> nargin &lt;4; width = 50/Fs;<span class="keyword">end</span>
+0029 <span class="keyword">if</span> nargin &lt;5; plt = <span class="string">'b'</span>;<span class="keyword">end</span>
+0030 <span class="keyword">if</span> nargin &lt;6;err = 1;<span class="keyword">end</span>
+0031 T=win;
+0032 <span class="keyword">if</span> isempty(T); T = [0 (N-1)/Fs];<span class="keyword">end</span>
+0033 <span class="keyword">if</span> isempty(width); width = 50/Fs;<span class="keyword">end</span>
+0034 <span class="keyword">if</span> isempty(plt); plt = <span class="string">'b'</span>;<span class="keyword">end</span>
+0035 <span class="keyword">if</span> isempty(err);err = 1;<span class="keyword">end</span>
+0036 
+0037 t = min(T):1/Fs:max(T);
+0038 <span class="keyword">if</span> nargin &gt;= 5
+0039   indx = find(t&gt;T(1) &amp; t&lt;T(2));
+0040   t = t(indx);
+0041   data = data(:,indx);
+0042 <span class="keyword">end</span>
+0043 
+0044 <span class="keyword">if</span> width &gt; (t(length(t))-t(1))/2
+0045   disp(<span class="string">'Width is too large for data segment: should be in seconds'</span>)
+0046   disp(<span class="string">'Turn off smoothing'</span>)
+0047   width = 0;
+0048 <span class="keyword">end</span>
+0049 
+0050 s = t(2)-t(1);
+0051 N = fix(width/s);
+0052 NT = length(data(:,1));
+0053 
+0054 <span class="keyword">if</span> NT &gt; 1
+0055     mdata = mean(data);
+0056 <span class="keyword">else</span>
+0057     mdata = data;
+0058 <span class="keyword">end</span>
+0059 <span class="keyword">if</span> N &gt; 4
+0060   smdata = <a href="locsmooth.html" class="code" title="function data=locsmooth(data,Fs,Tw,Ts)">locsmooth</a>(mdata,N,fix(N/2)); 
+0061 <span class="keyword">else</span>
+0062   smdata = mdata;  
+0063 <span class="keyword">end</span>
+0064   
+0065 <span class="comment">% if errorbars requested then do a bootstrap over trials...</span>
+0066 
+0067 Err = 0;
+0068 <span class="keyword">if</span> NT &lt; 4; 
+0069   disp(<span class="string">'Too few trials: no errorbars calculated'</span>)
+0070   err = 0;    
+0071 <span class="keyword">end</span>
+0072 
+0073 <span class="keyword">if</span> err ~= 0 &amp;&amp; NT &gt; 1
+0074   Nboot = 10;
+0075   bevk = 0;
+0076   sevk = 0;
+0077   <span class="keyword">for</span> b=1:Nboot
+0078     indx = floor(NT*rand(1,NT)) + 1;
+0079     evktmp = mean(data(indx,:));
+0080     <span class="keyword">if</span> N &gt; 4
+0081       evktmp = <a href="locsmooth.html" class="code" title="function data=locsmooth(data,Fs,Tw,Ts)">locsmooth</a>(evktmp,N,fix(N/2));
+0082     <span class="keyword">end</span>
+0083     bevk = bevk + evktmp;
+0084     sevk = sevk + evktmp.^2;
+0085   <span class="keyword">end</span>
+0086   stdevk = sqrt((sevk/Nboot - bevk.^2/Nboot^2));
+0087   Err = stdevk;
+0088 <span class="keyword">end</span>
+0089 
+0090 V = smdata;
+0091 <span class="keyword">if</span> plt ~= <span class="string">'n'</span>
+0092   plot(t,smdata,plt)
+0093   hold on
+0094   mn = mean(smdata);
+0095   ax = get(gca,<span class="string">'xlim'</span>);
+0096   line(ax,mn*[1 1],<span class="string">'color'</span>,<span class="string">'k'</span>)
+0097   <span class="keyword">if</span> err
+0098     line(ax,(mn+2*mean(stdevk))*[1 1],<span class="string">'color'</span>,<span class="string">'r'</span>)
+0099     line(ax,(mn-2*mean(stdevk))*[1 1],<span class="string">'color'</span>,<span class="string">'r'</span>)
+0100     hold off
+0101   <span class="keyword">end</span>
+0102 <span class="keyword">end</span>
+0103 
+0104 
+0105 
+0106 
+0107 
+0108 
+0109 
+0110 
+0111</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

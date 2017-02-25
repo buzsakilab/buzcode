@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of cohmathelper</title>
+  <meta name="keywords" content="cohmathelper">
+  <meta name="description" content="Helper function called by coherency matrix computations.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html helper -->
+<h1>cohmathelper
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Helper function called by coherency matrix computations.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function  [C,phi,S12,confC,phierr,Cerr]=cohmathelper(J,err,Nsp) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Helper function called by coherency matrix computations.
+
+ Usage: [C,phi,S12,confC,phierr,Cerr]=cohmathelper(J,err,Nsp)
+ Inputs:
+ J   : Fourier transforms of data
+ err : [0 p] or 0 for no errors; [1 p] for theoretical confidence level, 
+       [2 p] for Jackknife (p - p value)
+ Nsp : pass the number of spikes in each channel if finite size corrections are desired
+
+ Outputs:
+
+ C   : coherence
+ phi : phase of coherency
+ S12 : cross spectral matrix
+ confC : confidence level for coherency - only for err(1)&gt;=1
+       phierr - standard deviation for phi (note that the routine gives phierr as phierr(1,...) 
+                and phierr(2,...) in order to incorporate Jackknife (eventually). 
+                Currently phierr(1,...)=phierr(2,...). Note that phi + 2 phierr(1,...) and phi -2 
+                phierr(2,...) will give 95% confidence bands for phi - only for err(1)&gt;=1
+ Cerr  : error bars for coherency (only for Jackknife estimates)-only for err(1)=2</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="coherr.html" class="code" title="function [confC,phistd,Cerr]=coherr(C,J1,J2,err,trialave,numsp1,numsp2)">coherr</a>	Function to compute lower and upper confidence intervals on the coherency</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/continuous/cohmatrixc.html" class="code" title="function [C,phi,S12,f,confC,phistd,Cerr]=cohmatrixc(data,params)">cohmatrixc</a>	Multi-taper coherency,cross-spectral matrix - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/cohmatrixpb.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpb(data,params,fscorr)">cohmatrixpb</a>	Multi-taper coherency matrix - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/cohmatrixpt.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpt(data,params,fscorr)">cohmatrixpt</a>	Multi-taper coherency matrix - point process times</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function  [C,phi,S12,confC,phierr,Cerr]=cohmathelper(J,err,Nsp)</a>
+0002 <span class="comment">% Helper function called by coherency matrix computations.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage: [C,phi,S12,confC,phierr,Cerr]=cohmathelper(J,err,Nsp)</span>
+0005 <span class="comment">% Inputs:</span>
+0006 <span class="comment">% J   : Fourier transforms of data</span>
+0007 <span class="comment">% err : [0 p] or 0 for no errors; [1 p] for theoretical confidence level,</span>
+0008 <span class="comment">%       [2 p] for Jackknife (p - p value)</span>
+0009 <span class="comment">% Nsp : pass the number of spikes in each channel if finite size corrections are desired</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Outputs:</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% C   : coherence</span>
+0014 <span class="comment">% phi : phase of coherency</span>
+0015 <span class="comment">% S12 : cross spectral matrix</span>
+0016 <span class="comment">% confC : confidence level for coherency - only for err(1)&gt;=1</span>
+0017 <span class="comment">%       phierr - standard deviation for phi (note that the routine gives phierr as phierr(1,...)</span>
+0018 <span class="comment">%                and phierr(2,...) in order to incorporate Jackknife (eventually).</span>
+0019 <span class="comment">%                Currently phierr(1,...)=phierr(2,...). Note that phi + 2 phierr(1,...) and phi -2</span>
+0020 <span class="comment">%                phierr(2,...) will give 95% confidence bands for phi - only for err(1)&gt;=1</span>
+0021 <span class="comment">% Cerr  : error bars for coherency (only for Jackknife estimates)-only for err(1)=2</span>
+0022 <span class="comment">%</span>
+0023 
+0024 errtype=err(1);
+0025 trialave=0;
+0026 [nf,K,Ch]=size(J);
+0027 clear K
+0028 confC=zeros(Ch,Ch);
+0029 C=zeros(nf,Ch,Ch);
+0030 S12=zeros(nf,Ch,Ch);
+0031 phi=zeros(nf,Ch,Ch);
+0032 phierr=zeros(2,nf,Ch,Ch);
+0033 <span class="keyword">if</span> errtype==2; Cerr=zeros(2,nf,Ch,Ch);<span class="keyword">end</span>;
+0034 
+0035 <span class="keyword">for</span> ch1=1:Ch;
+0036      J1=squeeze(J(:,:,ch1));
+0037      C(1:nf,ch1,ch1)=1;
+0038      phi(1:nf,ch1,ch1)=0;
+0039 <span class="comment">%      if errtype==2;</span>
+0040 <span class="comment">%           phierr(1:nf,ch1,ch1)=0;</span>
+0041 <span class="comment">%           Cerr(1:2,1:nf,ch1,ch1)=0;</span>
+0042 <span class="comment">%      elseif errtype==1</span>
+0043 <span class="comment">%            phierr(1:2,1:nf,ch1,ch1)=0;</span>
+0044 <span class="comment">%      end;</span>
+0045      s1=squeeze(mean(conj(J1).*J1,2));
+0046      <span class="keyword">for</span> ch2=1:ch1-1;
+0047           J2=squeeze(J(:,:,ch2));
+0048           s12=squeeze(mean(conj(J1).*J2,2));
+0049           s2=squeeze(mean(conj(J2).*J2,2));
+0050           C12=s12./sqrt(s1.*s2);
+0051           C(:,ch1,ch2)=abs(C12);
+0052           C(:,ch2,ch1)=C(:,ch1,ch2);
+0053           phi(:,ch1,ch2)=angle(C12);
+0054           phi(:,ch2,ch1)=phi(:,ch1,ch2);
+0055           S12(:,ch1,ch2)=s12;
+0056           S12(:,ch2,ch1)=S12(:,ch1,ch2);
+0057           <span class="keyword">if</span> errtype==2 
+0058              <span class="keyword">if</span> nargin&lt;3;
+0059                  [conf,phie,Ce]=<a href="coherr.html" class="code" title="function [confC,phistd,Cerr]=coherr(C,J1,J2,err,trialave,numsp1,numsp2)">coherr</a>(abs(C12),J1,J2,err,trialave);
+0060              <span class="keyword">else</span>
+0061                  [conf,phie,Ce]=<a href="coherr.html" class="code" title="function [confC,phistd,Cerr]=coherr(C,J1,J2,err,trialave,numsp1,numsp2)">coherr</a>(abs(C12),J1,J2,err,trialave,Nsp(ch1),Nsp(ch2));
+0062              <span class="keyword">end</span>
+0063              confC(ch1,ch2)=conf; 
+0064              phierr(1,:,ch1,ch2)=phie;phierr(2,:,ch1,ch2)=phie;
+0065              Cerr(1,:,ch1,ch2)=Ce(1,:);
+0066              Cerr(2,:,ch1,ch2)=Ce(2,:);
+0067              confC(ch2,ch1)=conf; 
+0068              phierr(1,:,ch2,ch1)=phie;phierr(2,:,ch2,ch1)=phie;
+0069              Cerr(:,:,ch2,ch1)=Ce;
+0070           <span class="keyword">elseif</span> errtype==1
+0071              <span class="keyword">if</span> nargin&lt;3;
+0072                  [conf,phie]=<a href="coherr.html" class="code" title="function [confC,phistd,Cerr]=coherr(C,J1,J2,err,trialave,numsp1,numsp2)">coherr</a>(abs(C12),J1,J2,err,trialave);
+0073              <span class="keyword">else</span>
+0074                  [conf,phie]=<a href="coherr.html" class="code" title="function [confC,phistd,Cerr]=coherr(C,J1,J2,err,trialave,numsp1,numsp2)">coherr</a>(abs(C12),J1,J2,err,trialave,Nsp(ch1),Nsp(ch2));
+0075              <span class="keyword">end</span>
+0076              confC(ch1,ch2)=conf; 
+0077              phierr(1,:,ch1,ch2)=phie;phierr(2,:,ch1,ch2)=phie;
+0078              confC(ch2,ch1)=conf; 
+0079              phierr(1,:,ch2,ch1)=phie;phierr(2,:,ch2,ch1)=phie;
+0080           <span class="keyword">end</span>;
+0081      <span class="keyword">end</span>;
+0082 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

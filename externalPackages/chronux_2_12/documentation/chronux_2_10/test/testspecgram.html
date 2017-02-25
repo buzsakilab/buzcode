@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of testspecgram</title>
+  <meta name="keywords" content="testspecgram">
+  <meta name="description" content="cd 'C:\Documents and Settings\Admin\Desktop\';">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html test -->
+<h1>testspecgram
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>cd 'C:\Documents and Settings\Admin\Desktop\';</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function testspecgram(data) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">cd 'C:\Documents and Settings\Admin\Desktop\';
+data=wavread('bird109_26519_on_Aug_19_16_33.wav');</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>	Multi-taper time-frequency spectrum - continuous process</li><li><a href="mtspecgramc_slow.html" class="code" title="function [S,t,f,Serr]=mtspecgramc_slow(data,movingwin,params)">mtspecgramc_slow</a>	Multi-taper time-frequency spectrum - continuous process</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function testspecgram(data)</a>
+0002 
+0003 
+0004 <span class="comment">%cd 'C:\Documents and Settings\Admin\Desktop\';</span>
+0005 <span class="comment">%data=wavread('bird109_26519_on_Aug_19_16_33.wav');</span>
+0006 
+0007 params.tapers = [3 5];
+0008 params.fpass = [100 20000];
+0009 params.Fs = 44100;
+0010 params.pad = 2;
+0011 max_time =10; <span class="comment">% seconds per run</span>
+0012 max_tapers = 150;
+0013 increment = 1.5;
+0014 profile on
+0015 
+0016 
+0017 nsamples = 1000;
+0018 <span class="keyword">if</span> 1
+0019 slow_results = [];
+0020     
+0021 <span class="keyword">while</span> 1
+0022     tic
+0023     [S,t,f] = <a href="mtspecgramc_slow.html" class="code" title="function [S,t,f,Serr]=mtspecgramc_slow(data,movingwin,params)">mtspecgramc_slow</a>( data(1:nsamples), [0.01 0.001], params );
+0024     time = toc;
+0025     result = [nsamples time];
+0026     fprintf( <span class="string">'ran %d samples in %d seconds\n'</span>,nsamples, time );
+0027     slow_results = [slow_results ;result];
+0028     <span class="keyword">if</span> time &gt; max_time 
+0029         <span class="keyword">break</span>
+0030     <span class="keyword">end</span>
+0031     nsamples = round(nsamples * increment);
+0032 <span class="keyword">end</span>
+0033 slow_results
+0034 fig=figure();
+0035 ax=axes(<span class="string">'XScale'</span>,<span class="string">'log'</span>,<span class="string">'YScale'</span>,<span class="string">'log'</span>);
+0036 axes(ax);
+0037 h=line( <span class="string">'Xdata'</span>,slow_results(:,1),<span class="string">'Ydata'</span>,slow_results(:,2),<span class="string">'Marker'</span>,<span class="string">'*'</span>);
+0038 xlabel(<span class="string">'number of samples'</span>)
+0039 ylabel(<span class="string">'time'</span>);
+0040 title(<span class="string">'Original mtspecgramc'</span>);
+0041 grid on
+0042 drawnow;
+0043 saveas(fig,<span class="string">'datalength_slow.png'</span>);
+0044 
+0045 nsamples = 1000;
+0046 fast_results = [];
+0047 <span class="keyword">while</span> 1
+0048     tic
+0049     [S,t,f] = <a href="../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>( data(1:nsamples), [0.01 0.001], params );
+0050     time = toc;
+0051     result = [nsamples time];
+0052     fprintf( <span class="string">'ran %d samples in %d seconds\n'</span>,nsamples, time );
+0053     fast_results = [fast_results ;result];
+0054     <span class="keyword">if</span> time &gt; max_time 
+0055         <span class="keyword">break</span>
+0056     <span class="keyword">end</span>
+0057     nsamples = round(nsamples * increment);
+0058 <span class="keyword">end</span>
+0059 fast_results
+0060 fig=figure();
+0061 ax=axes(<span class="string">'XScale'</span>,<span class="string">'log'</span>,<span class="string">'YScale'</span>,<span class="string">'log'</span>);
+0062 axes(ax);
+0063 h=line( <span class="string">'Xdata'</span>,fast_results(:,1),<span class="string">'Ydata'</span>,fast_results(:,2),<span class="string">'Marker'</span>,<span class="string">'*'</span>);
+0064 xlabel(<span class="string">'number of samples'</span>)
+0065 ylabel(<span class="string">'time'</span>);
+0066 title(<span class="string">'Modified mtspecgramc - preallocate space'</span>);
+0067 grid on
+0068 drawnow;
+0069 saveas(fig,<span class="string">'datalength_fast.png'</span>);
+0070 
+0071 compare = [];
+0072 n = 1;
+0073 <span class="keyword">while</span> n &lt;= min(length(slow_results(:,1)),length(fast_results(:,1)))
+0074     compare_one = [slow_results(n,1) slow_results(n,2)/fast_results(n,2)];
+0075     compare = [compare ;compare_one];
+0076     n = n + 1; 
+0077 <span class="keyword">end</span>
+0078 compare
+0079 fig=figure();
+0080 ax=axes(<span class="string">'XScale'</span>,<span class="string">'log'</span>,<span class="string">'YScale'</span>,<span class="string">'lin'</span>);
+0081 axes(ax);
+0082 h=line( <span class="string">'Xdata'</span>,compare(:,1),<span class="string">'Ydata'</span>,compare(:,2),<span class="string">'Marker'</span>,<span class="string">'*'</span>);
+0083 title(<span class="string">'Preallocation slowdown/speedup of mtspecgramc'</span>);
+0084 xlabel(<span class="string">'number of samples'</span>)
+0085 ylabel(<span class="string">'speedup'</span>);
+0086 grid on
+0087 drawnow;
+0088 saveas(fig,<span class="string">'speedup.png'</span>);
+0089 
+0090 
+0091 <span class="keyword">end</span>;
+0092 
+0093 nsamples=10000;
+0094 results = [];
+0095 n = 1;
+0096 <span class="keyword">while</span> 1
+0097     tic
+0098     params.tapers = [n (2*n-1)];
+0099     [S,t,f] = <a href="../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>( data(1:nsamples), [0.01 0.001], params );
+0100     time = toc;
+0101     result = [params.tapers(2) time];
+0102     fprintf( <span class="string">'ran %d samples in %d seconds with tapers %d %d\n'</span>,nsamples, time,params.tapers(1),params.tapers(2) );
+0103    results = [results ;result];
+0104     <span class="keyword">if</span> time &gt; max_time || params.tapers(2) &gt; max_tapers
+0105         <span class="keyword">break</span>
+0106     <span class="keyword">end</span>
+0107     n = round(n * increment);
+0108 <span class="keyword">end</span>
+0109 fig=figure();
+0110 ax=axes(<span class="string">'XScale'</span>,<span class="string">'log'</span>,<span class="string">'YScale'</span>,<span class="string">'log'</span>);
+0111 axes(ax);
+0112 h=line( <span class="string">'Xdata'</span>,results(:,1),<span class="string">'Ydata'</span>,results(:,2),<span class="string">'Marker'</span>,<span class="string">'*'</span>);
+0113 xlabel(<span class="string">'tapers'</span>)
+0114 ylabel(<span class="string">'time'</span>);
+0115 
+0116 drawnow;
+0117 saveas(fig,<span class="string">'tapers.png'</span>);
+0118 
+0119 
+0120 stats = profile(<span class="string">'info'</span>)</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

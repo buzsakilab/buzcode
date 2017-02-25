@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of lfex2</title>
+  <meta name="keywords" content="lfex2">
+  <meta name="description" content="Model the success probability of successive trials of a monkey">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Neuro -->
+<h1>lfex2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Model the success probability of successive trials of a monkey</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Model the success probability of successive trials of a monkey
+ performing a task.
+
+ The 'y' variable is a vector of 0/1, with 1 denoting success on
+ the trial; 0 failure. The fitting procedure uses logistic
+ regression within sliding windows (specified by the 'family','binomial'
+ arguments).
+
+ Choosing the bandwidth here is critical. The data shows `on/off' behavior,
+ exhibiting periods of mainly successes, and mainly failures, respectively.
+ Large values of alpha will smooth out this behavior, while small values
+ will be too sensitive to random variability. Values of 0.15 to 0.2 seem
+ reasonable for this example.
+
+ AIC is based on asymptotic approximations, and seems unreliable here --
+ formal model selection needs more investigation.
+
+ Data is from Keith Purpura.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/lfband.html" class="code" title="function lfband(fit,varargin)">lfband</a>	adds confidence bands around the plot of a locfit() fit.</li><li><a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Model the success probability of successive trials of a monkey</span>
+0002 <span class="comment">% performing a task.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% The 'y' variable is a vector of 0/1, with 1 denoting success on</span>
+0005 <span class="comment">% the trial; 0 failure. The fitting procedure uses logistic</span>
+0006 <span class="comment">% regression within sliding windows (specified by the 'family','binomial'</span>
+0007 <span class="comment">% arguments).</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Choosing the bandwidth here is critical. The data shows `on/off' behavior,</span>
+0010 <span class="comment">% exhibiting periods of mainly successes, and mainly failures, respectively.</span>
+0011 <span class="comment">% Large values of alpha will smooth out this behavior, while small values</span>
+0012 <span class="comment">% will be too sensitive to random variability. Values of 0.15 to 0.2 seem</span>
+0013 <span class="comment">% reasonable for this example.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% AIC is based on asymptotic approximations, and seems unreliable here --</span>
+0016 <span class="comment">% formal model selection needs more investigation.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Data is from Keith Purpura.</span>
+0019 
+0020 load 050527_correct.mat;
+0021 y = byTrial(1).correct';
+0022 n = length(y);
+0023 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>((1:n)',y,<span class="string">'family'</span>,<span class="string">'binomial'</span>,<span class="string">'alpha'</span>,0.15);
+0024 <a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>(fit);
+0025 title(<span class="string">'Local Logistic Regression - Estimating Success Probability'</span>);
+0026 <a href="../../../chronux_2_10/locfit/m/lfband.html" class="code" title="function lfband(fit,varargin)">lfband</a>(fit);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

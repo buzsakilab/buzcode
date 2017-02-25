@@ -1,0 +1,712 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of specscopepp</title>
+  <meta name="keywords" content="specscopepp">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html specscope -->
+<h1>specscopepp
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function outdata=specscopepp(indata) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>	Multi-taper time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>	Helper function to calculate tapers and, if precalculated tapers are supplied,</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function keypress(varargin)</a></li><li><a href="#_sub2" class="code">function defaults()</a></li><li><a href="#_sub3" class="code">function update_display()</a></li><li><a href="#_sub4" class="code">function request_quit(varargin)</a></li><li><a href="#_sub5" class="code">function request_pause(varargin)</a></li><li><a href="#_sub6" class="code">function request_normalize(varargin)</a></li><li><a href="#_sub7" class="code">function update_defaults(varargin)</a></li><li><a href="#_sub8" class="code">function update_tapers(varargin)</a></li><li><a href="#_sub9" class="code">function update_window(varargin)</a></li><li><a href="#_sub10" class="code">function update_offset(varargin)</a></li><li><a href="#_sub11" class="code">function update_scale(varargin)</a></li><li><a href="#_sub12" class="code">function update_display_size(varargin)</a></li><li><a href="#_sub13" class="code">function update_fpass(varargin)</a></li><li><a href="#_sub14" class="code">function update_deriv(varargin)</a></li><li><a href="#_sub15" class="code">function update_log(varargin)</a></li><li><a href="#_sub16" class="code">function update_bgsub(varargin)</a></li><li><a href="#_sub17" class="code">function update_threshold(varargin)</a></li><li><a href="#_sub18" class="code">function fig=create_ui()</a></li><li><a href="#_sub19" class="code">function pos = centerfig(width,height)</a></li><li><a href="#_sub20" class="code">function audio_instr()</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function outdata=specscopepp(indata)</a>
+0002 
+0003 <span class="keyword">global</span> acq;
+0004 
+0005 h=hamming(5);
+0006 mins=5e-008;
+0007 maxs=1e-004;
+0008 
+0009 <span class="comment">% record and plot audio spectrogram</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Usage: outdata=specscope(indata)</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%  Input: indata (optional)</span>
+0014 <span class="comment">%    Displays a recorded piece of data, if an argument is passed</span>
+0015 <span class="comment">%    Otherwise displays audio data from an attached microphone</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%  Output: outdata (optional)</span>
+0018 <span class="comment">%    If present, will return up to 10 minutes</span>
+0019 <span class="comment">%    of captured audio data.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">%  Note: Parameters such as sampling frequency, number of tapers</span>
+0022 <span class="comment">%    and display refresh rate may be set below if desired.</span>
+0023 <span class="comment">%    You can also acquire data from a national instruments card.</span>
+0024 <span class="comment">%</span>
+0025 
+0026 <a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a> all;
+0027 
+0028 <span class="comment">%=======================================================================</span>
+0029 <span class="comment">% Check toolboxes</span>
+0030 <span class="comment">%=======================================================================</span>
+0031 <span class="comment">% Check for toolboxes</span>
+0032 <span class="keyword">if</span> not(exist(<span class="string">'analoginput'</span>,<span class="string">'file'</span>));
+0033     fprintf(<span class="string">'You need to install the DAQ toolbox first\n'</span>);
+0034     <span class="keyword">return</span>
+0035 <span class="keyword">end</span>
+0036 <span class="keyword">if</span> not(exist(<span class="string">'mtspecgramc'</span>,<span class="string">'file'</span>));
+0037     fprintf(<span class="string">'You need to install the Chronux toolbox first from http://chronux.org/\n'</span>);
+0038     <span class="keyword">return</span>
+0039 <span class="keyword">end</span>
+0040 
+0041 <span class="comment">%=======================================================================</span>
+0042 <span class="comment">% Set parameters</span>
+0043 <span class="comment">%=======================================================================</span>
+0044 
+0045 
+0046 <span class="comment">% Set defaults</span>
+0047 acq.params.Fs = 44100;
+0048 acq.pause = 0;
+0049 acq.skips = 0;
+0050 acq.stop = 0;
+0051 acq.restart = 0;
+0052 acq.plot_frequency = 20;
+0053 acq.samples_acquired = 0;
+0054 acq.spectra = [];
+0055 acq.times = [];
+0056 <a href="#_sub2" class="code" title="subfunction defaults()">defaults</a>
+0057 <a href="#_sub20" class="code" title="subfunction audio_instr()">audio_instr</a>;
+0058 fig=<a href="#_sub18" class="code" title="subfunction fig=create_ui()">create_ui</a>;
+0059 
+0060 <span class="comment">%=======================================================================</span>
+0061 <span class="comment">% Check arguments, start DAQ</span>
+0062 <span class="comment">%=======================================================================</span>
+0063 
+0064 <span class="keyword">if</span> nargout 
+0065    <span class="comment">% save up to ten minutes data, preallocated...</span>
+0066     fprintf(<span class="string">'Pre-allocating memory for data save - please be patient.\n'</span>);
+0067    outdata=zeros( (acq.params.Fs * 60 * 10), 1 ); 
+0068 <span class="keyword">end</span>    
+0069 
+0070 <span class="keyword">if</span> nargin == 1;
+0071     acq.indata = indata;
+0072     acq.live = 0;
+0073 <span class="keyword">else</span>
+0074     <span class="comment">% Create and set up and start analog input daq</span>
+0075     input=1;
+0076     <span class="keyword">if</span> input==1;
+0077         acq.ai = analoginput(<span class="string">'winsound'</span>);
+0078         addchannel( acq.ai, 1 );
+0079     <span class="keyword">else</span>
+0080         acq.ai = analoginput(<span class="string">'nidaq'</span>, 1);
+0081         addchannel(acq.ai, 0);
+0082         set(acq.ai,<span class="string">'InputType'</span>,<span class="string">'SingleEnded'</span>)
+0083         set(acq.ai,<span class="string">'TransferMode'</span>,<span class="string">'Interrupts'</span>)
+0084         set(acq.ai,<span class="string">'TriggerType'</span>,<span class="string">'Manual'</span>);
+0085     <span class="keyword">end</span>
+0086     set( acq.ai, <span class="string">'SampleRate'</span>, acq.params.Fs )
+0087     acq.params.Fs = get( acq.ai, <span class="string">'SampleRate'</span> );
+0088     acq.samples_per_frame = acq.params.Fs / acq.plot_frequency;
+0089     set( acq.ai, <span class="string">'SamplesPerTrigger'</span>, inf )
+0090     start(acq.ai)
+0091     acq.live = 1;
+0092 
+0093     <span class="keyword">if</span> input==2;
+0094         trigger(acq.ai);
+0095     <span class="keyword">end</span>
+0096 <span class="keyword">end</span>
+0097 
+0098 <span class="comment">%=======================================================================</span>
+0099 <span class="comment">% The scope main loop</span>
+0100 <span class="comment">%=======================================================================</span>
+0101 
+0102 acq.t0=clock;
+0103 acq.tn=clock;
+0104 
+0105 <span class="comment">% Loop over frames to acquire and display</span>
+0106 <span class="keyword">while</span> 1;
+0107 
+0108     <span class="comment">% Check for quit signal</span>
+0109     <span class="keyword">if</span> acq.stop;
+0110         <span class="keyword">break</span>;
+0111     <span class="keyword">end</span>
+0112     
+0113     <span class="comment">% Calculate times</span>
+0114     calctime = acq.samples_acquired / acq.params.Fs;
+0115     acq.samples_acquired = acq.samples_acquired + acq.samples_per_frame;
+0116     acq.t1 = clock;
+0117     elapsed = etime(acq.t1,acq.t0);
+0118 
+0119     <span class="comment">% Get a small snippet of data</span>
+0120     <span class="keyword">if</span> ( acq.live )
+0121        data = getdata( acq.ai, acq.samples_per_frame );
+0122     <span class="keyword">else</span>
+0123       <span class="keyword">while</span> elapsed &lt; acq.samples_acquired / acq.params.Fs
+0124         pause( acq.samples_acquired / (acq.params.Fs) - elapsed );
+0125         acq.t1=clock;
+0126         elapsed = etime(acq.t1,acq.t0);
+0127       <span class="keyword">end</span>
+0128       <span class="keyword">if</span> acq.samples_acquired + 2 * acq.samples_per_frame &gt;= length( acq.indata )
+0129         acq.stop=1;
+0130       <span class="keyword">end</span>
+0131       data = acq.indata(floor(acq.samples_acquired+1):floor(acq.samples_per_frame+acq.samples_acquired));
+0132     <span class="keyword">end</span>
+0133 
+0134     <span class="keyword">if</span> nargout 
+0135         outdata(floor(acq.samples_acquired+1):floor(acq.samples_acquired+length(data))) = data(:);
+0136     <span class="keyword">end</span>
+0137 
+0138     <span class="keyword">if</span> acq.restart;
+0139        acq.restart = 0;
+0140        acq.spectra = [];
+0141        acq.times = [];
+0142     <span class="keyword">end</span>
+0143 
+0144     data=conv(h,data);
+0145     data=sign(data-acq.threshold);
+0146 
+0147     <span class="comment">% Calculate spectrogram of data snippet</span>
+0148     <span class="keyword">if</span> acq.deriv
+0149       [s, t, f] = <a href="../../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>(abs(diff(data)), acq.moving_window, acq.params );
+0150     <span class="keyword">else</span>
+0151       [s, t, f] = <a href="../../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>(diff(data), acq.moving_window, acq.params );
+0152     <span class="keyword">end</span>
+0153     
+0154     <span class="comment">% Add new spectra to that already calculated</span>
+0155     acq.times = [acq.times t+calctime];
+0156     <span class="keyword">if</span> acq.log
+0157         acq.spectra = [acq.spectra log(s')];
+0158     <span class="keyword">else</span>
+0159         acq.spectra = [acq.spectra s'];
+0160     <span class="keyword">end</span>                
+0161 
+0162     <span class="comment">% Remove old spectra once window reaches desired size</span>
+0163     <span class="keyword">while</span> acq.times(1,end) - acq.times(1,1) &gt; acq.display_size;
+0164 
+0165         <span class="comment">% Ring buffer!</span>
+0166         y = length(t);
+0167         acq.times(:,1:y) = [];
+0168         acq.spectra(:,1:y) = [];
+0169     <span class="keyword">end</span>
+0170 
+0171     <span class="comment">% Only plot if display is keeping up with real time and not paused</span>
+0172     show_plot=1;
+0173     <span class="keyword">if</span> nargin==0
+0174        <span class="keyword">if</span> get(acq.ai, <span class="string">'SamplesAvailable'</span> ) &gt; 10 * acq.samples_per_frame &amp;&amp; acq.pause==0
+0175       show_plot=0;
+0176        <span class="keyword">end</span>
+0177     <span class="keyword">else</span>
+0178       <span class="keyword">if</span> elapsed &gt; calctime + 0.5
+0179     show_plot=0;
+0180       <span class="keyword">end</span>
+0181     <span class="keyword">end</span>
+0182 
+0183     <span class="keyword">if</span> acq.pause
+0184        show_plot=0;
+0185     <span class="keyword">end</span>
+0186     <span class="keyword">if</span> show_plot
+0187         
+0188         <span class="keyword">if</span>  acq.bgsub
+0189             acq.mean_spectra = mean( acq.spectra, 2 );
+0190         <span class="keyword">end</span>
+0191         
+0192         <span class="comment">% Normalize until full screen passes by if requested</span>
+0193         <span class="keyword">if</span> acq.normalize&gt;=1;
+0194             <span class="keyword">if</span> acq.normalize==1
+0195                 acq.tn=clock;
+0196                 acq.normalize=2;
+0197             <span class="keyword">end</span>
+0198             <span class="keyword">if</span> etime(clock,acq.tn)&gt;1.25*acq.display_size
+0199                 acq.normalize=0;
+0200             <span class="keyword">end</span>
+0201             mins = min(min(acq.spectra));
+0202             maxs = max(max(acq.spectra));
+0203         <span class="keyword">end</span>
+0204 
+0205         <span class="comment">% Scale the spectra based upon current offset and scale</span>
+0206         <span class="keyword">if</span> acq.bgsub
+0207            scaled_spectra = acq.offset + ( acq.scale ) * ( acq.spectra - repmat( acq.mean_spectra, [1,size(acq.spectra,2)]) ) / ( maxs - mins ); 
+0208         <span class="keyword">else</span>
+0209             scaled_spectra = acq.offset + acq.scale * ( acq.spectra - mins ) / ( maxs - mins );      
+0210         <span class="keyword">end</span>
+0211 
+0212     
+0213         <span class="comment">% Draw the image to the display</span>
+0214         image( acq.times, f, scaled_spectra, <span class="string">'parent'</span>, acq.ax1 ); axis([acq.ax1],<span class="string">'xy'</span>);
+0215         drawnow;
+0216  
+0217     <span class="keyword">else</span>
+0218         <span class="comment">% Keep track of skipped displays</span>
+0219         acq.skips = acq.skips + 1;
+0220     <span class="keyword">end</span>
+0221 
+0222 <span class="keyword">end</span>
+0223 
+0224 <span class="comment">%=======================================================================</span>
+0225 <span class="comment">% Clean up</span>
+0226 <span class="comment">%=======================================================================</span>
+0227 
+0228 acq.t1=clock;
+0229 elapsed = etime(acq.t1,acq.t0);
+0230 fprintf( <span class="string">'Elapsed time %f seconds\n'</span>, elapsed );
+0231 
+0232 <span class="comment">% Warn if many skips were encountered</span>
+0233 <span class="keyword">if</span> acq.skips &gt; 5;
+0234     fprintf( <span class="string">'\nWARNING:\nThis program skipped plotting %d times to keep pace.\n'</span>, acq.skips )
+0235     fprintf( <span class="string">'Run again without keyboard interaction or changing the figure size.\n'</span> )
+0236     fprintf( <span class="string">'If this message reappears you should reduce the plot frequency parameter.\n\n'</span> );
+0237 <span class="keyword">end</span>
+0238 
+0239 <span class="comment">% Clean up the analoginput object</span>
+0240 <span class="keyword">if</span> acq.live
+0241   stop(acq.ai);delete( acq.ai );clear acq.ai;
+0242 <span class="keyword">end</span>
+0243 
+0244 <span class="comment">% Clean up the figure</span>
+0245 delete(fig);
+0246 delete(gcf);
+0247 
+0248 <span class="keyword">if</span> nargout 
+0249    <span class="comment">% save up to ten minutes data, preallocated...</span>
+0250     fprintf(<span class="string">'Saving output data\n'</span>);
+0251    outdata=outdata(1:floor(acq.samples_acquired));
+0252 <span class="keyword">end</span>  
+0253 
+0254 <span class="keyword">return</span>;
+0255 
+0256 <span class="comment">%</span>
+0257 <span class="comment">%</span>
+0258 <span class="comment">%=======================================================================</span>
+0259 <span class="comment">% Functions called</span>
+0260 <span class="comment">%=======================================================================</span>
+0261 <span class="comment">%</span>
+0262 <span class="comment">%</span>
+0263 
+0264 
+0265 <span class="comment">%=======================================================================</span>
+0266 <span class="comment">% Handle Keypresses</span>
+0267 <span class="comment">%=======================================================================</span>
+0268 
+0269 <span class="comment">% Handle figure window keypress events</span>
+0270 <a name="_sub1" href="#_subfunctions" class="code">function keypress(varargin)</a>
+0271 
+0272 <span class="keyword">global</span> acq;
+0273 keypressed=get(gcf,<span class="string">'CurrentCharacter'</span>);
+0274 
+0275 <span class="comment">% ignore raw control, shift, alt keys</span>
+0276 <span class="keyword">if</span> keypressed;
+0277     
+0278     <span class="comment">% Offset changes</span>
+0279     increment=1;
+0280     <span class="keyword">if</span> strcmp( keypressed, <span class="string">'l'</span>);
+0281     acq.offset = acq.offset - increment;
+0282     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'o'</span>);
+0283         acq.offset = acq.offset + increment;
+0284 
+0285     <span class="comment">% Scale changes</span>
+0286     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'x'</span>);
+0287         acq.scale = acq.scale - increment;
+0288     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'s'</span>);
+0289         acq.scale = acq.scale + increment;
+0290 
+0291     <span class="comment">% Reset defaults</span>
+0292     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'d'</span>);
+0293         <a href="#_sub2" class="code" title="subfunction defaults()">defaults</a>
+0294     acq.restart=1;
+0295     <span class="comment">% Normalize spectra</span>
+0296     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'n'</span>);
+0297        <a href="#_sub6" class="code" title="subfunction request_normalize(varargin)">request_normalize</a>
+0298         
+0299     <span class="comment">% Quit</span>
+0300     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'q'</span>);
+0301     <a href="#_sub4" class="code" title="subfunction request_quit(varargin)">request_quit</a>
+0302 
+0303     <span class="comment">% Pause</span>
+0304     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'p'</span>);
+0305        <a href="#_sub5" class="code" title="subfunction request_pause(varargin)">request_pause</a>
+0306   
+0307     <span class="comment">% Help</span>
+0308     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'h'</span>);
+0309         <a href="#_sub20" class="code" title="subfunction audio_instr()">audio_instr</a>
+0310 
+0311 
+0312     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'t'</span>);
+0313        acq.threshold = acq.threshold + 0.01;
+0314 
+0315     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'g'</span>);
+0316        acq.threshold = acq.threshold - 0.01;
+0317 
+0318 
+0319   
+0320     <span class="comment">% Change colormaps for 0-9,a-c</span>
+0321     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'0'</span> );
+0322         colormap( <span class="string">'jet'</span> );
+0323     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'1'</span> );
+0324         colormap( <span class="string">'bone'</span> );
+0325     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'2'</span> );
+0326         colormap( <span class="string">'colorcube'</span> );
+0327     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'3'</span> );
+0328         colormap( <span class="string">'cool'</span> );
+0329     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'4'</span> );
+0330         colormap( <span class="string">'copper'</span> );
+0331     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'5'</span> );
+0332         colormap( <span class="string">'gray'</span> );
+0333     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'6'</span> );
+0334         colormap( <span class="string">'hot'</span> );
+0335     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'7'</span> );
+0336         colormap( <span class="string">'hsv'</span> );
+0337     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'8'</span> );
+0338         colormap( <span class="string">'autumn'</span> );
+0339     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'9'</span> );
+0340         colormap( <span class="string">'pink'</span> );
+0341     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'a'</span> );
+0342         colormap( <span class="string">'spring'</span> );
+0343     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'b'</span> );
+0344         colormap( <span class="string">'summer'</span> );
+0345     <span class="keyword">elseif</span> strcmp( keypressed, <span class="string">'c'</span> );
+0346         colormap( <span class="string">'winter'</span> );        
+0347     <span class="keyword">end</span>
+0348 
+0349     <a href="#_sub3" class="code" title="subfunction update_display()">update_display</a>
+0350     
+0351 <span class="keyword">end</span>
+0352 <span class="keyword">return</span>
+0353 
+0354 <span class="comment">%=======================================================================</span>
+0355 <span class="comment">% Defaults</span>
+0356 <span class="comment">%=======================================================================</span>
+0357 
+0358 <span class="comment">% Reset defaults</span>
+0359 <a name="_sub2" href="#_subfunctions" class="code">function defaults()</a>
+0360   <span class="keyword">global</span> acq;
+0361   acq.params.raw_tapers = [3 5];
+0362   acq.moving_window = [0.02 0.01];
+0363   acq.params.tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(acq.params.raw_tapers,round(acq.params.Fs*acq.moving_window(1)),acq.params.Fs);
+0364   acq.offset = 0;
+0365   acq.scale = 500;
+0366   acq.display_size = 3;
+0367   acq.params.fpass = [50 20000];
+0368   acq.deriv=1;
+0369   acq.log=0;
+0370   acq.bgsub = 1;
+0371   acq.params.pad= 0;
+0372   acq.normalize = 0;
+0373   acq.threshold=0;
+0374 
+0375 <span class="keyword">return</span>
+0376 
+0377 <a name="_sub3" href="#_subfunctions" class="code">function update_display()</a>
+0378 <span class="keyword">global</span> acq;
+0379     set(acq.tapers_ui,<span class="string">'String'</span>,sprintf( <span class="string">'%.0f %.0f'</span>, acq.params.raw_tapers(1), acq.params.raw_tapers(2) ));
+0380     set(acq.window_ui,<span class="string">'String'</span>,sprintf( <span class="string">'%.2f %.2f'</span>, acq.moving_window(1), acq.moving_window(2) ));
+0381     set(acq.offset_ui,<span class="string">'String'</span>,sprintf( <span class="string">'%d'</span>, acq.offset ));
+0382     set(acq.scale_ui,<span class="string">'String'</span>,sprintf( <span class="string">'%d'</span>, acq.scale ));
+0383     set(acq.display_size_ui,<span class="string">'String'</span>,sprintf( <span class="string">'%.1f'</span>, acq.display_size ));
+0384     set(acq.frequency_ui,<span class="string">'String'</span>,sprintf( <span class="string">'%.1f %.1f'</span>, acq.params.fpass(1), acq.params.fpass(2)  ))
+0385     set(acq.derivative_ui,<span class="string">'Value'</span>,acq.deriv);
+0386     set(acq.log_ui,<span class="string">'Value'</span>,acq.log);
+0387     set(acq.bgsub_ui,<span class="string">'Value'</span>,acq.bgsub);
+0388     set(acq.threshold_ui,<span class="string">'String'</span>,sprintf( <span class="string">'%.2f'</span>, acq.threshold ));
+0389     <span class="keyword">return</span>
+0390 
+0391 
+0392 <span class="comment">%=======================================================================</span>
+0393 <span class="comment">% Update ui controls</span>
+0394 <span class="comment">%=======================================================================</span>
+0395 
+0396 <a name="_sub4" href="#_subfunctions" class="code">function request_quit(varargin)</a>
+0397      <span class="keyword">global</span> acq;
+0398      acq.stop=1;
+0399 <span class="keyword">return</span>
+0400 
+0401 <a name="_sub5" href="#_subfunctions" class="code">function request_pause(varargin)</a>
+0402      <span class="keyword">global</span> acq;
+0403      acq.pause = not( acq.pause );
+0404 <span class="keyword">return</span>
+0405 
+0406 <a name="_sub6" href="#_subfunctions" class="code">function request_normalize(varargin)</a>
+0407     <span class="keyword">global</span> acq;
+0408         acq.normalize = 2;
+0409 <span class="keyword">return</span>
+0410 
+0411 <a name="_sub7" href="#_subfunctions" class="code">function update_defaults(varargin)</a>
+0412   <span class="keyword">global</span> acq;
+0413   <a href="#_sub2" class="code" title="subfunction defaults()">defaults</a>
+0414   <a href="#_sub3" class="code" title="subfunction update_display()">update_display</a>
+0415   acq.restart=1;
+0416 <span class="keyword">return</span>
+0417 
+0418 <a name="_sub8" href="#_subfunctions" class="code">function update_tapers(varargin)</a>
+0419      <span class="keyword">global</span> acq;
+0420      acq.params.raw_tapers = sscanf(get( gco, <span class="string">'string'</span> ),<span class="string">'%f %d'</span>)';
+0421      acq.params.tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(acq.params.raw_tapers,round(acq.params.Fs*acq.moving_window(1)),acq.params.Fs); <span class="comment">% check tapers</span>
+0422 <span class="keyword">return</span>
+0423 
+0424 <a name="_sub9" href="#_subfunctions" class="code">function update_window(varargin)</a>
+0425      <span class="keyword">global</span> acq;
+0426      acq.moving_window = sscanf(get( gco, <span class="string">'string'</span> ),<span class="string">'%f %f'</span>);
+0427          acq.params.tapers=<a href="../../../chronux_2_10/spectral_analysis/helper/dpsschk.html" class="code" title="function [tapers,eigs]=dpsschk(tapers,N,Fs)">dpsschk</a>(acq.params.raw_tapers,round(acq.params.Fs*acq.moving_window(1)),acq.params.Fs);
+0428      acq.restart = 1;
+0429 <span class="keyword">return</span>
+0430 
+0431 <a name="_sub10" href="#_subfunctions" class="code">function update_offset(varargin)</a>
+0432      <span class="keyword">global</span> acq;
+0433      acq.offset = sscanf(get( gco, <span class="string">'string'</span> ),<span class="string">'%f'</span>);
+0434      <span class="keyword">return</span>
+0435 
+0436 <a name="_sub11" href="#_subfunctions" class="code">function update_scale(varargin)</a>
+0437      <span class="keyword">global</span> acq;
+0438      acq.scale = sscanf(get( gco, <span class="string">'string'</span> ),<span class="string">'%f'</span>);
+0439      <span class="keyword">return</span>
+0440 
+0441 <a name="_sub12" href="#_subfunctions" class="code">function update_display_size(varargin)</a>
+0442      <span class="keyword">global</span> acq;
+0443      acq.display_size = sscanf(get( gco, <span class="string">'string'</span> ),<span class="string">'%f'</span>);
+0444      <span class="keyword">return</span>
+0445 
+0446 <a name="_sub13" href="#_subfunctions" class="code">function update_fpass(varargin)</a>
+0447      <span class="keyword">global</span> acq;
+0448      acq.params.fpass = sscanf(get( gco, <span class="string">'string'</span> ),<span class="string">'%f %f'</span>);
+0449          acq.restart = 1;
+0450      <span class="keyword">return</span>
+0451 
+0452 <a name="_sub14" href="#_subfunctions" class="code">function update_deriv(varargin)</a>
+0453      <span class="keyword">global</span> acq;
+0454      acq.deriv=get( gco, <span class="string">'Value'</span> );
+0455      acq.normalize=1;
+0456      <span class="keyword">return</span>
+0457      
+0458 <a name="_sub15" href="#_subfunctions" class="code">function update_log(varargin)</a>
+0459      <span class="keyword">global</span> acq;
+0460      acq.log=get( gco, <span class="string">'Value'</span> );
+0461      acq.normalize=1;
+0462      <span class="keyword">return</span>
+0463 
+0464 <a name="_sub16" href="#_subfunctions" class="code">function update_bgsub(varargin)</a>
+0465      <span class="keyword">global</span> acq;
+0466      acq.bgsub=get( gco, <span class="string">'Value'</span> );
+0467      <span class="keyword">return</span>
+0468      
+0469 <a name="_sub17" href="#_subfunctions" class="code">function update_threshold(varargin)</a>
+0470      <span class="keyword">global</span> acq;
+0471      acq.threshold = sscanf(get( gco, <span class="string">'string'</span> ),<span class="string">'%f'</span>);
+0472      <span class="keyword">return</span>
+0473      
+0474 <span class="comment">%=======================================================================</span>
+0475 <span class="comment">% UI display</span>
+0476 <span class="comment">%=======================================================================</span>
+0477 
+0478 <a name="_sub18" href="#_subfunctions" class="code">function fig=create_ui()</a>
+0479     <span class="keyword">global</span> acq;
+0480 
+0481     bgcolor = [.7 .7 .7];
+0482 
+0483     <span class="comment">% ===Create main figure==========================</span>
+0484     fig = figure(<span class="string">'Position'</span>,<a href="#_sub19" class="code" title="subfunction pos = centerfig(width,height)">centerfig</a>(800,600),<span class="keyword">...</span>
+0485         <span class="string">'NumberTitle'</span>,<span class="string">'off'</span>,<span class="keyword">...</span>
+0486         <span class="string">'Name'</span>,<span class="string">'Real-time spectrogram'</span>,<span class="keyword">...</span>
+0487         <span class="string">'doublebuffer'</span>,<span class="string">'on'</span>,<span class="keyword">...</span>
+0488         <span class="string">'HandleVisibility'</span>,<span class="string">'on'</span>,<span class="keyword">...</span>
+0489     <span class="string">'Renderer'</span>, <span class="string">'openGL'</span>, <span class="keyword">...</span>
+0490     <span class="string">'KeyPressFcn'</span>, @<a href="#_sub1" class="code" title="subfunction keypress(varargin)">keypress</a>, <span class="keyword">...</span>
+0491         <span class="string">'Color'</span>,bgcolor);
+0492 
+0493     acq.ax1 = axes(<span class="string">'position'</span>, [0.05,0.1,0.9,0.85]);
+0494 
+0495     colormap( <span class="string">'autumn'</span> );
+0496 
+0497     <span class="comment">% ===text==========</span>
+0498     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0499         <span class="string">'String'</span>, <span class="string">'tapers'</span>,<span class="keyword">...</span>
+0500         <span class="string">'Position'</span>,[225 20 45 20],<span class="keyword">...</span>
+0501         <span class="string">'BackgroundColor'</span>,bgcolor);
+0502     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0503         <span class="string">'String'</span>, <span class="string">'moving win'</span>,<span class="keyword">...</span>
+0504         <span class="string">'Position'</span>,[300 20 70 20],<span class="keyword">...</span>
+0505         <span class="string">'BackgroundColor'</span>,bgcolor);
+0506     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0507         <span class="string">'String'</span>, <span class="string">'offset'</span>,<span class="keyword">...</span>
+0508         <span class="string">'Position'</span>,[375 20 30 20],<span class="keyword">...</span>
+0509         <span class="string">'BackgroundColor'</span>,bgcolor);
+0510     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0511         <span class="string">'String'</span>, <span class="string">'scale'</span>,<span class="keyword">...</span>
+0512         <span class="string">'Position'</span>,[410 20 30 20],<span class="keyword">...</span>
+0513         <span class="string">'BackgroundColor'</span>,bgcolor);
+0514     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0515         <span class="string">'String'</span>, <span class="string">'t axis'</span>,<span class="keyword">...</span>
+0516         <span class="string">'Position'</span>,[445 20 30 20],<span class="keyword">...</span>
+0517         <span class="string">'BackgroundColor'</span>,bgcolor);
+0518     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0519         <span class="string">'String'</span>, <span class="string">'f axis'</span>,<span class="keyword">...</span>
+0520         <span class="string">'Position'</span>,[480 20 40 20],<span class="keyword">...</span>
+0521         <span class="string">'BackgroundColor'</span>,bgcolor);
+0522     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0523         <span class="string">'String'</span>, <span class="string">'abs'</span>,<span class="keyword">...</span>
+0524         <span class="string">'Position'</span>,[550 20 35 20],<span class="keyword">...</span>
+0525         <span class="string">'BackgroundColor'</span>,bgcolor);
+0526     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0527         <span class="string">'String'</span>, <span class="string">'log'</span>,<span class="keyword">...</span>
+0528         <span class="string">'Position'</span>,[580 20 35 20],<span class="keyword">...</span>
+0529         <span class="string">'BackgroundColor'</span>,bgcolor);
+0530     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0531         <span class="string">'String'</span>, <span class="string">'bgsub'</span>,<span class="keyword">...</span>
+0532         <span class="string">'Position'</span>,[610 20 35 20],<span class="keyword">...</span>
+0533         <span class="string">'BackgroundColor'</span>,bgcolor);
+0534     uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'text'</span>,<span class="keyword">...</span>
+0535         <span class="string">'String'</span>, <span class="string">'thresh'</span>,<span class="keyword">...</span>
+0536         <span class="string">'Position'</span>,[645 20 35 20],<span class="keyword">...</span>
+0537         <span class="string">'BackgroundColor'</span>,bgcolor);
+0538  
+0539     <span class="comment">% ===The quit button===============================</span>
+0540     uicontrol(<span class="string">'Style'</span>,<span class="string">'pushbutton'</span>,<span class="keyword">...</span>
+0541         <span class="string">'Position'</span>,[5 5 45 20],<span class="keyword">...</span>
+0542         <span class="string">'String'</span>,<span class="string">'Quit'</span>,<span class="keyword">...</span>
+0543         <span class="string">'Interruptible'</span>,<span class="string">'off'</span>,<span class="keyword">...</span>
+0544         <span class="string">'BusyAction'</span>,<span class="string">'cancel'</span>,<span class="keyword">...</span>
+0545         <span class="string">'Callback'</span>,@<a href="#_sub4" class="code" title="subfunction request_quit(varargin)">request_quit</a>);
+0546 
+0547     <span class="comment">% ===The pause button===============================</span>
+0548     uicontrol(<span class="string">'Style'</span>,<span class="string">'pushbutton'</span>,<span class="keyword">...</span>
+0549         <span class="string">'Position'</span>,[55 5 45 20],<span class="keyword">...</span>
+0550         <span class="string">'String'</span>,<span class="string">'Pause'</span>,<span class="keyword">...</span>
+0551         <span class="string">'Interruptible'</span>,<span class="string">'off'</span>,<span class="keyword">...</span>
+0552         <span class="string">'BusyAction'</span>,<span class="string">'cancel'</span>,<span class="keyword">...</span>
+0553         <span class="string">'Callback'</span>,@<a href="#_sub5" class="code" title="subfunction request_pause(varargin)">request_pause</a>);
+0554 
+0555     <span class="comment">% ===The defaults button===============================</span>
+0556     uicontrol(<span class="string">'Style'</span>,<span class="string">'pushbutton'</span>,<span class="keyword">...</span>
+0557         <span class="string">'Position'</span>,[105 5 50 20],<span class="keyword">...</span>
+0558         <span class="string">'String'</span>,<span class="string">'Defaults'</span>,<span class="keyword">...</span>
+0559         <span class="string">'Interruptible'</span>,<span class="string">'off'</span>,<span class="keyword">...</span>
+0560         <span class="string">'BusyAction'</span>,<span class="string">'cancel'</span>,<span class="keyword">...</span>
+0561         <span class="string">'Callback'</span>,@<a href="#_sub7" class="code" title="subfunction update_defaults(varargin)">update_defaults</a>);
+0562 
+0563     <span class="comment">% ===The normalize button===============================</span>
+0564     uicontrol(<span class="string">'Style'</span>,<span class="string">'pushbutton'</span>,<span class="keyword">...</span>
+0565         <span class="string">'Position'</span>,[160 5 60 20],<span class="keyword">...</span>
+0566         <span class="string">'String'</span>,<span class="string">'Normalize'</span>,<span class="keyword">...</span>
+0567         <span class="string">'Interruptible'</span>,<span class="string">'off'</span>,<span class="keyword">...</span>
+0568         <span class="string">'BusyAction'</span>,<span class="string">'cancel'</span>,<span class="keyword">...</span>
+0569         <span class="string">'Callback'</span>,@<a href="#_sub6" class="code" title="subfunction request_normalize(varargin)">request_normalize</a> );
+0570 
+0571     <span class="comment">% ===Tapers============================================</span>
+0572     acq.tapers_ui = uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'edit'</span>,<span class="keyword">...</span>
+0573         <span class="string">'String'</span>, sprintf( <span class="string">'%.0f %.0f'</span>, acq.params.raw_tapers(1), acq.params.raw_tapers(2) ),<span class="keyword">...</span>
+0574         <span class="string">'Position'</span>,[225 5 70 20],<span class="keyword">...</span>
+0575         <span class="string">'CallBack'</span>, @<a href="#_sub8" class="code" title="subfunction update_tapers(varargin)">update_tapers</a>);
+0576 
+0577     <span class="comment">% ===Window============================================</span>
+0578     acq.window_ui=uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'edit'</span>,<span class="keyword">...</span>
+0579         <span class="string">'String'</span>, sprintf( <span class="string">'%.2f %.2f'</span>, acq.moving_window(1), acq.moving_window(2) ),<span class="keyword">...</span>
+0580         <span class="string">'Position'</span>,[300 5 70 20],<span class="keyword">...</span>
+0581         <span class="string">'CallBack'</span>, @<a href="#_sub9" class="code" title="subfunction update_window(varargin)">update_window</a>);
+0582 
+0583     <span class="comment">% ===Offset============================================</span>
+0584     acq.offset_ui = uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'edit'</span>,<span class="keyword">...</span>
+0585         <span class="string">'String'</span>, sprintf( <span class="string">'%d'</span>, acq.offset ),<span class="keyword">...</span>
+0586         <span class="string">'Position'</span>,[375 5 30 20],<span class="keyword">...</span>
+0587         <span class="string">'CallBack'</span>, @<a href="#_sub10" class="code" title="subfunction update_offset(varargin)">update_offset</a>);
+0588 
+0589     <span class="comment">% ===Scale============================================</span>
+0590     acq.scale_ui = uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'edit'</span>,<span class="keyword">...</span>
+0591         <span class="string">'String'</span>, sprintf( <span class="string">'%d'</span>, acq.scale ),<span class="keyword">...</span>
+0592         <span class="string">'Position'</span>,[410 5 30 20],<span class="keyword">...</span>
+0593         <span class="string">'CallBack'</span>, @<a href="#_sub11" class="code" title="subfunction update_scale(varargin)">update_scale</a>);
+0594 
+0595     <span class="comment">% ===display size======================================</span>
+0596     acq.display_size_ui = uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'edit'</span>,<span class="keyword">...</span>
+0597         <span class="string">'String'</span>, sprintf( <span class="string">'%.1f'</span>, acq.display_size ),<span class="keyword">...</span>
+0598         <span class="string">'Position'</span>,[445 5 30 20],<span class="keyword">...</span>
+0599         <span class="string">'CallBack'</span>, @<a href="#_sub12" class="code" title="subfunction update_display_size(varargin)">update_display_size</a>);
+0600 
+0601     <span class="comment">% ===frequency axis=====================================</span>
+0602     acq.frequency_ui = uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'edit'</span>,<span class="keyword">...</span>
+0603         <span class="string">'String'</span>, sprintf( <span class="string">'%.1f %.1f'</span>, acq.params.fpass(1), acq.params.fpass(2)  ),<span class="keyword">...</span>
+0604         <span class="string">'Position'</span>,[480 5 80 20],<span class="keyword">...</span>
+0605         <span class="string">'CallBack'</span>, @<a href="#_sub13" class="code" title="subfunction update_fpass(varargin)">update_fpass</a>);
+0606 
+0607     <span class="comment">% ===derivative=====================================</span>
+0608     acq.derivative_ui = uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'checkbox'</span>,<span class="keyword">...</span>
+0609         <span class="string">'Value'</span>,acq.deriv,<span class="keyword">...</span>
+0610         <span class="string">'Position'</span>,[565 5 20 20],<span class="keyword">...</span>
+0611         <span class="string">'CallBack'</span>, @<a href="#_sub14" class="code" title="subfunction update_deriv(varargin)">update_deriv</a>);
+0612     
+0613     <span class="comment">% ===log=====================================</span>
+0614     acq.log_ui = uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'checkbox'</span>,<span class="keyword">...</span>
+0615         <span class="string">'Value'</span>,acq.log,<span class="keyword">...</span>
+0616         <span class="string">'Position'</span>,[590 5 20 20],<span class="keyword">...</span>
+0617         <span class="string">'CallBack'</span>, @<a href="#_sub15" class="code" title="subfunction update_log(varargin)">update_log</a>);
+0618 
+0619     <span class="comment">% ===bgsub=====================================</span>
+0620     acq.bgsub_ui = uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'checkbox'</span>,<span class="keyword">...</span>
+0621         <span class="string">'Value'</span>,acq.bgsub,<span class="keyword">...</span>
+0622         <span class="string">'Position'</span>,[615 5 20 20],<span class="keyword">...</span>
+0623         <span class="string">'CallBack'</span>, @<a href="#_sub16" class="code" title="subfunction update_bgsub(varargin)">update_bgsub</a>);
+0624 
+0625     <span class="comment">% ===threshold======================================</span>
+0626     acq.threshold_ui = uicontrol(gcf,<span class="string">'Style'</span>,<span class="string">'edit'</span>,<span class="keyword">...</span>
+0627         <span class="string">'String'</span>, sprintf( <span class="string">'%.2f'</span>, acq.threshold ),<span class="keyword">...</span>
+0628         <span class="string">'Position'</span>,[640 5 40 20],<span class="keyword">...</span>
+0629         <span class="string">'CallBack'</span>, @<a href="#_sub17" class="code" title="subfunction update_threshold(varargin)">update_threshold</a>);
+0630 
+0631 <span class="keyword">return</span>
+0632 
+0633 
+0634 <span class="comment">%=======================================================================</span>
+0635 <span class="comment">% Assorted functions</span>
+0636 <span class="comment">%=======================================================================</span>
+0637 
+0638 <a name="_sub19" href="#_subfunctions" class="code">function pos = centerfig(width,height)</a>
+0639 <span class="comment">% Find the screen size in pixels</span>
+0640 screen_s = get(0,<span class="string">'ScreenSize'</span>);
+0641 pos = [screen_s(3)/2 - width/2, screen_s(4)/2 - height/2, width, height];
+0642 <span class="keyword">return</span>
+0643 
+0644 
+0645 <a name="_sub20" href="#_subfunctions" class="code">function audio_instr()</a>
+0646 <span class="comment">% Show instructions</span>
+0647 
+0648   fprintf(<span class="string">'INSTRUCTIONS:\n'</span>);
+0649   fprintf(<span class="string">'Click on figure window first to activate controls.\n'</span>)
+0650   fprintf(<span class="string">'Adjust tapers, windows, scales, offsets and axes using the gui\n'</span>);
+0651   fprintf(<span class="string">'The abs checkbox toggles abs of the data\n'</span>);
+0652   fprintf(<span class="string">'The log checkbox toggles a log of the spectrum\n'</span>);
+0653   fprintf(<span class="string">'Press d or use defaults button to reset most parameters to defaults.\n'</span>)
+0654   fprintf(<span class="string">'Press n or use normalize button to normalize spectra based upon values in current display.\n'</span>)
+0655   fprintf(<span class="string">'Press 0-9,a-c to choose a colormap (default 0).\n'</span>)
+0656   fprintf(<span class="string">'Press p to pause and unpause display.\n'</span>)
+0657   fprintf(<span class="string">'Press t and g to adjust threshold, or use offset textbox on gui.\n'</span>);
+0658   fprintf(<span class="string">'Press o and l to adjust offset, or use offset textbox on gui.\n'</span>);
+0659   fprintf(<span class="string">'Press s and x to adjust scale, or use scale textbox on gui.\n'</span>);
+0660   fprintf(<span class="string">'Press h for this message.\n'</span>)
+0661   fprintf(<span class="string">'Press q to quit, or use quit button on gui.\n\n'</span>)
+0662 
+0663 <span class="keyword">return</span>
+0664</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

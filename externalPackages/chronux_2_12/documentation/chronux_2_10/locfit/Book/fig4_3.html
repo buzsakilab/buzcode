@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig4_3</title>
+  <meta name="keywords" content="fig4_3">
+  <meta name="description" content="Local Regression and Likelihood, Figure 4.3.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig4_3
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 4.3.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 4.3.
+ Author: Catherine Loader
+
+ Residual plots for local likelihood.
+ Henderson-Shepherd Mortality Data.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="../../../chronux_2_10/locfit/m/residuals.html" class="code" title="function y = residuals(fit,type)">residuals</a>	Residuals (or a few other things) from a locfit() fit.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 4.3.</span>
+0002 <span class="comment">% Author: Catherine Loader</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Residual plots for local likelihood.</span>
+0005 <span class="comment">% Henderson-Shepherd Mortality Data.</span>
+0006 
+0007 load morths;
+0008 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(age,deaths,<span class="string">'weights'</span>,n,<span class="string">'family'</span>,<span class="string">'binomial'</span>,<span class="string">'alpha'</span>,0.5);
+0009 
+0010 figure(<span class="string">'Name'</span>,<span class="string">'fig4_3a: Residual plots for local likelihood'</span>);
+0011 plot(age,<a href="../../../chronux_2_10/locfit/m/residuals.html" class="code" title="function y = residuals(fit,type)">residuals</a>(fit,<span class="string">'dev'</span>),<span class="string">'.-'</span>);
+0012 xlabel(<span class="string">'Age'</span>);
+0013 ylabel(<span class="string">'Residual'</span>);
+0014 title(<span class="string">'Deviance Residuals'</span>);
+0015 hold on;
+0016 plot([min(age) max(age)],[0 0],<span class="string">':'</span>);
+0017 hold off;
+0018 
+0019 figure(<span class="string">'Name'</span>,<span class="string">'fig4_3b: Residual plots for local likelihood'</span>);
+0020 plot(age,<a href="../../../chronux_2_10/locfit/m/residuals.html" class="code" title="function y = residuals(fit,type)">residuals</a>(fit,<span class="string">'pear'</span>),<span class="string">'.-'</span>);
+0021 xlabel(<span class="string">'Age'</span>);
+0022 ylabel(<span class="string">'Residual'</span>);
+0023 title(<span class="string">'Pearson Residuals'</span>);
+0024 hold on;
+0025 plot([min(age) max(age)],[0 0],<span class="string">':'</span>);
+0026 hold off;
+0027 
+0028 figure(<span class="string">'Name'</span>,<span class="string">'fig4_3c: Residual plots for local likelihood'</span>);
+0029 
+0030 plot(age,<a href="../../../chronux_2_10/locfit/m/residuals.html" class="code" title="function y = residuals(fit,type)">residuals</a>(fit,<span class="string">'raw'</span>),<span class="string">'.-'</span>);
+0031 xlabel(<span class="string">'Age'</span>);
+0032 ylabel(<span class="string">'Residual'</span>);
+0033 title(<span class="string">'Raw (response) Residuals'</span>);
+0034 hold on;
+0035 plot([min(age) max(age)],[0 0],<span class="string">':'</span>);
+0036 hold off;
+0037 
+0038 figure(<span class="string">'Name'</span>,<span class="string">'fig4_3d: Residual plots for local likelihood'</span>);
+0039 plot(age,<a href="../../../chronux_2_10/locfit/m/residuals.html" class="code" title="function y = residuals(fit,type)">residuals</a>(fit,<span class="string">'ldot'</span>),<span class="string">'.-'</span>);
+0040 xlabel(<span class="string">'Age'</span>);
+0041 ylabel(<span class="string">'Residual'</span>);
+0042 title(<span class="string">'ldot Residuals'</span>);
+0043 hold on;
+0044 plot([min(age) max(age)],[0 0],<span class="string">':'</span>);
+0045 hold off;
+0046</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

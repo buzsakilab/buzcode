@@ -1,0 +1,128 @@
+##############################################################################
+#### Frequently Asked Questions
+##############################################################################
+
+------------------------------------------------------------------------------
+Q: Why should I use videoIO?
+
+A: See README.txt's "Motivation" section.
+
+------------------------------------------------------------------------------
+Q: How do I use videoIO?
+
+A: See INSTALL.dshow.txt (Windows) or INSTALL.ffmpeg.txt (Linux) for 
+   installation instructions.  Then look at the documentation in
+   the constructors @videoReader/videoReader.m and @videoWriter/videoWriter.m
+   by typing
+     help videoReader
+     help videoWriter
+   in Matlab.  A simple videoReader example is given in README.txt and 
+   tests/videoWriterDemo.m is a good example of writing videos.
+
+------------------------------------------------------------------------------
+Q: videoIO, videoReader, and videoWriter: what's what?
+
+A: Originally, this library was just called videoReader because it was only
+   used to stream videos into Matlab using mex function plugins to access
+   3rd party libraries like ffmpeg and DirectShow.  Later we found it 
+   natural to  extend the capabilities to include writing videos as well.
+   videoIO is the name of the library that allows reading videos with 
+   videoReader objects and their plugins and writing videos with videoWriter
+   objects and their plugins.
+
+------------------------------------------------------------------------------
+Q: How do I install videoIO?
+
+A: See INSTALL.ffmpeg.txt on GNU/Linux and similar operating systems and
+   INSTALL.dshow.txt on Microsoft Windows.
+
+------------------------------------------------------------------------------
+Q: Why are precompiled binary mex files only supplied for 32-bit Windows?
+
+A: With respect to core library interfaces, Windows is a very stable and 
+   consistent operating system and thus the provided binary mex files are
+   likely to work on any 32-bit Windows XP or Vista system.  
+   
+   We have not had a chance to test the 64-bit Windows version recently and
+   there are very few 64-bit codecs available.  Thus prebuilt 64-bit mex files 
+   are not provided at this time.
+   
+   There are vast differences in versions of ffmpeg, gcc, and base system
+   libraries between different Linux distributions and different releases of
+   a given distribution.  To avoid maintaining a large set of binary 
+   packages, we instead provide the source and step-by-step installation
+   instructions (see INSTALL.ffmpeg.txt).
+
+------------------------------------------------------------------------------
+Q: Why should I install videoIO on a local hard drive and not on a 
+   networked location like my home directory?
+   
+A: It is very easy to have different versions of ffmpeg running on different 
+   machines, especially if you have compiled from sources and/or if you have
+   some 32-bit and some 64-bit machines.  There are incompatibilities between 
+   different versions of ffmpeg that can be hard to track down if the binary 
+   version of a videoIO plugin was built against a one version of ffmpeg's 
+   libraries and loaded with a different one.  These include changes in
+   data structures that are not detected at runtime and different sets of
+   supported codecs.  Thus we strong recommend *not* placing videoIO in a 
+   networked location such as your home directory.  See INSTALL.ffmpeg.txt for 
+   some suggested locations.
+   
+------------------------------------------------------------------------------
+Q: What is the difference between the ffmpegPopen2 and the ffmpegDirect 
+   plugins on Linux?
+
+A: ffmpegPopen2 is more robust to gcc version incompatibilites and ffmpeg
+   segmentation faults.  ffmpegPopen2 uses a small and simple mex file to
+   launch and communicate with a server process that does the actual encoding
+   or decoding of videos.  ffmpegDirect communicates directly with the ffmpeg
+   libraries without using a server process.  For a list of tradeoffs of these
+   approaches, type 
+     help videoReader
+   in Matlab.
+
+------------------------------------------------------------------------------
+Q: When I build videoIO on Linux, I see warning messages of the form
+      Warning: You are using gcc version "3.3.5".  The earliest gcc version 
+      supported with mex is "4.0.0".  The latest version tested for use with 
+      mex is "4.2.0".  To download a different version of gcc, visit 
+      http://gcc.gnu.org 
+   
+A: If your version of gcc is incompatible with the one used to build Matlab,
+   very strange errors can occur when running mex files.  We have created the
+   ffmpegPopen2 plugin specifically to address this issue.  Use it instead of
+   the ffmpegDirect to be safe.
+
+------------------------------------------------------------------------------
+Q: The linker can't find sws_freeContext, sws_getCachedContext, or sws_scale
+   on Linux.  What's wrong?
+
+A: Rebuild ffmpeg from the sources using the --enable-swscaler flag when
+   running ./configure.  See INSTALL.ffmpeg.txt.
+
+   These are swscaler functions used to do image scaling and color conversion.  
+   Starting with version 51.11.0 of libavcodec, ffmpeg has deprecated 
+   img_convert (a more user-friendly, but less powerful and less efficient 
+   colorspace converter) in favor of using swscaler.  Since the public header 
+   files give no mechanism for determining whether ffmpeg was compiled with 
+   swscaler vs. img_convert support, we assume swscaler is used when 
+   libavcodec's version is at least 51.11.0 and that img_convert is to be used 
+   for earlier versions.  
+   
+------------------------------------------------------------------------------
+Q: I had some error with one videoReader or videoWriter object and now all
+   of the rest of my opened videos are having troubles and/or I'm having 
+   troubles opening new ones.  What do I do?
+
+A: Best case: try opening the video file again.
+   Worst case: type "clear all" -- this will unload the plugins.
+   
+   Our plugins attempt to detect when a codecs may have done a bad thing 
+   like produce rouge threads, segmentation faults, or other crashes.  If we
+   think an unrecoverable error has occurred, all open video files may be 
+   closed.  Typically, we are able to detect a problem and cleanly unload
+   the affected plugin.  In such cases, videoWriter objects are properly 
+   destructed so that valid video files are created.  Doing the unloading 
+   unfortunately invalidates all open video handles within the same plugin.
+   Our library tries hard to avoid these situations and avoid unrecoverable
+   errors as much as possible.

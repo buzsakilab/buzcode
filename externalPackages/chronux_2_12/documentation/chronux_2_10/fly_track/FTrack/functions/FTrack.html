@@ -1,0 +1,704 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of FTrack</title>
+  <meta name="keywords" content="FTrack">
+  <meta name="description" content="FTRACK">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FTrack --><!-- menu.html functions -->
+<h1>FTrack
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>FTRACK</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function varargout = FTrack(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> FTRACK 
+ For all your fly-tracking needs! . See documentation for usage details.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="CleanData.html" class="code" title="function cleanx = CleanData(x, rnge, choice, epsilon);">CleanData</a>	CLEANDATA</li><li><a href="FlyTracker.html" class="code" title="function [x, y, orientation] = FlyTracker(filename, FrameRange,NBackFrames, opt1, sqrsize,alpha, ellipse)">FlyTracker</a>	FLYTRACKER</li><li><a href="fit_ellipse.html" class="code" title="function ellipse_t = fit_ellipse( x,y,plot_opt )">fit_ellipse</a>	</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>	FRAME=GETFRAME(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>	INFO=GETINFO(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>	WORKED=SEEK(VR,FNUM)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>	videoReader class constructor</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/getinfo.html" class="code" title="function info = getinfo(vw)">getinfo</a>	INFO=GETINFO(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>	FRAME=GETFRAME(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>	INFO=GETINFO(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>	WORKED=SEEK(VR,FNUM)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>	videoReader class constructor</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/getinfo.html" class="code" title="function info = getinfo(vw)">getinfo</a>	INFO=GETINFO(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>	FRAME=GETFRAME(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>	INFO=GETINFO(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>	WORKED=SEEK(VR,FNUM)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>	videoReader class constructor</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/getinfo.html" class="code" title="function info = getinfo(vw)">getinfo</a>	INFO=GETINFO(VW)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function FTrack_OpeningFcn(hObject, eventdata, handles, varargin)</a></li><li><a href="#_sub2" class="code">function varargout = FTrack_OutputFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub3" class="code">function load_video_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub4" class="code">function viewframe_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub5" class="code">function arena_dims_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub6" class="code">function input_params_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub7" class="code">function find_opt_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub8" class="code">function find_opt_SelectionChangeFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub9" class="code">function neg_opt_CreateFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub10" class="code">function neg_opt_SelectionChangeFcn(hObject, eventdata, handles)</a></li><li><a href="#_sub11" class="code">function TrackStart_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub12" class="code">function view_traj_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub13" class="code">function clean_x_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub14" class="code">function clean_y_Callback(hObject, eventdata, handles)</a></li><li><a href="#_sub15" class="code">function out = SaveFiles(i,handles)</a></li><li><a href="#_sub16" class="code">function tilt_correct_Callback(hObject, eventdata, handles)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function varargout = FTrack(varargin)</a>
+0002 <span class="comment">% FTRACK</span>
+0003 <span class="comment">% For all your fly-tracking needs! . See documentation for usage details.</span>
+0004 
+0005 <span class="comment">% Last Modified by GUIDE v2.5 26-Nov-2007 18:07:29</span>
+0006 
+0007 <span class="comment">% Begin initialization code - DO NOT EDIT</span>
+0008 gui_Singleton = 1;
+0009 gui_State = struct(<span class="string">'gui_Name'</span>,       mfilename, <span class="keyword">...</span>
+0010                    <span class="string">'gui_Singleton'</span>,  gui_Singleton, <span class="keyword">...</span>
+0011                    <span class="string">'gui_OpeningFcn'</span>, @<a href="#_sub1" class="code" title="subfunction FTrack_OpeningFcn(hObject, eventdata, handles, varargin)">FTrack_OpeningFcn</a>, <span class="keyword">...</span>
+0012                    <span class="string">'gui_OutputFcn'</span>,  @<a href="#_sub2" class="code" title="subfunction varargout = FTrack_OutputFcn(hObject, eventdata, handles)">FTrack_OutputFcn</a>, <span class="keyword">...</span>
+0013                    <span class="string">'gui_LayoutFcn'</span>,  [] , <span class="keyword">...</span>
+0014                    <span class="string">'gui_Callback'</span>,   []);
+0015 <span class="keyword">if</span> nargin &amp;&amp; ischar(varargin{1})
+0016     gui_State.gui_Callback = str2func(varargin{1});
+0017 <span class="keyword">end</span>
+0018 
+0019 <span class="keyword">if</span> nargout
+0020     [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+0021 <span class="keyword">else</span>
+0022     gui_mainfcn(gui_State, varargin{:});
+0023 <span class="keyword">end</span>
+0024 <span class="comment">% End initialization code - DO NOT EDIT</span>
+0025 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0026 
+0027 <span class="comment">% --- Executes just before FTrack is made visible.</span>
+0028 <a name="_sub1" href="#_subfunctions" class="code">function FTrack_OpeningFcn(hObject, eventdata, handles, varargin)</a>
+0029 <span class="comment">% This function has no output args, see OutputFcn.</span>
+0030 <span class="comment">% hObject    handle to figure</span>
+0031 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0032 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0033 <span class="comment">% varargin   command line arguments to FTrack (see VARARGIN)</span>
+0034 
+0035 <span class="comment">% Choose default command line output for FTrack</span>
+0036 handles.output = hObject;
+0037 
+0038 <span class="comment">% Update handles structure</span>
+0039 guidata(hObject, handles);
+0040 disp(<span class="string">'Welcome to FTrack!'</span>)
+0041 warning off all
+0042 
+0043 <span class="comment">% UIWAIT makes FTrack wait for user response (see UIRESUME)</span>
+0044 <span class="comment">% uiwait(handles.figure1);</span>
+0045 
+0046 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0047 
+0048 <span class="comment">% --- Outputs from this function are returned to the command line.</span>
+0049 <a name="_sub2" href="#_subfunctions" class="code">function varargout = FTrack_OutputFcn(hObject, eventdata, handles) </a>
+0050 <span class="comment">% varargout  cell array for returning output args (see VARARGOUT);</span>
+0051 <span class="comment">% hObject    handle to figure</span>
+0052 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0053 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0054 
+0055 <span class="comment">% Get default command line output from handles structure</span>
+0056 varargout{1} = handles.output;
+0057 
+0058 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0059 <span class="comment">% --- Executes on button press in load_video.</span>
+0060 <a name="_sub3" href="#_subfunctions" class="code">function load_video_Callback(hObject, eventdata, handles)</a>
+0061 <span class="comment">% hObject    handle to load_video (see GCBO)</span>
+0062 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0063 <span class="comment">% handles    structure with handles and user data (see GUIDATA</span>
+0064 
+0065 
+0066 <span class="comment">%The following allows the user to select multiple videos to be tracked.</span>
+0067 <span class="comment">%The videos will be tracked sequentially, not in parallel. The filenames</span>
+0068 <span class="comment">%will be displayed in the message center.</span>
+0069 
+0070 [filename, pathname] = uigetfile({<span class="string">'*.avi;*.mpg;*.mp2'</span>,<span class="string">'Video Files (*.avi,*.mpg,*.mp2)'</span>}, <span class="string">'Pick a video'</span>, <span class="string">'MultiSelect'</span>,<span class="string">'on'</span>);
+0071 <span class="keyword">if</span> iscell(filename)
+0072     NFiles = length(filename);
+0073 <span class="keyword">else</span>
+0074     NFiles = 1;
+0075     filename = {filename};
+0076 <span class="keyword">end</span>
+0077 
+0078 <span class="keyword">if</span> isequal(filename,0) || isequal(pathname,0)
+0079     disp(<span class="string">'File select canceled'</span>)
+0080 <span class="keyword">else</span>
+0081     <span class="keyword">for</span> i = 1:NFiles
+0082         disp([<span class="string">'Video selected: '</span>, fullfile(pathname, filename{i})])
+0083         handles.filename{i} = fullfile(pathname, filename{i}); 
+0084     <span class="keyword">end</span>
+0085 <span class="keyword">end</span>
+0086 
+0087 guidata(gcbo,handles);
+0088 
+0089 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0090 
+0091 <span class="comment">% --- Executes on button press in viewframe.</span>
+0092 <a name="_sub4" href="#_subfunctions" class="code">function viewframe_Callback(hObject, eventdata, handles)</a>
+0093 <span class="comment">% hObject    handle to viewframe (see GCBO)</span>
+0094 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0095 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0096 
+0097 <span class="comment">%This is the single frame viewer.  It simply gives the user some info about</span>
+0098 <span class="comment">%the video (displayed in the message center), and also shows the user a</span>
+0099 <span class="comment">%single frame of the movie so that they can make sure it looks correct and</span>
+0100 <span class="comment">%they can get some parameters off of the frame if need be (such as fly size</span>
+0101 <span class="comment">%or a pixel/cm calilbration).</span>
+0102 
+0103 filename = handles.filename;
+0104 <span class="keyword">if</span> iscell(filename)
+0105     NFiles = length(filename);
+0106 <span class="keyword">else</span>
+0107     NFiles = 1;
+0108     filename = {filename};
+0109 <span class="keyword">end</span>
+0110 
+0111 <span class="keyword">for</span> i = 1:NFiles
+0112     video = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>(filename{i});
+0113     <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>(video,1);
+0114     info = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>(video);
+0115     img = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>(video);
+0116     figure
+0117     imagesc(img)
+0118     title(filename{i})
+0119     disp([<span class="string">'Video name:'</span>,filename{i}])
+0120     disp([<span class="string">'Video dimensions [Width, Height]:  ['</span>, num2str(info.width),<span class="string">' , '</span> num2str(info.height),<span class="string">']'</span>])
+0121     disp([<span class="string">'Number of frames:  '</span>,num2str(info.numFrames)])
+0122     disp([<span class="string">'Frame rate:  '</span>,num2str(info.fps),<span class="string">' frames/s'</span>])
+0123     
+0124     handles.VideoInfo(i) = info;
+0125 <span class="keyword">end</span>
+0126 
+0127 disp(<span class="string">'Frame Viewer Finished'</span>)
+0128 guidata(gcbo, handles);
+0129 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0130 
+0131 <span class="comment">% --- Executes on button press in arena_dims.</span>
+0132 <a name="_sub5" href="#_subfunctions" class="code">function arena_dims_Callback(hObject, eventdata, handles)</a>
+0133 <span class="comment">% hObject    handle to arena_dims (see GCBO)</span>
+0134 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0135 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0136 
+0137 filename = handles.filename;
+0138 <span class="keyword">if</span> iscell(filename)
+0139     NFiles = length(filename);
+0140 <span class="keyword">else</span>
+0141     NFiles = 1;
+0142     filename = {filename};
+0143 <span class="keyword">end</span>
+0144 
+0145 p = [];
+0146 q = [];
+0147 <span class="keyword">for</span> i = 1:NFiles
+0148     video = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>(filename{i});
+0149     info = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>(video);
+0150     <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>(video,1);
+0151     img = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>(video);
+0152     sz = size(img);
+0153     figure
+0154     colormap gray
+0155     imagesc(img)
+0156     axis image
+0157     title({filename{i}; <span class="string">'Left click to select points on boundary of arena. Press return when done.'</span>})
+0158  
+0159     <span class="comment">% Choose points on arena boundary</span>
+0160     [p q] = ginput;
+0161 
+0162     <span class="comment">%Find center and radius of arena</span>
+0163 
+0164     ellipse = <a href="fit_ellipse.html" class="code" title="function ellipse_t = fit_ellipse( x,y,plot_opt )">fit_ellipse</a>(p',q',<span class="string">'y'</span>);
+0165     semiminor = min(ellipse.a,ellipse.b);
+0166     semimajor = max(ellipse.a,ellipse.b);
+0167     ellipse.epsilon = sqrt(1-semiminor^2/semimajor^2);
+0168     ellipse.psi = asin(ellipse.epsilon);
+0169     ellipse.semiminor = semiminor;
+0170     ellipse.semimajor = semimajor;
+0171 
+0172     rotated_ellipse = ellipse.rotated_ellipse;
+0173     ellipse.points_selected = [p q];
+0174     title(<span class="string">'Arena w/ Boundary'</span>)
+0175     ellipse.boundaries = [ rotated_ellipse(1,:)', info.height-rotated_ellipse(2,:)'];
+0176        
+0177     info = handles.VideoInfo(i);
+0178     figure
+0179     title(<span class="string">'Masking arena.  Please wait...'</span>)
+0180     drawnow
+0181     disp(<span class="string">'Masking arena...'</span>)
+0182     mask = zeros(info.height, info.width);
+0183     <span class="keyword">for</span> k=1:info.height
+0184         <span class="keyword">for</span> j=1:info.width
+0185             rot = inv(ellipse.R)*[j;k];
+0186             testpoint = (rot(1)-ellipse.X0).^2/(ellipse.a).^2+(rot(2)-ellipse.Y0).^2/(ellipse.b).^2;
+0187             <span class="keyword">if</span> (testpoint &lt;= 1.01) <span class="comment">%giving a little lee-way near boundary</span>
+0188                 mask(k,j) = 1;
+0189             <span class="keyword">end</span>
+0190         <span class="keyword">end</span>
+0191     <span class="keyword">end</span>
+0192     ellipse.mask =  double(mask);
+0193     handles.arena{i} = ellipse;
+0194     
+0195     imagesc(double(img(:,:,1)).*double(mask))
+0196     axis image
+0197     colormap gray
+0198     title(<span class="string">'Portion to be tracked'</span>)
+0199     
+0200 <span class="keyword">end</span>
+0201 
+0202 <span class="comment">%setting things up to only consider pixels within selected arena...</span>
+0203 
+0204 disp(<span class="string">'Arena Dimensions Calculated'</span>)
+0205 disp(ellipse)
+0206 guidata(gcbo, handles);
+0207 
+0208 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0209 <span class="comment">% --- Executes on button press in input_params.</span>
+0210 <a name="_sub6" href="#_subfunctions" class="code">function input_params_Callback(hObject, eventdata, handles)</a>
+0211 <span class="comment">% hObject    handle to input_params (see GCBO)</span>
+0212 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0213 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0214 
+0215 
+0216 <span class="comment">%Opens up a dialog box so that the user can input relevant parameters for</span>
+0217 <span class="comment">%each video that is being tracked.  A separate box will open for each</span>
+0218 <span class="comment">%video.</span>
+0219 
+0220 filename = handles.filename;
+0221 <span class="keyword">if</span> iscell(filename)
+0222     NFiles = length(filename);
+0223 <span class="keyword">else</span>
+0224     Nfiles = 1;
+0225     filename = {filename};
+0226 <span class="keyword">end</span>
+0227 UserIn = [];
+0228 
+0229 <span class="keyword">for</span> i = 1:NFiles
+0230     first = strvcat(filename{i}, <span class="string">'          '</span>,<span class="string">'Output directory'</span>);
+0231     prompt = {first,<span class="string">'Start Frame (Remember that first frame is indexed 0)'</span>,<span class="string">'End Frame:'</span>, <span class="string">'Initial background size:'</span>, <span class="string">'Arena radius (cm)'</span>, <span class="string">'Bounding box half-size (in pixels)'</span>,<span class="string">'Background weight (0.9 &lt; a &lt; 1)'</span>};
+0232     dlg_title = [<span class="string">'Input Paramters'</span>];
+0233     num_lines = 1;
+0234     defaults = {<span class="string">'C:\Documents and Settings\liam\My Documents\LabVIEW Data\FTrack output'</span>,<span class="string">'0'</span>,<span class="string">'999'</span>, <span class="string">'100'</span>,<span class="string">'7.5'</span>,<span class="string">'10'</span>,<span class="string">'0.9'</span>};
+0235     options.Resize=<span class="string">'on'</span>;
+0236     options.WindowStyle=<span class="string">'normal'</span>;
+0237     answer = inputdlg(prompt,dlg_title,num_lines,defaults, options);
+0238     UserIn = [UserIn answer];
+0239     disp([<span class="string">'Input parameters have been entered for '</span>, filename{i}])
+0240     
+0241     InputData(i).OutputPath = UserIn{1,i};
+0242     InputData(i).StartFrame = str2double(UserIn(2,i));
+0243     InputData(i).EndFrame = str2double(UserIn(3,i));
+0244     InputData(i).NBackFrames = str2double(UserIn(4,i));
+0245     InputData(i).ArenaRadius = str2double(UserIn(5,i));
+0246     InputData(i).sqrsize = str2double(UserIn(6,i));
+0247     InputData(i).alpha = str2double(UserIn(7,i));
+0248 
+0249 <span class="keyword">end</span>
+0250 
+0251 handles.InputData = InputData;
+0252  
+0253 guidata(gcbo, handles);
+0254 
+0255 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0256 <span class="comment">% Radio Buttons to select fly finding option</span>
+0257 
+0258 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0259 <a name="_sub7" href="#_subfunctions" class="code">function find_opt_CreateFcn(hObject, eventdata, handles)</a>
+0260 <span class="comment">% hObject    handle to find_opt (see GCBO)</span>
+0261 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0262 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0263 
+0264 
+0265 <span class="comment">% --------------------------------------------------------------------</span>
+0266 <a name="_sub8" href="#_subfunctions" class="code">function find_opt_SelectionChangeFcn(hObject, eventdata, handles)</a>
+0267 <span class="comment">% hObject    handle to find_opt (see GCBO)</span>
+0268 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0269 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0270 
+0271 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0272 <span class="comment">%  Radio buttons to select whether fly is white on black or black on white</span>
+0273 
+0274 <span class="comment">% --- Executes during object creation, after setting all properties.</span>
+0275 <a name="_sub9" href="#_subfunctions" class="code">function neg_opt_CreateFcn(hObject, eventdata, handles)</a>
+0276 <span class="comment">% hObject    handle to neg_opt (see GCBO)</span>
+0277 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0278 <span class="comment">% handles    empty - handles not created until after all CreateFcns called</span>
+0279 
+0280 <span class="comment">% --------------------------------------------------------------------</span>
+0281 <a name="_sub10" href="#_subfunctions" class="code">function neg_opt_SelectionChangeFcn(hObject, eventdata, handles)</a>
+0282 <span class="comment">% hObject    handle to neg_opt (see GCBO)</span>
+0283 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0284 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0285 
+0286 
+0287 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0288 <span class="comment">% --- Executes on button press in TrackStart.</span>
+0289 <a name="_sub11" href="#_subfunctions" class="code">function TrackStart_Callback(hObject, eventdata, handles)</a>
+0290 <span class="comment">% hObject    handle to TrackStart (see GCBO)</span>
+0291 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0292 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0293 
+0294 <span class="comment">%This part of the calls FlyTracker to do the actual tracking.</span>
+0295 
+0296 <span class="comment">%grab the filename and user input parameters</span>
+0297 filename = handles.filename;
+0298 InputData = handles.InputData;
+0299 
+0300 <span class="keyword">if</span> iscell(filename)
+0301     NVideos = length(filename);
+0302 <span class="keyword">else</span>
+0303     NVideos = 1;
+0304     filename = {filename};
+0305 <span class="keyword">end</span>
+0306 
+0307 neg_opt = get(get(handles.neg_opt,<span class="string">'SelectedObject'</span>), <span class="string">'Tag'</span>);
+0308 
+0309 <span class="comment">% Call FlyTracker</span>
+0310 <span class="keyword">for</span> i=1:NVideos
+0311      
+0312     <span class="comment">%video parameters, just because...</span>
+0313     info = handles.VideoInfo(i);
+0314     FrameRate = info.fps;
+0315     FrameRange = [InputData(i).StartFrame:InputData(i).EndFrame];
+0316     
+0317     <span class="comment">%Track the fly!</span>
+0318     [x, y, orientation] = <a href="FlyTracker.html" class="code" title="function [x, y, orientation] = FlyTracker(filename, FrameRange,NBackFrames, opt1, sqrsize,alpha, ellipse)">FlyTracker</a>(filename{i}, FrameRange,<span class="keyword">...</span>
+0319                        InputData(i).NBackFrames, neg_opt, InputData(i).sqrsize,<span class="keyword">...</span>
+0320                         InputData(i).alpha, handles.arena{i});
+0321                     
+0322     <span class="comment">%Time vector</span>
+0323     <span class="keyword">if</span> (info.numFrames == InputData(i).EndFrame)
+0324         InputData(i).EndFrame = InputData(i).EndFrame-1;
+0325     <span class="keyword">elseif</span> (info.numFrames &lt; InputData(i).EndFrame)
+0326         InputData(i).EndFrame = info.numFrames-1;
+0327     <span class="keyword">end</span>
+0328     
+0329     t = [InputData(i).StartFrame:InputData.EndFrame(i)]/FrameRate;
+0330         
+0331     <span class="comment">%Save data to handles so the rest of the GUI can access it.</span>
+0332     handles.x = x;
+0333     handles.y = y;
+0334     handles.orientation = orientation;
+0335     handles.t = t;
+0336 
+0337     guidata(gcbo, handles);  
+0338     <span class="comment">%Also, save variables as a .mat file so that the user will be able to</span>
+0339     <span class="comment">%load in the tracked data later on.</span>
+0340     
+0341     out = <a href="#_sub15" class="code" title="subfunction out = SaveFiles(i,handles)">SaveFiles</a>(i,handles);
+0342     
+0343 <span class="keyword">end</span>
+0344 disp(<span class="string">'Tracking Complete.'</span>)
+0345 
+0346 
+0347 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0348 
+0349 <span class="comment">% --- Executes on button press in view_traj.</span>
+0350 <a name="_sub12" href="#_subfunctions" class="code">function view_traj_Callback(hObject, eventdata, handles)</a>
+0351 <span class="comment">% hObject    handle to view_traj (see GCBO)</span>
+0352 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0353 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0354 
+0355 [filename, pathname] = <span class="keyword">...</span>
+0356      uigetfile({<span class="string">'*.mat'</span>},<span class="string">'Select Raw Trajectory Data'</span>);
+0357 
+0358 <span class="keyword">if</span> isequal(filename,0) || isequal(pathname,0)
+0359     disp(<span class="string">'File select canceled'</span>)
+0360     <span class="keyword">return</span>;
+0361 <span class="keyword">else</span>
+0362     fullname = fullfile(pathname, filename);
+0363 <span class="keyword">end</span>
+0364 
+0365 
+0366 load(fullname)
+0367 figure
+0368 set(gcf,<span class="string">'Name'</span>,fullname)
+0369 subplot(2,2,1)
+0370 plot(t,x)
+0371 xlim([0 t(end)])
+0372 xlabel(<span class="string">'Time (s)'</span>)
+0373 ylabel(<span class="string">'cm'</span>)
+0374 title(<span class="string">'Raw x data'</span>)
+0375 subplot(2,2,3)
+0376 plot(t,y)
+0377 xlim([0 t(end)])
+0378 xlabel(<span class="string">'Time (s)'</span>)
+0379 ylabel(<span class="string">'cm'</span>)
+0380 title(<span class="string">'Raw y data'</span>)
+0381 subplot(2,2,[2 4])
+0382 plot(x,y)
+0383 xlabel(<span class="string">'x position (cm)'</span>)
+0384 ylabel(<span class="string">'y position (cm)'</span>)
+0385 title(<span class="string">'Raw Trajectory'</span>)
+0386 axis equal
+0387 
+0388 handles.filename = filename;
+0389 handles.x = x;
+0390 handles.y = y;
+0391 handles.orientation = orientation;
+0392 handles.t = t;
+0393 handles.VideoInfo = VideoInfo;
+0394 handles.InputData = InputData;
+0395 handles.arena{1} = arena;
+0396 
+0397 guidata(gcbo, handles);  
+0398      
+0399 
+0400 
+0401 
+0402 <span class="comment">% --- Executes on button press in clean_x.</span>
+0403 <a name="_sub13" href="#_subfunctions" class="code">function clean_x_Callback(hObject, eventdata, handles)</a>
+0404 <span class="comment">% hObject    handle to clean_x (see GCBO)</span>
+0405 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0406 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0407 
+0408 x = handles.x;
+0409 filename = handles.filename;
+0410 
+0411 <span class="comment">%open up plot to examine data</span>
+0412 figure
+0413 plot(x)
+0414 title(<span class="string">'Zoom in if necessary.  Press any key to continue.'</span>)
+0415 xlabel(<span class="string">'Frame'</span>)
+0416 ylabel(<span class="string">'cm'</span>)
+0417 pause
+0418 
+0419 <span class="comment">% This loop runs until the user hits return to exit. We wait for the user</span>
+0420 <span class="comment">% to click four points on the graph, and then run the CleanData function on</span>
+0421 <span class="comment">% the region defined by those four points.</span>
+0422 
+0423 <span class="keyword">while</span>(1)
+0424 title(<span class="string">'Define region of data to clean: left, right, baseline, threshold. Hit Return to exit.'</span>)
+0425 [p q] = ginput(4);
+0426 <span class="keyword">if</span> isempty(p)
+0427     <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>;
+0428     disp(<span class="string">'X data has been cleaned.'</span>)
+0429     out = <a href="#_sub15" class="code" title="subfunction out = SaveFiles(i,handles)">SaveFiles</a>(1,handles);
+0430     <span class="keyword">return</span>;
+0431 <span class="keyword">else</span>
+0432     rnge = floor(p(1)):floor(p(2));
+0433 <span class="keyword">end</span>
+0434 
+0435 <span class="keyword">if</span> (q(3) &gt; q(4))
+0436     choice = <span class="string">'below'</span>;
+0437 <span class="keyword">elseif</span> (q(3) &lt; q(4));
+0438     choice = <span class="string">'above'</span>;
+0439 <span class="keyword">end</span>
+0440 epsilon = q(4);
+0441 
+0442 x = <a href="CleanData.html" class="code" title="function cleanx = CleanData(x, rnge, choice, epsilon);">CleanData</a>(x, rnge, choice, epsilon);
+0443 handles.x = x;
+0444 guidata(gcbo, handles)
+0445 ax = gca;
+0446 xlim_temp = get(ax, <span class="string">'XLim'</span>);
+0447 ylim_temp = get(ax, <span class="string">'YLim'</span>);
+0448 
+0449 <span class="comment">%Show plot of clean data</span>
+0450 figure
+0451 plot(x)
+0452 xlim(xlim_temp);
+0453 ylim(ylim_temp);
+0454 xlabel(<span class="string">'Frame'</span>)
+0455 ylabel(<span class="string">'cm'</span>)
+0456 title(<span class="string">'Zoom in if necessary.  Press any key to continue.'</span>)
+0457 pause
+0458 <span class="keyword">end</span>
+0459 
+0460 
+0461 
+0462 <span class="comment">% --- Executes on button press in clean_y.</span>
+0463 <a name="_sub14" href="#_subfunctions" class="code">function clean_y_Callback(hObject, eventdata, handles)</a>
+0464 <span class="comment">% hObject    handle to clean_y (see GCBO)</span>
+0465 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0466 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0467 
+0468 y = handles.y;
+0469 filename = handles.filename;
+0470 <span class="comment">%open up plot to examine data</span>
+0471 figure(2)
+0472 plot(y)
+0473 xlabel(<span class="string">'Frame'</span>)
+0474 ylabel(<span class="string">'cm'</span>)
+0475 title(<span class="string">'Zoom in if necessary.  Press any key to continue.'</span>)
+0476 pause
+0477 
+0478 <span class="comment">% This loop runs until the user hits return to exit. We wait for the user</span>
+0479 <span class="comment">% to click four points on the graph, and then run the CleanData function on</span>
+0480 <span class="comment">% the region defined by those four points.</span>
+0481 
+0482 <span class="keyword">while</span>(1)
+0483 title(<span class="string">'Define region of data to clean: left, right, baseline, threshold. Hit Return to exit.'</span>)
+0484 [p q] = ginput(4);
+0485 <span class="keyword">if</span> isempty(p)
+0486     <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>;
+0487     disp(<span class="string">'Y data has been cleaned.'</span>)
+0488     out = <a href="#_sub15" class="code" title="subfunction out = SaveFiles(i,handles)">SaveFiles</a>(1,handles);
+0489     <span class="keyword">return</span>;
+0490 <span class="keyword">else</span>
+0491     rnge = floor(p(1)):floor(p(2));
+0492 <span class="keyword">end</span>
+0493 
+0494 <span class="keyword">if</span> (q(3) &gt; q(4))
+0495     choice = <span class="string">'below'</span>;
+0496 <span class="keyword">elseif</span> (q(3) &lt; q(4));
+0497     choice = <span class="string">'above'</span>;
+0498 <span class="keyword">end</span>
+0499 epsilon = q(4);
+0500 
+0501 y = <a href="CleanData.html" class="code" title="function cleanx = CleanData(x, rnge, choice, epsilon);">CleanData</a>(y, rnge, choice, epsilon);
+0502 handles.y = y;
+0503 guidata(gcbo, handles)
+0504 ax = gca;
+0505 xlim_temp = get(ax, <span class="string">'XLim'</span>);
+0506 ylim_temp = get(ax, <span class="string">'YLim'</span>);
+0507 
+0508 <span class="comment">%Show plot of clean data</span>
+0509 figure(2)
+0510 plot(y)
+0511 xlim(xlim_temp);
+0512 ylim(ylim_temp);
+0513 xlabel(<span class="string">'Frame'</span>)
+0514 ylabel(<span class="string">'cm'</span>)
+0515 title(<span class="string">'Zoom in if necessary.  Press any key to continue.'</span>)
+0516 pause
+0517 <span class="keyword">end</span>
+0518 
+0519 <span class="keyword">return</span>;
+0520 
+0521 <a name="_sub15" href="#_subfunctions" class="code">function out = SaveFiles(i,handles)</a>
+0522     
+0523     <span class="keyword">if</span> iscell(handles.filename)
+0524         filename = handles.filename{i};
+0525     <span class="keyword">else</span>
+0526         filename = handles.filename;
+0527     <span class="keyword">end</span>
+0528     
+0529     OutputPath = handles.InputData(i).OutputPath; 
+0530     x = handles.x;
+0531     y = handles.y;
+0532     t = handles.t;
+0533     orientation = handles.orientation;
+0534     InputData = handles.InputData(i);
+0535     VideoInfo = handles.VideoInfo(i);
+0536     arena =  handles.arena{i};
+0537     
+0538     [temp, name, ext, versn] = fileparts(filename);
+0539     
+0540     name_mat = strcat(name,<span class="string">'.mat'</span>);
+0541     name_xy=strcat(name,<span class="string">'.xy'</span>);
+0542     name_ori=strcat(name,<span class="string">'.ori'</span>);
+0543     save_filename = fullfile(OutputPath,name);
+0544     save_filename_xy = fullfile(OutputPath,name_xy);
+0545     save_filename_ori = fullfile(OutputPath,name_ori);
+0546     ori=handles.orientation(1,:)';
+0547     xy=[handles.x' handles.y'];
+0548     save(save_filename,<span class="string">'x'</span>,<span class="string">'y'</span>,<span class="string">'t'</span>,<span class="string">'orientation'</span>,<span class="string">'InputData'</span>, <span class="string">'VideoInfo'</span>,<span class="string">'arena'</span>)
+0549     disp([<span class="string">'Saved '</span>,save_filename])
+0550     save(save_filename_xy,<span class="string">'xy'</span>,<span class="string">'-ascii'</span>,<span class="string">'-tabs'</span>);
+0551     disp([<span class="string">'Saved '</span>,save_filename_xy])
+0552     save(save_filename_ori,<span class="string">'ori'</span>,<span class="string">'-ascii'</span>,<span class="string">'-tabs'</span>);   
+0553     disp([<span class="string">'Saved '</span>,save_filename_ori])
+0554     out = 1;
+0555     
+0556 <span class="keyword">return</span>;
+0557 
+0558 
+0559 <span class="comment">% --- Executes on button press in tilt_correct.</span>
+0560 <a name="_sub16" href="#_subfunctions" class="code">function tilt_correct_Callback(hObject, eventdata, handles)</a>
+0561 <span class="comment">% hObject    handle to tilt_correct (see GCBO)</span>
+0562 <span class="comment">% eventdata  reserved - to be defined in a future version of MATLAB</span>
+0563 <span class="comment">% handles    structure with handles and user data (see GUIDATA)</span>
+0564 
+0565 
+0566 <span class="comment">%Note.  This is a slightly different version of tilt correction than</span>
+0567 <span class="comment">%described in the PLoS paper.  I think this is more robust and general.</span>
+0568 
+0569 x = handles.x;
+0570 y = handles.y;
+0571 t = handles.t;
+0572 ellipse = handles.arena{1};
+0573 radius_in_cm = handles.InputData.ArenaRadius;
+0574 video = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>(handles.VideoInfo.url);
+0575 info = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>(video);
+0576 height = info.height;
+0577 
+0578 psi = ellipse.psi;
+0579 phi = ellipse.phi;
+0580 
+0581 <span class="comment">%redefining coordinate system so center of arena is at (0,0)</span>
+0582 rotated_ellipse(:,1) = ellipse.boundaries(:,1)-ellipse.X0_in;
+0583 rotated_ellipse(:,2) = ellipse.boundaries(:,2)-(height-ellipse.Y0_in);
+0584 
+0585 M = [cos(phi) sin(phi);-sin(phi) cos(phi)];  <span class="comment">%rotation matrix.</span>
+0586 
+0587 <span class="comment">%stretch ellipse only in shortest dimension to length of longest.</span>
+0588 <span class="keyword">if</span> (ellipse.a &gt; ellipse.b)
+0589     L = [1 0; 0 ellipse.a/ellipse.b]; 
+0590 <span class="keyword">else</span>
+0591     L = [ellipse.b/ellipse.a 0; 0 1];
+0592 <span class="keyword">end</span>
+0593 
+0594 T = L*M;  <span class="comment">%transformation matrix.  A rotation and a stretch to turn an ellipse into a circle.</span>
+0595 
+0596 disp(<span class="string">'Correcting for camera tilt.  This may take a few minutes, so be patient!'</span>)
+0597 
+0598 z = zeros(1,length(rotated_ellipse(:,1)));
+0599 
+0600 <span class="comment">%Transform boundary line</span>
+0601 <span class="keyword">for</span> j = 1:length(rotated_ellipse(:,1))
+0602     temp = T*[rotated_ellipse(j,1); rotated_ellipse(j,2)];
+0603     xe(j) = temp(1);
+0604     ye(j) = temp(2);      
+0605 <span class="keyword">end</span>
+0606 
+0607 <span class="comment">%fit new ellipse</span>
+0608 z = zeros(1,length(x));
+0609 new_ellipse = <a href="fit_ellipse.html" class="code" title="function ellipse_t = fit_ellipse( x,y,plot_opt )">fit_ellipse</a>(xe',ye',<span class="string">'n'</span>);
+0610 
+0611 semiminor = min(new_ellipse.a,new_ellipse.b);
+0612 semimajor = max(new_ellipse.a,new_ellipse.b);
+0613 new_ellipse.epsilon = sqrt(1-semiminor^2/semimajor^2);
+0614 new_ellipse.psi = asin(new_ellipse.epsilon);
+0615 new_ellipse.semiminor = semiminor;
+0616 new_ellipse.semimajor = semimajor;
+0617 new_ellipse.boundaries = [xe' ye'];
+0618 
+0619 <span class="comment">%Now transform trajectory</span>
+0620 <span class="keyword">for</span> j = 1:length(x)   
+0621         temp = T*[x(j)-ellipse.X0_in; y(j)-(height-ellipse.Y0_in)];
+0622         xp(j) = temp(1);
+0623         yp(j) = temp(2);              
+0624 <span class="keyword">end</span>
+0625 
+0626 
+0627 <span class="keyword">if</span> (abs(new_ellipse.b-new_ellipse.a) &lt;= 2) <span class="comment">%2 pixel accuracy seems adequate</span>
+0628     disp(<span class="string">'Tilt corrected'</span>)
+0629     pixels_in_cm = semimajor/radius_in_cm;
+0630 
+0631     x = (xp)/pixels_in_cm;
+0632     y = (yp)/pixels_in_cm;
+0633     
+0634     figure
+0635     plot(x,y,new_ellipse.boundaries(:,1)/pixels_in_cm,new_ellipse.boundaries(:,2)/pixels_in_cm,<span class="string">'r'</span>)
+0636     title(<span class="string">'Transformed trajectory with boundary'</span>)
+0637 
+0638     handles.arena{1}=new_ellipse;
+0639     handles.x = x;
+0640     handles.y = y;
+0641     handles.InputData.pixels_in_cm =  pixels_in_cm;
+0642     out = <a href="#_sub15" class="code" title="subfunction out = SaveFiles(i,handles)">SaveFiles</a>(1,handles);
+0643 <span class="keyword">else</span>
+0644     disp(<span class="string">'Something went wrong. Arena is still an ellipse. '</span>)
+0645 <span class="keyword">end</span>
+0646 
+0647 
+0648 guidata(gcbo, handles)
+0649 
+0650 
+0651  
+0652  
+0653  
+0654  
+0655</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

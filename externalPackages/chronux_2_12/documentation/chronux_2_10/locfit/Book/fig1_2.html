@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig1_2</title>
+  <meta name="keywords" content="fig1_2">
+  <meta name="description" content="Local Regression and Likelihood, Figure 1.2.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig1_2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 1.2.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 1.2.
+
+ Spencer's mortality data, 15- and 21-point rules.
+ Doesn't use locfit!</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/spence15.html" class="code" title="function yhat=spence15(y)">spence15</a>	function for Spencer's 15-point graduation rule.</li><li><a href="../../../chronux_2_10/locfit/m/spence21.html" class="code" title="function yhat=spence21(y)">spence21</a>	function for Spencer's 21-point graduation rule.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 1.2.</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Spencer's mortality data, 15- and 21-point rules.</span>
+0004 <span class="comment">% Doesn't use locfit!</span>
+0005 
+0006 load spencer;
+0007 
+0008 figure(<span class="string">'Name'</span>,<span class="string">'fig1_2a: Spencer mortality data'</span>);
+0009 plot(age,mortality,<span class="string">'o'</span>);
+0010 title(<span class="string">'15-point rule'</span>);
+0011 xlabel(<span class="string">'Age (Years)'</span>);
+0012 ylabel(<span class="string">'Mortality Rate'</span>);
+0013 hold on;
+0014 plot(age,<a href="../../../chronux_2_10/locfit/m/spence15.html" class="code" title="function yhat=spence15(y)">spence15</a>(mortality));
+0015 hold off;
+0016 figure(<span class="string">'Name'</span>,<span class="string">'fig1_2b: Spencer mortality data'</span>);
+0017 plot(age,mortality,<span class="string">'o'</span>);
+0018 xlabel(<span class="string">'Age (Years)'</span>);
+0019 ylabel(<span class="string">'Mortality Rate'</span>);
+0020 title(<span class="string">'21-point rule'</span>);
+0021 hold on;
+0022 plot(age,<a href="../../../chronux_2_10/locfit/m/spence21.html" class="code" title="function yhat=spence21(y)">spence21</a>(mortality));
+0023 hold off;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

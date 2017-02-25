@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of jackknife</title>
+  <meta name="keywords" content="jackknife">
+  <meta name="description" content="Compute jackknife estimates of the mean and standard deviation of input data x">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html helper -->
+<h1>jackknife
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Compute jackknife estimates of the mean and standard deviation of input data x</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [m,jsd]=jackknife(x) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Compute jackknife estimates of the mean and standard deviation of input data x
+ Usage: [m,jsd]=jackknife(x)
+ 
+ Inputs:
+ x : data in the form samples x trials
+
+ Outputs:
+ m : estimate of the mean (across trials)
+ jsd: jackknife estimate of the standard deviation (across trials)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="den_jack.html" class="code" title="function [m,ll,ul,llj,ulj]=den_jack(X,family,varargin)">den_jack</a>	Function to compute smooth estimates of the mean of x using locfit,</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [m,jsd]=jackknife(x)</a>
+0002 <span class="comment">% Compute jackknife estimates of the mean and standard deviation of input data x</span>
+0003 <span class="comment">% Usage: [m,jsd]=jackknife(x)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Inputs:</span>
+0006 <span class="comment">% x : data in the form samples x trials</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Outputs:</span>
+0009 <span class="comment">% m : estimate of the mean (across trials)</span>
+0010 <span class="comment">% jsd: jackknife estimate of the standard deviation (across trials)</span>
+0011 
+0012 [N,C]=size(x);
+0013 <span class="keyword">if</span> C==1; error(<span class="string">'Need multiple trials'</span>); <span class="keyword">end</span>;
+0014 m=mean(x,2);
+0015 theta=zeros(N,C);
+0016 <span class="keyword">for</span> tr=1:C;
+0017     i=setdiff((1:C),tr); <span class="comment">% drop 1 trial</span>
+0018     y=sum(x(:,i),2)/(C-1); <span class="comment">% mean over remaining trials</span>
+0019     theta(:,tr)=C*m-(C-1)*y; <span class="comment">% pseudo values</span>
+0020 <span class="comment">%     yy(:,tr)=y;</span>
+0021 <span class="keyword">end</span>;
+0022 jm=mean(theta,2);
+0023 jm=repmat(jm,[1 C]);
+0024 <span class="comment">% jm2=mean(yy,2);</span>
+0025 <span class="comment">% jm2=repmat(jm2,[1 C]);</span>
+0026 jsd=sqrt(sum((theta-jm).^2,2)/(C*(C-1)));
+0027 <span class="comment">% jsd2=sqrt((C-1)*sum((yy-jm2).^2,2)/C);</span>
+0028 <span class="comment">% jsd</span>
+0029 <span class="comment">% jsd2</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

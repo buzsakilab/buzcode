@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of smooth_lf</title>
+  <meta name="keywords" content="smooth_lf">
+  <meta name="description" content="must (unlike R smooth.lf() function) give x and y.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>smooth_lf
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>must (unlike R smooth.lf() function) give x and y.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function z=smooth_lf(x,y,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> must (unlike R smooth.lf() function) give x and y.
+ also R's direct=T is automatic.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="invlink.html" class="code" title="function y0 = invlink(y,fali)">invlink</a>	inverse link function for locfit.</li><li><a href="lfknots.html" class="code" title="function z=lfknots(fit,varargin)">lfknots</a>	</li><li><a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function z=smooth_lf(x,y,varargin)</a>
+0002 
+0003 <span class="comment">% must (unlike R smooth.lf() function) give x and y.</span>
+0004 <span class="comment">% also R's direct=T is automatic.</span>
+0005 <span class="comment">%</span>
+0006 
+0007 xev = x;
+0008 <span class="keyword">if</span> (k&gt;1)
+0009   <span class="keyword">if</span> (strcmp(varargin{1},<span class="string">'xev'</span>))
+0010     xev = varargin{2};
+0011     varargin(1:2) = [];
+0012   <span class="keyword">end</span>;
+0013 <span class="keyword">end</span>;
+0014 fit = <a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(x,y,varargin{:},<span class="string">'ev'</span>,xev,<span class="string">'module'</span>,<span class="string">'simple'</span>);
+0015 z = <a href="lfknots.html" class="code" title="function z=lfknots(fit,varargin)">lfknots</a>(fit);
+0016 fv = <a href="invlink.html" class="code" title="function y0 = invlink(y,fali)">invlink</a>(z(:,1),fit.fit_points.family_link);
+0017 
+0018 z = { xev, fv };
+0019 
+0020 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

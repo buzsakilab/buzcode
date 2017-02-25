@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig7_5</title>
+  <meta name="keywords" content="fig7_5">
+  <meta name="description" content="Local Regression and Likelihood, Figure 7.5.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig7_5
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 7.5.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 7.5.
+
+ Author: Catherine Loader</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/lfmarg.html" class="code" title="function xfit = lfmarg(fit)">lfmarg</a>	computes grid margins from a locfit object, used for plotting.</li><li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li><li><a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>	Interpolate a fit produced by locfit().</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 7.5.</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Author: Catherine Loader</span>
+0004 
+0005 load border;
+0006 fit0 = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(day,runs,<span class="string">'cens'</span>,no,<span class="string">'family'</span>,<span class="string">'geom'</span>,<span class="string">'nn'</span>,0.7);
+0007 fit1 = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(day,runs,<span class="string">'weights'</span>,ones(265,1)*0.8,<span class="string">'cens'</span>,no,<span class="string">'family'</span>,<span class="string">'geom'</span>,<span class="string">'nn'</span>,0.7);
+0008 xev = <a href="../../../chronux_2_10/locfit/m/lfmarg.html" class="code" title="function xfit = lfmarg(fit)">lfmarg</a>(fit);
+0009 xev = xev{1};
+0010 y0 = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit0,xev);
+0011 y1 = <a href="../../../chronux_2_10/locfit/m/predict.html" class="code" title="function [y, se] = predict(varargin)">predict</a>(fit1,xev);
+0012 figure(<span class="string">'Name'</span>,<span class="string">'fig7_5'</span>);
+0013 plot(xev,0.8*exp(y1)-exp(y0));
+0014 xlabel(<span class="string">'Date'</span>);
+0015 ylabel(<span class="string">'Runs'</span>);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

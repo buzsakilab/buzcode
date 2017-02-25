@@ -1,0 +1,44 @@
+  ﻿Release Note for Chronux version 2.11 
+August 12, 2014
+
+
+A. Description
+--------------
+Chronux is an open-source software package being developed for the analysis of neural data. It is a collaborative research effort based at the Mitra Lab in Cold Spring Harbor Laboratory that has grown out of the work of several groups. Chronux routines may be employed in the analysis of both point process and continuous data, ranging from preprocessing, exploratory and confirmatory analysis. Chronux is currently implemented as a Matlab toolbox. 
+
+The Chronux website at http://chronux.org/ is the central location for information about the current and all previous releases of Chronux. The home page contains links to pages for downloads, people, recent news, tutorials, various files, documentation and our discussion forum. There are also Google groups for Chronux discussion and Chronux announcements which you can join. 
+
+As an open source project released under the GNU Public License GPL v2, we welcome development, code contributions, bug reports, and discussion from the community. 
+
+
+B. Requirements 
+---------------
+Chronux has been tested and runs under Matlab releases R13 to R2008a under the Windows, Macintosh and Linux operating systems. Besides Matlab itself, Chronux requires the Matlab Signal Processing Toolbox for proper operation. The specscope utility depends upon the Matlab Data Acquisition Toolbox as well. Most of the code is written in the Matlab scripting language, with some exceptions as compiled C code integrated using Matlab mex functions.The Locfit subpackage utilizes Matlab mex functions, which are pre-compiled and included for the Windows and Linux platform. For the Mac platform recompilation of the locfit subpackage is currently necessary.
+
+
+C. Installation & Setup
+--------------------
+The code is available as a smaller zip file (without data for testing) and a larger zip file that contains testing data. The code & documentation may be downloaded from:  http://chronux.org .  To install Chronux, first unzip the zip archive into any location on your computer. Then the Matlab path must be set to include the Chronux directory and all subdirectories (recursively) contained within. All Chronux functions and help information are then available from the Matlab command line.
+
+
+D. Upgrading
+------------
+The Matlab paths to previous Chronux versions should removed. To use the newer version of Chronux follow the instructions in section C. 
+
+
+E. Changes in this release
+-----------------------
+-- 64 bit compiled version for the Mex files for locfit are now included. This was missing earlier.
+-- In spsvd, line 54 now reads tvec=1/Fs *(1:N)'; instead of the earlier tvec=(1:N)'; This is needed for correct functioning of the method. 
+-- Change lines 64 and 65 in mtspectrumc so that trials are correctly handled. 
+S=permute(mean(conj(J).*J,2),[1 3 2]);
+if trialave; S=squeeze(mean(S,2));else S=squeeze(S);end;
+ 
+
+F. Contact Information
+---------------------
+Questions or comments about can be posted on our discussion forum at http://chronux.org/forum/ (after account registration). Announcements
+are made through the google group chronux-announce.
+
+Website: http://chronux.org
+Email: hmaniar_at_gmail.com or mitra.siddhartha_at_gmail.com

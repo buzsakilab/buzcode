@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtfftpb</title>
+  <meta name="keywords" content="mtfftpb">
+  <meta name="description" content="Multi-taper fourier transform - binned point process data">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html pointbinned -->
+<h1>mtfftpb
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper fourier transform - binned point process data</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [J,Msp,Nsp]=mtfftpb(data,tapers,nfft) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper fourier transform - binned point process data
+
+ Usage:
+
+ [J,Msp,Nsp]=mtfftpb(data,tapers,nfft) - all arguments required
+ Input: 
+       data   (in form samples x channels/trials or single vector) 
+       tapers (precalculated tapers from dpss)  
+       nfft   (length of padded data)
+ Output:
+       J (fft in form frequency index x taper index x channels/trials)
+       Msp (number of spikes per sample in each channel)
+       Nsp (number of spikes in each channel)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous and binned point process data</li><li><a href="CrossSpecMatpb.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatpb(data,win,params)">CrossSpecMatpb</a>	</li><li><a href="coherencypb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypb(data1,data2,params,fscorr)">coherencypb</a>	Multi-taper coherency,cross-spectrum and individual spectra - binned point process</li><li><a href="cohmatrixpb.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpb(data,params,fscorr)">cohmatrixpb</a>	Multi-taper coherency matrix - binned point process</li><li><a href="mtdspectrumpb.html" class="code" title="function [dS,f]=mtdspectrumpb(data,phi,params)">mtdspectrumpb</a>	Multi-taper spectral derivative - binned point process</li><li><a href="mtspectrumpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumpb(data,params,fscorr)">mtspectrumpb</a>	Multi-taper spectrum - binned point process</li><li><a href="mtspectrumsegpb.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpb(data,win,params,segave,fscorr)">mtspectrumsegpb</a>	Multi-taper segmented spectrum for a univariate binned point process</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [J,Msp,Nsp]=mtfftpb(data,tapers,nfft)</a>
+0002 <span class="comment">% Multi-taper fourier transform - binned point process data</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Usage:</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% [J,Msp,Nsp]=mtfftpb(data,tapers,nfft) - all arguments required</span>
+0007 <span class="comment">% Input:</span>
+0008 <span class="comment">%       data   (in form samples x channels/trials or single vector)</span>
+0009 <span class="comment">%       tapers (precalculated tapers from dpss)</span>
+0010 <span class="comment">%       nfft   (length of padded data)</span>
+0011 <span class="comment">% Output:</span>
+0012 <span class="comment">%       J (fft in form frequency index x taper index x channels/trials)</span>
+0013 <span class="comment">%       Msp (number of spikes per sample in each channel)</span>
+0014 <span class="comment">%       Nsp (number of spikes in each channel)</span>
+0015 
+0016 <span class="keyword">if</span> nargin &lt; 3; error(<span class="string">'Need all input arguments'</span>); <span class="keyword">end</span>;
+0017 data=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data); <span class="comment">% changes data stored as a row vector to a column vector</span>
+0018 [N,C]=size(data); <span class="comment">% size of data</span>
+0019 K=size(tapers,2); <span class="comment">% size of tapers</span>
+0020 tapers=tapers(:,:,ones(1,C)); <span class="comment">% add channel indices to tapers</span>
+0021 H=fft(tapers,nfft,1); <span class="comment">% fourier transform of the tapers</span>
+0022 Nsp=sum(data,1); <span class="comment">% number of spikes in each channel</span>
+0023 Msp=Nsp'./N; <span class="comment">% mean rate for each channel</span>
+0024 meansp=Msp(:,ones(1,K),ones(1,size(H,1)));  <span class="comment">% add taper and frequency indices to meansp</span>
+0025 meansp=permute(meansp,[3,2,1]); <span class="comment">% permute to get meansp with the same dimensions as H</span>
+0026 data=data(:,:,ones(1,K));<span class="comment">% add taper indices to the data</span>
+0027 data=permute(data,[1 3 2]); <span class="comment">% permute data to be of the same dimensions as H</span>
+0028 data_proj=data.*tapers; <span class="comment">% multiply data by the tapers</span>
+0029 J=fft(data_proj,nfft,1); <span class="comment">% fft of projected data</span>
+0030 J=J-H.*meansp; <span class="comment">% subtract the dc</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

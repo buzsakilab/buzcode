@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of FlyTracker</title>
+  <meta name="keywords" content="FlyTracker">
+  <meta name="description" content="FLYTRACKER">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FTrack --><!-- menu.html functions -->
+<h1>FlyTracker
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>FLYTRACKER</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function [x, y, orientation] = FlyTracker(filename, FrameRange,NBackFrames, opt1, sqrsize,alpha, ellipse) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">FLYTRACKER
+ Usage: 
+  [x, y, orientation] = FlyTracker(filename, FrameRange, ...
+                        NBackFrames, opt1, sqrsize,...
+                        alpha, ellipse)
+
+ This function takes an input filename for a movie and tracks the position
+ of a fly from StartFrame to EndFrame.  The movie can be in any format
+ (.avi, .mpg, .mp2, etc.).  The following are a list of input parameters
+ and output variables.
+
+ Input:
+      filename:    must be the complete string of the movie filename
+      FrameRange:  range of frames to examine
+      NBackFrames: number of frames in static background, used only to
+                   find fly in first frame
+      opt1:        'neg' or 'pos'.  This multiplies the frame data by a
+                   negative sign ('neg') or not ('pos').  FindFly needs the 
+                   fly to be a bright spot, so the choice of this depends on
+                   the origional image.  If the original image is RGB, chances
+                   are that 'neg' needs to be selected.
+      sqrsize:     This is half the length of the sides of the square 
+                   around the brightest spot to be used in the CM calculation
+                   and the orientation  calculation.
+      alpha:       This is the weighting parameter for the running
+                   background.  It must be close to 1 for best results.
+                   0.9 seems like a good value for this, anything less
+                   seems to degrade SNR.  But for generalities sake, it
+                   is still a user input parameter.
+      ellipse:     parameters of the elliptical area that will be tracked
+
+ Output:
+      x,y:         The x and y locations of the fly in each frame      
+      orientation: A matrix containing the UHP and LHP body axis orientation 
+                   angles for each frame.  UHP are in the first row, LHP are in
+                   the second row.  See FlyOrient and FindFly for more
+                   details.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="FindFly.html" class="code" title="function [x, y, bodyline, sqr] = FindFly(chunk, sqrsize)">FindFly</a>	FINDFLY</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>	FRAME=GETFRAME(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>	INFO=GETINFO(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>	WORKED=NEXT(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>	WORKED=SEEK(VR,FNUM)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>	videoReader class constructor</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/getinfo.html" class="code" title="function info = getinfo(vw)">getinfo</a>	INFO=GETINFO(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>	FRAME=GETFRAME(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>	INFO=GETINFO(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>	WORKED=NEXT(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>	WORKED=SEEK(VR,FNUM)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>	videoReader class constructor</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/getinfo.html" class="code" title="function info = getinfo(vw)">getinfo</a>	INFO=GETINFO(VW)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>	FRAME=GETFRAME(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>	INFO=GETINFO(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>	WORKED=NEXT(VR)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>	WORKED=SEEK(VR,FNUM)</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>	videoReader class constructor</li><li><a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/getinfo.html" class="code" title="function info = getinfo(vw)">getinfo</a>	INFO=GETINFO(VW)</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="FTrack.html" class="code" title="function varargout = FTrack(varargin)">FTrack</a>	FTRACK</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [x, y, orientation] = FlyTracker(filename, FrameRange,</a><span class="keyword">...</span>
+0002                         NBackFrames, opt1, sqrsize,<span class="keyword">...</span>
+0003                         alpha, ellipse)
+0004 
+0005 <span class="comment">%FLYTRACKER</span>
+0006 <span class="comment">% Usage:</span>
+0007 <span class="comment">%  [x, y, orientation] = FlyTracker(filename, FrameRange, ...</span>
+0008 <span class="comment">%                        NBackFrames, opt1, sqrsize,...</span>
+0009 <span class="comment">%                        alpha, ellipse)</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% This function takes an input filename for a movie and tracks the position</span>
+0012 <span class="comment">% of a fly from StartFrame to EndFrame.  The movie can be in any format</span>
+0013 <span class="comment">% (.avi, .mpg, .mp2, etc.).  The following are a list of input parameters</span>
+0014 <span class="comment">% and output variables.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Input:</span>
+0017 <span class="comment">%      filename:    must be the complete string of the movie filename</span>
+0018 <span class="comment">%      FrameRange:  range of frames to examine</span>
+0019 <span class="comment">%      NBackFrames: number of frames in static background, used only to</span>
+0020 <span class="comment">%                   find fly in first frame</span>
+0021 <span class="comment">%      opt1:        'neg' or 'pos'.  This multiplies the frame data by a</span>
+0022 <span class="comment">%                   negative sign ('neg') or not ('pos').  FindFly needs the</span>
+0023 <span class="comment">%                   fly to be a bright spot, so the choice of this depends on</span>
+0024 <span class="comment">%                   the origional image.  If the original image is RGB, chances</span>
+0025 <span class="comment">%                   are that 'neg' needs to be selected.</span>
+0026 <span class="comment">%      sqrsize:     This is half the length of the sides of the square</span>
+0027 <span class="comment">%                   around the brightest spot to be used in the CM calculation</span>
+0028 <span class="comment">%                   and the orientation  calculation.</span>
+0029 <span class="comment">%      alpha:       This is the weighting parameter for the running</span>
+0030 <span class="comment">%                   background.  It must be close to 1 for best results.</span>
+0031 <span class="comment">%                   0.9 seems like a good value for this, anything less</span>
+0032 <span class="comment">%                   seems to degrade SNR.  But for generalities sake, it</span>
+0033 <span class="comment">%                   is still a user input parameter.</span>
+0034 <span class="comment">%      ellipse:     parameters of the elliptical area that will be tracked</span>
+0035 <span class="comment">%</span>
+0036 <span class="comment">% Output:</span>
+0037 <span class="comment">%      x,y:         The x and y locations of the fly in each frame</span>
+0038 <span class="comment">%      orientation: A matrix containing the UHP and LHP body axis orientation</span>
+0039 <span class="comment">%                   angles for each frame.  UHP are in the first row, LHP are in</span>
+0040 <span class="comment">%                   the second row.  See FlyOrient and FindFly for more</span>
+0041 <span class="comment">%                   details.</span>
+0042 
+0043 <span class="comment">% This function uses the videoReader function to input the video file into a Matlab object.</span>
+0044 <span class="comment">% Usage on videoReader and other functions in the videoIO toolbox can be</span>
+0045 <span class="comment">% found in the videoIO documentation.</span>
+0046 
+0047 <span class="comment">%Written by Dan Valente 8/8/07</span>
+0048 
+0049 <span class="comment">%Please note: Video indexes start at frame 0</span>
+0050 StartFrame = FrameRange(1);
+0051 EndFrame = FrameRange(end);
+0052 NFrames = EndFrame-StartFrame+1;
+0053 
+0054 <span class="comment">%If NBackFrames is smaller than the number of frames we want to look at,</span>
+0055 <span class="comment">% we'll just take a smaller background average using all the frames of</span>
+0056 <span class="comment">% interest.</span>
+0057 <span class="keyword">if</span> (NBackFrames &gt;= NFrames)
+0058     NBackFrames = NFrames;
+0059 <span class="keyword">end</span>
+0060 
+0061 <span class="comment">%initialize some variables</span>
+0062 x = [];
+0063 y = [];
+0064 orientUHP=[];
+0065 orientLHP=[];
+0066 
+0067 <span class="comment">%load in video object using videoReader</span>
+0068 video = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>(filename);
+0069 info = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getinfo.html" class="code" title="function info = getinfo(vr)">getinfo</a>(video);
+0070 width = info.width;
+0071 height = info.height;
+0072 
+0073 <span class="comment">%just prevents error if user wants to track to end, but enters the</span>
+0074 <span class="comment">% incorrect EndFrame (recall frame index starts at 0).</span>
+0075 <span class="keyword">if</span> (info.numFrames == EndFrame)
+0076     EndFrame = EndFrame-1;
+0077 <span class="keyword">elseif</span> (info.numFrames &lt; EndFrame)
+0078     EndFrame = info.numFrames-1;
+0079 <span class="keyword">end</span>
+0080 
+0081 <span class="comment">%seek to StartFrame for initial background calculation</span>
+0082 <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>(video, StartFrame);
+0083 
+0084 mask = ellipse.mask;
+0085 
+0086 disp(<span class="string">'Calculating background...'</span>)
+0087 background = zeros(height, width);
+0088 <span class="keyword">for</span> bframe = 1:NBackFrames; 
+0089     img = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>(video);
+0090     current = mask.*double(img(:,:,1));  <span class="comment">%just take first color matrix and mask out unwanted portions</span>
+0091     background = background + current/NBackFrames ;
+0092     <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>(video);
+0093 <span class="keyword">end</span>
+0094 flipper = 256*ones(height, width).*mask;
+0095 <span class="keyword">if</span> (strcmp(opt1,<span class="string">'neg'</span>) == 1)        <span class="comment">%make sure our fly will be a bright spot</span>
+0096     background = -background+flipper;
+0097 <span class="keyword">end</span>
+0098 
+0099 
+0100 <span class="comment">%seek to StartFrame for tracking</span>
+0101 <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/seek.html" class="code" title="function worked = seek(vr,fnum)">seek</a>(video,StartFrame);
+0102 disp(<span class="string">'Beginning tracking...'</span>)
+0103 tic
+0104 
+0105 <span class="keyword">for</span> frame = StartFrame:EndFrame
+0106         disp(num2str(frame))
+0107         img = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/getframe.html" class="code" title="function frame = getframe(vr)">getframe</a>(video);
+0108         img = mask.*double(img(:,:,1));   <span class="comment">%just take first color matrix</span>
+0109         
+0110         <span class="comment">%make sure our fly will be a bright spot</span>
+0111         <span class="keyword">if</span> (strcmp(opt1,<span class="string">'neg'</span>) == 1)   
+0112             img = -img+flipper;
+0113         <span class="keyword">elseif</span> (strcmp(opt1,<span class="string">'pos'</span>) == 1)
+0114             img = img;
+0115         <span class="keyword">end</span>
+0116          
+0117         <span class="comment">% Calculate square of difference image (to reduce noise) and track</span>
+0118         temp = (img-background).^2;
+0119               
+0120         [x_raw y_raw bodyline sqr]=<a href="FindFly.html" class="code" title="function [x, y, bodyline, sqr] = FindFly(chunk, sqrsize)">FindFly</a>(temp,sqrsize); 
+0121         
+0122         
+0123         <span class="comment">%Just in case of a false track due to objects in the video that are</span>
+0124         <span class="comment">%brighter than fly and vary over time.  We assume that these are</span>
+0125         <span class="comment">%very far away from the fly.  One may want to change the threshold</span>
+0126         <span class="comment">%from 100 pixels to something smaller, if need be.  Any reasonably</span>
+0127         <span class="comment">%large number should do, and if you choose an incorrect threshold,</span>
+0128         <span class="comment">%you can use the CleanData function to fix this.</span>
+0129         <span class="keyword">if</span> (frame~=StartFrame)
+0130             <span class="keyword">if</span> (sqrt((x_raw-x(end))^2+(y_raw-y(end))^2) &gt;= 100)
+0131                 x_raw = x(end);
+0132                 y_raw = y(end);
+0133             <span class="keyword">end</span>
+0134         <span class="keyword">end</span>
+0135         
+0136         x = [x x_raw];
+0137         y = [y y_raw];
+0138         orientUHP = [orientUHP bodyline(1)];
+0139         orientLHP = [orientLHP bodyline(2)];
+0140 <span class="comment">% %</span>
+0141 <span class="comment">%         figure(2)</span>
+0142 <span class="comment">%         imagesc(img)</span>
+0143 <span class="comment">%         colormap gray</span>
+0144 <span class="comment">%         hold on</span>
+0145 <span class="comment">%         plot(x_raw,y_raw, '.r')</span>
+0146 <span class="comment">% %</span>
+0147 <span class="comment">%</span>
+0148         <span class="comment">%grab whatever the background was before the fly got there.</span>
+0149         temp = background(sqr(1):sqr(2),sqr(3):sqr(4));
+0150         <span class="comment">%update</span>
+0151         background = alpha*background+(1-alpha)*img;
+0152         <span class="comment">%make sure we only update image outside of fly</span>
+0153         background(sqr(1):sqr(2),sqr(3):sqr(4)) = temp;
+0154        
+0155         worked = <a href="../../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/next.html" class="code" title="function worked = next(vr)">next</a>(video);
+0156         <span class="keyword">if</span> (worked == 0)
+0157             <span class="keyword">break</span>
+0158         <span class="keyword">end</span>
+0159 <span class="keyword">end</span>
+0160 disp(<span class="string">'Finished tracking.'</span>)
+0161 disp(<span class="string">'Have a lovely day.'</span>)
+0162 toc
+0163 
+0164 <span class="comment">%Now we have to make sure that the y vector is based on a coordinate</span>
+0165 <span class="comment">%system with the origin in the lower left hand corner of the square,</span>
+0166 <span class="comment">%for plotting purposes.</span>
+0167 y = height-y;
+0168 
+0169 orientation = [orientUHP;orientLHP];
+0170 
+0171 <span class="keyword">return</span>; 
+0172</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

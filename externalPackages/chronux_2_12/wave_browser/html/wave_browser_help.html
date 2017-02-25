@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN">
+<html>
+  <head>
+    <title>wave_browser help</title>
+
+<style>
+
+</style>
+  </head>
+
+  <body>
+    <h1>wave_browser help</h1>
+<p>
+<ul>
+ <li><a href="#overview">Overview of wave_browser</a></li>
+ <li><a href="#load">Loading wav files</a></li>
+ <li><a href="#navigate">Navigating a wav file</a></li>
+ <li><a href="#segment">Segmenting a wav file</a></li>
+   <ul>
+     <li>Defining a segment manually</li>
+     <li>Automatically segmenting</li>
+     <li>Saving segments to a file </li>
+     <li>Loading segments from a file</li>
+   </ul>
+
+ <li><a href="#configure">Configuring spectral parameters</a></li>
+
+ </ul>
+
+ <hr>
+
+<h2><a name="overview"/>Overview of wave_browser</h2>
+
+<p>Wave_browser is software for reading in a wav file and segmenting
+the wav file into segments. Segments can be manually defined or can be
+computed automatically. The software generates a seg.txt which defines
+the beginning and the end of each segment in the wav file.</p>
+
+<p>To assist the user in defining segments the wave_browser plots the
+wave form, the summed intensity or power, and the spectragram of the
+audio. The spectragram is computed using a multitaper approach. </p>
+
+<h2><a name="load"/>Loading wav files</a></h2>
+
+<p>In order to segment a wave file the file must be first
+loaded. Clicking the <b>Load</b> button will open the file dialog
+window. By default the file dialog will show only files having a
+".wav" extension. Wav files without the extension can also be loaded
+from this file dialog. A requirement is that the wav file be a single
+audio track (mono) and not include two tracks (stereo) or more. The
+sampling rate of the wav file can be variable. The higher the sampling
+rate the better the quality of the audio. As a standard CD quality
+audio is sampled at 44100 Hz. The software will automatically detect
+the sampling frequency. If the file is loaded successfully it will
+show three visual representations of the audio in the file.</p>
+
+<p>To load the next unsegmented wave file click the <b>Load Next</b>
+button. This feature increases the work-flow speed when a directory of
+files are being manually segmented by a user, and prevents the user
+from segmenting a wav file that already been segmented.</p>
+
+<h2><a name="view"/>Viewing the wav file</h2>
+
+<p>There are three distinct views of the wave file. Starting from the
+bottom, the bottom plot is the wave form over the time range. The
+middle plot is the spectragram which shows how intensity of different
+frequencies of sound change over time. The top view is the intensity
+of the spectragram summed at each moment in time or power. The red
+lines in the plot shows where the autosegmenter would segment the
+file. A segment is defined as where the red line is at the maximum
+intensity.  The beginning and end of the segment are demarcated by red
+vertical lines. The height of the horizontal line between segments is
+determined by the <b>Amplitude Threshold</b> entry box. </p>
+
+<p>There are three types of spectragrams that can be plotted. By
+default the <b>Spectrum Type</b> is <b>Original</b>. Often it is
+useful to compute a derivative of the original spectragram. The
+derivative can be computed in different directions, but is usually
+computed in just two directions The first direction is in terms of the
+frequency. This shows how the intensity of the original spectragram
+changes in the direction of the frequency (up and down). The second
+direction is in terms of time (left to right). The <b>Time
+Derivative</b> and <b>Frequency</b> derivative spectragrams are
+selected from the drop-down menu. In order to compute the selected
+spectragram click the <b>Plot</b> button. The derivatives of the
+spectragram are plotted in gray-scale. </p>
+
+<p>The <b>Display Window</b> entry-box controls how much of the wav file
+is plotted. This parameter is user settable in seconds. The <b>Plot
+All</b> button sets the display window to the entire duration of the
+wav file and updates the plots of the wav file. This functionality is
+useful for autosegmenting an entire wave file.</p>
+
+<img width="719" height="396" src="wave_browser-main-scaled.png">
+
+<h2><a name="navigate"/>Navigating a wav file</h2>
+
+<p>If the <b>Display Window</b> is set to less than the duration of
+the wave file to view the entire wave requires the ability to navigate
+around the wav file.  The <b>Jump</b> button moves the current display
+window forward in time. While the <b>Jump Back</b> moves the display
+window backward in time. Each button also recomputes the spectragram.
+For forward and backward jumps the display window is not allowed to
+exceed the duration of the wave file. In the forward case the end of
+the display window is set to the end of the file, and in the back case
+the beginning of the window is set to the beginning of the wave
+file.</p>
+
+<p>Depending on the speed of the processor and the size of the display
+window navigating a wave file can be time consuming. At each jump the
+spectragram is recomputed.  If the user is not going to change the
+parameters during navigation the <b>Precompute</b> toggle button can
+speed up the process of navigation. The <b>Precompute</b> button
+computes the spectragram for the entire duration of the file and
+caches the results in memory. Rather than recomputing the spectragram
+for each jump the stored copy is accessed. A precomputed spectragram can use a
+large amount of memory. How large a wav file can be computed is
+determined by the step size of the spectragram and the amount of physical
+memory available. In precompute mode changing the spectral parameters
+are not allowed. Precompute mode can be exited by clicking the toggle
+button for a second time. Exiting precompute mode will release the
+memory held to store the entire spectragram.</p>
+
+
+<h2><a name="segment"/>Segmenting a wav file</h2>
+
+<p>Wave files can be segmented manually and automatically, or using a
+ combination of
+both methods. To begin segmenting click the <b>Segment on</b> toggle button.
+The user is now in segment mode. To define where a segment starts click on the middle plot where the segment begins. This will place a vertical time marker on the spectragram. At this point the location of the time maker can be adjusted by clicking another location. Once the time marker is placed correct click the <b>Start</p>. The time marker will change to a start time marker which is thicker in width.  Now the user can set a second time marker to demarkate where the segment stops.  The <b>Stop</b> button will change the time marker to a stop marker. An X is drawn to show that the segment is now defined. The user can now define additional segments.
+
+Segments can be saved by using the <b>Save</b> button. This will generate a *.seg.txt file. Clicking the <b>Cancel</b> button will now allow you to exit segment mode.   Segments defined previously can be loaded by clicking the <b>Load</b> button. 
+
+<h2><a name="configure"/>Configuring spectral parameters</a></h2>
+
+<br>
+<!-- Created: Mon May 15 15:30:19 EDT 2006 -->
+<!-- hhmts start -->
+Last modified: Wed May 24 16:02:41 EDT 2006
+<!-- hhmts end -->
+    </body>
+</html>

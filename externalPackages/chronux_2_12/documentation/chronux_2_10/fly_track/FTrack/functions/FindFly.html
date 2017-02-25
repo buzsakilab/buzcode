@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of FindFly</title>
+  <meta name="keywords" content="FindFly">
+  <meta name="description" content="FINDFLY">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # FTrack --><!-- menu.html functions -->
+<h1>FindFly
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>FINDFLY</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="box"><strong>function [x, y, bodyline, sqr] = FindFly(chunk, sqrsize) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">FINDFLY
+ 
+ Usage:
+   [x, y, bodyline, sqr] = FindFly(chunk, sqrsize)
+
+ This function takes in a single image matrix (chunk) and finds the fly. 
+ First, it finds the brightest pixel in the image, then grabs a square 
+ of size 2*sqrsize pixels around the fly.  The center of mass of this 
+ square is calculated (mass = pixel level) and that is returned as the 
+ fly position. The variable 'sqr' can be returned, which contains the 
+ limits defining a bounding box around the fly.
+
+ This function also returns the body axis orientation vector. The
+ body axis is calcuated using FlyOrient.  Fly Orient returns the bodyline
+ vector, which is a 2-element vector containing two angles, one in the upper
+ half plane, and one in the lower half plane. These angles (which are 
+ complementary) define the body axis. The noise threshold required for
+ FlyOrient is currently fixed at 0.2.  If you wish to change this
+ threshold, you must go into the FindFly.m file and hard-code a
+ different value.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="FlyOrient.html" class="code" title="function orientation  = FlyOrient(subset_frame, threshold)">FlyOrient</a>	FLYORIENT</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../matlabicon.gif)">
+<li><a href="FlyTracker.html" class="code" title="function [x, y, orientation] = FlyTracker(filename, FrameRange,NBackFrames, opt1, sqrsize,alpha, ellipse)">FlyTracker</a>	FLYTRACKER</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [x, y, bodyline, sqr] = FindFly(chunk, sqrsize)</a>
+0002 
+0003 <span class="comment">%FINDFLY</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Usage:</span>
+0006 <span class="comment">%   [x, y, bodyline, sqr] = FindFly(chunk, sqrsize)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% This function takes in a single image matrix (chunk) and finds the fly.</span>
+0009 <span class="comment">% First, it finds the brightest pixel in the image, then grabs a square</span>
+0010 <span class="comment">% of size 2*sqrsize pixels around the fly.  The center of mass of this</span>
+0011 <span class="comment">% square is calculated (mass = pixel level) and that is returned as the</span>
+0012 <span class="comment">% fly position. The variable 'sqr' can be returned, which contains the</span>
+0013 <span class="comment">% limits defining a bounding box around the fly.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% This function also returns the body axis orientation vector. The</span>
+0016 <span class="comment">% body axis is calcuated using FlyOrient.  Fly Orient returns the bodyline</span>
+0017 <span class="comment">% vector, which is a 2-element vector containing two angles, one in the upper</span>
+0018 <span class="comment">% half plane, and one in the lower half plane. These angles (which are</span>
+0019 <span class="comment">% complementary) define the body axis. The noise threshold required for</span>
+0020 <span class="comment">% FlyOrient is currently fixed at 0.2.  If you wish to change this</span>
+0021 <span class="comment">% threshold, you must go into the FindFly.m file and hard-code a</span>
+0022 <span class="comment">% different value.</span>
+0023 
+0024 
+0025 <span class="comment">% Written by Dan Valente</span>
+0026 <span class="comment">% 28 September 2006</span>
+0027 
+0028 noise_thresh = 0.2;    <span class="comment">% for the FlyOrient function</span>
+0029 
+0030 brightest_pixel_level = max(max(chunk));
+0031 [brightpix_row brightpix_col] = find(chunk &gt;= (brightest_pixel_level));
+0032      
+0033 <span class="comment">%just in case more spots have the same brightness, only take one...</span>
+0034 width = length(chunk(1,:));
+0035 height = length(chunk(:,1));
+0036 
+0037 row_pos = brightpix_row(1);
+0038 col_pos = brightpix_col(1);
+0039         
+0040 y = row_pos;   
+0041 x = col_pos;
+0042  
+0043         
+0044 <span class="comment">%take subset of pixels around fly.  need to take enough to ensure</span>
+0045 <span class="comment">%entire fly is captured.</span>
+0046 row_lower_limit = row_pos-sqrsize;
+0047 row_upper_limit = row_pos+sqrsize;
+0048 <span class="keyword">if</span> (row_lower_limit &lt;= 0)
+0049     row_lower_limit = 1;
+0050 <span class="keyword">end</span>
+0051 <span class="keyword">if</span> (row_upper_limit &gt;= height )
+0052     row_upper_limit = height;
+0053 <span class="keyword">end</span>
+0054         
+0055 col_lower_limit = col_pos-sqrsize;
+0056 col_upper_limit = col_pos+sqrsize;
+0057 <span class="keyword">if</span> (col_lower_limit &lt;= 0)
+0058     col_lower_limit = 1;
+0059 <span class="keyword">end</span>
+0060 <span class="keyword">if</span> (col_upper_limit &gt;= width )
+0061     col_upper_limit = width;
+0062 <span class="keyword">end</span>
+0063 
+0064 sqr = [row_lower_limit row_upper_limit col_lower_limit col_upper_limit];
+0065 
+0066 <span class="comment">%Now grab center of mass of fly (i.e. CM of subset image pixel intensities)</span>
+0067 temp_mat = chunk(row_lower_limit:row_upper_limit,col_lower_limit:col_upper_limit);
+0068 
+0069 x2 = [1:length(temp_mat(1,:))]';
+0070 y2 = [1:length(temp_mat(:,1))]';
+0071 total = sum(sum(temp_mat));
+0072 x = sum(temp_mat*x2)/total+col_lower_limit-1;
+0073 y = sum(temp_mat'*y2)/total+row_lower_limit-1;
+0074 
+0075 
+0076 <span class="comment">% Find Fly orientation from this frame (in radians)</span>
+0077 bodyline = <a href="FlyOrient.html" class="code" title="function orientation  = FlyOrient(subset_frame, threshold)">FlyOrient</a>(temp_mat, noise_thresh);  
+0078 
+0079 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

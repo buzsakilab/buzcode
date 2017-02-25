@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of quadinv</title>
+  <meta name="keywords" content="quadinv">
+  <meta name="description" content="calculates the quadratic inverse eigenvectors">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>quadinv
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>calculates the quadratic inverse eigenvectors</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [V,E] = quadinv(N,NW) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> calculates the quadratic inverse eigenvectors
+
+ Input
+ N: number of samples
+ NW: time-bandwidth product
+
+ Output
+ V: The quadratic inverse eigenvectors
+ E: the quadratic inverse eigenvalues</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="quadcof.html" class="code" title="function [A,sumV] = quadcof(N,NW,order)">quadcof</a>	Helper function to calculate the nonstationary quadratic inverse matrix</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [V,E] = quadinv(N,NW)</a>
+0002 
+0003 <span class="comment">% calculates the quadratic inverse eigenvectors</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Input</span>
+0006 <span class="comment">% N: number of samples</span>
+0007 <span class="comment">% NW: time-bandwidth product</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Output</span>
+0010 <span class="comment">% V: The quadratic inverse eigenvectors</span>
+0011 <span class="comment">% E: the quadratic inverse eigenvalues</span>
+0012 
+0013 
+0014 x = 0:N-1;
+0015 indx = find(x);
+0016 y = ones(size(x))*(2*NW/N)^2;
+0017 
+0018 y(indx) = (sin(2*pi*NW*x(indx)/N)./(pi*x(indx))).^2;
+0019 
+0020 M = toeplitz(y);
+0021 [C,D] = eig(N*M);
+0022 
+0023 tmp = diag(D);
+0024 
+0025 K = 4*NW;
+0026 
+0027 V = sqrt(N)*C(:,N:-1:N-K+1);
+0028 
+0029 E = tmp(N:-1:N-K+1);
+0030 
+0031 <span class="keyword">for</span> ii =1:K
+0032   <span class="keyword">if</span>(sum((N-1-2*x)'.*V(:,ii))&lt;0)
+0033     V(:,ii) = flipud(V(:,ii));
+0034   <span class="keyword">end</span>;
+0035 <span class="keyword">end</span>;
+0036 
+0037 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

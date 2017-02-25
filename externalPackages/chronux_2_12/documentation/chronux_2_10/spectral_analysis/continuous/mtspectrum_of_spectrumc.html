@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of mtspectrum_of_spectrumc</title>
+  <meta name="keywords" content="mtspectrum_of_spectrumc">
+  <meta name="description" content="Multi-taper segmented, second spectrum (spectrum of the log spectrum) for a continuous process">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html continuous -->
+<h1>mtspectrum_of_spectrumc
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Multi-taper segmented, second spectrum (spectrum of the log spectrum) for a continuous process</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [SS,tau]=mtspectrum_of_spectrumc(data,win,tapers2spec,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Multi-taper segmented, second spectrum (spectrum of the log spectrum) for a continuous process
+ This routine computes the second spectrum by explicitly evaluating the
+ Fourier transform (since the spectrum is symmetric in frequency, it uses
+ a cosine transform)
+
+ Usage:
+
+ [SS,tau]=mtspectrum_of_spectrumc(data,win,tapers2spec,params)
+ Input: 
+ Note units have to be consistent. See chronux.m for more information.
+       data (single channel) -- required
+       win  (duration of the segments) - required. 
+       tapers2spec (tapers used for the spectrum of spectrum computation) -
+       required in the form [use TW K] - Note that spectrum of the
+       spectrum involves computing two Fourier transforms. While the first
+       transform (of the original data) is always computed using the
+       multi-taper method, the current routine allows the user to specify 
+       whether or not to use this method for the second transform. use=1
+       means use tapers, use=anything other than 1 means do not use the
+       multitaper method. If use=1, then tapers2spec controls the
+       smoothing for the second Fourier transform. Otherwise, a direct
+       Fourier transform is computed.
+       params: structure with fields tapers, pad, Fs, fpass, err, trialave
+       - optional
+           tapers : precalculated tapers from dpss or in the one of the following
+                    forms: 
+                    (1) A numeric vector [TW K] where TW is the
+                        time-bandwidth product and K is the number of
+                        tapers to be used (less than or equal to
+                        2TW-1). 
+                    (2) A numeric vector [W T p] where W is the
+                        bandwidth, T is the duration of the data and p 
+                        is an integer such that 2TW-p tapers are used. In
+                        this form there is no default i.e. to specify
+                        the bandwidth, you have to specify T and p as
+                        well. Note that the units of W and T have to be
+                        consistent: if W is in Hz, T must be in seconds
+                        and vice versa. Note that these units must also
+                        be consistent with the units of params.Fs: W can
+                        be in Hz if and only if params.Fs is in Hz.
+                        The default is to use form 1 with TW=3 and K=5
+
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+           Fs   (sampling frequency) - optional. Default 1.
+           fpass    (frequency band to be used in the calculation in the form
+                                   [fmin fmax])- optional. 
+                                   Default all frequencies between 0 and
+                                   Fs/2
+ Output:
+       SS       (second spectrum in form frequency x segments x trials x channels 
+                if segave=0; in the form frequency x trials x channels if segave=1)
+       tau      (frequencies)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="createdatamatc.html" class="code" title="function data=createdatamatc(data,E,Fs,win)">createdatamatc</a>	Helper function to create an event triggered matrix from univariate</li><li><a href="mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>	Multi-taper spectrum - continuous process</li><li><a href="mtspectrumsegc.html" class="code" title="function [S,f,varS,C,Serr]=mtspectrumsegc(data,win,params,segave)">mtspectrumsegc</a>	Multi-taper segmented spectrum for a univariate continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>	Helper routine to transform 1d arrays into column vectors that are needed</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>	Helper function that gets the frequency grid associated with a given fft based computation</li><li><a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>	Helper function to convert structure params to variables used by the</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [SS,tau]=mtspectrum_of_spectrumc(data,win,tapers2spec,params)</a>
+0002 <span class="comment">% Multi-taper segmented, second spectrum (spectrum of the log spectrum) for a continuous process</span>
+0003 <span class="comment">% This routine computes the second spectrum by explicitly evaluating the</span>
+0004 <span class="comment">% Fourier transform (since the spectrum is symmetric in frequency, it uses</span>
+0005 <span class="comment">% a cosine transform)</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Usage:</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% [SS,tau]=mtspectrum_of_spectrumc(data,win,tapers2spec,params)</span>
+0010 <span class="comment">% Input:</span>
+0011 <span class="comment">% Note units have to be consistent. See chronux.m for more information.</span>
+0012 <span class="comment">%       data (single channel) -- required</span>
+0013 <span class="comment">%       win  (duration of the segments) - required.</span>
+0014 <span class="comment">%       tapers2spec (tapers used for the spectrum of spectrum computation) -</span>
+0015 <span class="comment">%       required in the form [use TW K] - Note that spectrum of the</span>
+0016 <span class="comment">%       spectrum involves computing two Fourier transforms. While the first</span>
+0017 <span class="comment">%       transform (of the original data) is always computed using the</span>
+0018 <span class="comment">%       multi-taper method, the current routine allows the user to specify</span>
+0019 <span class="comment">%       whether or not to use this method for the second transform. use=1</span>
+0020 <span class="comment">%       means use tapers, use=anything other than 1 means do not use the</span>
+0021 <span class="comment">%       multitaper method. If use=1, then tapers2spec controls the</span>
+0022 <span class="comment">%       smoothing for the second Fourier transform. Otherwise, a direct</span>
+0023 <span class="comment">%       Fourier transform is computed.</span>
+0024 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass, err, trialave</span>
+0025 <span class="comment">%       - optional</span>
+0026 <span class="comment">%           tapers : precalculated tapers from dpss or in the one of the following</span>
+0027 <span class="comment">%                    forms:</span>
+0028 <span class="comment">%                    (1) A numeric vector [TW K] where TW is the</span>
+0029 <span class="comment">%                        time-bandwidth product and K is the number of</span>
+0030 <span class="comment">%                        tapers to be used (less than or equal to</span>
+0031 <span class="comment">%                        2TW-1).</span>
+0032 <span class="comment">%                    (2) A numeric vector [W T p] where W is the</span>
+0033 <span class="comment">%                        bandwidth, T is the duration of the data and p</span>
+0034 <span class="comment">%                        is an integer such that 2TW-p tapers are used. In</span>
+0035 <span class="comment">%                        this form there is no default i.e. to specify</span>
+0036 <span class="comment">%                        the bandwidth, you have to specify T and p as</span>
+0037 <span class="comment">%                        well. Note that the units of W and T have to be</span>
+0038 <span class="comment">%                        consistent: if W is in Hz, T must be in seconds</span>
+0039 <span class="comment">%                        and vice versa. Note that these units must also</span>
+0040 <span class="comment">%                        be consistent with the units of params.Fs: W can</span>
+0041 <span class="comment">%                        be in Hz if and only if params.Fs is in Hz.</span>
+0042 <span class="comment">%                        The default is to use form 1 with TW=3 and K=5</span>
+0043 <span class="comment">%</span>
+0044 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0045 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0046 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0047 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0048 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0049 <span class="comment">%                       Defaults to 0.</span>
+0050 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0051 <span class="comment">%           fpass    (frequency band to be used in the calculation in the form</span>
+0052 <span class="comment">%                                   [fmin fmax])- optional.</span>
+0053 <span class="comment">%                                   Default all frequencies between 0 and</span>
+0054 <span class="comment">%                                   Fs/2</span>
+0055 <span class="comment">% Output:</span>
+0056 <span class="comment">%       SS       (second spectrum in form frequency x segments x trials x channels</span>
+0057 <span class="comment">%                if segave=0; in the form frequency x trials x channels if segave=1)</span>
+0058 <span class="comment">%       tau      (frequencies)</span>
+0059 <span class="keyword">if</span> nargin &lt; 3; error(<span class="string">'Need data,segment duration and taper information'</span>); <span class="keyword">end</span>;
+0060 <span class="keyword">if</span> nargin &lt; 4 ; params=[]; <span class="keyword">end</span>;
+0061 [tapers,pad,Fs,fpass,err,trialave,params]=<a href="../../../chronux_2_10/spectral_analysis/helper/getparams.html" class="code" title="function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)">getparams</a>(params); 
+0062 [N,Ntr,NC]=size(data);
+0063 <span class="keyword">if</span> Ntr==1; error(<span class="string">'cannot compute second spectrum with just one trial'</span>); <span class="keyword">end</span>;
+0064 dt=1/Fs; <span class="comment">% sampling interval</span>
+0065 T=N*dt; <span class="comment">% length of data in seconds</span>
+0066 E=0:win:T-win; <span class="comment">% fictitious event triggers</span>
+0067 datatmp=<a href="createdatamatc.html" class="code" title="function data=createdatamatc(data,E,Fs,win)">createdatamatc</a>(data(:,1,1),E,Fs,[0 win]); <span class="comment">% segmented data</span>
+0068 Ninseg=size(datatmp,1); <span class="comment">% number of samples in segments</span>
+0069 nfft=max(2^(nextpow2(Ninseg)+pad),Ninseg);
+0070 [f,findx]=<a href="../../../chronux_2_10/spectral_analysis/helper/getfgrid.html" class="code" title="function [f,findx]=getfgrid(Fs,nfft,fpass)">getfgrid</a>(Fs,nfft,fpass); 
+0071 NF=length(findx);
+0072 S=zeros(NF,Ntr,NC);
+0073 <span class="keyword">for</span> nc=1:NC;
+0074     <span class="keyword">for</span> ntr=1:Ntr;
+0075         datatmp=<a href="../../../chronux_2_10/spectral_analysis/helper/change_row_to_column.html" class="code" title="function data=change_row_to_column(data)">change_row_to_column</a>(data(:,ntr,nc));
+0076         s=<a href="mtspectrumsegc.html" class="code" title="function [S,f,varS,C,Serr]=mtspectrumsegc(data,win,params,segave)">mtspectrumsegc</a>(datatmp,win,params,1);
+0077         S(:,ntr,nc)=s;
+0078     <span class="keyword">end</span>
+0079 <span class="keyword">end</span>;
+0080 Sm=mean(S,2);
+0081 <span class="keyword">if</span> use==1;
+0082    params.tapers=tapers2spec;
+0083    params.Fs=1/(f(2)-f(1));
+0084    params.fpass=[0 params.Fs/2];
+0085 <span class="keyword">else</span>;
+0086    tau=[0:NF-1]/max(f);
+0087    cosinefunc=cos(2*pi*f'*tau);
+0088 <span class="keyword">end</span>;
+0089 
+0090 <span class="keyword">for</span> nc=1:NC;
+0091     <span class="keyword">for</span> ntr=1:Ntr;
+0092         s=S(:,ntr,nc)./Sm(:,nc);
+0093         s=log(s);
+0094         <span class="keyword">if</span> use==1;
+0095             sflip=flipdim(s,1);
+0096             s=[sflip(1:NF-1);s];
+0097             [ss,tau]=<a href="mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>(s,params);
+0098             SS(:,ntr,nc)=ss;
+0099         <span class="keyword">else</span>;
+0100             s=repmat(s,[1 NF]).*cosinefunc;
+0101     <span class="comment">%         subplot(221); plot(s(:,1));</span>
+0102     <span class="comment">%         subplot(222); plot(s(:,10));</span>
+0103     <span class="comment">%         subplot(223); plot(s(:,100));</span>
+0104     <span class="comment">%         subplot(224); plot(s(:,120));</span>
+0105     <span class="comment">%         pause</span>
+0106             s=trapz(f,s,1)';
+0107             ss=s.*conj(s);
+0108 <span class="comment">%         plot(tau,s)</span>
+0109 <span class="comment">%         pause</span>
+0110         <span class="keyword">end</span>
+0111         SS(:,ntr,nc)=ss;
+0112     <span class="keyword">end</span>
+0113 <span class="keyword">end</span>;
+0114 SS=mean(SS,2);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

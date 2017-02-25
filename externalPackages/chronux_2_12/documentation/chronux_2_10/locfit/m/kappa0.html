@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of kappa0</title>
+  <meta name="keywords" content="kappa0">
+  <meta name="description" content="Compute the constants for `tube-formula' based simultaneous">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html m -->
+<h1>kappa0
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Compute the constants for `tube-formula' based simultaneous</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function kap=kappa0(x,y,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Compute the constants for `tube-formula' based simultaneous
+ confidence bands.
+
+ Works for regression models only. Density estimation problems
+ should be converted to counts, and use poisson regression
+ 'family','poisson'.
+
+ Essentially, this is a front-end to locfit, and so all optional
+ arguments to locfit (eg, smoothing parameters) can be provided.
+
+ To compute (or plot) the confidence bands, provide the output
+ of the kappa0() function as the 'kappa' argument to a
+ predict() or lfband() call.
+
+
+ Example:
+
+ load ethanol;
+ fit = locfit(E,NOx,'alpha',0.5)
+ kap = kappa0(E,NOx,'alpha',0.5)  % give same arguments!
+ lfplot(fit)
+ lfband(fit,'kappa',kap)     % plot the simultaneous bands
+ z = predict(fit,[0.6 0.7 0.8]','kappa',kap,'band','g')
+ z{3}                        % evaluate the bands.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="scb.html" class="code" title="function z=scb(x,y,varargin)">scb</a>	Simultaneous Confidence Bands</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function kap=kappa0(x,y,varargin)</a>
+0002 
+0003 <span class="comment">% Compute the constants for `tube-formula' based simultaneous</span>
+0004 <span class="comment">% confidence bands.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Works for regression models only. Density estimation problems</span>
+0007 <span class="comment">% should be converted to counts, and use poisson regression</span>
+0008 <span class="comment">% 'family','poisson'.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Essentially, this is a front-end to locfit, and so all optional</span>
+0011 <span class="comment">% arguments to locfit (eg, smoothing parameters) can be provided.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% To compute (or plot) the confidence bands, provide the output</span>
+0014 <span class="comment">% of the kappa0() function as the 'kappa' argument to a</span>
+0015 <span class="comment">% predict() or lfband() call.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Example:</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% load ethanol;</span>
+0021 <span class="comment">% fit = locfit(E,NOx,'alpha',0.5)</span>
+0022 <span class="comment">% kap = kappa0(E,NOx,'alpha',0.5)  % give same arguments!</span>
+0023 <span class="comment">% lfplot(fit)</span>
+0024 <span class="comment">% lfband(fit,'kappa',kap)     % plot the simultaneous bands</span>
+0025 <span class="comment">% z = predict(fit,[0.6 0.7 0.8]','kappa',kap,'band','g')</span>
+0026 <span class="comment">% z{3}                        % evaluate the bands.</span>
+0027 
+0028 fit = <a href="locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>(x,y,<span class="string">'module'</span>,<span class="string">'kappa'</span>,<span class="string">'ev'</span>,<span class="string">'grid'</span>,<span class="string">'mg'</span>,20,varargin{:});
+0029 z = fit.fit_points.kappa;
+0030 d = size(fit.data.x,2);
+0031 kap = z(1:(d+1));
+0032 
+0033 <span class="keyword">return</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

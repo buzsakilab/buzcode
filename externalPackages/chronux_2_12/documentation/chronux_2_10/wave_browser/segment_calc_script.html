@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of segment_calc_script</title>
+  <meta name="keywords" content="segment_calc_script">
+  <meta name="description" content="segment_calc_script">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html wave_browser -->
+<h1>segment_calc_script
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>segment_calc_script</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> segment_calc_script</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% segment_calc_script</span>
+0002 
+0003 tmp=dir;
+0004 nfiles=length(tmp);
+0005 names=cell(nfiles,1); <span class="keyword">for</span> j=1:nfiles, names(j)=cellstr(tmp(j).name); <span class="keyword">end</span>; 
+0006 wavnames=regexp(names,<span class="string">'.*wav$'</span>,<span class="string">'match'</span>);
+0007 ind=~cellfun(<span class="string">'isempty'</span>,wavnames);
+0008 wavnames=wavnames(ind);
+0009 segnames=regexp(names,<span class="string">'.*wav.seg.txt$'</span>,<span class="string">'match'</span>);
+0010 ind=~cellfun(<span class="string">'isempty'</span>,segnames);
+0011 segnames=segnames(ind);
+0012 
+0013 nwaves=length(wavnames);
+0014 
+0015 movingwin=[0.01 0.005];
+0016 params.tapers=[2 3]; params.pad=1; params.Fs=44100; params.fpass=[5000 20000];
+0017 F1=[]; F2=[]; F3=[]; F4=[]; F0=[]; C1=[]; C2=[]; 
+0018 <span class="keyword">for</span> i=1:nwaves, 
+0019     i
+0020 <span class="comment">%    data=wavread(wavnames{i}{1});</span>
+0021 <span class="comment">%    [Feat S t f]= acoustic_features_MB(data,movingwin,params);</span>
+0022     sname=[wavnames{i}{1} <span class="string">'.sp'</span>];
+0023     load(char(sname),<span class="string">'-mat'</span>);
+0024     C=fft(log(S),[],2); cep=real(C); C1=[C1 cep(:,2)']; C2=[C2 cep(:,3)'];  
+0025     x0=log(mean(S,2))/log(10)*10; x0=x0-max(x0); F0=[F0 x0'];
+0026     x=log(Feat(:,1)); w=Feat(:,2)-x; x=x/log(10)*10; x=x-max(x);  
+0027     F1=[F1 x'];
+0028     F2=[F2 w'];
+0029     F3=[F3 Feat(:,3)'];
+0030     tmp=load(char(segnames{i}(1))); sz=size(tmp);
+0031     seg=zeros(length(t),1); 
+0032     <span class="keyword">if</span> sz(1)&gt;0, 
+0033         <span class="keyword">for</span> j=1:sz(1), ind=find((t&gt;tmp(j,1)) &amp; (t&lt;tmp(j,2))); seg(ind)=1; <span class="keyword">end</span>
+0034     <span class="keyword">end</span>; 
+0035     F4=[F4 seg'];
+0036 <span class="keyword">end</span>
+0037 tb=find(F4&lt;1); ts=find(F4&gt;0);  
+0038 F5=zeros(length(F0),1);
+0039 F5(find(F0&gt;-20))=1.1;
+0040 F6=medfilt1(F5,5);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

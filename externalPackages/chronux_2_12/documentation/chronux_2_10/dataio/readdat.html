@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of readdat</title>
+  <meta name="keywords" content="readdat">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../menu.html chronux_2_10 --><!-- menu.html dataio -->
+<h1>readdat
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [data,sampling]=readdat </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ function for reading *.mat, *.wav and *.au files
+ *.mat files have to contain variables data and sampling in order for the
+ returns to work properly</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [data,sampling]=readdat</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% function for reading *.mat, *.wav and *.au files</span>
+0004 <span class="comment">% *.mat files have to contain variables data and sampling in order for the</span>
+0005 <span class="comment">% returns to work properly</span>
+0006 <span class="comment">%</span>
+0007 [fname,pname]=uigetfile(<span class="string">'*.*'</span>);
+0008 strindex=findstr(fname,<span class="string">'.plx'</span>);
+0009 <span class="keyword">if</span> ~isempty(strindex);
+0010    error(<span class="string">'This file format can be read with Plexon supplied routines in folder ReadingPLXandDDTfilesinMatlab'</span>);
+0011 <span class="keyword">end</span>;
+0012 strindex=findstr(fname,<span class="string">'.ddt'</span>);
+0013 <span class="keyword">if</span> ~isempty(strindex);
+0014    error(<span class="string">'This file format can be read with Plexon supplied routines in folder ReadingPLXandDDTfilesinMatlab'</span>);
+0015 <span class="keyword">end</span>;
+0016 strindex=findstr(fname,<span class="string">'.nex'</span>);
+0017 <span class="keyword">if</span> ~isempty(strindex);
+0018    error(<span class="string">'This file format can be read with Plexon supplied routines in folder HowToReadNexFilesInMatlab'</span>);
+0019 <span class="keyword">end</span>;
+0020 strindex=findstr(fname,<span class="string">'.mat'</span>);
+0021 <span class="keyword">if</span> ~isempty(strindex);
+0022    eval([<span class="string">'load '</span> pname fname]);
+0023 <span class="keyword">end</span>;
+0024 strindex=findstr(fname,<span class="string">'.wav'</span>);
+0025 <span class="keyword">if</span> ~isempty(strindex);
+0026    filename=[pname fname];
+0027    [data,sampling]=wavread(filename);
+0028 <span class="keyword">end</span>;
+0029 strindex=findstr(fname,<span class="string">'.au'</span>);
+0030 <span class="keyword">if</span> ~isempty(strindex);
+0031    filename=[pname fname];
+0032    [data,sampling]=auread(filename);
+0033 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

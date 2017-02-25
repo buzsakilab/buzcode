@@ -1,0 +1,86 @@
+This file contains suggestions for things that may be added in future 
+versions of the library.
+
+A handy command to search for TODO items in the source code is:
+  grep -r TODO * | grep --invert-match '\.svn' | grep --invert-match tracker | grep --invert-match 'TODO\.txt' | grep --invert-match '~:'
+  
+Win64:
+  Try it out on 64-bit Vista and/or XP Pro with 64-bit Matlab.  It 
+  should work fine, even if only a few codecs exist (xvid and wmv3/vc1
+  might be the only useful ones).
+
+options struct for constructors:
+  Allow codec params to be supplied as a struct in videoReader, 
+  videoWriter constructors.  Counter-argument: this might be a bad idea 
+  because it might be tempting to use @videoWriter/getinfo's output and 
+  forget to change the filename, thus overwriting previous video files.
+
+get/set functions:
+  Consider making generic @videoReader/get.m and @videoWriter/get.m 
+  functions that work like standard Matlab getters.
+
+codec metadata:
+  Enhance videoWriter([], 'codecs') to return friendly names and/or other 
+  useful information (at least on Windows).  To do so, have 
+  OVideoManager::getcodecs return a 
+    map<CodecName, map<DetailFieldName,DetailFieldValue> > 
+  where CodecName, DetailFieldName, and DetailFieldValue are all strings.  
+  To use the return result on Windows, do something like:
+    getcodecs()["xvid"]["FriendlyName"] // returns "XviD MPEG-4 Codec" on Win32
+
+get defaults:  
+  Implement a way of getting the default values for videoWriter constructor
+  parameters.  Perhaps the solution is to do the bulk of the parsing in 
+  Matlab and pass a fixed options structure to C++?  
+
+colorspaces:
+  Allow different colorspaces, e.g. YCC and not just RGB.  This is useful 
+  if, for example, the user wants to do image processing in the YCC domain 
+  instead of RGB.
+  
+seeking precision:
+  Allow the user to control precise versus fast seeks where applicable when
+  reading videos.  Currently ffmpeg is always precise (is there an API for
+  fast seeks?) and DirectShow is fast for long and backward seeks but precise
+  for short forward seeks (less than 5 seconds ahead).
+  
+buffering:
+  Consider doing decoder prefetching by using a background thread to keep 
+  a buffer of the next n decoded frames for videoReader and keeping a 
+  buffer for encoding frames with videoWriter.  This should allow much 
+  better throughput on multicore systems.  The buffer size should be a 
+  user-settable parameter to the constructor at very least.  The user 
+  should also be allowed to revert to the current synchronous mode.  
+  
+SampleGrabber:
+  On Windows, it might be worth taking a close look at 
+     [DX9SDK]\Samples\C++\DirectShow\Filters\Grabber\grabber_text.txt
+  for a different, more powerful method of sample grabbing.
+  
+DirectShowPopen2:
+  Provide a DirectShow plugin where the mex file runs in 64-bit mode but the
+  server process runs in 32-bit mode.  This would allow 64-bit Matlab to take
+  advantage of 32-bit codecs.
+
+audio:
+  Add support for audio.  This will probably require a lot of extra work.
+  
+avifile/xine support:
+  Recreate avifile plugins for 32-bit Linux.  Note that support for avifile 
+  was removed because:
+    1) it's hard to build (requires modifying avifile's source code since 
+       it's hard for avifile to stay in sync with ffmpeg API changes)
+    2) by now (8 Mar 2007), there are few things that avifile does that 
+       ffmpeg can't do natively.
+    3) avifile likes to write to stdout, and this can't be fixed without 
+       modifying the source code (the library initializes itself and prints 
+       logger messages before the user has a chance of disabling the 
+       logger).  We could return to the old solution of having 
+       readMessageHeader ignore any text before a valid header, but doing 
+       so makes it more complicated.
+  Unless there's a really good reason to resurrect the avifile plugin, it 
+  will likely not happen.  If ffmpeg proves to not be powerful enough, it
+  might be better to make a xine plugin.  The xine media player's backend 
+  uses a library that looks pretty clean.  MPlayer doesn't really have a 
+  clean backend, so wrapping it up would be extremely challenging and 
+  brittle to its frequent code changes.

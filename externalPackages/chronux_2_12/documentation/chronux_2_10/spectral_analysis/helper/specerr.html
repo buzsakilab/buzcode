@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of specerr</title>
+  <meta name="keywords" content="specerr">
+  <meta name="description" content="Function to compute lower and upper confidence intervals on the spectrum">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html helper -->
+<h1>specerr
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Function to compute lower and upper confidence intervals on the spectrum</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function Serr=specerr(S,J,err,trialave,numsp) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Function to compute lower and upper confidence intervals on the spectrum 
+ Usage: Serr=specerr(S,J,err,trialave,numsp)
+ Outputs: Serr (Serr(1,...) - lower confidence level, Serr(2,...) upper confidence level)
+
+ Inputs:
+ S - spectrum
+ J - tapered fourier transforms 
+ err - [errtype p] (errtype=1 - asymptotic estimates; errchk=2 - Jackknife estimates; 
+                   p - p value for error estimates)
+ trialave - 0: no averaging over trials/channels
+            1 : perform trial averaging
+ numsp    - number of spikes in each channel. specify only when finite
+            size correction required (and of course, only for point
+            process data)
+
+ Outputs:
+ Serr - error estimates. Only for err(1)&gt;=1. If err=[1 p] or [2 p] Serr(...,1) and Serr(...,2)
+ contain the lower and upper error bars with the specified method.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>	Multi-taper spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumc_unequal_length_trials.html" class="code" title="function [ S, f, Serr ]= mtspectrumc_unequal_length_trials( data, movingwin, params, sMarkers )">mtspectrumc_unequal_length_trials</a>	This routine computes the multi-taper spectrum for a given set of unequal length segments. It is</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumsegc.html" class="code" title="function [S,f,varS,C,Serr]=mtspectrumsegc(data,win,params,segave)">mtspectrumsegc</a>	Multi-taper segmented spectrum for a univariate continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumpb(data,params,fscorr)">mtspectrumpb</a>	Multi-taper spectrum - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumsegpb.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpb(data,win,params,segave,fscorr)">mtspectrumsegpb</a>	Multi-taper segmented spectrum for a univariate binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumpt(data,params,fscorr,t)">mtspectrumpt</a>	Multi-taper spectrum - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumsegpt.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpt(data,win,params,segave,fscorr)">mtspectrumsegpt</a>	Multi-taper segmented spectrum for a univariate binned point process</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Serr=specerr(S,J,err,trialave,numsp)</a>
+0002 <span class="comment">% Function to compute lower and upper confidence intervals on the spectrum</span>
+0003 <span class="comment">% Usage: Serr=specerr(S,J,err,trialave,numsp)</span>
+0004 <span class="comment">% Outputs: Serr (Serr(1,...) - lower confidence level, Serr(2,...) upper confidence level)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Inputs:</span>
+0007 <span class="comment">% S - spectrum</span>
+0008 <span class="comment">% J - tapered fourier transforms</span>
+0009 <span class="comment">% err - [errtype p] (errtype=1 - asymptotic estimates; errchk=2 - Jackknife estimates;</span>
+0010 <span class="comment">%                   p - p value for error estimates)</span>
+0011 <span class="comment">% trialave - 0: no averaging over trials/channels</span>
+0012 <span class="comment">%            1 : perform trial averaging</span>
+0013 <span class="comment">% numsp    - number of spikes in each channel. specify only when finite</span>
+0014 <span class="comment">%            size correction required (and of course, only for point</span>
+0015 <span class="comment">%            process data)</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Outputs:</span>
+0018 <span class="comment">% Serr - error estimates. Only for err(1)&gt;=1. If err=[1 p] or [2 p] Serr(...,1) and Serr(...,2)</span>
+0019 <span class="comment">% contain the lower and upper error bars with the specified method.</span>
+0020 <span class="keyword">if</span> nargin &lt; 4; error(<span class="string">'Need at least 4 input arguments'</span>); <span class="keyword">end</span>;
+0021 <span class="keyword">if</span> err(1)==0; error(<span class="string">'Need err=[1 p] or [2 p] for error bar calculation. Make sure you are not asking for the output of Serr'</span>); <span class="keyword">end</span>;
+0022 [nf,K,C]=size(J);
+0023 errchk=err(1);
+0024 p=err(2);
+0025 pp=1-p/2;
+0026 qq=1-pp;
+0027 
+0028 <span class="keyword">if</span> trialave
+0029    dim=K*C;
+0030    C=1;
+0031    dof=2*dim;
+0032    <span class="keyword">if</span> nargin==5; dof = fix(1/(1/dof + 1/(2*sum(numsp)))); <span class="keyword">end</span>
+0033    J=reshape(J,nf,dim);
+0034 <span class="keyword">else</span>
+0035    dim=K;
+0036    dof=2*dim*ones(1,C);
+0037    <span class="keyword">for</span> ch=1:C;
+0038      <span class="keyword">if</span> nargin==5; dof(ch) = fix(1/(1/dof + 1/(2*numsp(ch)))); <span class="keyword">end</span> 
+0039    <span class="keyword">end</span>;
+0040 <span class="keyword">end</span>;
+0041 Serr=zeros(2,nf,C);
+0042 <span class="keyword">if</span> errchk==1;
+0043    Qp=chi2inv(pp,dof);
+0044    Qq=chi2inv(qq,dof);
+0045    Serr(1,:,:)=dof(ones(nf,1),:).*S./Qp(ones(nf,1),:);
+0046    Serr(2,:,:)=dof(ones(nf,1),:).*S./Qq(ones(nf,1),:);
+0047 <span class="keyword">elseif</span> errchk==2;
+0048    tcrit=tinv(pp,dim-1);
+0049    <span class="keyword">for</span> k=1:dim;
+0050        indices=setdiff(1:dim,k);
+0051        Jjk=J(:,indices,:); <span class="comment">% 1-drop projection</span>
+0052        eJjk=squeeze(sum(Jjk.*conj(Jjk),2));
+0053        Sjk(k,:,:)=eJjk/(dim-1); <span class="comment">% 1-drop spectrum</span>
+0054    <span class="keyword">end</span>;
+0055    sigma=sqrt(dim-1)*squeeze(std(log(Sjk),1,1)); <span class="keyword">if</span> C==1; sigma=sigma'; <span class="keyword">end</span>; 
+0056    conf=repmat(tcrit,nf,C).*sigma;
+0057    conf=squeeze(conf); 
+0058    Serr(1,:,:)=S.*exp(-conf); Serr(2,:,:)=S.*exp(conf);
+0059 <span class="keyword">end</span>;
+0060 Serr=squeeze(Serr);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

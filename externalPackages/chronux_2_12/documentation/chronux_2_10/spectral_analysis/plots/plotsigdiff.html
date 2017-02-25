@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of plotsigdiff</title>
+  <meta name="keywords" content="plotsigdiff">
+  <meta name="description" content="Function to plot significant differences between two time-frequency arrays X1 and X2">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html plots -->
+<h1>plotsigdiff
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Function to plot significant differences between two time-frequency arrays X1 and X2</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [mask,Xdiff]=plotsigdiff(X1,X1err,X2,X2err,plt,t,f) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Function to plot significant differences between two time-frequency arrays X1 and X2
+ given errors X1err, X2err. 
+ Usage: mask=plotsigdiff(X1,X1err,X2,X2err,plt,t,f)
+
+ X1 err and X2err contain upper and lower confidence intervals for X1 and X2
+ The plot generated is shows X1-X2 where the difference is significant
+ either in dB or on a linear scale.
+
+ Inputs:
+ X1: input array t x f. Can also be a function of just the frequency. 
+ X1err: lower and upper confidence intervals for X1: lower/upper x t x f
+ X2: input array t x f. if vector then as row vector
+ X2err: lower and upper condidence intervals for X2: lower/upper x t x f
+ plt: 'l' for log, 'nl' for no log,'n' for no plot at all.
+ t: t axis grid for plot. If X1,X2 are vectors, then specify t=1.
+ f: f axis grid for plot.
+
+ Outputs:
+ mask: +1 for all t-f (or f) indices for which the X1 significantly greater than
+ X2, -1 for all t-f (or f) indices for which X1 is significantly less than X2,
+ and zero otherwise
+
+ Xdiff: X1-X2</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/spectral_analysis/helper/check_consistency.html" class="code" title="function [N,C]=check_consistency(data1,data2,sp)">check_consistency</a>	Helper routine to check consistency of data dimensions</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [mask,Xdiff]=plotsigdiff(X1,X1err,X2,X2err,plt,t,f)</a>
+0002 <span class="comment">% Function to plot significant differences between two time-frequency arrays X1 and X2</span>
+0003 <span class="comment">% given errors X1err, X2err.</span>
+0004 <span class="comment">% Usage: mask=plotsigdiff(X1,X1err,X2,X2err,plt,t,f)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% X1 err and X2err contain upper and lower confidence intervals for X1 and X2</span>
+0007 <span class="comment">% The plot generated is shows X1-X2 where the difference is significant</span>
+0008 <span class="comment">% either in dB or on a linear scale.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Inputs:</span>
+0011 <span class="comment">% X1: input array t x f. Can also be a function of just the frequency.</span>
+0012 <span class="comment">% X1err: lower and upper confidence intervals for X1: lower/upper x t x f</span>
+0013 <span class="comment">% X2: input array t x f. if vector then as row vector</span>
+0014 <span class="comment">% X2err: lower and upper condidence intervals for X2: lower/upper x t x f</span>
+0015 <span class="comment">% plt: 'l' for log, 'nl' for no log,'n' for no plot at all.</span>
+0016 <span class="comment">% t: t axis grid for plot. If X1,X2 are vectors, then specify t=1.</span>
+0017 <span class="comment">% f: f axis grid for plot.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Outputs:</span>
+0020 <span class="comment">% mask: +1 for all t-f (or f) indices for which the X1 significantly greater than</span>
+0021 <span class="comment">% X2, -1 for all t-f (or f) indices for which X1 is significantly less than X2,</span>
+0022 <span class="comment">% and zero otherwise</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Xdiff: X1-X2</span>
+0025 <span class="comment">%</span>
+0026 <span class="keyword">if</span> nargin &lt; 7; error(<span class="string">'Need all arguments'</span>); <span class="keyword">end</span>;
+0027 <span class="comment">% [T1,F1]=size(X1); [T2,F2]=size(X2);</span>
+0028 [T,F]=<a href="../../../chronux_2_10/spectral_analysis/helper/check_consistency.html" class="code" title="function [N,C]=check_consistency(data1,data2,sp)">check_consistency</a>(X1,X2);
+0029 <span class="keyword">if</span> F==1;
+0030     X1=X1'; X2=X2';F=length(X1); T=1;
+0031 <span class="keyword">end</span>;
+0032 ystr=<span class="string">''</span>;
+0033 <span class="keyword">if</span> T==1,
+0034     mask=zeros(1,F);
+0035     indxneg=find(X1&lt;X2err(1,:) &amp; X2&gt;X1err(2,:));
+0036     indxpos=find(X1&gt;X2err(2,:) &amp; X2&lt;X1err(1,:));
+0037     mask(indxneg)=-1;
+0038     mask(indxpos)=+1;
+0039     <span class="keyword">if</span> strcmp(plt,<span class="string">'l'</span>); 
+0040         X1=10*log10(X1); X2=10*log10(X2); X1err=10*log10(X1err); X2err=10*log10(X2err);
+0041         ystr= <span class="string">'  dB'</span>;
+0042     <span class="keyword">end</span>;
+0043     subplot(311); plot(f,X1,f,X1err(1,:),f,X1err(2,:));
+0044     title(<span class="string">'Spectrum 1'</span>);
+0045     xlabel(<span class="string">'f'</span>)
+0046     ylabel([<span class="string">'S1'</span> ystr]);
+0047     subplot(312); plot(f,X2,f,X2err(1,:),f,X2err(2,:));
+0048     title(<span class="string">'Spectrum 2'</span>);
+0049     xlabel(<span class="string">'f'</span>)
+0050     ylabel([<span class="string">'S2'</span> ystr]);
+0051     subplot(313); plot(f,mask.*(X1-X2));
+0052     title(<span class="string">'Difference where significant'</span>);
+0053     xlabel(<span class="string">'f'</span>)
+0054     ylabel([<span class="string">'S1-S2'</span> ystr]);
+0055 <span class="keyword">else</span>
+0056     mask=zeros(T,F);
+0057     <span class="keyword">for</span> n=1:length(t);
+0058         <span class="keyword">for</span> m=1:length(f);
+0059            <span class="keyword">if</span> X1(n,m)&lt;X2err(1,n,m) &amp;&amp; X2(n,m)&gt;X1err(2,n,m);
+0060               mask(n,m)=-1;
+0061            <span class="keyword">elseif</span> X2(n,m)&lt;X1err(1,n,m) &amp;&amp; X1(n,m)&gt;X2err(2,n,m);
+0062               mask(n,m)=+1;
+0063            <span class="keyword">end</span>;
+0064         <span class="keyword">end</span>;
+0065     <span class="keyword">end</span>;
+0066     <span class="keyword">if</span> strcmp(plt,<span class="string">'l'</span>);
+0067        X1=10*log10(X1);X2=10*log10(X2); <span class="comment">%X1err=10*log10(X1err); X2err=10*log10(X2err);</span>
+0068         ystr=<span class="string">'  dB'</span>;
+0069     <span class="keyword">end</span>;
+0070     <span class="keyword">if</span> ~strcmp(plt,<span class="string">'n'</span>);
+0071         subplot(311); imagesc(t,f,X1'); axis xy; colorbar;
+0072         xlabel(<span class="string">'f'</span>)
+0073         ylabel([<span class="string">'S1'</span> ystr]);
+0074         subplot(312); imagesc(t,f,X2'); axis xy; colorbar;
+0075         xlabel(<span class="string">'f'</span>)
+0076         ylabel([<span class="string">'S2'</span> ystr]);
+0077     <span class="comment">%     subplot(313); imagesc(t,f,(mask.*(X1-X2))'); axis xy; colorbar</span>
+0078         subplot(313); imagesc(t,f,mask'); axis xy; colorbar
+0079         xlabel(<span class="string">'f'</span>)
+0080         ylabel(<span class="string">'Significance'</span>);
+0081     <span class="keyword">end</span>;
+0082 <span class="keyword">end</span>
+0083 Xdiff=X1-X2;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

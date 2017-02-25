@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getfgrid</title>
+  <meta name="keywords" content="getfgrid">
+  <meta name="description" content="Helper function that gets the frequency grid associated with a given fft based computation">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html helper -->
+<h1>getfgrid
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Helper function that gets the frequency grid associated with a given fft based computation</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [f,findx]=getfgrid(Fs,nfft,fpass) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Helper function that gets the frequency grid associated with a given fft based computation
+ Called by spectral estimation routines to generate the frequency axes 
+ Usage: [f,findx]=getfgrid(Fs,nfft,fpass)
+ Inputs:
+ Fs        (sampling frequency associated with the data)-required
+ nfft      (number of points in fft)-required
+ fpass     (band of frequencies at which the fft is being calculated [fmin fmax] in Hz)-required
+ Outputs:
+ f         (frequencies)
+ findx     (index of the frequencies in the full frequency grid). e.g.: If
+ Fs=1000, and nfft=1048, an fft calculation generates 512 frequencies
+ between 0 and 500 (i.e. Fs/2) Hz. Now if fpass=[0 100], findx will
+ contain the indices in the frequency grid corresponding to frequencies &lt;
+ 100 Hz. In the case fpass=[0 500], findx=[1 512].</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/old/CrossSpecMat.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMat(data,win,params)">CrossSpecMat</a>	</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/CrossSpecMatc.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatc(data,win,params)">CrossSpecMatc</a>	Multi-taper cross-spectral matrix - another routine, allows for multiple trials and channels</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/coherencyc_unequal_length_trials.html" class="code" title="function [Cmn,Phimn,Smn,Smm,f,ConfC,PhiStd,Cerr] = coherencyc_unequal_length_trials( data, movingwin, params, sMarkers )">coherencyc_unequal_length_trials</a>	This routine computes the average multi-taper coherence for a given set of unequal length segments. It is</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/cohgramc.html" class="code" title="function [C,phi,S12,S1,S2,t,f,confC,phistd,Cerr]=cohgramc(data1,data2,movingwin,params)">cohgramc</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra - continuous processes</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/cohmatrixc.html" class="code" title="function [C,phi,S12,f,confC,phistd,Cerr]=cohmatrixc(data,params)">cohmatrixc</a>	Multi-taper coherency,cross-spectral matrix - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/ftestc.html" class="code" title="function [Fval,A,f,sig,sd] = ftestc(data,params,p,plt)">ftestc</a>	computes the F-statistic for sine wave in locally-white noise (continuous data).</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtdspecgramc.html" class="code" title="function [dS,t,f]=mtdspecgramc(data,movingwin,phi,params)">mtdspecgramc</a>	Multi-taper derivative of the time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtdspectrumc.html" class="code" title="function [dS,f]=mtdspectrumc(data,phi,params)">mtdspectrumc</a>	Multi-taper frequency derivative of the spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>	Multi-taper time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrum_of_spectrumc.html" class="code" title="function [SS,tau]=mtspectrum_of_spectrumc(data,win,tapers2spec,params)">mtspectrum_of_spectrumc</a>	Multi-taper segmented, second spectrum (spectrum of the log spectrum) for a continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>	Multi-taper spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumc_unequal_length_trials.html" class="code" title="function [ S, f, Serr ]= mtspectrumc_unequal_length_trials( data, movingwin, params, sMarkers )">mtspectrumc_unequal_length_trials</a>	This routine computes the multi-taper spectrum for a given set of unequal length segments. It is</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumsegc.html" class="code" title="function [S,f,varS,C,Serr]=mtspectrumsegc(data,win,params,segave)">mtspectrumsegc</a>	Multi-taper segmented spectrum for a univariate continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/spsvd.html" class="code" title="function [sv,sp,fm] = spsvd(data,params,mdkp)">spsvd</a>	Space frequency SVD of input data - continuous processes</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous and binned point process data</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpt(data1,data2,params,fscorr,t)">coherencycpt</a>	Multi-taper coherency,cross-spectrum and individual spectra -continuous data and point process as times</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/cohgramcpb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpb(data1,data2,movingwin,params,fscorr)">cohgramcpb</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/cohgramcpt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpt(data1,data2,movingwin,params,fscorr)">cohgramcpt</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/CrossSpecMatpb.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatpb(data,win,params)">CrossSpecMatpb</a>	</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/coherencypb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypb(data1,data2,params,fscorr)">coherencypb</a>	Multi-taper coherency,cross-spectrum and individual spectra - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/cohgrampb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampb(data1,data2,movingwin,params,fscorr)">cohgrampb</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra - two binned point processes</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/cohmatrixpb.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpb(data,params,fscorr)">cohmatrixpb</a>	Multi-taper coherency matrix - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtdspecgrampb.html" class="code" title="function [dS,t,f]=mtdspecgrampb(data,movingwin,phi,params)">mtdspecgrampb</a>	Multi-taper derivatives of time-frequency spectrum - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtdspectrumpb.html" class="code" title="function [dS,f]=mtdspectrumpb(data,phi,params)">mtdspectrumpb</a>	Multi-taper spectral derivative - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspecgrampb.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampb(data,movingwin,params,fscorr)">mtspecgrampb</a>	Multi-taper time-frequency spectrum - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumpb(data,params,fscorr)">mtspectrumpb</a>	Multi-taper spectrum - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumsegpb.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpb(data,win,params,segave,fscorr)">mtspectrumsegpb</a>	Multi-taper segmented spectrum for a univariate binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/CrossSpecMatpt.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatpt(data,win,T,params)">CrossSpecMatpt</a>	</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>	Multi-taper coherency - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/cohgrampt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)">cohgrampt</a>	Multi-taper time-frequency coherence - two point processes given as times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/cohmatrixpt.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpt(data,params,fscorr)">cohmatrixpt</a>	Multi-taper coherency matrix - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtdspecgrampt.html" class="code" title="function [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params)">mtdspecgrampt</a>	Multi-taper derivative time-frequency spectrum - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtdspectrumpt.html" class="code" title="function [dS,f]=mtdspectrumpt(data,phi,params,t)">mtdspectrumpt</a>	Multi-taper spectral derivative - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspecgrampt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampt(data,movingwin,params,fscorr)">mtspecgrampt</a>	Multi-taper time-frequency spectrum - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumpt(data,params,fscorr,t)">mtspectrumpt</a>	Multi-taper spectrum - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumsegpt.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpt(data,win,params,segave,fscorr)">mtspectrumsegpt</a>	Multi-taper segmented spectrum for a univariate binned point process</li><li><a href="../../../chronux_2_10/test/mtspecgramc_fast.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc_fast</a>	Multi-taper time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/test/mtspecgramc_slow.html" class="code" title="function [S,t,f,Serr]=mtspecgramc_slow(data,movingwin,params)">mtspecgramc_slow</a>	Multi-taper time-frequency spectrum - continuous process</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [f,findx]=getfgrid(Fs,nfft,fpass)</a>
+0002 <span class="comment">% Helper function that gets the frequency grid associated with a given fft based computation</span>
+0003 <span class="comment">% Called by spectral estimation routines to generate the frequency axes</span>
+0004 <span class="comment">% Usage: [f,findx]=getfgrid(Fs,nfft,fpass)</span>
+0005 <span class="comment">% Inputs:</span>
+0006 <span class="comment">% Fs        (sampling frequency associated with the data)-required</span>
+0007 <span class="comment">% nfft      (number of points in fft)-required</span>
+0008 <span class="comment">% fpass     (band of frequencies at which the fft is being calculated [fmin fmax] in Hz)-required</span>
+0009 <span class="comment">% Outputs:</span>
+0010 <span class="comment">% f         (frequencies)</span>
+0011 <span class="comment">% findx     (index of the frequencies in the full frequency grid). e.g.: If</span>
+0012 <span class="comment">% Fs=1000, and nfft=1048, an fft calculation generates 512 frequencies</span>
+0013 <span class="comment">% between 0 and 500 (i.e. Fs/2) Hz. Now if fpass=[0 100], findx will</span>
+0014 <span class="comment">% contain the indices in the frequency grid corresponding to frequencies &lt;</span>
+0015 <span class="comment">% 100 Hz. In the case fpass=[0 500], findx=[1 512].</span>
+0016 <span class="keyword">if</span> nargin &lt; 3; error(<span class="string">'Need all arguments'</span>); <span class="keyword">end</span>;
+0017 df=Fs/nfft;
+0018 f=0:df:Fs; <span class="comment">% all possible frequencies</span>
+0019 f=f(1:nfft);
+0020 <span class="keyword">if</span> length(fpass)~=1;
+0021    findx=find(f&gt;=fpass(1) &amp; f&lt;=fpass(end));
+0022 <span class="keyword">else</span>
+0023    [fmin,findx]=min(abs(f-fpass));
+0024    clear fmin
+0025 <span class="keyword">end</span>;
+0026 f=f(findx);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

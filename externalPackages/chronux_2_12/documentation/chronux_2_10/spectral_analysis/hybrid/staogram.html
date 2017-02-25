@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of staogram</title>
+  <meta name="keywords" content="staogram">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html hybrid -->
+<h1>staogram
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function[S,tau,tc] = staogram(data_spk,data_lfp,smp,plt,Tc,Tinc,Tw,w,D) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ staogram : calculates a moving window spike triggered ave %
+   Usage:[S,tau,tc] = staogram(data_spk,data_lfp,smp,plt,Tc,Tinc,Tw,w,D)
+   
+                 ******** INPUT *********                  
+ Note that all times have to be consistent. If data_spk
+ is in seconds, so must be sig and t. If data_spk is in 
+ samples, so must sig and t. The default is seconds.
+
+ data_spk    - strucuture array of spike times data        
+ data_lfp    - array of lfp data(samples x trials)         
+ smp         - lfp times of samples                        
+                                                           
+ Optional...                                               
+                                                           
+ Parameter                                                 
+                                                           
+ plt     'y'|'n'                                           
+                                                           
+ 'y' standard staogram                                     
+ 'n' no plot                                               
+                                                           
+ Tc = start and end times (centres)           whole trial       
+ Tinc = time increment between windows             0.1            
+ Tw = time window width                          0.3            
+ w = smoothing width in seconds                            
+ D = plot sta out to on axis [D(1) D(2)] s                 
+                                                           
+                ******** OUTPUT ********                   
+  S spike triggered average                                
+  tau - lag                                                
+  tc  - bin centers</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="sta.html" class="code" title="function[s,t,E] = sta(data_spk,data_lfp,smp,plt,w,T,D,err)">sta</a>	Spike Triggered Average</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/padNaN.html" class="code" title="function data=padNaN(data)">padNaN</a>	Creates a padded data matrix from input structural array of spike times</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function[S,tau,tc] = staogram(data_spk,data_lfp,smp,plt,Tc,Tinc,Tw,w,D)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% staogram : calculates a moving window spike triggered ave %</span>
+0004 <span class="comment">%   Usage:[S,tau,tc] = staogram(data_spk,data_lfp,smp,plt,Tc,Tinc,Tw,w,D)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%                 ******** INPUT *********</span>
+0007 <span class="comment">% Note that all times have to be consistent. If data_spk</span>
+0008 <span class="comment">% is in seconds, so must be sig and t. If data_spk is in</span>
+0009 <span class="comment">% samples, so must sig and t. The default is seconds.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% data_spk    - strucuture array of spike times data</span>
+0012 <span class="comment">% data_lfp    - array of lfp data(samples x trials)</span>
+0013 <span class="comment">% smp         - lfp times of samples</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Optional...</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Parameter</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% plt     'y'|'n'</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% 'y' standard staogram</span>
+0022 <span class="comment">% 'n' no plot</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Tc = start and end times (centres)           whole trial</span>
+0025 <span class="comment">% Tinc = time increment between windows             0.1</span>
+0026 <span class="comment">% Tw = time window width                          0.3</span>
+0027 <span class="comment">% w = smoothing width in seconds</span>
+0028 <span class="comment">% D = plot sta out to on axis [D(1) D(2)] s</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">%                ******** OUTPUT ********</span>
+0031 <span class="comment">%  S spike triggered average</span>
+0032 <span class="comment">%  tau - lag</span>
+0033 <span class="comment">%  tc  - bin centers</span>
+0034 
+0035 
+0036 <span class="comment">% setup defaults...</span>
+0037 <span class="keyword">if</span> nargin &lt; 3;error(<span class="string">'Require spike, lfp and lfptimes '</span>);<span class="keyword">end</span>
+0038 [data_spk]=<a href="../../../chronux_2_10/spectral_analysis/pointtimes/padNaN.html" class="code" title="function data=padNaN(data)">padNaN</a>(data_spk); <span class="comment">% create a zero padded data matrix from input structural array</span>
+0039 data_spk=data_spk'; <span class="comment">% transposes data to get it in a form compatible with Murray's routine</span>
+0040 <span class="keyword">if</span> nargin &lt; 4; plt = <span class="string">'y'</span>;<span class="keyword">end</span>
+0041 <span class="keyword">if</span> nargin &lt; 6; Tinc = 0.1; <span class="keyword">end</span>
+0042 <span class="keyword">if</span> nargin &lt; 7; Tw = 0.5;<span class="keyword">end</span>
+0043 <span class="keyword">if</span> nargin &lt; 8; w = 0.01;<span class="keyword">end</span>
+0044 <span class="keyword">if</span> nargin &lt; 9; D = 0.15*[-1 1]; <span class="keyword">end</span>
+0045 <span class="keyword">if</span> nargin &lt; 5; 
+0046     Tc(1) = min(data_spk(:,1)) + Tw/2;
+0047     Tc(2) = max(max(data_spk)) - Tw/2;
+0048 <span class="keyword">end</span>
+0049 
+0050 <span class="keyword">if</span> isempty(plt); plt = <span class="string">'y'</span>;<span class="keyword">end</span>
+0051 <span class="keyword">if</span> isempty(Tinc); Tinc = 0.1; <span class="keyword">end</span>
+0052 <span class="keyword">if</span> isempty(Tw); Tw = 0.5;<span class="keyword">end</span>
+0053 <span class="keyword">if</span> isempty(w); w = 0.01;<span class="keyword">end</span>
+0054 <span class="keyword">if</span> isempty(D); D = 0.15*[-1 1]; <span class="keyword">end</span>
+0055 <span class="keyword">if</span> isempty(Tc); 
+0056     Tc(1) = min(data_spk(:,1)) + Tw/2;
+0057     Tc(2) = max(max(data_spk)) - Tw/2;
+0058 <span class="keyword">end</span>
+0059 
+0060 
+0061 <span class="comment">%  round to nearest tinc...</span>
+0062 
+0063 t = smp;
+0064 Tc(1) = ceil(Tc(1)/Tinc)*Tinc;
+0065 Tc(2) = floor(Tc(2)/Tinc)*Tinc;
+0066 tc = Tc(1):Tinc:Tc(2);
+0067 <span class="keyword">for</span> tt=1:length(tc)
+0068   T = [tc(tt)-Tw/2 tc(tt)+Tw/2];
+0069   <span class="keyword">if</span> tt == 1
+0070     [SS,tau] = <a href="sta.html" class="code" title="function[s,t,E] = sta(data_spk,data_lfp,smp,plt,w,T,D,err)">sta</a>(data_spk,data_lfp,t,<span class="string">'y'</span>,w,T,D,0);
+0071     S = zeros(length(tc),length(SS));
+0072   <span class="keyword">else</span>
+0073     [SS,tau] = <a href="sta.html" class="code" title="function[s,t,E] = sta(data_spk,data_lfp,smp,plt,w,T,D,err)">sta</a>(data_spk,data_lfp,t,<span class="string">'y'</span>,w,T,D,0);
+0074   <span class="keyword">end</span>
+0075   S(tt,:) = SS';
+0076   S(tt,:) = SS';
+0077 <span class="keyword">end</span>
+0078 
+0079 <span class="keyword">if</span> ~strcmp(plt,<span class="string">'n'</span>)
+0080   imagesc(tc,tau,squeeze(S)')
+0081   set(gca,<span class="string">'ydir'</span>,<span class="string">'normal'</span>)
+0082   xlabel(<span class="string">'time (s)'</span>)
+0083   ylabel(<span class="string">'frequency (Hz)'</span>)
+0084   colorbar;
+0085 <span class="comment">%  axes(h)</span>
+0086 <span class="comment">%  line(get(h,'xlim'),conf_C*[1 1],'color','k','linewidth',5)</span>
+0087 <span class="keyword">end</span>
+0088 
+0089 
+0090 
+0091 
+0092 
+0093 
+0094 
+0095 
+0096 
+0097</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

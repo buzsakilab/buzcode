@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of fig6_5</title>
+  <meta name="keywords" content="fig6_5">
+  <meta name="description" content="Local Regression and Likelihood, Figure 6.5.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- # locfit --><!-- menu.html Book -->
+<h1>fig6_5
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Local Regression and Likelihood, Figure 6.5.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Local Regression and Likelihood, Figure 6.5.
+ Author: Catherine Loader
+
+ Local smooth of CO2 dataset.
+ Use bivariate fit to capture the two trends.
+
+ bonus plot: fitted values vs year.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/locfit/m/fitted.html" class="code" title="function y = fitted(fit)">fitted</a>	Fitted values from a locfit object.</li><li><a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>	Plot (for one or two dimensions) a locfit() fit.</li><li><a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>	Smoothing noisy data using Local Regression and Likelihood.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="runbook.html" class="code" title="">runbook</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Local Regression and Likelihood, Figure 6.5.</span>
+0002 <span class="comment">% Author: Catherine Loader</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Local smooth of CO2 dataset.</span>
+0005 <span class="comment">% Use bivariate fit to capture the two trends.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% bonus plot: fitted values vs year.</span>
+0008 
+0009 load co2;
+0010 fit = <a href="../../../chronux_2_10/locfit/m/locfit.html" class="code" title="function fit=locfit(varargin)">locfit</a>([month year+month/12],co2,<span class="string">'alpha'</span>,0.2,<span class="string">'style'</span>,<span class="string">'an'</span>,<span class="string">'scale'</span>,[6/pi,10]);
+0011 
+0012 figure(<span class="string">'Name'</span>,<span class="string">'fig6_5a: Local smoothing'</span>);
+0013 <a href="../../../chronux_2_10/locfit/m/lfplot.html" class="code" title="function lfplot(varargin)">lfplot</a>(fit,<span class="string">'contour'</span>);
+0014 xlabel(<span class="string">'Month'</span>);
+0015 ylabel(<span class="string">'Year'</span>);
+0016 
+0017 figure(<span class="string">'Name'</span>,<span class="string">'fig6_5b: Local smoothing'</span>);
+0018 plot(year+month/12,<a href="../../../chronux_2_10/locfit/m/fitted.html" class="code" title="function y = fitted(fit)">fitted</a>(fit));
+0019 xlabel(<span class="string">'Year'</span>);
+0020 ylabel(<span class="string">'CO_2'</span>);
+0021</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

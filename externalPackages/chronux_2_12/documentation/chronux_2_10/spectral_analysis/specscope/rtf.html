@@ -1,0 +1,279 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of rtf</title>
+  <meta name="keywords" content="rtf">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html specscope -->
+<h1>rtf
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function rtf(plot_frq,flag_save) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006b/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a>	VR=CLOSE(VR)</li><li><a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2007a/@videoWriter/close.html" class="code" title="function vw = close(vw)">close</a>	VW=CLOSE(VW)</li><li><a href="start_display.html" class="code" title="function start_display(ring,fig)">start_display</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function keypress(src, e)</a></li><li><a href="#_sub2" class="code">function flag(obj,event)</a></li><li><a href="#_sub3" class="code">function stop_dev(obj,event)</a></li><li><a href="#_sub4" class="code">function disply(obj,event)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function rtf(plot_frq,flag_save)</a>
+0002 
+0003 
+0004 <a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a> all
+0005 evalin(<span class="string">'base'</span>,<span class="string">'stop=0;'</span>);
+0006 
+0007 
+0008 
+0009 <span class="comment">%=========SET THE BASIC FIGURE=================</span>
+0010 fig = figure(<span class="string">'Position'</span>,[500,500,800,600],<span class="keyword">...</span>
+0011         <span class="string">'NumberTitle'</span>,<span class="string">'off'</span>,<span class="keyword">...</span>
+0012         <span class="string">'Name'</span>,<span class="string">'Scope'</span>,<span class="keyword">...</span>
+0013         <span class="string">'doublebuffer'</span>,<span class="string">'on'</span>,<span class="keyword">...</span>
+0014         <span class="string">'HandleVisibility'</span>,<span class="string">'on'</span>,<span class="keyword">...</span>
+0015         <span class="string">'KeyPressFcn'</span>, @<a href="#_sub1" class="code" title="subfunction keypress(src, e)">keypress</a>, <span class="keyword">...</span>
+0016         <span class="string">'Renderer'</span>, <span class="string">'openGL'</span>);
+0017 <span class="comment">%=============================================</span>
+0018 
+0019 
+0020 <span class="comment">%=============OPEN THE DEVICE FOR RECORD======</span>
+0021 sample_frequency = 44100;
+0022 samples_per_frame = 1024;
+0023 <span class="comment">%plot_frq=10;</span>
+0024 record_time=600;
+0025 samples_to_acquire = record_time * sample_frequency;
+0026 
+0027 
+0028 <span class="comment">%PREPARE    THE    DEVICE</span>
+0029 ai = analoginput(<span class="string">'winsound'</span>);   
+0030 chan = addchannel( ai, 1 );
+0031 set( ai, <span class="string">'SampleRate'</span>, sample_frequency )
+0032 set( ai, <span class="string">'SamplesPerTrigger'</span>, samples_to_acquire )
+0033 set(ai, <span class="string">'StopFcn'</span>, @<a href="#_sub3" class="code" title="subfunction stop_dev(obj,event)">stop_dev</a>)
+0034 
+0035 sample_frequency = get( ai, <span class="string">'SampleRate'</span> );
+0036 
+0037 
+0038 <span class="comment">%SETTING CALL BACK FUNCTIONS:</span>
+0039 <span class="comment">%The first for capture   the</span>
+0040 <span class="comment">%second     for      display</span>
+0041 set(ai, <span class="string">'SamplesAcquiredFcnCount'</span>,samples_per_frame);
+0042 set(ai, <span class="string">'SamplesAcquiredFcn'</span>,@<a href="#_sub2" class="code" title="subfunction flag(obj,event)">flag</a>);
+0043 set(ai, <span class="string">'TimerPeriod'</span>,(1/plot_frq));
+0044 set(ai, <span class="string">'TimerFcn'</span>,@<a href="#_sub4" class="code" title="subfunction disply(obj,event)">disply</a>);
+0045 
+0046 
+0047 <span class="comment">%=============SAVE THE CONFIGURATION======</span>
+0048 plot_ref=plot(zeros(10,1));
+0049 fid=-1;
+0050 
+0051 
+0052 <span class="comment">%SAVE THE CURRENT PARAMETERS:</span>
+0053 name_of_file=sprintf(<span class="string">'%s-%d'</span>,<span class="string">'real-anal'</span>,(round(sample_frequency/samples_per_frame)));
+0054 remark={1,<span class="keyword">...</span>
+0055         zeros(samples_per_frame*20,1)',<span class="keyword">...</span>
+0056         0,<span class="keyword">...</span>
+0057         plot_ref,<span class="keyword">...</span>
+0058         plot_frq,<span class="keyword">...</span>
+0059         cputime,<span class="keyword">...</span>
+0060         flag_save,<span class="keyword">...</span>
+0061         -1,<span class="keyword">...</span>
+0062         name_of_file
+0063         };
+0064 
+0065 set(ai, <span class="string">'UserData'</span>,remark)
+0066 
+0067 
+0068 
+0069 
+0070 <span class="comment">%=============START TO RECORD================</span>
+0071 fprintf (<span class="string">'To stop the program set &lt;stop=1&gt; or press q in the figure window\n'</span>);
+0072 start (ai)
+0073 
+0074 
+0075 
+0076 
+0077 
+0078 <span class="comment">%=============================================</span>
+0079 <span class="comment">%=========THE MAIN PROGRAM====================</span>
+0080 <span class="comment">%=============================================</span>
+0081 <span class="comment">%                   *</span>
+0082 <span class="comment">%                  ***</span>
+0083 <span class="comment">%                 *****</span>
+0084 <span class="comment">%                  ***</span>
+0085 <span class="comment">%                  ***</span>
+0086 <span class="comment">%                  ***</span>
+0087 <span class="comment">%                  ***</span>
+0088 <span class="comment">%                  ***</span>
+0089 <span class="comment">%                 *****</span>
+0090 <span class="comment">%                  ***</span>
+0091 <span class="comment">%                   *</span>
+0092 <span class="comment">%=============================================</span>
+0093 <span class="comment">%==========CALLBACK FUNCTIONS=================</span>
+0094 <span class="comment">%=============================================</span>
+0095 
+0096 
+0097 
+0098 <span class="comment">%=========Keypress callback===========</span>
+0099 <a name="_sub1" href="#_subfunctions" class="code">function keypress(src, e)</a>
+0100   keypressed=get(gcf,<span class="string">'CurrentCharacter'</span>);
+0101 
+0102   <span class="comment">% ignore raw control, shift, alt keys</span>
+0103   <span class="keyword">if</span> keypressed
+0104     <span class="comment">% Quit</span>
+0105     <span class="keyword">if</span> strcmp( keypressed, <span class="string">'q'</span>)
+0106         evalin(<span class="string">'base'</span>,<span class="string">'stop=1;'</span>);
+0107     <span class="keyword">end</span>
+0108   <span class="keyword">end</span>
+0109 <span class="keyword">return</span>
+0110 
+0111 
+0112 <span class="comment">%============FLAG FUNCTION===================</span>
+0113 <span class="comment">%This function activated when we capture</span>
+0114 <span class="comment">%certain    amount  of          samples</span>
+0115 <a name="_sub2" href="#_subfunctions" class="code">function flag(obj,event)</a>
+0116 
+0117   <span class="comment">% CHECK FOR STOP SIGNAL</span>
+0118   <span class="keyword">if</span>  evalin(<span class="string">'base'</span>,<span class="string">'stop'</span>)
+0119       stop(obj)
+0120   <span class="keyword">end</span>
+0121  
+0122 <span class="comment">% GET THE OLD DATA</span>
+0123  remark=get(obj,<span class="string">'UserData'</span>);
+0124  flag_write=remark{1};  <span class="comment">%Do I have to</span>
+0125  buffer=remark{3};      <span class="comment">%What is the old picture</span>
+0126  flag_save=remark{7};   <span class="comment">%Are we in saving mode?</span>
+0127  fid=remark{8};         <span class="comment">%What file descriptor to save</span>
+0128  
+0129  <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0130  <span class="comment">%IN CASE - DELETE/SAVE THE OLD DATA</span>
+0131  
+0132  <span class="keyword">if</span> flag_write&gt;20
+0133      
+0134      
+0135      <span class="comment">% IN CASE WE HAVE TO SAVE - CLOSE THE OLD FILE AND MAKE A NEW</span>
+0136      <span class="keyword">if</span> flag_save&gt;0
+0137         fclose(fid);
+0138         name_of_data=sprintf(<span class="string">'%s-%d.dat'</span>,<span class="string">'dat'</span>,(round(cputime*1000)));
+0139         fid=fopen(name_of_data,<span class="string">'w'</span>);
+0140     <span class="keyword">end</span>
+0141     
+0142       <span class="comment">%DELETE OLD DATA</span>
+0143      flag_write=1;
+0144      buffer=[];
+0145      remark{1}=flag_write; <span class="comment">% SET THE POSITION OF THE READING SHIFT</span>
+0146  <span class="keyword">end</span>
+0147   
+0148    
+0149  
+0150  <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0151  <span class="comment">% TAKE THE NEW DATA</span>
+0152  
+0153  samples_per_frame=get(obj,<span class="string">'SamplesAcquiredFcnCount'</span>);
+0154  data=(getdata(obj,samples_per_frame))';    
+0155  
+0156  <span class="comment">% IN CASE - WRITE THE DATA</span>
+0157  <span class="keyword">if</span> flag_save&gt;0
+0158      <span class="keyword">if</span> fid==-1
+0159          name_of_data=sprintf(<span class="string">'%s-%d.dat'</span>,<span class="string">'dat'</span>,(round(cputime*1000)));
+0160          fid=fopen(name_of_data,<span class="string">'w'</span>);
+0161      <span class="keyword">end</span>
+0162      fwrite(fid,(data*10000),<span class="string">'short'</span>);
+0163      remark{8}=fid;
+0164  <span class="keyword">end</span>
+0165  
+0166  
+0167  <span class="comment">% Add to buffer</span>
+0168  buffer=[buffer data];
+0169  <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0170  
+0171  
+0172  remark{3}=buffer;
+0173  set(obj,<span class="string">'UserData'</span>,remark); 
+0174  
+0175   
+0176 <span class="keyword">return</span>
+0177 
+0178 
+0179 <a name="_sub3" href="#_subfunctions" class="code">function stop_dev(obj,event)</a>
+0180 
+0181      remark=get(obj,<span class="string">'UserData'</span>);
+0182      <span class="keyword">if</span> (remark{8}&gt;0)                 <span class="comment">%FID&gt;0 == There is open file</span>
+0183          fclose (remark{8});
+0184      <span class="keyword">end</span>
+0185      <a href="../../../chronux_2_10/fly_track/videoIO/videoIO_2006a/@videoReader/close.html" class="code" title="function vr = close(vr)">close</a> all
+0186      
+0187      fprintf(<span class="string">'\n\nThanks for using Erlich Real-Time scope\n'</span>);
+0188      save (remark{9},<span class="string">'remark'</span>);
+0189      
+0190      delete(obj)
+0191      clear obj
+0192 <span class="keyword">return</span>
+0193 
+0194 
+0195 
+0196 
+0197 
+0198 
+0199 
+0200 
+0201 
+0202 
+0203 
+0204 <a name="_sub4" href="#_subfunctions" class="code">function disply(obj,event)</a>
+0205 
+0206 
+0207  
+0208 
+0209   sample_frequency=get(obj,<span class="string">'SampleRate'</span>);
+0210   remark=get(obj,<span class="string">'UserData'</span>);
+0211   refresh_frq=remark{5};
+0212   read_shift=remark{1};
+0213   
+0214   ring=remark{2};
+0215   buffer=remark{3};
+0216   
+0217  
+0218   end_shift=min((read_shift+round(sample_frequency/refresh_frq)),length(buffer));
+0219   new_data=buffer(read_shift:end_shift);
+0220   ring=[ring new_data];
+0221   ring(1:length(new_data))=[];
+0222   remark{1}=end_shift;
+0223   remark{2}=ring;
+0224   
+0225   
+0226   <a href="start_display.html" class="code" title="function start_display(ring,fig)">start_display</a>(ring,remark{4})
+0227   
+0228   set(obj,<span class="string">'UserData'</span>,remark);
+0229 <span class="keyword">return</span>
+0230  
+0231</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

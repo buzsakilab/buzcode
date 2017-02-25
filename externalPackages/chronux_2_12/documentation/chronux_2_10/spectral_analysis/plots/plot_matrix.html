@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of plot_matrix</title>
+  <meta name="keywords" content="plot_matrix">
+  <meta name="description" content="Function to plot a time-frequency matrix X. Time and frequency axes are in t and f.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html plots -->
+<h1>plot_matrix
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Function to plot a time-frequency matrix X. Time and frequency axes are in t and f.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function plot_matrix(X,t,f,plt,Xerr) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Function to plot a time-frequency matrix X. Time and frequency axes are in t and f.
+ If error bars are specified in Xerr,
+ it also plots them. Xerr contains upper and lower confidence intervals 
+ on X. 
+ Usage: plot_matrix(X,t,f,plt,Xerr)
+ Inputs:
+ X: input vector as a function of time and frequency (t x f)
+ t: t axis grid for plot. Default [1:size(X,1)]
+ f: f axis grid for plot. Default. [1:size(X,2)]
+ plt: 'l' for log, 'n' for no log.
+ Xerr: lower and upper confidence intervals for X1: lower/upper x t x f.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function plot_matrix(X,t,f,plt,Xerr)</a>
+0002 <span class="comment">% Function to plot a time-frequency matrix X. Time and frequency axes are in t and f.</span>
+0003 <span class="comment">% If error bars are specified in Xerr,</span>
+0004 <span class="comment">% it also plots them. Xerr contains upper and lower confidence intervals</span>
+0005 <span class="comment">% on X.</span>
+0006 <span class="comment">% Usage: plot_matrix(X,t,f,plt,Xerr)</span>
+0007 <span class="comment">% Inputs:</span>
+0008 <span class="comment">% X: input vector as a function of time and frequency (t x f)</span>
+0009 <span class="comment">% t: t axis grid for plot. Default [1:size(X,1)]</span>
+0010 <span class="comment">% f: f axis grid for plot. Default. [1:size(X,2)]</span>
+0011 <span class="comment">% plt: 'l' for log, 'n' for no log.</span>
+0012 <span class="comment">% Xerr: lower and upper confidence intervals for X1: lower/upper x t x f.</span>
+0013 <span class="keyword">if</span> nargin &lt; 1; error(<span class="string">'Need data'</span>); <span class="keyword">end</span>;
+0014 [NT,NF]=size(X);
+0015 <span class="keyword">if</span> nargin &lt; 2;
+0016     t=1:NT;
+0017 <span class="keyword">end</span>;
+0018 <span class="keyword">if</span> nargin &lt; 3;
+0019     f=1:NF;
+0020 <span class="keyword">end</span>;
+0021 <span class="keyword">if</span> length(f)~=NF || length(t)~=NT; error(<span class="string">'axes grid and data have incompatible lengths'</span>); <span class="keyword">end</span>;
+0022 <span class="keyword">if</span> nargin &lt; 4 || isempty(plt);
+0023     plt=<span class="string">'l'</span>;
+0024 <span class="keyword">end</span>;
+0025 <span class="keyword">if</span> strcmp(plt,<span class="string">'l'</span>);
+0026     X=10*log10(X);
+0027     <span class="keyword">if</span> nargin ==5; Xerr=10*log10(Xerr); <span class="keyword">end</span>;
+0028 <span class="keyword">end</span>;
+0029 
+0030 <span class="keyword">if</span> nargin &lt; 5;
+0031    imagesc(t,f,X');axis xy; colorbar; title(<span class="string">'Spectrogram'</span>);
+0032 <span class="keyword">else</span>
+0033    subplot(311); imagesc(t,f,squeeze(Xerr(1,:,:))'); axis xy; colorbar; title(<span class="string">'Lower confidence'</span>);
+0034    subplot(312); imagesc(t,f,X'); title(<span class="string">'X'</span>);axis xy; colorbar;
+0035    subplot(313); imagesc(t,f,squeeze(Xerr(2,:,:))'); axis xy; colorbar; title(<span class="string">'Upper confidence'</span>);
+0036 <span class="keyword">end</span>;
+0037 xlabel(<span class="string">'t'</span>);ylabel(<span class="string">'f'</span>);
+0038</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

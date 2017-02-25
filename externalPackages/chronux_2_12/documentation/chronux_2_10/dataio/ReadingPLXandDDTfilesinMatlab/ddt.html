@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of ddt</title>
+  <meta name="keywords" content="ddt">
+  <meta name="description" content="ddt(filename) Read data from a .ddt file">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html dataio --><!-- menu.html ReadingPLXandDDTfilesinMatlab -->
+<h1>ddt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>ddt(filename) Read data from a .ddt file</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [nch, npoints, freq, d] = ddt(filename) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> ddt(filename) Read data from a .ddt file
+
+ [nch, npoints, freq, d] = ddt(filename)
+
+ INPUT:
+   filename - if empty string, will use File Open dialog
+
+ OUTPUT:
+   nch - number of channels
+   npoints - number of data points for each channel
+   freq - A/D frequency
+   d - [nch npoints] data array</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [nch, npoints, freq, d] = ddt(filename)</a>
+0002 <span class="comment">% ddt(filename) Read data from a .ddt file</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [nch, npoints, freq, d] = ddt(filename)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% INPUT:</span>
+0007 <span class="comment">%   filename - if empty string, will use File Open dialog</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% OUTPUT:</span>
+0010 <span class="comment">%   nch - number of channels</span>
+0011 <span class="comment">%   npoints - number of data points for each channel</span>
+0012 <span class="comment">%   freq - A/D frequency</span>
+0013 <span class="comment">%   d - [nch npoints] data array</span>
+0014 
+0015 <span class="keyword">if</span>(nargin ~= 1)
+0016    disp(<span class="string">'1 input argument is required'</span>)
+0017    <span class="keyword">return</span>
+0018 <span class="keyword">end</span>
+0019 nch = 0;
+0020 npoints = 0;
+0021 
+0022 <span class="keyword">if</span>(isempty(filename))
+0023    [fname, pathname] = uigetfile(<span class="string">'*.ddt'</span>, <span class="string">'Select a ddt file'</span>);
+0024     filename = strcat(pathname, fname);
+0025 <span class="keyword">end</span>
+0026 fid = fopen(filename, <span class="string">'r'</span>);
+0027 <span class="keyword">if</span>(fid == -1)
+0028     disp(<span class="string">'cannot open file'</span>);
+0029    <span class="keyword">return</span>
+0030 <span class="keyword">end</span>
+0031 disp(strcat(<span class="string">'file = '</span>, filename));
+0032 version = fread(fid, 1, <span class="string">'int32'</span>);
+0033 dataoffset = fread(fid, 1, <span class="string">'int32'</span>);
+0034 freq = fread(fid, 1, <span class="string">'double'</span>);
+0035 nch = fread(fid, 1, <span class="string">'int32'</span>);
+0036 
+0037 fseek(fid, 0, 1);
+0038 fsize = ftell(fid);
+0039 frewind(fid);
+0040 fseek(fid, dataoffset, 0);
+0041 npoints = (fsize - dataoffset)/(nch*2);
+0042 d = fread(fid, [nch npoints], <span class="string">'int16'</span>);
+0043 
+0044 fclose(fid);</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

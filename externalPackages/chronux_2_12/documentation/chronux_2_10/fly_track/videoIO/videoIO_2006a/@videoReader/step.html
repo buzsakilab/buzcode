@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of step</title>
+  <meta name="keywords" content="step">
+  <meta name="description" content="WORKED=STEP(VR,DELTA)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../../../menu.html chronux_2_10 --><!-- # fly_track --><!-- # videoIO --><!-- ../menu.html videoIO_2006a --><!-- menu.html @videoReader -->
+<h1>step
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>WORKED=STEP(VR,DELTA)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="box"><strong>function fn = step(vr, delta) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">WORKED=STEP(VR,DELTA)
+  Moves the frame counter by DELTA frames for video VR.  This is a 
+  generalization of NEXT.  Returns 0 on an unsuccessful STEP.  Note that 
+  not all plugins support stepping, especially with negative numbers.  In 
+  the following example, both IM1 and IM2 should be the same for most 
+  plugins.
+    vr = videoReader(...myurl...);
+    if (~next(vr)), error('couldn''t read first frame'); end
+    im1 = getframe(vr);
+    if (~step(vr,-1)), error('could not step back to frame 0'); end
+    im2 = getframe(vr);
+    if (any(im1 ~= im2)), 
+      error('first frame and frame 0 are not the same'); 
+    end
+    vr = close(vr);
+  FNUM should be an integer.
+
+  After the videoReader constructor is called, NEXT, SEEK, or STEP should
+  be called at least once before GETFRAME is called. 
+
+  See videoReader/getinfo for more details on how many frames can be read
+  from a video. 
+
+SEE ALSO
+  <a href="videoReader.html" class="code" title="function vr = videoReader(url, varargin)">videoReader</a>
+
+Copyright (c) 2006 Gerald Dalley
+See &quot;MIT.txt&quot; in the installation directory for licensing details (especially
+when using this library on GNU/Linux).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function fn = step(vr, delta)</a>
+0002 <span class="comment">%WORKED=STEP(VR,DELTA)</span>
+0003 <span class="comment">%  Moves the frame counter by DELTA frames for video VR.  This is a</span>
+0004 <span class="comment">%  generalization of NEXT.  Returns 0 on an unsuccessful STEP.  Note that</span>
+0005 <span class="comment">%  not all plugins support stepping, especially with negative numbers.  In</span>
+0006 <span class="comment">%  the following example, both IM1 and IM2 should be the same for most</span>
+0007 <span class="comment">%  plugins.</span>
+0008 <span class="comment">%    vr = videoReader(...myurl...);</span>
+0009 <span class="comment">%    if (~next(vr)), error('couldn''t read first frame'); end</span>
+0010 <span class="comment">%    im1 = getframe(vr);</span>
+0011 <span class="comment">%    if (~step(vr,-1)), error('could not step back to frame 0'); end</span>
+0012 <span class="comment">%    im2 = getframe(vr);</span>
+0013 <span class="comment">%    if (any(im1 ~= im2)),</span>
+0014 <span class="comment">%      error('first frame and frame 0 are not the same');</span>
+0015 <span class="comment">%    end</span>
+0016 <span class="comment">%    vr = close(vr);</span>
+0017 <span class="comment">%  FNUM should be an integer.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%  After the videoReader constructor is called, NEXT, SEEK, or STEP should</span>
+0020 <span class="comment">%  be called at least once before GETFRAME is called.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%  See videoReader/getinfo for more details on how many frames can be read</span>
+0023 <span class="comment">%  from a video.</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">%SEE ALSO</span>
+0026 <span class="comment">%  videoReader</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">%Copyright (c) 2006 Gerald Dalley</span>
+0029 <span class="comment">%See &quot;MIT.txt&quot; in the installation directory for licensing details (especially</span>
+0030 <span class="comment">%when using this library on GNU/Linux).</span>
+0031 
+0032 fn = feval(vr.plugin, <span class="string">'step'</span>, vr.handle, delta);
+0033</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

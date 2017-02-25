@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nex_cont</title>
+  <meta name="keywords" content="nex_cont">
+  <meta name="description" content="nex_cont(filename, varname): Read continuous variable from a .nex file">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html dataio --><!-- menu.html HowToReadNexFilesInMatlab -->
+<h1>nex_cont
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>nex_cont(filename, varname): Read continuous variable from a .nex file</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [adfreq, n, ts, fn, d] = nex_cont(filename, varname) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> nex_cont(filename, varname): Read continuous variable from a .nex file
+
+ [adfreq, n, ts, fn, d] = nex_cont(filename, varname)
+
+ INPUT:
+   filename - if empty string, will use File Open dialog
+   varname - variable name
+
+           continuous (a/d) data come in fragments. Each fragment has a timestamp
+           and a number of a/d data points. The timestamp corresponds to
+           the time of recording of the first a/d value in this fragment.
+           All the data values stored in the vector d. 
+ OUTPUT:
+   n - total number of data points 
+   ts - array of fragment timestamps (one timestamp for fragment, in seconds)
+   fn - number of data points in each fragment
+   d - array of a/d values (in millivolts)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="test_nex.html" class="code" title="">test_nex</a>	</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [adfreq, n, ts, fn, d] = nex_cont(filename, varname)</a>
+0002 <span class="comment">% nex_cont(filename, varname): Read continuous variable from a .nex file</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [adfreq, n, ts, fn, d] = nex_cont(filename, varname)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% INPUT:</span>
+0007 <span class="comment">%   filename - if empty string, will use File Open dialog</span>
+0008 <span class="comment">%   varname - variable name</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%           continuous (a/d) data come in fragments. Each fragment has a timestamp</span>
+0011 <span class="comment">%           and a number of a/d data points. The timestamp corresponds to</span>
+0012 <span class="comment">%           the time of recording of the first a/d value in this fragment.</span>
+0013 <span class="comment">%           All the data values stored in the vector d.</span>
+0014 <span class="comment">% OUTPUT:</span>
+0015 <span class="comment">%   n - total number of data points</span>
+0016 <span class="comment">%   ts - array of fragment timestamps (one timestamp for fragment, in seconds)</span>
+0017 <span class="comment">%   fn - number of data points in each fragment</span>
+0018 <span class="comment">%   d - array of a/d values (in millivolts)</span>
+0019 
+0020 n = 0;
+0021 adfreq = 0;
+0022 ts = 0;
+0023 fn = 0;
+0024 d = 0;
+0025 
+0026 <span class="keyword">if</span>(nargin ~= 2)
+0027    disp(<span class="string">'2 input arguments are required'</span>)
+0028    <span class="keyword">return</span>
+0029 <span class="keyword">end</span>
+0030 
+0031 <span class="keyword">if</span>(ischar(filename) == 0)
+0032    disp(<span class="string">'input arguments should be character arrays'</span>)
+0033    <span class="keyword">return</span>
+0034 <span class="keyword">end</span>
+0035 
+0036 <span class="keyword">if</span>(ischar(varname) == 0)
+0037    disp(<span class="string">'input arguments should be character arrays'</span>)
+0038    <span class="keyword">return</span>
+0039 <span class="keyword">end</span>
+0040 
+0041 <span class="keyword">if</span>(isempty(filename))
+0042    [fname, pathname] = uigetfile(<span class="string">'*.nex'</span>, <span class="string">'Select a Nex file'</span>);
+0043     filename = strcat(pathname, fname);
+0044 <span class="keyword">end</span>
+0045 
+0046 fid = fopen(filename, <span class="string">'r'</span>);
+0047 <span class="keyword">if</span>(fid == 0)
+0048    <span class="keyword">return</span>
+0049 <span class="keyword">end</span>
+0050 
+0051 disp(strcat(<span class="string">'file = '</span>, filename));
+0052 magic = fread(fid, 1, <span class="string">'int32'</span>);
+0053 version = fread(fid, 1, <span class="string">'int32'</span>);
+0054 comment = fread(fid, 256, <span class="string">'char'</span>);
+0055 freq = fread(fid, 1, <span class="string">'double'</span>);
+0056 tbeg = fread(fid, 1, <span class="string">'int32'</span>);
+0057 tend = fread(fid, 1, <span class="string">'int32'</span>);
+0058 nvar = fread(fid, 1, <span class="string">'int32'</span>);
+0059 fseek(fid, 260, <span class="string">'cof'</span>);
+0060 name = zeros(1, 64);
+0061 found = 0;
+0062 <span class="keyword">for</span> i=1:nvar
+0063     type = fread(fid, 1, <span class="string">'int32'</span>);
+0064     var_version = fread(fid, 1, <span class="string">'int32'</span>);
+0065     name = fread(fid, [1 64], <span class="string">'char'</span>);
+0066     offset = fread(fid, 1, <span class="string">'int32'</span>);
+0067     nf = fread(fid, 1, <span class="string">'int32'</span>);
+0068     dummy = fread(fid, 32, <span class="string">'char'</span>);
+0069     adfreq = fread(fid, 1, <span class="string">'double'</span>);
+0070     adtomv = fread(fid, 1, <span class="string">'double'</span>);
+0071     n = fread(fid, 1, <span class="string">'int32'</span>);
+0072     name = char(name);
+0073     name = deblank(name);
+0074     k = strcmp(name, deblank(varname));
+0075     <span class="keyword">if</span>(k == 1)
+0076         <span class="keyword">if</span> type ~= 5
+0077             disp(sprintf(<span class="string">'%s is not a continuous variable'</span>, deblank(varname)));
+0078             <span class="keyword">return</span>;
+0079         <span class="keyword">end</span>
+0080         found = 1;
+0081         fseek(fid, offset, <span class="string">'bof'</span>);
+0082         ts = fread(fid, [1 nf], <span class="string">'int32'</span>);
+0083         fn = fread(fid, [1 nf], <span class="string">'int32'</span>);
+0084         d = fread(fid, [1 n], <span class="string">'int16'</span>);
+0085         <span class="keyword">break</span>
+0086     <span class="keyword">end</span>
+0087     dummy = fread(fid, 76, <span class="string">'char'</span>);
+0088 <span class="keyword">end</span>
+0089 
+0090 fclose(fid);
+0091 
+0092 <span class="keyword">if</span> found == 0
+0093     disp(<span class="string">'did not find variable in the file'</span>);
+0094 <span class="keyword">else</span>
+0095     ts = ts/freq;
+0096     d = d*adtomv;
+0097     fn(nf+1) = n;
+0098     fn = diff(fn);
+0099     disp(strcat(<span class="string">'number of data points = '</span>, num2str(n)));
+0100 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

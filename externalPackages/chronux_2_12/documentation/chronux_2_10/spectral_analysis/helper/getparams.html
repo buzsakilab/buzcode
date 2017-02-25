@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getparams</title>
+  <meta name="keywords" content="getparams">
+  <meta name="description" content="Helper function to convert structure params to variables used by the">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../../m2html.css">
+  <script type="text/javascript">
+    if (top.frames.length == 0) { top.location = "../../../index.html"; };
+  </script>
+</head>
+<body>
+<a name="_top"></a>
+<!-- ../../menu.html chronux_2_10 --><!-- ../menu.html spectral_analysis --><!-- menu.html helper -->
+<h1>getparams
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>Helper function to convert structure params to variables used by the</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="box"><strong>function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Helper function to convert structure params to variables used by the
+ various routines - also performs checks to ensure that parameters are
+ defined; returns default values if they are not defined.
+
+ Usage: [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)
+
+ Inputs:
+       params: structure with fields tapers, pad, Fs, fpass, err, trialave
+           - optional
+             tapers : precalculated tapers from dpss or in the one of the following
+                       forms:  
+                       (1) A numeric vector [TW K] where TW is the
+                           time-bandwidth product and K is the number of
+                           tapers to be used (less than or equal to
+                           2TW-1). 
+                       (2) A numeric vector [W T p] where W is the
+                           bandwidth, T is the duration of the data and p 
+                           is an integer such that 2TW-p tapers are used. In
+                           this form there is no default i.e. to specify
+                           the bandwidth, you have to specify T and p as
+                           well. Note that the units of W and T have to be
+                            consistent: if W is in Hz, T must be in seconds
+                             and vice versa. Note that these units must also
+                            be consistent with the units of params.Fs: W can
+                            be in Hz if and only if params.Fs is in Hz.
+                           The default is to use form 1 with TW=3 and K=5
+
+            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...). 
+                    -1 corresponds to no padding, 0 corresponds to padding
+                    to the next highest power of 2 etc.
+                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT
+                       to 512 points, if pad=1, we pad to 1024 points etc.
+                       Defaults to 0.
+           Fs   (sampling frequency) - optional. Default 1.
+           fpass    (frequency band to be used in the calculation in the form
+                                   [fmin fmax])- optional. 
+                                   Default all frequencies between 0 and Fs/2
+           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars
+                                   [0 p] or 0 - no error bars) - optional. Default 0.
+           trialave (average over trials when 1, don't average when 0) - optional. Default 0
+ Outputs: 
+ The fields listed above as well as the struct params. The fields are used
+ by some routines and the struct is used by others. Though returning both
+ involves overhead, it is a safer, simpler thing to do.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../../matlabicon.gif)">
+<li><a href="../../../chronux_2_10/old/CrossSpecMat.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMat(data,win,params)">CrossSpecMat</a>	</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/CrossSpecMatc.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatc(data,win,params)">CrossSpecMatc</a>	Multi-taper cross-spectral matrix - another routine, allows for multiple trials and channels</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/coherencyc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencyc(data1,data2,params)">coherencyc</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/coherencyc_unequal_length_trials.html" class="code" title="function [Cmn,Phimn,Smn,Smm,f,ConfC,PhiStd,Cerr] = coherencyc_unequal_length_trials( data, movingwin, params, sMarkers )">coherencyc_unequal_length_trials</a>	This routine computes the average multi-taper coherence for a given set of unequal length segments. It is</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/coherencysegc.html" class="code" title="function [C,phi,S12,S1,S2,f,confC,phistd,Cerr]=coherencysegc(data1,data2,win,params)">coherencysegc</a>	Multi-taper coherency, cross-spectrum and individual spectra with segmenting - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/cohgramc.html" class="code" title="function [C,phi,S12,S1,S2,t,f,confC,phistd,Cerr]=cohgramc(data1,data2,movingwin,params)">cohgramc</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra - continuous processes</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/cohmatrixc.html" class="code" title="function [C,phi,S12,f,confC,phistd,Cerr]=cohmatrixc(data,params)">cohmatrixc</a>	Multi-taper coherency,cross-spectral matrix - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/fitlinesc.html" class="code" title="function [datafit,Amps,freqs,Fval,sig]=fitlinesc(data,params,p,plt,f0)">fitlinesc</a>	fits significant sine waves to data (continuous data).</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/ftestc.html" class="code" title="function [Fval,A,f,sig,sd] = ftestc(data,params,p,plt)">ftestc</a>	computes the F-statistic for sine wave in locally-white noise (continuous data).</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtdspecgramc.html" class="code" title="function [dS,t,f]=mtdspecgramc(data,movingwin,phi,params)">mtdspecgramc</a>	Multi-taper derivative of the time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtdspectrumc.html" class="code" title="function [dS,f]=mtdspectrumc(data,phi,params)">mtdspectrumc</a>	Multi-taper frequency derivative of the spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtpowerandfstatc.html" class="code" title="function [P,Fstat,f0]=mtpowerandfstatc(data,params,f0)">mtpowerandfstatc</a>	Multi-taper computation of the power and the fstatistic for a particular frequency - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspecgramc.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc</a>	Multi-taper time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspecgramtrigc.html" class="code" title="function [S,t,f,Serr]=mtspecgramtrigc(data,E,win,movingwin,params)">mtspecgramtrigc</a>	Multi-taper event triggered time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrum_of_spectrumc.html" class="code" title="function [SS,tau]=mtspectrum_of_spectrumc(data,win,tapers2spec,params)">mtspectrum_of_spectrumc</a>	Multi-taper segmented, second spectrum (spectrum of the log spectrum) for a continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumc.html" class="code" title="function [S,f,Serr]=mtspectrumc(data,params)">mtspectrumc</a>	Multi-taper spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumc_unequal_length_trials.html" class="code" title="function [ S, f, Serr ]= mtspectrumc_unequal_length_trials( data, movingwin, params, sMarkers )">mtspectrumc_unequal_length_trials</a>	This routine computes the multi-taper spectrum for a given set of unequal length segments. It is</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumsegc.html" class="code" title="function [S,f,varS,C,Serr]=mtspectrumsegc(data,win,params,segave)">mtspectrumsegc</a>	Multi-taper segmented spectrum for a univariate continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/mtspectrumtrigc.html" class="code" title="function [S,f,Serr]=mtspectrumtrigc(data,E,win,params)">mtspectrumtrigc</a>	Multi-taper event triggered time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/nonst_stat.html" class="code" title="function sigma = nonst_stat(data,A,sumV,params)">nonst_stat</a>	Nonstationarity test - continuous process</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/rmlinesc.html" class="code" title="function data=rmlinesc(data,params,p,plt,f0)">rmlinesc</a>	removes significant sine waves from data (continuous data).</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/rmlinesmovingwinc.html" class="code" title="function [datac,datafit,Amps,freqs]=rmlinesmovingwinc(data,movingwin,tau,params,p,plt,f0)">rmlinesmovingwinc</a>	fits significant sine waves to data (continuous data) using overlapping windows.</li><li><a href="../../../chronux_2_10/spectral_analysis/continuous/spsvd.html" class="code" title="function [sv,sp,fm] = spsvd(data,params,mdkp)">spsvd</a>	Space frequency SVD of input data - continuous processes</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpb(data1,data2,params,fscorr)">coherencycpb</a>	Multi-taper coherency,cross-spectrum and individual spectra - continuous and binned point process data</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencycpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencycpt(data1,data2,params,fscorr,t)">coherencycpt</a>	Multi-taper coherency,cross-spectrum and individual spectra -continuous data and point process as times</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpb(data1,data2,win,params,segave,fscorr)">coherencysegcpb</a>	Multi-taper coherency,cross-spectrum and individual spectra with segmenting</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/coherencysegcpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegcpt(data1,data2,win,params,segave,fscorr)">coherencysegcpt</a>	Multi-taper coherency,cross-spectrum and individual spectra computed by segmenting</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/cohgramcpb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpb(data1,data2,movingwin,params,fscorr)">cohgramcpb</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="../../../chronux_2_10/spectral_analysis/hybrid/cohgramcpt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgramcpt(data1,data2,movingwin,params,fscorr)">cohgramcpt</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/CrossSpecMatpb.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatpb(data,win,params)">CrossSpecMatpb</a>	</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/coherencypb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypb(data1,data2,params,fscorr)">coherencypb</a>	Multi-taper coherency,cross-spectrum and individual spectra - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/coherencysegpb.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpb(data1,data2,win,params,segave,fscorr)">coherencysegpb</a>	Multi-taper coherency,cross-spectrum and individual spectra computed by segmenting</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/cohgrampb.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampb(data1,data2,movingwin,params,fscorr)">cohgrampb</a>	Multi-taper time-frequency coherence,cross-spectrum and individual spectra - two binned point processes</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/cohmatrixpb.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpb(data,params,fscorr)">cohmatrixpb</a>	Multi-taper coherency matrix - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtdspecgrampb.html" class="code" title="function [dS,t,f]=mtdspecgrampb(data,movingwin,phi,params)">mtdspecgrampb</a>	Multi-taper derivatives of time-frequency spectrum - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtdspectrumpb.html" class="code" title="function [dS,f]=mtdspectrumpb(data,phi,params)">mtdspectrumpb</a>	Multi-taper spectral derivative - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspecgrampb.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampb(data,movingwin,params,fscorr)">mtspecgrampb</a>	Multi-taper time-frequency spectrum - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspecgramtrigpb.html" class="code" title="function [S,t,f,R,Serr]=mtspecgramtrigpb(data,E,win,movingwin,params,fscorr)">mtspecgramtrigpb</a>	Multi-taper event triggered time-frequency spectrum - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumpb(data,params,fscorr)">mtspectrumpb</a>	Multi-taper spectrum - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumsegpb.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpb(data,win,params,segave,fscorr)">mtspectrumsegpb</a>	Multi-taper segmented spectrum for a univariate binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointbinned/mtspectrumtrigpb.html" class="code" title="function [S,f,R,Serr]=mtspectrumtrigpb(data,E,win,params,fscorr)">mtspectrumtrigpb</a>	Multi-taper event triggered time-frequency spectrum - binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/CrossSpecMatpt.html" class="code" title="function [Sc,Cmat,Ctot,Cvec,Cent,f]=CrossSpecMatpt(data,win,T,params)">CrossSpecMatpt</a>	</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/coherencypt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencypt(data1,data2,params,fscorr,t)">coherencypt</a>	Multi-taper coherency - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/coherencysegpt.html" class="code" title="function [C,phi,S12,S1,S2,f,zerosp,confC,phistd,Cerr]=coherencysegpt(data1,data2,win,params,segave,fscorr)">coherencysegpt</a>	Multi-taper coherency computed by segmenting two univariate point processes into chunks</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/cohgrampt.html" class="code" title="function [C,phi,S12,S1,S2,t,f,zerosp,confC,phistd,Cerr]=cohgrampt(data1,data2,movingwin,params,fscorr)">cohgrampt</a>	Multi-taper time-frequency coherence - two point processes given as times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/cohmatrixpt.html" class="code" title="function [C,phi,S12,f,zerosp,confC,phistd,Cerr]=cohmatrixpt(data,params,fscorr)">cohmatrixpt</a>	Multi-taper coherency matrix - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtdspecgrampt.html" class="code" title="function [dS,t,f]=mtdspecgrampt(data,movingwin,phi,params)">mtdspecgrampt</a>	Multi-taper derivative time-frequency spectrum - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtdspectrumpt.html" class="code" title="function [dS,f]=mtdspectrumpt(data,phi,params,t)">mtdspectrumpt</a>	Multi-taper spectral derivative - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspecgrampt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgrampt(data,movingwin,params,fscorr)">mtspecgrampt</a>	Multi-taper time-frequency spectrum - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspecgramtrigpt.html" class="code" title="function [S,t,f,R,Serr]=mtspecgramtrigpt(data,E,win,movingwin,params,fscorr)">mtspecgramtrigpt</a>	Multi-taper event triggered time-frequency spectrum - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumpt(data,params,fscorr,t)">mtspectrumpt</a>	Multi-taper spectrum - point process times</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumsegpt.html" class="code" title="function [S,f,R,varS,zerosp,C,Serr]=mtspectrumsegpt(data,win,params,segave,fscorr)">mtspectrumsegpt</a>	Multi-taper segmented spectrum for a univariate binned point process</li><li><a href="../../../chronux_2_10/spectral_analysis/pointtimes/mtspectrumtrigpt.html" class="code" title="function [S,f,R,Serr]=mtspectrumtrigpt(data,E,win,params,fscorr)">mtspectrumtrigpt</a>	Multi-taper time-frequency spectrum - point process times</li><li><a href="../../../chronux_2_10/test/mtspecgramc_fast.html" class="code" title="function [S,t,f,Serr]=mtspecgramc(data,movingwin,params)">mtspecgramc_fast</a>	Multi-taper time-frequency spectrum - continuous process</li><li><a href="../../../chronux_2_10/test/mtspecgramc_slow.html" class="code" title="function [S,t,f,Serr]=mtspecgramc_slow(data,movingwin,params)">mtspecgramc_slow</a>	Multi-taper time-frequency spectrum - continuous process</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)</a>
+0002 <span class="comment">% Helper function to convert structure params to variables used by the</span>
+0003 <span class="comment">% various routines - also performs checks to ensure that parameters are</span>
+0004 <span class="comment">% defined; returns default values if they are not defined.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Usage: [tapers,pad,Fs,fpass,err,trialave,params]=getparams(params)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Inputs:</span>
+0009 <span class="comment">%       params: structure with fields tapers, pad, Fs, fpass, err, trialave</span>
+0010 <span class="comment">%           - optional</span>
+0011 <span class="comment">%             tapers : precalculated tapers from dpss or in the one of the following</span>
+0012 <span class="comment">%                       forms:</span>
+0013 <span class="comment">%                       (1) A numeric vector [TW K] where TW is the</span>
+0014 <span class="comment">%                           time-bandwidth product and K is the number of</span>
+0015 <span class="comment">%                           tapers to be used (less than or equal to</span>
+0016 <span class="comment">%                           2TW-1).</span>
+0017 <span class="comment">%                       (2) A numeric vector [W T p] where W is the</span>
+0018 <span class="comment">%                           bandwidth, T is the duration of the data and p</span>
+0019 <span class="comment">%                           is an integer such that 2TW-p tapers are used. In</span>
+0020 <span class="comment">%                           this form there is no default i.e. to specify</span>
+0021 <span class="comment">%                           the bandwidth, you have to specify T and p as</span>
+0022 <span class="comment">%                           well. Note that the units of W and T have to be</span>
+0023 <span class="comment">%                            consistent: if W is in Hz, T must be in seconds</span>
+0024 <span class="comment">%                             and vice versa. Note that these units must also</span>
+0025 <span class="comment">%                            be consistent with the units of params.Fs: W can</span>
+0026 <span class="comment">%                            be in Hz if and only if params.Fs is in Hz.</span>
+0027 <span class="comment">%                           The default is to use form 1 with TW=3 and K=5</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">%            pad            (padding factor for the FFT) - optional (can take values -1,0,1,2...).</span>
+0030 <span class="comment">%                    -1 corresponds to no padding, 0 corresponds to padding</span>
+0031 <span class="comment">%                    to the next highest power of 2 etc.</span>
+0032 <span class="comment">%                       e.g. For N = 500, if PAD = -1, we do not pad; if PAD = 0, we pad the FFT</span>
+0033 <span class="comment">%                       to 512 points, if pad=1, we pad to 1024 points etc.</span>
+0034 <span class="comment">%                       Defaults to 0.</span>
+0035 <span class="comment">%           Fs   (sampling frequency) - optional. Default 1.</span>
+0036 <span class="comment">%           fpass    (frequency band to be used in the calculation in the form</span>
+0037 <span class="comment">%                                   [fmin fmax])- optional.</span>
+0038 <span class="comment">%                                   Default all frequencies between 0 and Fs/2</span>
+0039 <span class="comment">%           err  (error calculation [1 p] - Theoretical error bars; [2 p] - Jackknife error bars</span>
+0040 <span class="comment">%                                   [0 p] or 0 - no error bars) - optional. Default 0.</span>
+0041 <span class="comment">%           trialave (average over trials when 1, don't average when 0) - optional. Default 0</span>
+0042 <span class="comment">% Outputs:</span>
+0043 <span class="comment">% The fields listed above as well as the struct params. The fields are used</span>
+0044 <span class="comment">% by some routines and the struct is used by others. Though returning both</span>
+0045 <span class="comment">% involves overhead, it is a safer, simpler thing to do.</span>
+0046 
+0047 <span class="keyword">if</span> ~isfield(params,<span class="string">'tapers'</span>) || isempty(params.tapers);  <span class="comment">%If the tapers don't exist</span>
+0048      display(<span class="string">'tapers unspecified, defaulting to params.tapers=[3 5]'</span>);
+0049      params.tapers=[3 5];
+0050 <span class="keyword">end</span>;
+0051 <span class="keyword">if</span> ~isempty(params) &amp;&amp; length(params.tapers)==3 
+0052     <span class="comment">% Compute timebandwidth product</span>
+0053     TW = params.tapers(2)*params.tapers(1);
+0054     <span class="comment">% Compute number of tapers</span>
+0055     K  = floor(2*TW - params.tapers(3));
+0056     params.tapers = [TW  K];
+0057 <span class="keyword">end</span>
+0058 
+0059 <span class="keyword">if</span> ~isfield(params,<span class="string">'pad'</span>) || isempty(params.pad);
+0060     params.pad=0;
+0061 <span class="keyword">end</span>;
+0062 <span class="keyword">if</span> ~isfield(params,<span class="string">'Fs'</span>) || isempty(params.Fs);
+0063     params.Fs=1;
+0064 <span class="keyword">end</span>;
+0065 <span class="keyword">if</span> ~isfield(params,<span class="string">'fpass'</span>) || isempty(params.fpass);
+0066     params.fpass=[0 params.Fs/2];
+0067 <span class="keyword">end</span>;
+0068 <span class="keyword">if</span> ~isfield(params,<span class="string">'err'</span>) || isempty(params.err);
+0069     params.err=0;
+0070 <span class="keyword">end</span>;
+0071 <span class="keyword">if</span> ~isfield(params,<span class="string">'trialave'</span>) || isempty(params.trialave);
+0072     params.trialave=0;
+0073 <span class="keyword">end</span>;
+0074 
+0075 tapers=params.tapers;
+0076 pad=params.pad;
+0077 Fs=params.Fs;
+0078 fpass=params.fpass;
+0079 err=params.err;
+0080 trialave=params.trialave;</pre></div>
+<hr><address>Generated on Fri 12-Aug-2011 11:36:15 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" target="_parent">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
