@@ -19,7 +19,7 @@
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
-function test = isstring_FMAT_FMAT(x,varargin)
+function test = isstring_FMAT(x,varargin)
 
 % Check number of parameters
 if nargin < 1,
