@@ -1,5 +1,5 @@
 function Process_ConvertOptitrack2Pos(fbasename,varargin)
-% this function assumes that a Motive (Optitrack) behabvioral session 
+% this function assumes that a Motive (Optitrack) behavioral session 
 % has been exported to a .CSV file with default settings.
 % (http://wiki.optitrack.com/index.php?title=Data_Export:_CSV)
 %
@@ -73,7 +73,7 @@ end
     pos = dat.data;    
     
     fid = fopen(syncDatFile); 
-    dig = fread(fid,[syncNbCh inf],'int16=>int16');
+    dig = fread(fid,[syncNbCh inf],'int16=>int16');  % default type for Intan digitalin
     dig = dig(syncChan,:);
     
     t = (0:length(dig)-1)'/syncSampFq;
