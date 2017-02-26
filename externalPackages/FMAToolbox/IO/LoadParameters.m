@@ -15,6 +15,8 @@ function parameters = LoadParameters(filename)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
+% updated for compatibility by David Tingley 02/2017
+
 if ~exist(filename),
 	error(['File ''' filename ''' not found.']);
 end
@@ -26,10 +28,11 @@ end
 
 t = xmltree(filename);
 p = convert(t);
-parameters = p;
+% parameters = p;
 
 parameters.session.path = pathname;
 parameters.session.name = basename;
+
 
 if isempty(which('xmltree')),
 	error('This function requires the <a href="http://www.artefact.tk/software/matlab/xml/">xmltree</a> toolbox by G. Flandin.');
@@ -73,11 +76,29 @@ parameters.rates.lfp = str2num(p.fieldPotentials.lfpSamplingRate);
 parameters.rates.wideband = str2num(p.acquisitionSystem.samplingRate);
 try
 	parameters.rates.video = str2num(p.video.samplingRate);
-	parameters.maxX = str2num(p.video.width);
-	parameters.maxY = str2num(p.video.height);
+% 	parameters.maxX = str2num(p.video.width);   % Deprecated with new tracking systems
+% 	parameters.maxY = str2num(p.video.height);  % Deprecated with new tracking systems
 catch
 	parameters.rates.video = 0;
-	parameters.maxX = 0;
-	parameters.maxY = 0;
+% 	parameters.maxX = 0;  % Deprecated with new tracking systems
+% 	parameters.maxY = 0;  % Deprecated with new tracking systems 
 	disp('... warning: missing video parameters (set to zero)');
 end
+
+% for backwards compatibility with LoadPar.m
+parameters.FileName = parameters.session.name;  % killing me slowly with redundancy 
+parameters.SampleTime = (1/str2num(p.acquisitionSystem.samplingRate)) * 1e+6; % duration of a sample in microseconds
+parameters.nElecGps = length(p.spikeDetection.channelGroups.group);
+parameters.ElecGp = p.spikeDetection.channelGroups.group;
+parameters.HiPassFreq = 500; % default hi-pass for klusta-3.0 w/ intan data
+
+% for backwards compatibility with loadXml_old.m and variants
+parameters.Date = p.generalInfo.date;
+parameters.VoltageRange = p.acquisitionSystem.voltageRange;
+parameters.Amplification = p.acquisitionSystem.amplification;
+parameters.Offset = p.acquisitionSystem.offset;
+parameters.lfpSampleRate = p.fieldPotentials.lfpSamplingRate;
+parameters.AnatGrps = p.anatomicalDescription.channelGroups.group;
+parameters.SpkGrps = p.spikeDetection.channelGroups.group;
+
+
