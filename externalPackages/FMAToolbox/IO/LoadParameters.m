@@ -19,6 +19,15 @@ if ~exist(filename),
 	error(['File ''' filename ''' not found.']);
 end
 [pathname,basename] = fileparts(filename);
+
+if isempty(pathname)
+    pathname = pwd;
+end
+
+t = xmltree(filename);
+p = convert(t);
+parameters = p;
+
 parameters.session.path = pathname;
 parameters.session.name = basename;
 
@@ -26,8 +35,7 @@ if isempty(which('xmltree')),
 	error('This function requires the <a href="http://www.artefact.tk/software/matlab/xml/">xmltree</a> toolbox by G. Flandin.');
 end
 
-t = xmltree(filename);
-p = convert(t);
+
 if ~isempty(p.spikeDetection),
 	parameters.spikeGroups.nGroups = length(p.spikeDetection.channelGroups.group);
 	if parameters.spikeGroups.nGroups == 1,

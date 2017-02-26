@@ -80,8 +80,10 @@ end
 %=======================================================================
 function v = xml_create_var(t,uid)
     type = attributes(t,'get',uid,'type');
-    sz   = str2num(attributes(t,'get',uid,'size'));
+%     sz   = str2num(attributes(t,'get',uid,'size'));
+    sz   = attributes(t,'length',uid);
     
+%     if ~isempty(type)
     switch type
         case 'double'
             v = str2num(get(t,children(t,uid),'value'));
@@ -146,4 +148,5 @@ function v = xml_create_var(t,uid)
                 warning(sprintf(...
                 '[LOADXML] Cannot convert from XML to %s.',type));
             end
+%     end
     end
