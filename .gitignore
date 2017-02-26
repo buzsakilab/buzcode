@@ -49,3 +49,5 @@ Temporary Items
 
 #Matlab temporary files
 *.m~
+#Vim and other text editor tmp files
+*.swp
