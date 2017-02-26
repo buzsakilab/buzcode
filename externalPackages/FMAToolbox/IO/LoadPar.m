@@ -1,4 +1,4 @@
-% function Par = LoadPar(FileName, varargin)
+function Par = LoadPar(FileName, varargin)
 % % LoadPar(FileName)
 % % loads the specified par file and returns a structure with these elements:
 % %
@@ -16,7 +16,7 @@
 % 
 warning(['this function is now deprecated from /buzcode and has been replaced '...
         'with a backwards compatible version of LoadParameters.m\n'])
-Par = LoadParameters(fbasename);
+Par = LoadParameters(FileName);
 % 
 % 
 % [SpecInfo] = DefaultArgs(varargin,{1});
