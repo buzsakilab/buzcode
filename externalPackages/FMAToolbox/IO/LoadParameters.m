@@ -94,10 +94,10 @@ parameters.HiPassFreq = 500; % default hi-pass for klusta-3.0 w/ intan data
 
 % for backwards compatibility with loadXml_old.m and variants
 parameters.Date = p.generalInfo.date;
-parameters.VoltageRange = p.acquisitionSystem.voltageRange;
-parameters.Amplification = p.acquisitionSystem.amplification;
-parameters.Offset = p.acquisitionSystem.offset;
-parameters.lfpSampleRate = p.fieldPotentials.lfpSamplingRate;
+parameters.VoltageRange = str2num(p.acquisitionSystem.voltageRange);
+parameters.Amplification = str2num(p.acquisitionSystem.amplification);
+parameters.Offset = str2num(p.acquisitionSystem.offset);
+parameters.lfpSampleRate = str2num(p.fieldPotentials.lfpSamplingRate);
 parameters.AnatGrps = p.anatomicalDescription.channelGroups.group;
 parameters.SpkGrps = p.spikeDetection.channelGroups.group;
 
