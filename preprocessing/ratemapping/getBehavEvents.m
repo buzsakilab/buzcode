@@ -1,5 +1,12 @@
-function [x y pos trials map mapping] = getBehavEvents3(pos,bins)
+function [x y pos trials map mapping] = getBehavEvents(pos,bins)
+% this function takes unlabeled position tracking data (LED or Optitrack) and,
+% through a semi-automated process, scores individual trials where an animal 
+% traverses through the environment.  Specifically, this code works well with the
+% 2AFC T-maze, lap alternation on the circular maze, or traversals on a linear track
 
+% assumptions about the 'pos' variable need to be worked out...
+
+% David Tingley, 2017 
 
 if pos(1,1) == 0 & size(pos,2) < 6
     %% old code for LED tracking
