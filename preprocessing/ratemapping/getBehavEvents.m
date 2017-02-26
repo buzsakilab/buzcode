@@ -4,7 +4,8 @@ function [x y pos trials map mapping] = getBehavEvents(pos,bins)
 % traverses through the environment.  Specifically, this code works well with the
 % 2AFC T-maze, lap alternation on the circular maze, or traversals on a linear track
 
-% assumptions about the 'pos' variable need to be worked out...
+% assumptions about the 'pos' variable need to be worked out... (introduced by LED vs Optitrack)
+
 
 % David Tingley, 2017 
 
