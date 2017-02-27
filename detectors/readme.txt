@@ -1,0 +1,1 @@
+Detectors are organized by the data format type they produce.  For example, all detectors in detectEvents create a .event.mat.
