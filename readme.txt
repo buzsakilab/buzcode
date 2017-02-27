@@ -22,6 +22,13 @@ While there are many pre-processing pipelines used within the lab, the code in t
 			9-Error Per Marker,
 			10-Frame Count,
 			11-Frame Time (Optitrack clock) 
+	- events struct that is common to all event types (ripples, spindles, etc);	
+		.starts
+		.peaks
+		.stops
+		.peakAmplitudes
+		.detectorMethod (full path to function used, example: /buzcode/externalPackages/FMAToolbox/Analyses/FindRipples.m)
+		.detectorArgs.inputs (extra inputs given to detectorMethod)
 
 3) If you use a preprocessing pipeline that is not in the /preprocessing/spikefileconversions folder, feel free to make and add one
 

@@ -35,7 +35,7 @@ function AutoClustering(fbasename,elec,varargin)
 % Neurosci. Meth., 1996)
 %
 % Adrien Peyrache, 2012
-% David Tingley, 2017 updated
+% David Tingley, 2017 updated for Intan system and new functionality
 
 % The default behavior of this program is to take the output from KlustaKwik 
 % or the newer klusta-3.0 (.kwik) algorithms, organize this data for easier 
@@ -60,6 +60,8 @@ else
     dim = zeros(length(elec),1);
 end
 
+% an ugly list of heuristics that should eventually be cleaned up...
+
 samplingRate = 20000;
 % Load spike waveforms? Used for detection of electrical artifacts
 loadspk = 0;
@@ -74,8 +76,8 @@ rogThres = 1.5;
 devMinThres = .3;
 devMaxThres = 10;
 
+% other arbitrary thresholds..
 powThresh = .85;
-
 isoMinTresh = 1;
 lratioMinThresh = 10e-5;
 isoMaxTresh = 2000;
@@ -83,7 +85,6 @@ lratioMaxThresh = 1000;
 
 % Do Merging?
 doMerge = 1;
-
 % overwrite clu file
 rewriteclu= 1;
 % Write a log file?
