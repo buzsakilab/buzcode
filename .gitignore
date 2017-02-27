@@ -12,6 +12,10 @@ $RECYCLE.BIN/
 *.mexa64
 *.mexw64
 *.asv
+*.mexaci64
+*.mexw32
+*.mexglx
+*.mexaci
 
 # Windows Installer files
 *.cab
