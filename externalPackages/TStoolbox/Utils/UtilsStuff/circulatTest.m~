@@ -1,3 +1,0 @@
-function [H,P] = circularTest(t1,t2,varargin)
-
-

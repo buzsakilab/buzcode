@@ -1,5 +1,0 @@
-function [modRatio, prefPh, fitCurve, H]= ThetaModulation(phase)
-
-[H,X] = hist(phase,100);
-[estimates, model] = fitPhaseHist(2*pi*X,H);
-[sse, FitCurve] = model(estimates);
