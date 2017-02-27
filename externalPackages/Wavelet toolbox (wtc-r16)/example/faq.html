@@ -1,0 +1,454 @@
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>FAQ</title>
+      <meta name="generator" content="MATLAB 7.2">
+      <meta name="date" content="2008-02-06">
+      <meta name="m-file" content="faq"><style>
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows.  On Gecko-based browsers, the shrink-to-fit doesn't work. */ 
+p,h1,h2,div.content div {
+  /* for MATLAB's browser */
+  width: 600px;
+  /* for Mozilla, but the "width" tag overrides it anyway */
+  max-width: 600px;
+  /* for IE */
+  width:expression(document.body.clientWidth > 620 ? "600px": "auto" );
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>FAQ</h1>
+         <introduction>
+            <p>Frequently Asked Questions for the Wavelet Coherence Matlab Toolbox</p>
+            <p><a href="http://www.pol.ac.uk/home/research/waveletcoherence/">http://www.pol.ac.uk/home/research/waveletcoherence/</a></p>
+         </introduction>
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">How do I know whether AR1 noise is an appropriate null hypothesis to test against?</a></li>
+               <li><a href="#2">When is the probability distribution of the data important?</a></li>
+               <li><a href="#3">How important is the AR1 coefficient for WTC significance levels?</a></li>
+               <li><a href="#5">What does a peak in XWT tell?</a></li>
+               <li><a href="#6">How should the phase arrows be interpreted?</a></li>
+               <li><a href="#9">How do I convert a phase-angle to a time lag?</a></li>
+               <li><a href="#11">How do I calculate the average phase angle?</a></li>
+               <li><a href="#13">How do I determine if a point is inside the COI or not?</a></li>
+               <li><a href="#14">How do I avoid the slow Monte Carlo significance test in wtc?</a></li>
+               <li><a href="#16">How do I change the Y-axis to frequency instead of period?</a></li>
+               <li><a href="#17">Why is something missing from my figures on screen or when I try to save them?</a></li>
+               <li><a href="#19">Copyright notice</a></li>
+            </ul>
+         </div>
+         <h2>How do I know whether AR1 noise is an appropriate null hypothesis to test against?<a name="1"></a></h2>
+         <p>It is usually an appropriate null hypothesis if the theoretical AR1 spectrum is &#8216;a good model&#8217; for the power decay in the
+            observed spectrum. I recommend to simply visually compare the two power spectra:
+         </p><pre class="codeinput">X=rednoise(200,.8);
+[P,freq]=pburg(zscore(X),7,[],1);
+aa=ar1(X);
+Ptheoretical=(1-aa.^2)./(abs(1-aa.*exp(-2*pi*i*freq))).^2;
+semilogy(freq,P/sum(P),freq,Ptheoretical/sum(Ptheoretical),<span class="string">'r'</span>);
+legend(<span class="string">'observed'</span>,sprintf(<span class="string">'Theoretical AR1=%.2f'</span>,aa),<span class="string">'location'</span>,<span class="string">'best'</span>)
+</pre><img vspace="5" hspace="5" src="faq_01.png"> <h2>When is the probability distribution of the data important?<a name="2"></a></h2>
+         <p>The null-hypothesis in the significance tests for WT, XWT and WTC is normally distributed AR1 noise. The AR1 coefficient and
+            process variance is chosen so that it best fits the observed data. It is therefore quite important that the data is close
+            to normal and is reasonably well modeled by a Gaussian AR1 process. Otherwise we can trivially reject the null-hypothesis
+            and the significance level calculated by the program is not appropriate. However, the Central Limit Theorem tells us that
+            the distribution tends towards normality as we convolute with longer and longer wavelets (in the absence of long-range persistence).
+            This means that the data distribution is only really important on the shortest scales. So, if we are primarily looking at
+            longer scales we do not need to worry so much about the distribution. However, for the WT and XWT the color of the noise is
+            very important and a very non-normal distribution will affect the performance of the ar1 estimators (ar1.m &amp; ar1nv.m). The
+            WTC is relatively insensitive to the colour of the noise in the significance test (see next question).
+         </p>
+         <h2>How important is the AR1 coefficient for WTC significance levels?<a name="3"></a></h2>
+         <p>The definition of Wavelet coherence (WTC) effectively normalizes by the local power in time frequency space. Therefore WTC
+            is very insensitive to the noise colour used in the null-hypothesis (see Grinsted et al. 2004). It can easily be demonstrated
+            by example:
+         </p><pre class="codeinput">figure(<span class="string">'color'</span>,[1 1 1])
+set(gcf,<span class="string">'pos'</span>,get(gcf,<span class="string">'pos'</span>).*[1 .2 1 2]) <span class="comment">%make high figure</span>
+X=randn(200,1);
+Y=randn(200,1);
+subplot(3,1,1);
+orig_arcoefs=[ar1(X),ar1(Y)]
+wtc(X,Y)
+subplot(3,1,2);
+X2=smooth(X,7);
+Y2=smooth(Y,5);
+smoothed_arcoefs=[ar1(X2),ar1(Y2)]
+wtc(X2,Y2) <span class="comment">%make the input data more red, by moving averages of the data.</span>
+subplot(3,1,3);
+wtc(X2,Y2,<span class="string">'ar1'</span>,[0 0]) <span class="comment">%Test the red series against white noise.</span>
+</pre><pre class="codeoutput">orig_arcoefs =
+     0.038365     0.058916
+smoothed_arcoefs =
+      0.84525      0.79124
+</pre><img vspace="5" hspace="5" src="faq_02.png"> <p>The three figures are very similar.</p>
+         <h2>What does a peak in XWT tell?<a name="5"></a></h2>
+         <p>You have to be very careful interpreting XWT peaks. If you take the WTC of a signal with pure white noise then the XWT will
+            look very similar to the WT of the signal. The same problem exists in &#8216;normal' power spectral analysis. If you calculate the
+            cross Power spectral density of a periodic signal with a white noise signal then you will get a peak. It does not mean that
+            the series have any kind of connection just because there is a peak. I recommend examining the WTC and the phase arrows. If
+            there is a connection then you would expect the phenomena to be phase-locked &#8211; i.e. that the phase-arrows point only in one
+            direction for a given wavelength. So, if they vary between in-phase and anti-phase then it is a clue that they probably not
+            are linked.
+         </p>
+         <h2>How should the phase arrows be interpreted?<a name="6"></a></h2>
+         <p>The phase arrows show the relative phasing of two time series in question. This can also be interpreted as a lead/lag. How
+            it should be interpreted is best illustrated by example:
+         </p><pre class="codeinput">figure(<span class="string">'color'</span>,[1 1 1])
+t=(1:200)';
+X=sin(t);
+Y=sin(t-1); <span class="comment">%X leads Y.</span>
+xwt([t X],[t Y]); <span class="comment">% phase arrows points south east</span>
+</pre><img vspace="5" hspace="5" src="faq_03.png"> <p>Phase arrows pointing *	right: in-phase * left: anti-phase * down: X leading Y by 90&deg; * up: Y leading X by 90&deg;</p>
+         <p>Note: interpreting the phase as a lead(/lag) should always be done with care. A lead of 90&deg; can also be interpreted as a lag
+            of 270&deg; or a lag of 90&deg; relative to the anti-phase (opposite sign).
+         </p>
+         <h2>How do I convert a phase-angle to a time lag?<a name="9"></a></h2>
+         <p>This can not always be done and when it can, it should be done with care. A 90&deg; lead might as well be a 90&deg; lag to the anti-phase.
+            There is therefore a non-uniqueness problem when doing the conversion. A phase angle can also only be converted to a time
+            lag for a specific wavelength. This equation works best for determining the time lag when the series are near in-phase.
+         </p><pre class="codeinput">wavelength=11;
+phaseangle=20*pi/180;
+timelag=phaseangle*wavelength/(2*pi)
+</pre><pre class="codeoutput">timelag =
+      0.61111
+</pre><p>A visual inspection of the time series at the wavelength in question should make it clear if the time lag is right. I also
+            recommend calculating the time lag with other methods for support.
+         </p>
+         <h2>How do I calculate the average phase angle?<a name="11"></a></h2>
+         <p>You can use anglemean.m provided with the package. Here is a small example that calculates the mean angle at the period closest
+            to 11:
+         </p><pre class="codeinput">t=(0:1:500)';
+X=sin(t*2*pi/11)+randn(size(t))*.1;
+Y=sin(t*2*pi/11+.4)+randn(size(t))*.1;
+[Wxy,period,scale,coi,sig95]=xwt([t X],[t Y]);
+[mn,rowix]=min(abs(period-11)); <span class="comment">%row with period closest to 11.</span>
+ChosenPeriod=period(rowix)
+[meantheta,anglestrength,sigma]=anglemean(angle(Wxy(rowix,:)))
+</pre><pre class="codeoutput">ChosenPeriod =
+       11.032
+meantheta =
+     -0.39996
+anglestrength =
+      0.99935
+sigma =
+      0.03615
+</pre><p>If you want to restrict the mean to be calculated over significant regions outside the COI then you can do like this:</p><pre class="codeinput">incoi=(period(:)*(1./coi)&gt;1);
+issig=(sig95&gt;=1);
+angles=angle(Wxy(rowix,issig(rowix,:)&amp;~incoi(rowix,:)));
+[meantheta,anglestrength,sigma]=anglemean(angles)
+</pre><pre class="codeoutput">meantheta =
+     -0.39873
+anglestrength =
+      0.99933
+sigma =
+     0.036747
+</pre><h2>How do I determine if a point is inside the COI or not?<a name="13"></a></h2>
+         <p>Here is an example that does just that:</p><pre class="codeinput">t=(0:1:500)';
+X=sin(t*2*pi/11)+randn(size(t))*.1;
+[Wx,period,scale,coi,sig95]=wt([t X]);
+incoi=period(:)*(1./coi)&gt;1;
+p=[100 64; 100 10; 50 64]; <span class="comment">%are these points in the COI?</span>
+ispointincoi=interp2(t,period,incoi,p(:,1),p(:,2),<span class="string">'nearest'</span>)
+</pre><pre class="codeoutput">ispointincoi =
+     0
+     0
+     1
+</pre><h2>How do I avoid the slow Monte Carlo significance test in wtc?<a name="14"></a></h2>
+         <p>You can do that by simply specifying the MonteCarloCount to be zero. Example:</p><pre class="codeinput">figure(<span class="string">'color'</span>,[1 1 1])
+t=(0:1:500)';
+X=sin(t*2*pi/11)+randn(size(t))*.1;
+Y=sin(t*2*pi/11+.4)+randn(size(t))*.1;
+wtc([t X],[t Y],<span class="string">'mcc'</span>,0); <span class="comment">%MCC:MonteCarloCount</span>
+</pre><img vspace="5" hspace="5" src="faq_04.png"> <p>Note that the significance contour can not be trusted with out running the Monte Carlo test.</p>
+         <h2>How do I change the Y-axis to frequency instead of period?<a name="16"></a></h2>
+         <p>Here is a short example that does just that. The sampling frequency is 100 MHz, and the signal is 5Mhz.</p><pre class="codeinput">figure(<span class="string">'color'</span>,[1 1 1])
+t=(0:1e-8:500e-8)';
+X=sin(t*2*pi*5e6)+randn(size(t))*.1;
+Y=sin(t*2*pi*5e6+.4)+randn(size(t))*.1;
+wtc([t X],[t Y])
+freq=[128 64 32 16 8 4 2 1]*1e6;
+set(gca,<span class="string">'ytick'</span>,log2(1./freq),<span class="string">'yticklabel'</span>,freq/1e6)
+ylabel(<span class="string">'Frequency (MHz)'</span>)
+</pre><img vspace="5" hspace="5" src="faq_05.png"> <h2>Why is something missing from my figures on screen or when I try to save them?<a name="17"></a></h2>
+         <p>This is usually caused by an incompatibility bug between Matlab and your graphics driver? There is unfortunately not any single
+            method to resolve this issue, since it depends on your system. However, the problems can in some cases be resolved by changing
+            the renderer property on the figure. In some cases it is caused by the shaded rendering of the COI. Here are some options
+            you may try
+         </p><pre class="codeinput">set(gcf,<span class="string">'renderer'</span>,<span class="string">'painters'</span>);
+set(gcf,<span class="string">'renderer'</span>,<span class="string">'zbuffer'</span>);
+set(gcf,<span class="string">'renderer'</span>,<span class="string">'opengl'</span>);
+set(findobj(gca,<span class="string">'type'</span>,<span class="string">'patch'</span>),<span class="string">'alphadatamap'</span>,<span class="string">'none'</span>,<span class="string">'facealpha'</span>,1)
+</pre><img vspace="5" hspace="5" src="faq_06.png"> <p>Further reading on how to resolve this issue: <a href="http://www.mathworks.com/access/helpdesk/help/techdoc/index.html?/access/helpdesk/help/techdoc/ref/opengl.html">http://www.mathworks.com/access/helpdesk/help/techdoc/index.html?/access/helpdesk/help/techdoc/ref/opengl.html</a> <a href="http://www.mathworks.com/support/solutions/data/28724.shtml">http://www.mathworks.com/support/solutions/data/28724.shtml</a> <a href="http://www.mathworks.com/access/helpdesk/help/techdoc/ref/figure_props.html">http://www.mathworks.com/access/helpdesk/help/techdoc/ref/figure_props.html</a> <a href="http://lists.freebsd.org/pipermail/freebsd-questions/2005-July/093319.html">http://lists.freebsd.org/pipermail/freebsd-questions/2005-July/093319.html</a> <a href="http://newsreader.mathworks.com/WebX?14@5.hjGuax06Ca1.0@.eeeb312">http://newsreader.mathworks.com/WebX?14@5.hjGuax06Ca1.0@.eeeb312</a></p>
+         <h2>Copyright notice<a name="19"></a></h2><pre> Copyright (C) 2002-2004, Aslak Grinsted</pre><pre> This software may be used, copied, or redistributed as long as it is not
+ sold and this copyright notice is reproduced on each copy made.  This
+ routine is provided as is without any express or implied warranties
+ whatsoever.</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.2<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% FAQ
+% Frequently Asked Questions for the Wavelet Coherence Matlab Toolbox
+%
+% http://www.pol.ac.uk/home/research/waveletcoherence/
+
+
+%% How do I know whether AR1 noise is an appropriate null hypothesis to test against?
+% It is usually an appropriate null hypothesis if the theoretical AR1
+% spectrum is ‘a good model’ for the power decay in the observed spectrum. 
+% I recommend to simply visually compare the two power spectra:
+
+X=rednoise(200,.8);
+[P,freq]=pburg(zscore(X),7,[],1); 
+aa=ar1(X);
+Ptheoretical=(1-aa.^2)./(abs(1-aa.*exp(-2*pi*i*freq))).^2;
+semilogy(freq,P/sum(P),freq,Ptheoretical/sum(Ptheoretical),'r');
+legend('observed',sprintf('Theoretical AR1=%.2f',aa),'location','best')
+
+
+%% When is the probability distribution of the data important?
+% The null-hypothesis in the significance tests for WT, XWT and WTC is
+% normally distributed AR1 noise. The AR1 coefficient and process variance 
+% is chosen so that it best fits the observed data. It is therefore quite 
+% important that the data is close to normal and is reasonably well
+% modeled by a Gaussian AR1 process. Otherwise we can trivially reject 
+% the null-hypothesis and the significance level calculated by the program 
+% is not appropriate. However, the Central Limit Theorem tells us that the 
+% distribution tends towards normality as we convolute with longer and longer 
+% wavelets (in the absence of long-range persistence). This means that the 
+% data distribution is only really important on the shortest scales. 
+% So, if we are primarily looking at longer scales we do not need to 
+% worry so much about the distribution. However, for the WT and XWT the 
+% color of the noise is very important and a very non-normal distribution 
+% will affect the performance of the ar1 estimators (ar1.m & ar1nv.m). 
+% The WTC is relatively insensitive to the colour of the noise in the 
+% significance test (see next question). 
+
+%% How important is the AR1 coefficient for WTC significance levels?
+% The definition of Wavelet coherence (WTC) effectively normalizes by the
+% local power in time frequency space. Therefore WTC is very insensitive 
+% to the noise colour used in the null-hypothesis 
+% (see Grinsted et al. 2004). It can easily be demonstrated by example:
+
+figure('color',[1 1 1])
+set(gcf,'pos',get(gcf,'pos').*[1 .2 1 2]) %make high figure
+X=randn(200,1);
+Y=randn(200,1);
+subplot(3,1,1);
+orig_arcoefs=[ar1(X),ar1(Y)]
+wtc(X,Y)
+subplot(3,1,2);
+X2=smooth(X,7);
+Y2=smooth(Y,5);
+smoothed_arcoefs=[ar1(X2),ar1(Y2)]
+wtc(X2,Y2) %make the input data more red, by moving averages of the data.
+subplot(3,1,3);
+wtc(X2,Y2,'ar1',[0 0]) %Test the red series against white noise.
+
+%%
+% The three figures are very similar. 
+
+
+
+%% What does a peak in XWT tell?
+% You have to be very careful interpreting XWT peaks. If you take the WTC
+% of a signal with pure white noise then the XWT will look very similar to
+% the WT of the signal. The same problem exists in ‘normal' power spectral
+% analysis. If you calculate the cross Power spectral density of a periodic
+% signal with a white noise signal then you will get a peak. It does not
+% mean that the series have any kind of connection just because there is a
+% peak. I recommend examining the WTC and the phase arrows. If there is a
+% connection then you would expect the phenomena to be phase-locked – i.e.
+% that the phase-arrows point only in one direction for a given wavelength.
+% So, if they vary between in-phase and anti-phase then it is a clue that
+% they probably not are linked.
+
+
+%% How should the phase arrows be interpreted?
+% The phase arrows show the relative phasing of two time series in
+% question. This can also be interpreted as a lead/lag. How it should be
+% interpreted is best illustrated by example:
+
+figure('color',[1 1 1])
+t=(1:200)';
+X=sin(t);
+Y=sin(t-1); %X leads Y.
+xwt([t X],[t Y]); % phase arrows points south east
+
+%%
+% Phase arrows pointing
+% *	right: in-phase 
+% * left: anti-phase
+% * down: X leading Y by 90°
+% * up: Y leading X by 90°
+
+%%
+% Note: interpreting the phase as a lead(/lag) should always be done with
+% care. A lead of 90° can also be interpreted as a lag of 270° or a lag of
+% 90° relative to the anti-phase (opposite sign).
+
+
+%% How do I convert a phase-angle to a time lag?
+% This can not always be done and when it can, it should be done with care.
+% A 90° lead might as well be a 90° lag to the anti-phase. There is
+% therefore a non-uniqueness problem when doing the conversion. A phase
+% angle can also only be converted to a time lag for a specific wavelength.
+% This equation works best for determining the time lag when the series are
+% near in-phase. 
+
+wavelength=11;
+phaseangle=20*pi/180;
+timelag=phaseangle*wavelength/(2*pi) 
+
+%%
+% A visual inspection of the time series at the wavelength in question
+% should make it clear if the time lag is right. I also recommend
+% calculating the time lag with other methods for support.
+
+%% How do I calculate the average phase angle?
+% You can use anglemean.m provided with the package. Here is a small
+% example that calculates the mean angle at the period closest to 11:
+
+t=(0:1:500)';
+X=sin(t*2*pi/11)+randn(size(t))*.1;
+Y=sin(t*2*pi/11+.4)+randn(size(t))*.1;
+[Wxy,period,scale,coi,sig95]=xwt([t X],[t Y]); 
+[mn,rowix]=min(abs(period-11)); %row with period closest to 11.
+ChosenPeriod=period(rowix)
+[meantheta,anglestrength,sigma]=anglemean(angle(Wxy(rowix,:)))
+
+%%
+% If you want to restrict the mean to be calculated over significant
+% regions outside the COI then you can do like this:
+
+incoi=(period(:)*(1./coi)>1);
+issig=(sig95>=1);
+angles=angle(Wxy(rowix,issig(rowix,:)&~incoi(rowix,:)));
+[meantheta,anglestrength,sigma]=anglemean(angles)
+
+%% How do I determine if a point is inside the COI or not?
+% Here is an example that does just that:
+
+t=(0:1:500)';
+X=sin(t*2*pi/11)+randn(size(t))*.1;
+[Wx,period,scale,coi,sig95]=wt([t X]); 
+incoi=period(:)*(1./coi)>1;
+p=[100 64; 100 10; 50 64]; %are these points in the COI? 
+ispointincoi=interp2(t,period,incoi,p(:,1),p(:,2),'nearest')
+
+%% How do I avoid the slow Monte Carlo significance test in wtc?
+% You can do that by simply specifying the MonteCarloCount to be zero.
+% Example:
+
+figure('color',[1 1 1])
+t=(0:1:500)';
+X=sin(t*2*pi/11)+randn(size(t))*.1;
+Y=sin(t*2*pi/11+.4)+randn(size(t))*.1;
+wtc([t X],[t Y],'mcc',0); %MCC:MonteCarloCount
+
+%%
+% Note that the significance contour can not be trusted with out running the
+% Monte Carlo test. 
+
+%% How do I change the Y-axis to frequency instead of period?
+% Here is a short example that does just that. The sampling frequency is
+% 100 MHz, and the signal is 5Mhz.
+
+figure('color',[1 1 1])
+t=(0:1e-8:500e-8)';
+X=sin(t*2*pi*5e6)+randn(size(t))*.1;
+Y=sin(t*2*pi*5e6+.4)+randn(size(t))*.1;
+wtc([t X],[t Y])
+freq=[128 64 32 16 8 4 2 1]*1e6;
+set(gca,'ytick',log2(1./freq),'yticklabel',freq/1e6)
+ylabel('Frequency (MHz)')
+
+%% Why is something missing from my figures on screen or when I try to save them?	
+% This is usually caused by an incompatibility bug between Matlab and your
+% graphics driver? There is unfortunately not any single method to resolve
+% this issue, since it depends on your system. However, the problems can in
+% some cases be resolved by changing the renderer property on the figure. 
+% In some cases it is caused by the shaded rendering of the COI. Here are
+% some options you may try
+
+set(gcf,'renderer','painters');
+set(gcf,'renderer','zbuffer');
+set(gcf,'renderer','opengl');
+set(findobj(gca,'type','patch'),'alphadatamap','none','facealpha',1)
+
+%%
+% Further reading on how to resolve this issue:
+% http://www.mathworks.com/access/helpdesk/help/techdoc/index.html?/access/helpdesk/help/techdoc/ref/opengl.html
+% http://www.mathworks.com/support/solutions/data/28724.shtml 
+% http://www.mathworks.com/access/helpdesk/help/techdoc/ref/figure_props.html
+% http://lists.freebsd.org/pipermail/freebsd-questions/2005-July/093319.html
+% http://newsreader.mathworks.com/WebX?14@5.hjGuax06Ca1.0@.eeeb312
+
+
+
+%% Copyright notice
+%   Copyright (C) 2002-2004, Aslak Grinsted
+%
+%   This software may be used, copied, or redistributed as long as it is not
+%   sold and this copyright notice is reproduced on each copy made.  This
+%   routine is provided as is without any express or implied warranties
+%   whatsoever.
+##### SOURCE END #####
+-->
+   </body>
+</html>

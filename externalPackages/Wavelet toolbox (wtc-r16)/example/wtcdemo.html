@@ -1,0 +1,200 @@
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>Example</title>
+      <meta name="generator" content="MATLAB 7.0">
+      <meta name="date" content="2004-10-18">
+      <meta name="m-file" content="wtcdemo"><style>
+body {
+  background-color: white;
+  margin:10px;
+}
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+pre.codeinput {
+  margin-left: 30px;
+}
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.showbuttons {
+  margin-left: 30px;
+  border: solid black 2px;
+  padding: 4px;
+  background: #EBEFF3;
+}
+
+pre.codeoutput {
+  color: gray;
+  font-style: italic;
+}
+pre.error {
+  color: red;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows.  On Gecko-based browsers, the shrink-to-fit doesn't work. */ 
+p,h1,h2,div {
+  /* for MATLAB's browser */
+  width: 600px;
+  /* for Mozilla, but the "width" tag overrides it anyway */
+  max-width: 600px;
+  /* for IE */
+  width:expression(document.body.clientWidth > 620 ? "600px": "auto" );
+}
+
+    </style></head>
+   <body>
+      <h1>Example</h1>
+      <introduction>
+         <p>This example illustrates how simple it is to do continuous wavelet transform (CWT), Cross wavelet transform (XWT) and Wavelet
+            Coherence (WTC) plots of your own data.
+         </p>
+         <p>The time series we will be analyzing are the winter Arctic Oscillation index (AO) and the maximum sea ice extent in the Baltic
+            (BMI).
+         </p>
+         <p><a href="http://www.pol.ac.uk/home/research/waveletcoherence/">http://www.pol.ac.uk/home/research/waveletcoherence/</a></p>
+      </introduction>
+      <h2>Contents</h2>
+      <div>
+         <ul>
+            <li><a href="#1">Load the data</a></li>
+            <li><a href="#2">Change the pdf.</a></li>
+            <li><a href="#3">Continuous wavelet transform (CWT)</a></li>
+            <li><a href="#4">Cross wavelet transform (XWT)</a></li>
+            <li><a href="#5">Wavelet coherence (WTC)</a></li>
+            <li><a href="#6">Copyright notice</a></li>
+         </ul>
+      </div>
+      <h2>Load the data<a name="1"></a></h2>
+      <p>First we load the two time series into the matrices d1 and d2.</p><pre class="codeinput">seriesname={<span class="string">'AO'</span> <span class="string">'BMI'</span>};
+d1=load(<span class="string">'jao.txt'</span>);
+d2=load(<span class="string">'jbaltic.txt'</span>);
+</pre><h2>Change the pdf.<a name="2"></a></h2>
+      <p>The time series of Baltic Sea ice extent is highly bi-modal and we therefore transform the timeseries into a series of percentiles.
+         The transformed series probably reacts 'more linearly' to climate.
+      </p><pre class="codeinput">d2(:,2)=boxpdf(d2(:,2));
+</pre><h2>Continuous wavelet transform (CWT)<a name="3"></a></h2>
+      <p>The CWT expands the time series into time frequency space.</p><pre class="codeinput">figure(<span class="string">'color'</span>,[1 1 1])
+tlim=[min(d1(1,1),d2(1,1)) max(d1(end,1),d2(end,1))];
+subplot(2,1,1);
+wt(d1);
+title(seriesname{1});
+set(gca,<span class="string">'xlim'</span>,tlim);
+subplot(2,1,2)
+wt(d2)
+title(seriesname{2})
+set(gca,<span class="string">'xlim'</span>,tlim)
+</pre><img vspace="5" hspace="5" src="wtcdemo_01.png"> <h2>Cross wavelet transform (XWT)<a name="4"></a></h2>
+      <p>The XWT finds regions in time frequency space where the time series show high common power.</p><pre class="codeinput">figure(<span class="string">'color'</span>,[1 1 1])
+xwt(d1,d2)
+title([<span class="string">'XWT: '</span> seriesname{1} <span class="string">'-'</span> seriesname{2} ] )
+</pre><img vspace="5" hspace="5" src="wtcdemo_02.png"> <h2>Wavelet coherence (WTC)<a name="5"></a></h2>
+      <p>The WTC finds regions in time frequency space where the two time series co-vary (but does not necessarily have high power).</p><pre class="codeinput">figure(<span class="string">'color'</span>,[1 1 1])
+wtc(d1,d2)
+title([<span class="string">'WTC: '</span> seriesname{1} <span class="string">'-'</span> seriesname{2} ] )
+</pre><img vspace="5" hspace="5" src="wtcdemo_03.png"> <h2>Copyright notice<a name="6"></a></h2><pre> Copyright (C) 2002-2004, Aslak Grinsted</pre><pre> This software may be used, copied, or redistributed as long as it is not
+ sold and this copyright notice is reproduced on each copy made.  This
+ routine is provided as is without any express or implied warranties
+ whatsoever.</pre><p class="footer"><br>
+         Published with MATLAB&reg; 7.0<br></p>
+      <!--
+##### SOURCE BEGIN #####
+%% Example 
+% This example illustrates how simple it is to do 
+% continuous wavelet transform (CWT), Cross wavelet transform (XWT)
+% and Wavelet Coherence (WTC) plots of your own data. 
+%
+% The time series we will be analyzing are the winter 
+% Arctic Oscillation index (AO) and 
+% the maximum sea ice extent in the Baltic (BMI).
+%
+% http://www.pol.ac.uk/home/research/waveletcoherence/
+
+
+%% Load the data
+% First we load the two time series into the matrices d1 and d2.
+
+seriesname={'AO' 'BMI'};
+d1=load('jao.txt');
+d2=load('jbaltic.txt');
+
+%% Change the pdf.
+% The time series of Baltic Sea ice extent is highly bi-modal and we
+% therefore transform the timeseries into a series of percentiles. The
+% transformed series probably reacts 'more linearly' to climate.
+
+d2(:,2)=boxpdf(d2(:,2));
+
+
+%% Continuous wavelet transform (CWT)
+% The CWT expands the time series into time
+% frequency space. 
+
+figure('color',[1 1 1])
+tlim=[min(d1(1,1),d2(1,1)) max(d1(end,1),d2(end,1))]; 
+subplot(2,1,1);
+wt(d1);
+title(seriesname{1});
+set(gca,'xlim',tlim);
+subplot(2,1,2)
+wt(d2)
+title(seriesname{2})
+set(gca,'xlim',tlim)
+
+
+%% Cross wavelet transform (XWT)
+% The XWT finds regions in time frequency space where
+% the time series show high common power.
+
+figure('color',[1 1 1])
+xwt(d1,d2)
+title(['XWT: ' seriesname{1} '-' seriesname{2} ] )
+
+%% Wavelet coherence (WTC)
+% The WTC finds regions in time frequency space where the two 
+% time series co-vary (but does not necessarily have high power).
+
+
+figure('color',[1 1 1])
+wtc(d1,d2)
+title(['WTC: ' seriesname{1} '-' seriesname{2} ] )
+
+
+
+
+
+%% Copyright notice
+%   Copyright (C) 2002-2004, Aslak Grinsted
+%
+%   This software may be used, copied, or redistributed as long as it is not
+%   sold and this copyright notice is reproduced on each copy made.  This
+%   routine is provided as is without any express or implied warranties
+%   whatsoever.
+##### SOURCE END #####
+-->
+   </body>
+</html>
