@@ -29,7 +29,7 @@ function Process_ConvertOptitrack2Pos(fbasename,varargin)
 % 
 %
 
-% warning('this functions is now deprecated and have been replaced by processConvertOptitrack2Behav.m')
+warning('this functions is now deprecated and have been replaced by processConvertOptitrack2Behav.m')
 
 syncDatFile = ['digitalin.dat']; % defaults if args aren't given... assuming a single digitalin channel on Intan
 syncSampFq  = 20000;
