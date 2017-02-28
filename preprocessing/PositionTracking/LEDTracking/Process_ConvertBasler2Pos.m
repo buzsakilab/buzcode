@@ -32,6 +32,8 @@
 % the Free Software Foundation; either version 2 of the License, or
 % (at your option) any later version.
 
+warning('This function is now deprecated and needs to be replaced.')
+
 
 function Process_ConvertBasler2Pos(fbasename,varargin)
 

@@ -1,8 +1,8 @@
-function Process_ConvertOptitrack2Pos(fbasename,varargin)
+function processConvertOptitrack2Behav(fbasename,varargin)
 
 % USAGE
 %
-%   Process_ConvertOptitrack2Pos(fbasename,varargin)
+%   processConvertOptitrack2Behav(fbasename,varargin)
 %    
 % 
 % 
@@ -28,8 +28,6 @@ function Process_ConvertOptitrack2Pos(fbasename,varargin)
 %
 % 
 %
-
-% warning('this functions is now deprecated and have been replaced by processConvertOptitrack2Behav.m')
 
 syncDatFile = ['digitalin.dat']; % defaults if args aren't given... assuming a single digitalin channel on Intan
 syncSampFq  = 20000;
@@ -129,7 +127,21 @@ timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';
 pos(pos==-1) = NaN;
 newPos = interp1(frameT,pos,timestamps);
 
-dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);
+error('need to remove NaN garbage still')
+
+behav.position.x = pos(:,2);
+behav.position.y = pos(:,3);
+behav.position.z = pos(:,4);
+behav.orientation.rx = pos(:,5);
+behav.orientation.ry = pos(:,6);
+behav.orientation.rz = pos(:,7);
+behav.orientation.rw = pos(:,8);
+behav.timestamps = pos(:,1);
+behav.errorPerMarker = pos(:,9);
+behav.frameCount = pos(:,10);
+save([fbasename '.behavior.mat','behav')
+
+% dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);
 
 end
 
