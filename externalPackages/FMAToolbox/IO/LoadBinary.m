@@ -1,4 +1,4 @@
-function data = LoadBinary_Down(filename,varargin)
+function data = LoadBinary(filename,varargin)
 
 %LoadBinary - Load data from a multiplexed binary file.
 %
@@ -42,6 +42,7 @@ function data = LoadBinary_Down(filename,varargin)
 % Default values
 nChannels = 1;
 precision = 'int16';
+warning(['this function assumes int16 precision, if your file is not int16 use load/resample.m'])
 skip = 0;
 frequency = 20000;
 channels = [];

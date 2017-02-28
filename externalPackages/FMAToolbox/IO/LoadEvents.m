@@ -15,6 +15,7 @@ function events = LoadEvents(filename)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
+warning('this is the version of LoadEvents that is compatible with FMAToolbox, not the /buzcode data formatting standards')
 events.time = [];
 events.description = [];
 if ~exist(filename),

@@ -14,8 +14,8 @@ function Par = LoadPar(FileName, varargin)
 % % channel numbers here are from 0. be carefull.
 % 
 % 
-warning(['this function is now deprecated from /buzcode and has been replaced '...
-        'with a backwards compatible version of LoadParameters.m\n'])
+warning(['this function is now deprecated from /buzcode and a '...
+        ' backwards compatible version of LoadParameters.m will run now..\n'])
 Par = LoadParameters(FileName);
 % 
 % 

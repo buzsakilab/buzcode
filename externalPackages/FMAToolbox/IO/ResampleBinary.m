@@ -60,7 +60,7 @@ end
 %  			error(['Incorrect mode ''' mode '''(type ''help <a href="matlab:help ResampleBinary">ResampleBinary</a>'' for details).']);
 %  	end
 %  end
-
+warning(['this function assumes int16 precision, if ' inputName ' is not int16 used resample.m'])
 % Open input file and output file
 inputFile = fopen(inputName,'r');
 outputFile = fopen(outputName,'w');
