@@ -1,4 +1,4 @@
-function [ang,GoodRanges,ep] = HeadDirection_Wrapper(fbasename,varargin)
+eidfunction [ang,GoodRanges,ep] = HeadDirection_Wrapper(fbasename,varargin)
 
 
 % loads head-direction from a position file file (ending in .whl)
