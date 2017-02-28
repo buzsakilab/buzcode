@@ -32,6 +32,8 @@
 % the Free Software Foundation; either version 2 of the License, or
 % (at your option) any later version.
 
+warning('This function is now deprecated and needs to be replaced.')
+
 
 function Process_ConvertBasler2Pos(fbasename,varargin)
 
@@ -137,8 +139,18 @@ end
     timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';
     pos(pos==-1) = NaN;
     newPos = interp1(frameT,pos,timestamps);
-    
-    dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);
+  
+    behav.positions.x = nanmean(pos(:,[2 4])');
+    behav.positions.y = nanmean(pos(:,[3 5])');
+    dx = pos(:,3) - pos(:,5);
+    dy = pos(:,2) - pos(:,4);
+	ang = atan2(dy,dx)-angOffset;
+	ang = mod(ang,2*pi);
+    behav.orientations.z = ang; 
+    warning('come up with a better head dir calculation...') 
+
+    behav.timestamps = pos(:,1);
+%     dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);
 
 end
 
