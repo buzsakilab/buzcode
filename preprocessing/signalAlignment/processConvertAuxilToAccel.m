@@ -1,5 +1,4 @@
 function [behav] = processConvertAuxilToAccel(fbasename,varargin) 
-
 % USAGE
 %
 %   processConvertAuxilToAccel(fbasename,varargin)
