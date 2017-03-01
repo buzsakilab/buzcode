@@ -16,7 +16,7 @@ function A = array(O, TimeUnits)
 % This software is released under the GNU GPL
 % www.gnu.org/copyleft/gpl.html
 
-  if nargin < 1 | nargin > 2
+  if nargin < 1 || nargin > 2
     error('Call with one or two arguments');
   end
   
@@ -25,13 +25,13 @@ function A = array(O, TimeUnits)
   end  
   
   S = O.start;
-  S = O.end;
+  E = O.stop;
   
   if isa(TimeUnits, 'char')
     TimeUnits = time_units(TimeUnits);
   end
   
-  cnvrt = convert(O.units, TimeUnits)
+  cnvrt = convert(O.units, TimeUnits);
   
   if cnvrt ~= 1
     S = S * cnvrt;

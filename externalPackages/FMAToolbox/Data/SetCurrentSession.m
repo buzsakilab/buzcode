@@ -73,7 +73,12 @@ if strcmp(basename,DATA.session.basename) & strcmp(path,DATA.session.path) & ~st
 end
 
 % Parameter file
-DATA = LoadParameters([path(1:end-1) separator basename '.xml']);
+if strcmp(path(end),separator)
+    tpath = path(1:end-1);
+else
+    tpath = path;
+end
+DATA = LoadParameters([tpath separator basename '.xml']);
 disp(['... loaded parameter file ''' basename '.xml''']);
 
 % Event file(s)
