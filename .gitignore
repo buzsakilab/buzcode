@@ -12,6 +12,7 @@ $RECYCLE.BIN/
 *.mexa64
 *.mexw64
 *.asv
+*.mexmaci64
 *.mexaci64
 *.mexw32
 *.mexglx
