@@ -26,7 +26,8 @@ function SaveBinary(filename,data,varargin)
 % (at your option) any later version.
 
 % Default values
-precision = 'int16';
+% precision = 'int16'; % THIS SHOULD NEVER BE ASSUMED
+precision = class(data);
 mode = 'new';
 
 if nargin < 2 | mod(length(varargin),2) ~= 0,

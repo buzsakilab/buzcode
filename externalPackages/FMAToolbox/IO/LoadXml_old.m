@@ -19,8 +19,8 @@
 
 function [xml, rxml] = LoadXml_old(fbasename,varargin)
 % xml = struct;
-warning(['this function is now deprecated from /buzcode and has been replaced '...
-        'with a backwards compatible version of LoadParameters.m\n'])
+warning(['this function is now deprecated from /buzcode and a '...
+        ' backwards compatible version of LoadParameters.m will run now..\n'])
 xml = LoadParameters(fbasename);
 rxml =  xml;
 
