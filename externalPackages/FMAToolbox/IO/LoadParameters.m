@@ -101,6 +101,9 @@ parameters.Amplification = str2num(p.acquisitionSystem.amplification);
 parameters.Offset = str2num(p.acquisitionSystem.offset);
 parameters.lfpSampleRate = str2num(p.fieldPotentials.lfpSamplingRate);
 parameters.AnatGrps = p.anatomicalDescription.channelGroups.group;
-parameters.SpkGrps = p.spikeDetection.channelGroups.group;
-
-
+for a = 1:parameters.spikeGroups.nGroups
+    parameters.SpkGrps(a).Channels = parameters.spikeGroups.groups{a};
+    parameters.SpkGrps(a).nSamples =  str2num(p.spikeDetection.channelGroups.group{a}.nSamples);
+    parameters.SpkGrps(a).PeakSample = str2num(p.spikeDetection.channelGroups.group{a}.peakSampleIndex); 
+    parameters.SpkGrps(a).nFeatures =  str2num(p.spikeDetection.channelGroups.group{a}.nFeatures); 
+end
