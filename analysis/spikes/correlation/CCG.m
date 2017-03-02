@@ -6,7 +6,8 @@
 %
 %    times          times of all events (sorted)
 %                   (alternate) - can be {Ncells} array of [Nspikes] 
-%                   spiketimes for each cell
+%                   spiketimes for each cell 
+%                   NOTE: spiketimes in SECONDS.
 %    groups         group IDs for each event in time list
 %                   (alternate) - []
 %    <options>      optional list of property-value pairs (see table below)
