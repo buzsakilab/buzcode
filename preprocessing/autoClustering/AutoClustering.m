@@ -64,7 +64,7 @@ end
 
 samplingRate = 20000;
 % Load spike waveforms? Used for detection of electrical artifacts
-loadspk = 0;
+loadspk = 1;
 % Refractory period in msec
 tR = 1.5./1000;
 % Censored period in msec (specific to the spike detection process)
@@ -212,7 +212,7 @@ else
  
     % Here we select only clusters that correspond to putative units and that
     % have at least 20 spikes (otherwise errormatrix calculation fails)
-    h = hist(clu,length(unique(clu)));
+    h = hist(clu,length(unique(clu)))';
     goodCluIx = ismember(clu,find(cluster_names < 1000 & h>20)); 
     goodCluIx(noiseIx) = 0;
      
