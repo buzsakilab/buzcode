@@ -113,9 +113,9 @@ else
         end
         kwikinfo = h5info(tkwik,['/channel_groups/' num2str(elec) '/clusters/main']);
         if ~loadspk
-            [fet clu res ~] = ConvertKlusta2Neurosuite(elec,basepath,fbasename,0,0,1);
+            [fet clu res ~] = ConvertKlusta2Matlab(elec,basepath,fbasename,0,0,1);
         elseif loadspk 
-           [fet clu res wav] = ConvertKlusta2Neurosuite(elec,basepath,fbasename,1,0,1);
+           [fet clu res wav] = ConvertKlusta2Matlab(elec,basepath,fbasename,1,0,1);
         end
         clu = double(clu);
         cluster_names = unique(clu);

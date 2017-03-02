@@ -70,7 +70,7 @@ if wvformExtract
     ngroupchans = length(channellist);
     valsperwave = tsampsperwave * ngroupchans;
     wvforms_all = zeros(length(spktimes),valsperwave,'int16');
-    delete(gcp('nocreate')); parpool(numCores)
+%     delete(gcp('nocreate')); parpool(numCores)
     for j=1:length(spktimes)
         try
             byteList = [];
