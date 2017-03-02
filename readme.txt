@@ -1,4 +1,6 @@
 DATA FORMATTING STANDARDS
+(under development: read and contribute to the wiki!)
+https://github.com/buzsakilab/buzcode/wiki/Data-Formatting-Standards
 
 While there are many pre-processing pipelines used within the lab, the code in this repository makes several assumptions.
 
