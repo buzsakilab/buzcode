@@ -25,8 +25,8 @@ function [ pSpindleInts,cycletimemap,deltapeaks,SpindleStats ] = FindSpindlesAnd
 xmlfilename = [datasetfolder,'/',recname,'/',recname,'.xml'];
 if exist (fullfile(datasetfolder,recname,[recname,'.lfp']),'file')
     rawlfppath = fullfile(datasetfolder,recname,[recname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recname,[recname,'.eeg']),'file')
-    rawlfppath = fullfile(datasetfolder,recname,[recname,'.eeg']);
+elseif exist (fullfile(datasetfolder,recname,[recname,'.lfp']),'file')
+    rawlfppath = fullfile(datasetfolder,recname,[recname,'.lfp']);
 else 
     display('No .lfp file')
 end

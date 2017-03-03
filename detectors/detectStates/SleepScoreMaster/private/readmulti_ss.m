@@ -1,15 +1,15 @@
 % reads multi-channel recording file to a matrix
-% function [eeg] = function readmulti(fname,numchannel,chselect)
+% function .lfp] = function readmulti(fname,numchannel,chselect)
 % last argument is optional (if omitted, it will read all the 
 % channels
 
-function [eeg] = readmulti_ss(fname,numchannel,chselect)
+function .lfp] = readmulti_ss(fname,numchannel,chselect)
 
 if nargin == 2
   datafile = fopen(fname,'r');
-  eeg = fread(datafile,[numchannel,inf],'int16');
+ .lfp = fread(datafile,[numchannel,inf],'int16');
   fclose(datafile);
-  eeg = eeg';
+ .lfp =.lfp';
   return
 end
 
@@ -29,14 +29,14 @@ if nargin == 3
   mmm = sprintf('%d elements',N_EL);
 %  disp(mmm);  
   
-  eeg=zeros(length(chselect),N_EL);
+ .lfp=zeros(length(chselect),N_EL);
   N_EL=0;
   numelm=0;
   while ~feof(datafile),
     [data,count] = fread(datafile,[numchannel,buffersize],'int16');
     numelm = count/numchannel;
     if numelm>0 % Kenji modified 061009.Otherwise if numelm == 0 an error occur.
-        eeg(:,N_EL+1:N_EL+numelm) = data(chselect,:);
+       .lfp(:,N_EL+1:N_EL+numelm) = data(chselect,:);
         N_EL = N_EL+numelm;
     end % Kenji modified 061009.Otherwise if numelm == 0 an error occur.
     
@@ -45,4 +45,4 @@ fclose(datafile);
 
 end
 
-eeg = eeg';
+eeg =.lfp';

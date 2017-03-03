@@ -5,7 +5,7 @@ datasetfolder: the top level folder of your dataset, most likely holds a folder 
 recordingname: the name for a given recording.  All output files will be of the form /datasetfolder/recordingname/recordingname_file.ext
 
 Necessary Files
-/datasetfolder/recordingname/recordingname.eeg
+/datasetfolder/recordingname/recordingname.lfp
 /datasetfolder/recordingname/recordingname.xml
 
 Important Steps:

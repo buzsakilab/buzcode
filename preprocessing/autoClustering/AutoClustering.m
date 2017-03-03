@@ -134,7 +134,8 @@ else
 %     pw = sqrt(sum(sum(wav.^2,2),3));
     % Percentile of the power
 %     p = prctile(pw,0.99);
-
+    nFeats = size(clu,2);  % to calculate accurate stats, we should have more rows that features for all cells
+    
     %  devFromMean quantifies how much the spike are different on
     %  the different channels (what is the maximal distance from the averaged
     %  spike)
@@ -155,7 +156,7 @@ else
         fff = find([fractRogue > rogThres]);  % enforces refractory period 
         
         for ii=1:length(cluster_names)
-            if length(find(clu==cluster_names(ii))) > 50
+            if length(find(clu==cluster_names(ii))) > nFeats
                 [L(ii) LRatio(ii)] = L_Ratio(fet,find(clu==cluster_names(ii)));
                 iso(ii) = IsolationDistance(fet,find(clu==cluster_names(ii)));
             else
@@ -213,7 +214,7 @@ else
     % Here we select only clusters that correspond to putative units and that
     % have at least 20 spikes (otherwise errormatrix calculation fails)
     h = hist(clu,length(unique(clu)))';
-    goodCluIx = ismember(clu,find(cluster_names < 1000 & h>20)); 
+    goodCluIx = ismember(clu,find(cluster_names < 1000 & h>nFeats)); 
     goodCluIx(noiseIx) = 0;
      
     if length(unique(clu(goodCluIx)))>1  % if we have more than one putative cluster...

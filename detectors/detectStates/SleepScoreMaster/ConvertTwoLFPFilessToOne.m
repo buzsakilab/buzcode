@@ -1,7 +1,7 @@
 function ConvertTwoLFPFilessToOne(datasetfolder,recordingname,varargin)
 % Converts previous _SWLFP.mat and ThetaLFP.mat files to a single
 % StateScoreLFP.mat file.  
-%INPUT (optional)   If no inputs included, select folder containing .eeg
+%INPUT (optional)   If no inputs included, select folder containing .lfp
 %                   and .xml file in prompt.
 %                   
 %   datasetfolder   Top level folder in which the dataset resides. 

@@ -67,7 +67,7 @@ else
 end
 
 if SpecInfo
-    if FileExists_ss([FileBase '.eeg.par'])
+    if FileExists_ss([FileBase '.lfp.par'])
         if ~isfield(Par,'nElecGps')
             ParTmp = LoadPar([FileBase '.par']);
         else
@@ -76,9 +76,9 @@ if SpecInfo
 
         EegPar=LoadEegPar(FileBase);
         for el=1:ParTmp.nElecGps
-            for eegel=1:EegPar.nElec
-                if ~isempty(intersect(ParTmp.ElecGp{el},EegPar.ElecChannels{eegel}))
-                    Par.ElecLoc{el} = EegPar.ElecLoc{eegel};
+            for.lfpel=1:EegPar.nElec
+                if ~isempty(intersect(ParTmp.ElecGp{el},EegPar.ElecChannels.lfpel}))
+                    Par.ElecLoc{el} = EegPar.ElecLoc.lfpel};
                 end
             end
         end

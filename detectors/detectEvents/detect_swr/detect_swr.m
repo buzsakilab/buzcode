@@ -16,7 +16,7 @@ function [detected_swr] = detect_swr(Filebase, Channels, Epochs, varargin)
 %                   \   /
 %                    \ /
 %                     .
-%               Before running this reocord inspect your .eeg or .lfp file
+%               Before running this reocord inspect your .lfp or .lfp file
 %               to find that shank which best shows the sharp wave/ripple
 %               profile across the shank e.g. Channels = 25:32.
 %
@@ -62,7 +62,7 @@ function [detected_swr] = detect_swr(Filebase, Channels, Epochs, varargin)
 %
 % Epochs:       a list of time stamps [start stop] in seconds demarcating 
 %               epochs in which to detect SWR. If this argument is empty, 
-%               the entire .eeg/.lfp file will be used.               
+%               the entire .lfp/.lfp file will be used.               
 %
 %%%%%%%%%%%%%%%
 %%% OUTPUTS %%%
@@ -198,16 +198,16 @@ if ~all(Channels > 0 & Channels < nChan)
 end
 Nchan       = length(Channels);
 
-% Access lfp looking for an .eeg file first and a .lfp file second
-if ~isempty(dir([Filebase '.eeg']))
-    lfp_file = [Filebase '.eeg'];
+% Access lfp looking for an .lfp file first and a .lfp file second
+if ~isempty(dir([Filebase '.lfp']))
+    lfp_file = [Filebase '.lfp'];
     lfp_info = dir(lfp_file);
 elseif ~isempty(dir([Filebase '.lfp']))
     lfp_file = [Filebase '.lfp'];
     lfp_info = dir(lfp_file);
 else
     error(['%s: Field potential file could not be found\n', ...
-          '\tThere is neither a .eeg nor a .lfp file matching the\n', ...
+          '\tThere is neither a .lfp nor a .lfp file matching the\n', ...
           '\tbase name of the directory supplied by the user.\n'],mfname);
 end
 
@@ -391,8 +391,8 @@ hSw2       = makegausslpfir( swBP(2), SR, 6 );
 
 lfpLow     = firfilt( lfp, hSw2 );      % lowpass filter
 eegLo      = firfilt( lfpLow, hSw1 );   % highpass filter
-lfpLow     = lfpLow - eegLo;            % difference of Gaussians
-clear eegLo
+lfpLow     = lfpLow -.lfpLo;            % difference of Gaussians
+clear.lfpLo
 
 swDiff     = lfpLow(:,1) - lfpLow(:,end);
 
@@ -440,8 +440,8 @@ clear lfp
 rip        = firfilt( lfpM, hRip2 );    % highpass filter
 clear lfpM
 eegLo      = firfilt( rip, hRip1 );     % lowpass filter
-rip        = rip - eegLo;               % difference of gaussians
-clear eegLo
+rip        = rip -.lfpLo;               % difference of gaussians
+clear.lfpLo
 
 ripWindow  = pi / mean( ripBP );
 powerWin   = makegausslpfir( 1 / ripWindow, SR, 6 );

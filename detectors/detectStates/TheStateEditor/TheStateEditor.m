@@ -1,21 +1,21 @@
 %function StateEditorProBeta(baseName, inputData, supressGUI, makePortable)
-% SIMPLE USAGE (NO INPUT VARIABLES, if run from dir with .xml and .eeg/lfp):
+% SIMPLE USAGE (NO INPUT VARIABLES, if run from dir with .xml and .lfp/lfp):
 % Add StateEditor to your Matlab path. Within Matlab navigate to a folder
-% containing '.xml' and '.eeg' (or '.lfp') files. Type in the name of this 
+% containing '.xml' and '.lfp' (or '.lfp') files. Type in the name of this 
 % .m file and press enter (StateEditor will get the relevant baseName from 
 % the name of the first available '.xml' file in the folder). The StateEditor
 % loading GUI will guide you through channel selection and processing. Once 
 % the TheStateEditor GUI loads, press 'H' for further information on using 
 % StateEditor.
 % 
-% THE '.eegstates.mat' FILE: When it first runs on a new folder
-% StateEditor creates a 'baseName.eegstates.mat' file. This file contains
+% THE '.lfpstates.mat' FILE: When it first runs on a new folder
+% StateEditor creates a 'baseName.lfpstates.mat' file. This file contains
 % your channel selection as well as the (whitened) spectrograms. Subsequent
 % runs on this folder will automatically load and use the selections found
-% in the '.eegstates.mat' file, substantially speeding up the loading
+% in the '.lfpstates.mat' file, substantially speeding up the loading
 % process. In order to view different channels you must first delete or
 % rename this file. Note that in order to save space StateEditor does not
-% save the lfp channels selected in the 'eegstates.mat' file unless the
+% save the lfp channels selected in the .lfpstates.mat' file unless the
 % 'makePortable' input variable is set to 1.
 % 
 % SAVING AND LOADING STATE EDITOR WORK: Pressing 'S' allows you to save
@@ -24,7 +24,7 @@
 % fields: 
 %    'states' - the state vector is of length N, where N is the number
 %               of seconds	bins in your spectrogram 
-%               (N = round((length(eeg)/eegFS) - 1). It has a value between
+%               (N = round((length.lfp).lfpFS) - 1). It has a value between
 %               0 and 5 for each bin (0 = 'no state', 1 = 'awake', 2 = 
 %               'Light/Drowzy', 3 = 'NREM', 4 = 'Intermediate', 5 = 'REM').
 %   'events' -  a N by 2 matrix where the first column are event type ID's 
@@ -41,18 +41,18 @@
 % 
 % LOADING VARIABLES DIRECTLY FROM MATLAB: The structure 'inputData' allows
 % for loading directly from existing matlab variables (NOTE: the details
-% below are only relevant to those that do not have access to .lfp/.eeg
+% below are only relevant to those that do not have access to .lfp/.lfp
 % files or wish to bypass the StateEditor loading GUI) It must contain the
 % following (case-sensitive) fields: 
 %       'rawEeg': this is a cell array of size N where N is the number of 
-%               eeg channels to load (maximum of 3). Each cell of 'rawEeg' 
-%               must be a vector 1 eeg channel of length n where n is the
+%              .lfp channels to load (maximum of 3). Each cell of 'rawEeg' 
+%               must be a vector 1.lfp channel of length n where n is the
 %               number of samples 'Chs': 1xN matrix of channel numbers 
 %               where N is the number of lfp channels to load 
 %               (for instance inputData.Chs = [20, 39])
-%       'eegFS': lfp sampling frequency (default: 1250 Hz)
+%       .lfpFS': lfp sampling frequency (default: 1250 Hz)
 %       'Chs': List of channel numbers corresponding to rawEeg
-%       'nChs': number of input channels in rawEeeg
+%       'nChs': number of input channels in raw.lfp
 %       'MotionType':
 %           Must be one of the following (case-sensitive) strings:
 %           -'none'
@@ -63,14 +63,14 @@
 %       'motion': a 1xN vector of movement data to be displayed in the 
 %           motion panel. N is the number of second bins in the spectrogram
 %           of the lfp channels and has the value: 
-%               round((length(rawEeg{1}/eegFS) - 1). 
+%               round((length(rawEeg{1}.lfpFS) - 1). 
 %   NOTE: to use a pre-processed motion signal, set the 'MotionType' to 'none' and
 % pass the actual motion signal in the field 'motion' as described above.
 % Conversely, if you wish to pass a motion signal to be processed (for
 % instance, accelerometer or MEG channel(s), pass these channels in through
 % the field 'MotionSignal' (which must be yxn vector or matrix (where y is
 % the number of motionsignal channels, and n is the number of samples in
-% eegFS samples/second)) and set the 'MotionType' to the desired processing
+%.lfpFS samples/second)) and set the 'MotionType' to the desired processing
 % type.
 % 
 % 
@@ -79,9 +79,9 @@
 % structure to pass StateEditor the variables: 'Chs' and 'MotionType'. If 
 % applicable also  select the motion signal channels through the variable 
 % 'mChs'. Note that StateEditor must still be called from the folder in 
-% which the relevant '.xml' and '.eeg/.lfp' files are stored. In order to 
+% which the relevant '.xml' and '.lfp/.lfp' files are stored. In order to 
 % suppress the StateEditor GUI, set the supressGUI variable to 1. This can 
-% be useful for those wishing to pre-create the '.eegstates.mat' file as 
+% be useful for those wishing to pre-create the '.lfpstates.mat' file as 
 % part of their data pre-processing.
 %
 % Dependency: Does require LoadXml.m from XmlTree
@@ -113,8 +113,8 @@ if exist('Chs', 'var') & exist('rawEeg', 'var') & exist('MotionType', 'var') & ~
     nCh = max(Chs);
 end
 
-if ~exist('eegFS', 'var')
-        eegFS = 1250;%this is dangerous, creates some problems I'll try to fix below, BW
+if ~exist(.lfpFS', 'var')
+       .lfpFS = 1250;%this is dangerous, creates some problems I'll try to fix below, BW
 end
 LoadFromPortable = 0;
 if ~exist('baseName','var')
@@ -123,18 +123,18 @@ end
 if isempty(baseName)
     xmlBase = dir('*xml');
     if length(xmlBase) == 0
-        if FileExistsIn('*.eegstates.mat')
-            d = dir('*.eegstates.mat');
+        if FileExistsIn('*.lfpstates.mat')
+            d = dir('*.lfpstates.mat');
             StateInfo = load(d(1).name);
             StateInfo = StateInfo.StateInfo;
             
             if ~isfield(StateInfo, 'rawEeg')
-                warndlg({['Only ''.eegstates.mat'' file containing '],
-                    ['the eeg/lfp signals can be loaded without'],
+                warndlg({['Only ''.lfpstates.mat'' file containing '],
+                    ['the.lfp/lfp signals can be loaded without'],
                     ['an ''.xml'' file present.']});
                 return;
             else
-                d = dir('*eegstates.mat');
+                d = dir('.lfpstates.mat');
                 baseName = d(1).name(1:(end - 14));
                 LoadFromPortable = 1;
             end
@@ -154,9 +154,9 @@ if isempty(baseName)
         end
     end
 else
-    if FileExistsIn([baseName, '.eegstates.mat']);
+    if FileExistsIn([baseName, '.lfpstates.mat']);
         
-        StateInfo = load([baseName, '.eegstates.mat']);
+        StateInfo = load([baseName, '.lfpstates.mat']);
         StateInfo = StateInfo.StateInfo;
         if isfield(StateInfo, 'rawEeg')
             LoadFromPortable = 1;
@@ -187,7 +187,7 @@ end
 
 FO.downsampleGoal = 312.5;% display Hz goal, to save memory... will calculate downsample factor to match (ie 4 if 1250hz lfp file)
 FO.baseName = baseName;
-FO.eegShow = 2; %show 2 seconds of eeg
+FO.lfpShow = 2; %show 2 seconds of.lfp
 FO.maxFreq = 40; %default starting frequency extent
 FO.hanningW = 10; %default hanning smoothing window
 
@@ -197,27 +197,27 @@ FO.hanningW = 10; %default hanning smoothing window
 %FO.iSpec{1:nCh} - handles for the spectrogram objects
 %FO.max - handle for motion axes
 %FO.Mplot - handle for motion plot
-%FO.eax{1:nCh} - handles for eeg axes
-%FO.Eplot{1:nCh} - handles for eeg plots
+%FO.eax{1:nCh} - handles for.lfp axes
+%FO.Eplot{1:nCh} - handles for.lfp plots
 %FO.sMiddline{1:nCh} - handles for spectrogram center of view line objects
 %FO.mMidline - handle for motion center of view line object
-%FO.eMidline{1:nCh} - handle for eeg center of view line objects
+%FO.eMidline{1:nCh} - handle for.lfp center of view line objects
 
 
-%% account for possibility that some lft files are .eeg and some are .lft
+%% account for possibility that some lft files are .lfp and some are .lft
 if ~(exist('rawEeg', 'var') & exist('Chs', 'var') & exist('nCh', 'var') & exist('MotionType', 'var'))
     if LoadFromPortable == 0
-        if FileExistsIn([baseName,'.eeg'])
-            suffix = '.eeg';
+        if FileExistsIn([baseName,'.lfp'])
+            suffix = '.lfp';
         else
             if FileExistsIn([baseName,'.lfp'])
                 suffix = '.lfp';
             else
 %                 try 
 %                     basepath = cd;
-%                     eeglfppath = findsessioneeglfpfile(baseName,basepath);
+%                    .lfplfppath = findsessio.lfplfpfile(baseName,basepath);
 %                 catch
-                    disp(['Error: ', baseName, '.eeg or .lfp not found.'])
+                    disp(['Error: ', baseName, '.lfp or .lfp not found.'])
                     disp(['Quitting now. Bye bye.']);
                     return
 %                 end
@@ -235,9 +235,9 @@ end
 
 %% check for prior processing
 states = [];
-if FileExistsIn([baseName,'.eegstates.mat'])
+if FileExistsIn([baseName,'.lfpstates.mat'])
     if ~exist('StateInfo','var')
-        StateInfo = load([baseName,'.eegstates.mat']);
+        StateInfo = load([baseName,'.lfpstates.mat']);
         StateInfo = StateInfo.StateInfo;
     end
     if isfield(StateInfo, 'rawEeg')
@@ -245,40 +245,40 @@ if FileExistsIn([baseName,'.eegstates.mat'])
     else
         if ~exist('rawEeg', 'var')
             rawEeg = {};
-            if isfield(StateInfo,'eegFS')
-                eegFS = StateInfo.eegFS;%this was missing and caused probs with default 1250Hz assumption if data not at 1250hz
+            if isfield(StateInfo,.lfpFS')
+               .lfpFS = StateInfo.lfpFS;%this was missing and caused probs with default 1250Hz assumption if data not at 1250hz
             else %allows compatibility with old files...
-                eegFS = 1250;
-                StateInfo.eegFS = eegFS;%...should fix them too
+               .lfpFS = 1250;
+                StateInfo.lfpFS =.lfpFS;%...should fix them too
             end
             Chs = StateInfo.Chs;
             nCh = StateInfo.nCh;
-            disp([baseName, '.eegstates.mat loaded']);
+            disp([baseName, '.lfpstates.mat loaded']);
             disp(['Using channel(s): ', int2str(Chs)]);
             
-            disp('Retrieving eeg channel(s)...');
+            disp('Retrieving.lfp channel(s)...');
             rawEeg = {};
-            eeg = [];
+           .lfp = [];
             try
                 for i = 1:length(Chs)
                     e = LoadChanArch(baseName, Chs(i));
-                    eeg = [eeg; e];
+                   .lfp = .lfp; e];
                     e = [];
                 end
             catch
                 try
                     %First try Anton's LoadBinary
-                    eeg = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+                   .lfp = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
                 catch
                     %Otherwise try to use Micheal Zugaro
-                    eeg = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
-                    eeg = double(eeg);
+                   .lfp = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
+                   .lfp = double.lfp);
                 end
                 
             end
             
             for i = 1:length(Chs)
-                rawEeg{i} = eeg(i, :);
+                rawEeg{i} =.lfp(i, :);
             end
             disp('Done.');
         end
@@ -298,7 +298,7 @@ if FileExistsIn([baseName,'.eegstates.mat'])
 else
     StateInfo = [];
     info1 = LoadParIn([baseName, '.xml']);
-    eegFS = info1.lfpSampleRate;
+   .lfpFS = info1.lfpSampleRate;
 
     if ~exist('nCh', 'var')
 %             info1 = LoadXmlIn([baseName, '.xml']);
@@ -319,16 +319,16 @@ else
         
         inputFig = figure('Position', [280   453   550   250], 'MenuBar', 'none', 'numbertitle', 'off', 'name', [baseName, ' channel selection']);
         warning('off', 'MATLAB:hg:default_child_strategy:IllegalPermutation')
-        annotation('textbox',  'Position', [0.02, 0.87, 0.9, 0.07], 'string', ['\bf\fontsize{10}Please choose up to 3 eeg channels (base 1, nCh = ', int2str(nCh), '):'], 'EdgeColor', 'none');
+        annotation('textbox',  'Position', [0.02, 0.87, 0.9, 0.07], 'string', ['\bf\fontsize{10}Please choose up to 3.lfp channels (base 1, nCh = ', int2str(nCh), '):'], 'EdgeColor', 'none');
         Channels1 = uicontrol('style', 'edit', 'FontSize', 10, 'Units', 'Normalized', 'Position', [0.37, 0.75, 0.45, 0.08],'String',defaultchans);
         set(Channels1, 'HorizontalAlignment', 'left');
         
         
         annotation('textbox',  'Position', [0.02, 0.65, 0.9, 0.07], 'string', ['\bf\fontsize{10}Choose a motion signal to use:'], 'EdgeColor', 'none');
         if exist([baseName '_EMGCorr.mat'],'file');
-            mOptions = {'Load from TimeValue Pair .mat (_EMGCorr.mat)';'None';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from .mat file'};
+            mOptions = {'Load from TimeValue Pair .mat (_EMGCorr.mat)';'None';'Load From .whl file (head tracking)';'Load from.lfp ch(s) (accelerometer/motion pad)';'Load from.lfp ch(s) (MEG)';'Load from .mat file'};
         else
-            mOptions = {'None';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from TimeValue Pair .mat (_EMGCorr.mat)';'Load from .mat file'};
+            mOptions = {'None';'Load From .whl file (head tracking)';'Load from.lfp ch(s) (accelerometer/motion pad)';'Load from.lfp ch(s) (MEG)';'Load from TimeValue Pair .mat (_EMGCorr.mat)';'Load from .mat file'};
         end
         mInput = uicontrol('style', 'popupmenu', 'string', mOptions );
         set(mInput, 'Units', 'normalized', 'Position', [0.37, 0.5, 0.62, 0.1]);
@@ -386,23 +386,23 @@ else
     
     
     if ~exist('rawEeg', 'var')
-        weeg = {};
+        .lfp = {};
         fspec = {};
         
-        disp(['Loading eeg channels: ', int2str(Chs)]);
+        disp(['Loading.lfp channels: ', int2str(Chs)]);
         
 %         try
 %             %First try Anton's LoadBinary
-%             eeg1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+%            .lfp1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
 %         catch
             %Otherwise try to use Micheal Zugaro
-            eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
-            eeg1 = single(eeg1);
+           .lfp1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
+           .lfp1 = single.lfp1);
 %         end
         disp('Done.');
         for i = 1:length(Chs)
             
-            rawEeg{i} =eeg1(i, :);
+            rawEeg{i} .lfp1(i, :);
             if iscell(Chs)
                 disp(['Whitening and computing spectrogram for channel ', Chs{i},'. This will all be over in a minute.']);
             else
@@ -413,8 +413,8 @@ else
             catch
                 fspec{i} =[];
                 
-                weeg{i} =  WhitenSignalIn(rawEeg{i},eegFS*2000,1);
-                [fspec{i}.spec, fspec{i}.fo, fspec{i}.to] = mtchglongIn(weeg{i}, 3072, eegFS, eegFS, 0, [], [], [], [0 200]);
+                .lfp{i} =  WhitenSignalIn(rawEeg{i}.lfpFS*2000,1);
+                [fspec{i}.spec, fspec{i}.fo, fspec{i}.to] = mtchglongIn(.lfp{i}, 3072,.lfpFS,.lfpFS, 0, [], [], [], [0 200]);
                 fspec{i}.spec = single(fspec{i}.spec);
                 fspec{i}.info.Ch = Chs(i);
                 fspec{i}.info.FileInfo.name = [baseName, suffix];
@@ -435,8 +435,8 @@ else
                 fspec{i} = LoadSpecArch(baseName, [], Chs(i), 1, 0, 3072, [0 200], 1, []);
             catch
                 fspec{i} =[];
-                weeg{i} =  WhitenSignalIn(rawEeg{i}, eegFS*2000,1);
-                [fspec{i}.spec, fspec{i}.fo, fspec{i}.to] = mtchglongIn(weeg{i}, 3072, eegFS, eegFS, 0, [], [], [], [0 200]);
+                .lfp{i} =  WhitenSignalIn(rawEeg{i},.lfpFS*2000,1);
+                [fspec{i}.spec, fspec{i}.fo, fspec{i}.to] = mtchglongIn(.lfp{i}, 3072,.lfpFS,.lfpFS, 0, [], [], [], [0 200]);
                 fspec{i}.spec = single(fspec{i}.spec);
                 fspec{i}.info.Ch = Chs(i);
                 fspec{i}.info.FileInfo.name = [baseName, suffix];
@@ -458,7 +458,7 @@ else
         end
         
         
-        if strcmp(mIn,'Load from eeg ch(s) (accelerometer/motion pad)')
+        if strcmp(mIn,'Load from.lfp ch(s) (accelerometer/motion pad)')
         %         if mIn == 3
             if ischar(mChs)
                 mChs  = str2num(mChs);
@@ -486,64 +486,64 @@ else
                 MotionType = 'Whl';
                 mChs = [];
                 disp('Done.');
-            case 'Load from eeg ch(s) (accelerometer/motion pad)'
+            case 'Load from.lfp ch(s) (accelerometer/motion pad)'
                 disp(['Loading and preprocessing motion data from channel(s) ', int2str(mChs), '...']);
                 if exist('motionSignal', 'var')
-                    meeg = motionSignal;
+                    .lfp = motionSignal;
                 else
 %                     try
 %                         %First try Anton's LoadBinary
-%                         meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+%                         .lfp = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
 %                     catch
                         %Otherwise try to use Micheal Zugaro
-                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
-                        meeg = single(meeg);
+                        .lfp = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
+                        .lfp = single(.lfp);
 %                     end
                 end
-                meeg = abs(zscore(meeg')');
-                meeg = sum(meeg, 1);
+                .lfp = abs(zscore(.lfp')');
+                .lfp = sum(.lfp, 1);
                 forder = 500;
                 forder = ceil(forder/2)*2;
-                EEGSR = eegFS;
+                EEGSR =.lfpFS;
                 lowband = 0.1;
                 highband = 1;
                 firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
-                meeg = filter2(firfiltb,  meeg);
-                motion = mean(reshape(meeg(1:(length(meeg) - mod(length(meeg), eegFS))), eegFS, []), 1);
+                .lfp = filter2(firfiltb,  .lfp);
+                motion = mean(reshape(.lfp(1:(length(.lfp) - mod(length(.lfp),.lfpFS))),.lfpFS, []), 1);
                 if length(motion) == (length(fspec{1}.to) + 1)
                     motion = motion(1:(end - 1));
                 end
                 MotionType = 'Channels (accelerometer)';
                 disp('Done.');
-            case 'Load from eeg ch(s) (MEG)'
+            case 'Load from.lfp ch(s) (MEG)'
                 disp(['Loading and preprocessing meg data from channel(s) ', int2str(mChs), '...']);
                 if exist('motionSignal', 'var')
-                    meeg = motionSignal;
+                    .lfp = motionSignal;
                 else
                     try
                         %First try Anton's LoadBinary
-                        meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+                        .lfp = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
                     catch
                         %Otherwise try to use Micheal Zugaro
-                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
-                        meeg = single(meeg);
+                        .lfp = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
+                        .lfp = single(.lfp);
                     end
                 end
-                meeg = zscore(meeg')';
-                meeg = sum(meeg, 1);
+                .lfp = zscore(.lfp')';
+                .lfp = sum(.lfp, 1);
                 forder = 500;
                 forder = ceil(forder/2)*2;
-                EEGSR = eegFS;
+                EEGSR =.lfpFS;
                 lowband = 100;
                 highband = 600;
                 firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
-                meeg = filter2(firfiltb,  meeg);
-                meeg = zscore(meeg).^2;
+                .lfp = filter2(firfiltb,  .lfp);
+                .lfp = zscore(.lfp).^2;
                 lowband = 0.1;
                 higband = 1;
                 firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
-                meeg = filter2(firfiltb,  meeg);
-                motion = mean(reshape(meeg(1:(length(meeg) - mod(length(meeg), eegFS))), eegFS, []), 1);
+                .lfp = filter2(firfiltb,  .lfp);
+                motion = mean(reshape(.lfp(1:(length(.lfp) - mod(length(.lfp),.lfpFS))),.lfpFS, []), 1);
                 if length(motion) == (length(fspec{1}.to) + 1)
                     motion = motion(1:(end - 1));
                 end
@@ -601,7 +601,7 @@ else
     StateInfo.MotionType = MotionType;
     StateInfo.fspec = fspec;
     StateInfo.motion = motion;
-    StateInfo.eegFS = eegFS;
+    StateInfo.lfpFS =.lfpFS;
     if makePortable == 1
         StateInfo.rawEeg = rawEeg;
     end
@@ -618,16 +618,16 @@ else
        states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
     end
     
-    disp(['Saving ', baseName, '.eegstates.mat...']);
+    disp(['Saving ', baseName, '.lfpstates.mat...']);
     try
-        save([baseName, '.eegstates.mat'], 'StateInfo');
+        save([baseName, '.lfpstates.mat'], 'StateInfo');
     catch
-        warndlg(['Failed to save ' , baseName, '.eegstates.mat']);
+        warndlg(['Failed to save ' , baseName, '.lfpstates.mat']);
     end
 end
 
-if eegFS>FO.downsampleGoal;
-    FO.downsample = round(eegFS/FO.downsampleGoal);
+if.lfpFS>FO.downsampleGoal;
+    FO.downsample = round.lfpFS/FO.downsampleGoal);
 else
     FO.downsample = 1;
 end
@@ -637,7 +637,7 @@ disp('So far so good. Now, loading StateEditor GUI. This is going to be great!')
 if supressGUI == 1
     return;
 else
-    StateEditorSetup(StateInfo.fspec, StateInfo.motion, states, rawEeg, baseName, FO, eegFS);
+    StateEditorSetup(StateInfo.fspec, StateInfo.motion, states, rawEeg, baseName, FO,.lfpFS);
 end
 
 if exist([baseName,'-states.mat'],'file')
@@ -648,12 +648,12 @@ end
 end%function end
 
 
-function StateEditorSetup(f, MP, States, eeg, baseName, FO, eegFS)
+function StateEditorSetup(f, MP, States,.lfp, baseName, FO,.lfpFS)
 
 if ~iscell(f)
-    a = f; e = eeg;
-    f = {}; eeg = {};
-    f{1} = a; eeg{1} = e;
+    a = f; e =.lfp;
+    f = {};.lfp = {};
+    f{1} = a;.lfp{1} = e;
     a = []; e =[];
 end
 nCh = length(f);
@@ -671,8 +671,8 @@ end
 
 
 for i = 1:nCh
-    FO.eeg{i} = eeg{i}(1:FO.downsample:end);
-%     FO.eeg{i} = (eeg{i}(1:FO.downsample:end)/2150)/1000;%why was this division?? To convert to volts in some old system?  
+    FO.lfp{i} =.lfp{i}(1:FO.downsample:end);
+%     FO.lfp{i} = .lfp{i}(1:FO.downsample:end)/2150)/1000;%why was this division?? To convert to volts in some old system?  
 end
 
 FO.clickPoint = [];
@@ -682,7 +682,7 @@ FO.stateHistory = {};
 FO.stateHistoryNum = 0;
 FO.newStates = {};
 FO.currAction = 'Browse';
-FO.eegFS = eegFS;
+FO.lfpFS =.lfpFS;
 
 FO.overlayLines = {};
 
@@ -708,7 +708,7 @@ switch nCh
         position.sax{1} = [0.0500    0.3100    0.8000    0.6200];
         position.MP = [0.0500    0.170    0.8000    0.1000];
         position.eax{1} = [0.0500    0.04    0.8000    0.1000];
-        position.eegCh{1} =   [0.8100    0.0350    0.1000    0.1000];
+        position.lfpCh{1} =   [0.8100    0.0350    0.1000    0.1000];
         
         a = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
         if iscell(FO.Chs)
@@ -719,7 +719,7 @@ switch nCh
         annotation('textarrow',[0.02 0.02],[0.14 0.14],'string','\fontsize{10} EEG (m.V.)', ...
             'HeadStyle','none','LineStyle', 'none', 'TextRotation',90);
         
-        position.eegWidth = [0.05, 0.0350, 0.1, 0.1];
+        position.lfpWidth = [0.05, 0.0350, 0.1, 0.1];
     case 2
         position.lax = [0.0500    0.940    0.8000    0.0500];
         position.sax{1} = [0.05         0.62          0.8         0.31];
@@ -727,9 +727,9 @@ switch nCh
         position.MP = [0.05         0.195          0.8          0.07];
         position.eax{1} =  [0.05         0.105         0.8          0.06];
         position.eax{2} =  [0.05         0.04          0.8          0.06];
-        position.eegCh{1} =    [0.81, 0.069, 0.1, 0.1];
-        position.eegCh{2} = [0.81, 0.004, 0.1, 0.1];
-        position.eegWidth = [0.05, 0.069, 0.1, 0.1];
+        position.lfpCh{1} =    [0.81, 0.069, 0.1, 0.1];
+        position.lfpCh{2} = [0.81, 0.004, 0.1, 0.1];
+        position.lfpWidth = [0.05, 0.069, 0.1, 0.1];
         a = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
         if iscell(FO.Chs)
             set(a, 'String', ['\bf\color{black}\fontsize{11}Ch ', FO.Chs{1}], 'Position', [-0.005, 0.79, 0.1, 0.1]);
@@ -755,11 +755,11 @@ switch nCh
         position.eax{1} = [0.05         0.15          0.8          0.05];
         position.eax{2} = [0.05         0.095          0.8          0.05];
         position.eax{3} = [0.05         0.04          0.8          0.05];
-        position.eegWidth = [0.05, 0.105, 0.1, 0.1];
+        position.lfpWidth = [0.05, 0.105, 0.1, 0.1];
         
-        position.eegCh{1} =   [0.8100    0.095    0.1000    0.1000];
-        position.eegCh{2} = [0.8100    0.0400    0.100    0.1000];
-        position.eegCh{3} = [0.8100    -0.015    0.1000    0.1000];
+        position.lfpCh{1} =   [0.8100    0.095    0.1000    0.1000];
+        position.lfpCh{2} = [0.8100    0.0400    0.100    0.1000];
+        position.lfpCh{3} = [0.8100    -0.015    0.1000    0.1000];
         a1 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
         a2 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
         a3 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
@@ -782,7 +782,7 @@ yplotLims = [];
 yplotLFPLims = [];
 for i = 1:FO.nCh
     yplotLims = [yplotLims; position.sax{i}(2), position.sax{i}(2) + position.sax{i}(4)];
-    yplotLFPLims = [yplotLFPLims; position.eax{i}(2), position.eax{i}(2) + position.eegCh{i}(4)];
+    yplotLFPLims = [yplotLFPLims; position.eax{i}(2), position.eax{i}(2) + position.lfpCh{i}(4)];
     
 end
 yplotLims = [yplotLims; position.lax(2), position.lax(2) + position.lax(4)];
@@ -941,12 +941,12 @@ FO.mMidline = annotation('line', [p(1) + p(3)/2, p(1) + p(3)/2], [p(2), p(2) + p
 
 
 for i = 1:nCh
-    eegX = (1:length(FO.eeg{i}))/(FO.eegFS/FO.downsample);
+   .lfpX = (1:length(FO.lfp{i}))/(FO.lfpFS/FO.downsample);
     FO.eax{i} = axes('Position', position.eax{i});
     
-    FO.Eplot{i} = plot(eegX(eegX >= 0 & eegX <= 120), FO.eeg{i}(eegX >= 0 & eegX <= 120), 'y');
+    FO.Eplot{i} = plot.lfpX.lfpX >= 0 &.lfpX <= 120), FO.lfp{i}.lfpX >= 0 &.lfpX <= 120), 'y');
     set(FO.eax{i}, 'Color', [0 0 0], 'XColor', 'b');
-    %   FO.Eplot{i} = plot(eegX, FO.eeg{i});
+    %   FO.Eplot{i} = plot.lfpX, FO.lfp{i});
     ylabel('Eeg');
     l1 = [min(get(FO.Eplot{i}, 'YData')), max(get(FO.Eplot{i}, 'YData'))];
     ylim(l1);
@@ -980,13 +980,13 @@ end
 for i = 1:length(FO.Chs)
     a = annotation('textbox', 'Units', 'Normalized');
     if iscell(FO.Chs)
-        set(a, 'String', ['\bf\color{red}\fontsize{10}C', FO.Chs{i}], 'Position', position.eegCh{i}, 'EdgeColor', 'none');        
+        set(a, 'String', ['\bf\color{red}\fontsize{10}C', FO.Chs{i}], 'Position', position.lfpCh{i}, 'EdgeColor', 'none');        
     else
-    set(a, 'String', ['\bf\color{red}\fontsize{10}C', int2str(FO.Chs(i))], 'Position', position.eegCh{i}, 'EdgeColor', 'none');
+    set(a, 'String', ['\bf\color{red}\fontsize{10}C', int2str(FO.Chs(i))], 'Position', position.lfpCh{i}, 'EdgeColor', 'none');
     end
 end
-FO.eegWidthDisp = annotation('textbox', 'Units', 'Normalized');
-set(FO.eegWidthDisp, 'String', ['\bf\color{red}\fontsize{11}', num2str(FO.eegShow), ' sec'], 'Position', position.eegWidth, 'EdgeColor', 'none');
+FO.lfpWidthDisp = annotation('textbox', 'Units', 'Normalized');
+set(FO.lfpWidthDisp, 'String', ['\bf\color{red}\fontsize{11}', num2str(FO.lfpShow), ' sec'], 'Position', position.lfpWidth, 'EdgeColor', 'none');
 
 
 a = annotation('textbox', 'Units', 'normalized', 'Position', [0.855, 0.65, 0.135, 0.03], 'EdgeColor', 'none');
@@ -1063,20 +1063,20 @@ FO.saxYLim = [min(FO.fo), max(FO.fo)];
 FO.mpYLim = get(FO.max, 'YLim');
 a = [];
 for i = 1:length(nCh)
-    a = [a; min(FO.eeg{i}), max(FO.eeg{i})];
+    a = [a; min(FO.lfp{i}), max(FO.lfp{i})];
 end
-FO.eegYLim = [min(a(:, 1)), max(a(:, 2))];
+FO.lfpYLim = [min(a(:, 1)), max(a(:, 2))];
 
 
 %% BW speeding things up... didn't change anything above to be safe
 setappdata(gcf,'unsmoothedSpec',FO.unsmoothedSpec)
 setappdata(gcf,'spec',FO.spec)
-setappdata(gcf,'eeg',FO.eeg)
+setappdata(gcf,.lfp',FO.lfp)
 
 FO = rmfield(FO,'spec');
 FO = rmfield(FO,'unsmoothedSpec');%access only when needed using appdata now
-FO = rmfield(FO,'eeg');%access only when needed using appdata now
-% FO = rmfield(FO,'eegX');%recalculate on the fly using:   eegX = (1:length(FO.eeg{i}))/(FO.eegFS/FO.downsample);
+FO = rmfield(FO,.lfp');%access only when needed using appdata now
+% FO = rmfield(FO,.lfpX');%recalculate on the fly using:  .lfpX = (1:length(FO.lfp{i}))/(FO.lfpFS/FO.downsample);
 %%
             guidata(FO.fig, FO); 
 
@@ -1275,7 +1275,7 @@ switch e.Key
     case 'p'
         previousEvent;
     case 'hyphen'
-        f = find(histc(FO.eegShow, [0, 0.26, 2.1, 5.1, 15.1, 30.1,  60.1]) == 1);
+        f = find(histc(FO.lfpShow, [0, 0.26, 2.1, 5.1, 15.1, 30.1,  60.1]) == 1);
         switch f
             case 1
                 delta = 0;
@@ -1292,7 +1292,7 @@ switch e.Key
         end
         
         
-        FO.eegShow = FO.eegShow - delta;
+        FO.lfpShow = FO.lfpShow - delta;
         guidata(FO.fig, FO); 
         updateEEG(mean(get(FO.eax{1}, 'XLim')));
         UpdateText;
@@ -1300,7 +1300,7 @@ switch e.Key
         
     case 'equal'
         
-        f = find(histc(FO.eegShow, [0, 0.24, 1.99, 4.99, 14.99, 29.9,  60]) == 1);
+        f = find(histc(FO.lfpShow, [0, 0.24, 1.99, 4.99, 14.99, 29.9,  60]) == 1);
         switch f
             case 2
                 delta = 0.25;
@@ -1318,7 +1318,7 @@ switch e.Key
         
         
         
-        FO.eegShow = FO.eegShow + delta;
+        FO.lfpShow = FO.lfpShow + delta;
         guidata(FO.fig, FO); 
         
         updateEEG(mean(get(FO.eax{1}, 'XLim')));
@@ -1390,11 +1390,11 @@ end
 function updateEEG(varargin)
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); 
 % try
-    eeg = getappdata(gcf,'eeg');
-    eegX = (1:length(eeg{1}))/(FO.eegFS/FO.downsample);
+   .lfp = getappdata(gcf,.lfp');
+   .lfpX = (1:length.lfp{1}))/(FO.lfpFS/FO.downsample);
 % catch
-%     eeg = F0.eeg;
-%     eegX = F0
+%    .lfp = F0.lfp;
+%    .lfpX = F0
 % end
 
 if isempty(varargin)
@@ -1402,8 +1402,8 @@ if isempty(varargin)
 else
     pos = varargin{1};
 end
-low = pos - FO.eegShow/2;
-high = pos + FO.eegShow/2;
+low = pos - FO.lfpShow/2;
+high = pos + FO.lfpShow/2;
 if low < FO.lims(1);
     high = high + (FO.lims(1) + low);
     low = FO.lims(1);
@@ -1417,10 +1417,10 @@ end
 lowMargin = low - 60;
 highMargin = high + 60;
 for i = 1:FO.nCh
-    set(FO.Eplot{i}, 'XData', eegX(eegX >= lowMargin & eegX <= highMargin), 'YData', eeg{i}(eegX >= lowMargin & eegX <= highMargin));
-    l1 = [min(eeg{i}(eegX >= low & eegX <= high)), max(eeg{i}(eegX >= low & eegX <= high))];
+    set(FO.Eplot{i}, 'XData',.lfpX.lfpX >= lowMargin &.lfpX <= highMargin), 'YData',.lfp{i}.lfpX >= lowMargin &.lfpX <= highMargin));
+    l1 = [min.lfp{i}.lfpX >= low &.lfpX <= high)), max.lfp{i}.lfpX >= low &.lfpX <= high))];
     set(FO.eax{i}, 'YLim', l1);
-    set(FO.eax{i}, 'XLim', [pos - FO.eegShow/2, pos + FO.eegShow/2]);
+    set(FO.eax{i}, 'XLim', [pos - FO.lfpShow/2, pos + FO.lfpShow/2]);
 end
 
 set(FO.max,'xticklabel',num2str(get(FO.max,'xtick')'));
@@ -1446,11 +1446,11 @@ catch
 end
 
 % for i = 1:FO.nCh
-%     set(FO.Eplot{i}, 'XData', eegX(eegX >= low & eegX <= high));
-%     set(FO.Eplot{i}, 'YData', eeg{i}(eegX >= low & eegX <= high));
-%     l1 = [min(eeg{i}(eegX >= low & eegX <= high)), max(eeg{i}(eegX >= low & eegX <= high))];
+%     set(FO.Eplot{i}, 'XData',.lfpX.lfpX >= low &.lfpX <= high));
+%     set(FO.Eplot{i}, 'YData',.lfp{i}.lfpX >= low &.lfpX <= high));
+%     l1 = [min.lfp{i}.lfpX >= low &.lfpX <= high)), max.lfp{i}.lfpX >= low &.lfpX <= high))];
 %     set(FO.eax{i}, 'YLim', l1);
-%     set(FO.eax{i}, 'XLim', [pos - FO.eegShow/2, pos + FO.eegShow/2]);
+%     set(FO.eax{i}, 'XLim', [pos - FO.lfpShow/2, pos + FO.lfpShow/2]);
 % end
 
 guidata(FO.fig, FO); 
@@ -1933,7 +1933,7 @@ switch lfpClick
         end
     case 1
         if src.VerticalScrollCount > 0
-            f = find(histc(FO.eegShow, [0, 0.24, 1.99, 4.99, 14.99, 29.9,  60]) == 1);
+            f = find(histc(FO.lfpShow, [0, 0.24, 1.99, 4.99, 14.99, 29.9,  60]) == 1);
             switch f
                 case 2
                     delta = 0.25;
@@ -1948,14 +1948,14 @@ switch lfpClick
                 case 7
                     delta = 0;
             end
-            FO.eegShow = FO.eegShow + delta;
+            FO.lfpShow = FO.lfpShow + delta;
             guidata(FO.fig, FO);
             
             updateEEG(mean(get(FO.eax{1}, 'XLim')));
             UpdateText;
             return;
         else
-            f = find(histc(FO.eegShow, [0, 0.26, 2.1, 5.1, 15.1, 30.1,  60.1]) == 1);
+            f = find(histc(FO.lfpShow, [0, 0.26, 2.1, 5.1, 15.1, 30.1,  60.1]) == 1);
             switch f
                 case 1
                     delta = 0;
@@ -1972,7 +1972,7 @@ switch lfpClick
             end
             
             
-            FO.eegShow = FO.eegShow - delta;
+            FO.lfpShow = FO.lfpShow - delta;
             guidata(FO.fig, FO); 
             updateEEG(mean(get(FO.eax{1}, 'XLim')));
             UpdateText;
@@ -2585,7 +2585,7 @@ switch action
 end
 
 set(FO.lastClickDisp, 'String', {'Last Click at sec:', num2str(FO.clickPoint, 7), ['(of ', num2str(FO.lims(2), 7), ')']});
-set(FO.eegWidthDisp, 'String', ['\bf\color{red}\fontsize{11}', num2str(FO.eegShow), ' sec']);
+set(FO.lfpWidthDisp, 'String', ['\bf\color{red}\fontsize{11}', num2str(FO.lfpShow), ' sec']);
 if isempty(FO.startLocation)
     set(FO.startLocDisp, 'Visible', 'off');
 else
@@ -3095,7 +3095,7 @@ else
 end
 
 if SpecInfo
-    if FileExistsIn([FileBase '.eeg.par'])
+    if FileExistsIn([FileBase '.lfp.par'])
         if ~isfield(Par,'nElecGps')
             ParTmp = LoadPar([FileBase '.par']);
         else
@@ -3104,9 +3104,9 @@ if SpecInfo
 
         EegPar=LoadEegPar(FileBase);
         for el=1:ParTmp.nElecGps
-            for eegel=1:EegPar.nElec
-                if ~isempty(intersect(ParTmp.ElecGp{el},EegPar.ElecChannels{eegel}))
-                    Par.ElecLoc{el} = EegPar.ElecLoc{eegel};
+            for.lfpel=1:EegPar.nElec
+                if ~isempty(intersect(ParTmp.ElecGp{el},EegPar.ElecChannels.lfpel}))
+                    Par.ElecLoc{el} = EegPar.ElecLoc.lfpel};
                 end
             end
         end
@@ -3354,8 +3354,8 @@ else
         axes(FO.eax{i});
         hold on;
         yl = y;
-        yl(yl == 0) = FO.eegYLim(1) - 10;
-        yl(yl == 1) = FO.eegYLim(2) + 10;
+        yl(yl == 0) = FO.lfpYLim(1) - 10;
+        yl(yl == 1) = FO.lfpYLim(2) + 10;
         if linesExist == 0
             FO.CurrEventLines{panelN} = plot(z, yl , ':m', 'LineWidth', 2);
         else

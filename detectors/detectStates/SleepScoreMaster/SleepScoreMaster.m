@@ -2,7 +2,7 @@ function SleepScoreMaster(datasetfolder,recordingname,varargin)
 %SleepScoreMaster(datasetfolder,recordingname)
 %This is the master function for sleep state scoring.
 %
-%INPUT (optional)   If no inputs included, select folder containing .eeg
+%INPUT (optional)   If no inputs included, select folder containing .lfp
 %                   and .xml file in prompt.
 %                   
 %   datasetfolder   Top level folder in which the dataset resides. 
@@ -205,8 +205,8 @@ scoremetricspath = fullfile(savefolder,[recordingname,'_SleepScoreMetrics.mat'])
 %Filename for .lfp file
 if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
     rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.eeg']);
+elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
+    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
 elseif ~overwrite
     display('No .lfp file... but using saved files so maybe it''s ok!')
 else
@@ -226,7 +226,7 @@ end
 if ~exist(EMGpath,'file') || overwrite;
     display('Calculating EMG')
     [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime);%BW modify this to have different dependencies, currently assumes presence of: 
-    % eeg filename - ok
+    %.lfp filename - ok
     % .xml filename - ok
     %     Save ..._EMGCorr file
     if savebool
