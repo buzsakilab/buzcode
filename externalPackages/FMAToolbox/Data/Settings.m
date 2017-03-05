@@ -20,3 +20,6 @@ SETTINGS.maxDistance = 1000;
 SETTINGS.minFieldSize = 100;
 
 
+% this file should be removed from future versions, other tracking systems
+% don't have min/max distances and minFieldSize is an arbitrary
+% threshold....
