@@ -1,4 +1,4 @@
-function SetCurrentSession(filename)
+function SetCurrentSession_fast(filename)
 
 %SetCurrentSession - Load all data for a given recording session.
 %

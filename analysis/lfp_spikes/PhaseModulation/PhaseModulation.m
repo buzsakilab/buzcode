@@ -136,22 +136,24 @@ for a = 1:length(spikes)
 end
 
 %% Cumulative effect across all spikes from all cells... not saving these stats for now
-[cpd,phasebins,cps]=CircularDistribution(cum_spkphases,'nBins',180);
-cRp = cps.p;
+if length(cum_spkphases) > 10
+    [cpd,phasebins,cps]=CircularDistribution(cum_spkphases,'nBins',180);
+    cRp = cps.p;
 
-if plotting
-    h(end+1) = figure;
-    hax = subplot(1,2,1); 
-    rose(cum_spkphases)
-    title(hax,['All Spikes/Cells Accumulated. Rayleigh p = ' num2str(cps.p) '.'])
+    if plotting
+        h(end+1) = figure;
+        hax = subplot(1,2,1); 
+        rose(cum_spkphases)
+        title(hax,['All Spikes/Cells Accumulated. Rayleigh p = ' num2str(cps.p) '.'])
 
-    hax = subplot(1,2,2); 
-    bar(phasebins*180/pi,cpd)
-    xlim([0 360])
-    set(hax,'XTick',[0 90 180 270 360]) 
-    hold on;
-    plot([0:360],cos(pi/180*[0:360])*0.05*max(cpd)+0.95*max(cpd),'color',[.7 .7 .7])
-    set(h(end),'name',['PhaseModPlotsForAllCells']);
+        hax = subplot(1,2,2); 
+        bar(phasebins*180/pi,cpd)
+        xlim([0 360])
+        set(hax,'XTick',[0 90 180 270 360]) 
+        hold on;
+        plot([0:360],cos(pi/180*[0:360])*0.05*max(cpd)+0.95*max(cpd),'color',[.7 .7 .7])
+        set(h(end),'name',['PhaseModPlotsForAllCells']);
+    end
 end
 
 
