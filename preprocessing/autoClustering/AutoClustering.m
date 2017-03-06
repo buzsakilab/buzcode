@@ -134,7 +134,7 @@ else
 %     pw = sqrt(sum(sum(wav.^2,2),3));
     % Percentile of the power
 %     p = prctile(pw,0.99);
-    nFeats = size(clu,2);  % to calculate accurate stats, we should have more rows that features for all cells
+    nFeats = size(fet,2);  % to calculate accurate stats, we should have more rows that features for all cells
     
     %  devFromMean quantifies how much the spike are different on
     %  the different channels (what is the maximal distance from the averaged

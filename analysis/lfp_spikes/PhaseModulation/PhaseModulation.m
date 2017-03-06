@@ -136,6 +136,7 @@ for a = 1:length(spikes)
 end
 
 %% Cumulative effect across all spikes from all cells... not saving these stats for now
+phasebins=[];
 if length(cum_spkphases) > 10
     [cpd,phasebins,cps]=CircularDistribution(cum_spkphases,'nBins',180);
     cRp = cps.p;
