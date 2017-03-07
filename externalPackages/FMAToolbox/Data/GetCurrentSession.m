@@ -69,7 +69,8 @@ end
 separator;
 disp('Positions');
 disp(['  Sampling Rate                  ' num2str(DATA.rates.video)]);
-disp(['  Image Size (pixels)            ' int2str(DATA.maxX) 'x' int2str(DATA.maxY)]);
+% deprecated for newer tracking systems (optitrack)
+% disp(['  Image Size (pixels)            ' int2str(DATA.maxX) 'x' int2str(DATA.maxY)]);
 n = size(DATA.positions,1);
 disp(['  Number of Position Samples     ' int2str(n)]);
 if n ~= 0,

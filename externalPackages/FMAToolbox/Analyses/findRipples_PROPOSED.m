@@ -1,4 +1,4 @@
-function [ripples,sd,bad] = FindRipples(varargin)
+function [ripples,sd,bad] = FindRipples_PROPOSED(varargin)
 
 %FindRipples - Find hippocampal ripples (100~200Hz oscillations).
 %
@@ -14,6 +14,7 @@ function [ripples,sd,bad] = FindRipples(varargin)
 %    from a previous call.
 %
 %    filtered       ripple-band filtered LFP (one channel).
+%	 timestamps	    timestamps to match filtered variable
 %    <options>      optional list of property-value pairs (see table below)
 %
 % %%%%  OR BELOW    %%%%%%%%%%%%%%%%%%%%%%%%%%%%  
@@ -81,8 +82,10 @@ if isstr(varargin{1})  % if first arg is basepath
     filtered = FilterLFP(lfp,'passband',[120 220]);
 elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     addRequired(p,'filtered',@isnumeric)
+    addRequired(p,'timestamps',@isnumeric)
     parse(p,varargin{:})
     filtered = p.Results.filtered;
+    timestamps = p.Results.timestamps;
 end
 
 % assign parameters (either defaults or given)
