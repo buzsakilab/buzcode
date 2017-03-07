@@ -100,7 +100,13 @@ parameters.VoltageRange = str2num(p.acquisitionSystem.voltageRange);
 parameters.Amplification = str2num(p.acquisitionSystem.amplification);
 parameters.Offset = str2num(p.acquisitionSystem.offset);
 parameters.lfpSampleRate = str2num(p.fieldPotentials.lfpSamplingRate);
-parameters.AnatGrps = p.anatomicalDescription.channelGroups.group;
+
+% fixing AnatGrps and SpkGrps
+for a = 1:length(p.anatomicalDescription.channelGroups.group)
+    for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
+        parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
+    end        
+end
 for a = 1:parameters.spikeGroups.nGroups
     parameters.SpkGrps(a).Channels = parameters.spikeGroups.groups{a};
     parameters.SpkGrps(a).nSamples =  str2num(p.spikeDetection.channelGroups.group{a}.nSamples);

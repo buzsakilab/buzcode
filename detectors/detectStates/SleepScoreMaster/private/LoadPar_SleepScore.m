@@ -76,9 +76,9 @@ if SpecInfo
 
         EegPar=LoadEegPar(FileBase);
         for el=1:ParTmp.nElecGps
-            for.lfpel=1:EegPar.nElec
-                if ~isempty(intersect(ParTmp.ElecGp{el},EegPar.ElecChannels.lfpel}))
-                    Par.ElecLoc{el} = EegPar.ElecLoc.lfpel};
+            for lfpel=1:EegPar.nElec
+                if ~isempty(intersect(ParTmp.ElecGp{el},EegPar.ElecChannels{lfpel}))
+                    Par.ElecLoc{el} = EegPar.ElecLoc{lfpel};
                 end
             end
         end
