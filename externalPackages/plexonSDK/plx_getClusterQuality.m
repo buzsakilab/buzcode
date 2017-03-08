@@ -19,8 +19,12 @@ function [LRatio IsolDist ID] = plx_getClusterQuality(varargin)
 % metrics
 
 if nargin < 1
-    plx = dir('*cut*'); % assuming old Nitz lab *_cut_* format
-    plx = plx.name;
+    plx = dir('*plx'); 
+    for i=1:length(plx)
+        if ~isempty(findstr(lower(plx(i).name),'cut'))
+            plx = plx(i).name;
+        end
+    end
 else
     plx = varargin{1};    
 end
@@ -42,8 +46,10 @@ for j=1:Trodalness:48
     w=[];id=[];
     for i=1:50
         if wave{j,i}~=-1
+            if size(wave{j,i},1) == size(wave{j+1,i},1)
             w =[w; wave{j,i}, wave{j+1,i}];
-            id = [id;i*ones(length(wave{j,i}),1)];
+            id = [id;i*ones(size(wave{j,i},1),1)];
+            end
         end
     end
     for i=1:50
@@ -58,5 +64,8 @@ for j=1:Trodalness:48
        c=1+c;
         end
     end
-
+    clear w id
 end
+
+
+
