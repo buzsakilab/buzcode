@@ -18,12 +18,18 @@ else
 end
 
 nClusterSpikes = length(ClusterSpikes);
-
+if nClusterSpikes < size(Fet,2)
+    L = nan;
+    Lratio = nan;
+    df = nan;
+    warning('more features and spikes, L-Ratio is NaN...')
+    return
+end
 % mark spikes which are not cluster members
 NoiseSpikes = setdiff(1:nSpikes, ClusterSpikes);
 
 %%%%%%%%%%% compute mahalanobis distances %%%%%%%%%%%%%%%%%%%%%
-if nargin < 3
+if nargin < 3 
 	m = mahal(Fet, Fet(ClusterSpikes,:));
 end
 

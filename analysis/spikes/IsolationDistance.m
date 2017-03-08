@@ -11,6 +11,9 @@ function IsolDist = IsolationDistance(Fet, ClusterSpikes, m)
 %                          calculate them directly
 %
 % Created by Ken Harris
+% edited by David Tingley 2017 to calculate IsoDist for clusters with > 1/2
+% of all spikes 
+
 
 % find # of spikes in this cluster
 if nargin < 3
@@ -23,7 +26,7 @@ nClusterSpikes = length(ClusterSpikes);
 InClu = ismember(1:nSpikes, ClusterSpikes);
 
 % check there are enough spikes (but not more than half)
-if length(ClusterSpikes) < size(Fet,2) | length(ClusterSpikes)>nSpikes/2
+if nClusterSpikes < size(Fet,2) %| length(ClusterSpikes)>nSpikes/2
 	IsolDist = NaN;
 	return
 end
@@ -40,9 +43,11 @@ mCluster = m(ClusterSpikes); % mahal dist of spikes in the cluster
 mNoise = m(NoiseSpikes); % mahal dist of all other spikes
 
 % calculate point where mD of other spikes = n of this cell
-if (nClusterSpikes < nSpikes/2)
+if nClusterSpikes < nSpikes / 2  
 	[sorted order] = sort(mNoise);
 	IsolDist = sorted(nClusterSpikes);
+elseif nClusterSpikes > nSpikes / 2  && nClusterSpikes < nSpikes % more than half of all spikes but less than all...
+    IsolDist = median(mNoise);
 else
 	IsolDist = NaN; % If there are more of this cell than every thing else, forget it.
 end
