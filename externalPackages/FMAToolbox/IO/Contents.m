@@ -6,15 +6,6 @@
 %   it is generally easier to use <a href="matlab:help SetCurrentSession">SetCurrentSession</a> and related <a href="matlab:help Data">Get...</a> functions
 %   instead.
 %
-% Batch file handling
-%
-%   StartBatch           - Start a new batch job.
-%   GetBatch             - Get batch job output.
-%   BatchInfo            - Get batch job information.
-%   CancelBatch          - Cancel batch job.
-%   CleanBatches         - Delete completed batch jobs from memory.
-%   Store                - Store variable to avoid redundant computations.
-%   Recall               - Recall variable to avoid redundant computations.
 %
 % Creating new event files
 %
