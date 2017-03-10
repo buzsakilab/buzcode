@@ -12,7 +12,7 @@ function DBRemoveFigures(query)
 %
 %  SEE
 %
-%    See also DBAddFigure, DBGetFigures.
+%    See also DBAddFigure, DBGetFigures, DBRemove.
 %
 
 % Copyright (C) 2007-2013 by Michaël Zugaro

@@ -6,9 +6,9 @@ function s = sem(x)
 %
 %    s = sem(x)
 %
-%    s              vector or matrix over which the SEM should be computed
+%    x              vector or matrix over which the SEM should be computed
 
-% Copyright (C) 2008-2011 by Michaël Zugaro
+% Copyright (C) 2008-2013 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by

@@ -12,7 +12,7 @@ function DBRemoveVariables(query)
 %
 %  SEE
 %
-%    See also DBAddVariable, DBGetVariables.
+%    See also DBAddVariable, DBGetVariables, DBRemove.
 %
 
 % Copyright (C) 2007-2013 by Michaël Zugaro

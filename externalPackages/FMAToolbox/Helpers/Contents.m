@@ -2,7 +2,7 @@
 %
 % Parameter testing.
 %
-%   isstring_FMAT              - Test if parameter is an (admissible) character string.
+%   isstring_FMAT_FMAT              - Test if parameter is an (admissible) character string.
 %   isdscalar             - Test if parameter is a scalar (double) satisfying an optional list of tests.
 %   isdvector             - Test if parameter is a vector of doubles satisfying an optional list of tests.
 %   isdmatrix             - Test if parameter is a matrix of doubles (>= 2 columns).

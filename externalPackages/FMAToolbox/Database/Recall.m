@@ -1,6 +1,6 @@
 function variable = Recall(name,varargin)
 
-%Recall - Recall variable to avoid redundant computations.
+%Recall - Recall variable from memory to avoid redundant computations.
 %
 %  This function is useful in the following scenario. When processing data
 %  in batches, a function is called repeatedly with different parameters.

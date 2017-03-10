@@ -16,6 +16,7 @@ function p = PlotTicks(xy,varargin)
 %    -------------------------------------------------------------------------
 %     'direction'   direction: 'h' or 'v' (default = 'v')
 %     'size'        tick size ([] or default = best guess)
+%     'color'       either a single [R G B] color, or one per tick
 %    =========================================================================
 %
 %  NOTE
@@ -24,7 +25,7 @@ function p = PlotTicks(xy,varargin)
 %    are assumed to be abscissae or ordinates depending on 'direction', and
 %    the ticks are plotted centered on 0.
 
-% Copyright (C) 2008-2011 by Michaël Zugaro
+% Copyright (C) 2008-2014 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -38,6 +39,7 @@ end
 % Defaults
 direction = 'v';
 yx = 0;
+color = [];
 s = [];
 v = {};
 
@@ -59,7 +61,7 @@ for i = 1:2:length(varargin),
 	switch(lower(varargin{i})),
 		case 'size',
 			s = varargin{i+1};
-			if ~isdscalar(s),
+			if ~isdscalar(s) && ~isdvector(s),
 				error('Incorrect value for property ''size'' (type ''help <a href="matlab:help PlotTicks">PlotTicks</a>'' for details).');
 			end
 
@@ -67,6 +69,12 @@ for i = 1:2:length(varargin),
 			direction = lower(varargin{i+1});
 			if ~isstring_FMAT(direction,'h','v'),
 				error('Incorrect value for property ''direction'' (type ''help <a href="matlab:help PlotTicks">PlotTicks</a>'' for details).');
+			end
+
+		case 'color',
+			color = varargin{i+1};
+			if ~isdmatrix(color,'>=0','<=1') || size(color,2) ~= 3,
+				error('Incorrect value for property ''color'' (type ''help <a href="matlab:help PlotTicks">PlotTicks</a>'' for details).');
 			end
 
 		otherwise,
@@ -112,13 +120,34 @@ if isempty(s),
 	if isempty(s), s = 0.75; end
 end
 
+s = s(:);
+if length(s) == 1,
+	s = repmat(s,length(x),1);
+elseif any(size(x) ~= size(s)),
+ 	error('Inconsistent numbers of abscissae/ordinates and sizes (type ''help <a href="matlab:help PlotTicks">PlotTicks</a>'' for details).');
+end
+
 hold on;
 if strcmp(direction,'v'),
-	for i = 1:length(x),
-		plot([x(i) x(i)],[y(i)-s/2 y(i)+s/2],v{:});
+	if isempty(color),
+		for i = 1:length(x),
+			plot([x(i) x(i)],[y(i)-s(i)/2 y(i)+s(i)/2],v{:});
+		end
+	else
+		if size(color,1) == 1, color = repmat(color,length(x),1); end
+		for i = 1:length(x),
+			plot([x(i) x(i)],[y(i)-s(i)/2 y(i)+s(i)/2],'color',color(i,:),v{:});
+		end
 	end
 else
-	for i = 1:length(x),
-		plot([x(i)-s/2 x(i)+s/2],[y(i) y(i)],v{:});
+	if isempty(color),
+		for i = 1:length(x),
+			plot([x(i)-s(i)/2 x(i)+s(i)/2],[y(i) y(i)],v{:});
+		end
+	else
+		if size(color,1) == 1, color = repmat(color,length(x),1); end
+		for i = 1:length(x),
+			plot([x(i)-s(i)/2 x(i)+s(i)/2],[y(i) y(i)],'color',color(i,:),v{:});
+		end
 	end
 end

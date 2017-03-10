@@ -120,12 +120,20 @@ for i = 1:nGroups,
 	h = Smooth(hist(p,binned),smooth);h = h/sum(h);
 	dist(:,i) = h;
 	% Stats
-	[stats.m(i),stats.r(i)] = CircularMean(p);
-	stats.k(i) = Concentration(p);
-	n = sum(groups(:,i));
-	R = stats.r(i)*n;
-	stats.p(i) = exp(sqrt(1+4*n+4*(n^2-R^2))-(1+2*n)); % Zar, Biostatistical Analysis, p. 617
-	x = find(h==max(h));x = x(1);
-	stats.mode(i) = binned(x);
+	if ~isempty(p)
+	  [stats.m(i),stats.r(i)] = CircularMean(p);
+	  stats.k(i) = Concentration(p);
+	  n = sum(groups(:,i));
+	  R = stats.r(i)*n;
+	  stats.p(i) = exp(sqrt(1+4*n+4*(n^2-R^2))-(1+2*n)); % Zar, Biostatistical Analysis, p. 617
+	  x = find(h==max(h));x = x(1);
+	  stats.mode(i) = binned(x);
+	else
+	  stats.m(i)=NaN;
+	  stats.r(i)=NaN;
+	  stats.k(i)=NaN;
+	  stats.p(i)=NaN;
+	  stats.mode(i)=NaN;
+	end
 end
 

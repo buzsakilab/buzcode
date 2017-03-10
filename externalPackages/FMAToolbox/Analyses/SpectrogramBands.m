@@ -20,6 +20,8 @@ function bands = SpectrogramBands(spectrogram,frequencies,varargin)
 %     'lowGamma'    set low gamma band (default = [30 80])
 %     'highGamma'   set high gamma band (default = [80 120])
 %     'ripples'     set ripple band (default = [100 250])
+%     'broadLow'    set broad low frequency band (default = [1 12])
+%     'amyGamma'    set amygdala gamma band (default = [45 65])
 %    =========================================================================
 %
 %  OUTPUT
@@ -30,18 +32,20 @@ function bands = SpectrogramBands(spectrogram,frequencies,varargin)
 %    bands.lowGamma   low gamma power
 %    bands.highGamma  high gamma power
 %    bands.ripples    ripple power
-%    bands.ratio      theta/delta ratio
-%    bands.ratio1     heuristic ratio 1
-%    bands.ratio2     heuristic ratio 2
+%    bands.broadLow   broad low frequency power
+%    bands.amyGamma   amygdala gamma power
 %
-%    Heuristic ratios are from Gervasoni et al. (2004), namely [0.5 4.5]/[0.5 9]
-%    and [0.5 20]/[0.5 55].
+%    bands.ratios.hippocampus      theta/delta ratio
+%    bands.ratios.cortex           [0.5 4.5]/[0.5 9] and [0.5 20]/[0.5 55]
+%    bands.ratios.amygdala         gamma/broad low ratio
+%
+%    Heuristic ratios for cortex are from Gervasoni et al. (2004).
 %
 %  SEE
 %
 %    See also MTSpectrogram.
 
-% Copyright (C) 2004-2011 by Michaël Zugaro
+% Copyright (C) 2004-2014 by Michaël Zugaro, Gabrielle Girardeau
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -56,6 +60,8 @@ spindles = [10 20];
 lowGamma = [30 80];
 highGamma = [80 120];
 ripples = [100 250];
+broadLow = [1 12];
+amyGamma = [45 65];
 
 % Check number of parameters
 if nargin < 2,
@@ -111,6 +117,16 @@ for i = 1:2:length(varargin),
 			if ~isdvector(ripples,'>=0','<','#2'),
 				error('Incorrect value for property ''ripples'' (type ''help <a href="matlab:help SpectrogramBands">SpectrogramBands</a>'' for details).');
 			end
+		case 'broadlow',
+			broadLow = varargin{i+1};
+			if ~isdvector(broadLow,'>=0','<','#2'),
+				error('Incorrect value for property ''broadLow'' (type ''help <a href="matlab:help SpectrogramBands">SpectrogramBands</a>'' for details).');
+			end
+		case 'amygamma',
+			amyGamma = varargin{i+1};
+			if ~isdvector(amyGamma,'>=0','<','#2'),
+				error('Incorrect value for property ''amyGamma'' (type ''help <a href="matlab:help SpectrogramBands">SpectrogramBands</a>'' for details).');
+			end
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help SpectrogramBands">SpectrogramBands</a>'' for details).']);
 	end
@@ -125,6 +141,8 @@ spindleBins = frequencies >= spindles(1) & frequencies <= spindles(2);
 lowGammaBins = frequencies >= lowGamma(1) & frequencies <= lowGamma(2);
 highGammaBins = frequencies >= highGamma(1) & frequencies <= highGamma(2);
 rippleBins = frequencies >= ripples(1) & frequencies <= ripples(2);
+broadLowBins = frequencies >= broadLow(1) & frequencies <= broadLow(2);
+amyGammaBins = frequencies >= amyGamma(1) & frequencies <= amyGamma(2);
 
 % Compute physiological bands
 bands.theta = mean(spectrogram(thetaBins,:))';
@@ -133,9 +151,12 @@ bands.spindles = mean(spectrogram(spindleBins,:))';
 bands.lowGamma = mean(spectrogram(lowGammaBins,:))';
 bands.highGamma = mean(spectrogram(highGammaBins,:))';
 bands.ripples = mean(spectrogram(rippleBins,:))';
+bands.broadLow = mean(spectrogram(broadLowBins,:))';
+bands.amyGamma = mean(spectrogram(amyGammaBins,:))';
 
 % Theta/delta ratio
-bands.ratio = Smooth(bands.theta./(bands.delta+eps),smooth);
+bands.ratios.hippocampus = Smooth(bands.theta./(bands.delta+eps),smooth);
+bands.ratio = bands.ratios.hippocampus;
 
 % Heuristic ratios from Gervasoni et al. (2004)
 range1 = [0.5 4.5];
@@ -144,7 +165,8 @@ band1 =  mean(spectrogram(bins1,:))';
 range2 = [0.5 9];
 bins2 = frequencies >= range2(1) & frequencies <= range2(2);
 band2 =  mean(spectrogram(bins2,:))';
-bands.ratio1 = Smooth(band1./(band2+eps),smooth);
+bands.ratios.cortex(:,1) = Smooth(band1./(band2+eps),smooth);
+bands.ratio1 = bands.ratios.cortex;
 
 range1 = [0.5 20];
 bins1 = frequencies >= range1(1) & frequencies <= range1(2);
@@ -152,5 +174,9 @@ band1 =  mean(spectrogram(bins1,:))';
 range2 = [0.5 55];
 bins2 = frequencies >= range2(1) & frequencies <= range2(2);
 band2 =  mean(spectrogram(bins2,:))';
-bands.ratio2 = Smooth(band1./(band2+eps),smooth);
+bands.ratios.cortex(:,2) = Smooth(band1./(band2+eps),smooth);
+bands.ratio2 = bands.ratios.cortex(:,2);
 
+% Amygdala ratio
+bands.ratios.amygdala = Smooth(bands.amyGamma./(bands.broadLow+eps),smooth);
+bands.ratio3 = bands.ratios.amygdala;

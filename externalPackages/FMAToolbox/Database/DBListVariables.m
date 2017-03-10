@@ -1,17 +1,23 @@
-function list = DBListVariables
+function DBListVariables(query)
 
-%DBListVariables - List variables in current database.
+%DBListVariables - List variables matching certain criteria.
 %
 %  USAGE
 %
-%    list = DBListVariables
+%    DBListVariables(query)
+%
+%    query          optional database query (WHERE clause)
+%
+%  EXAMPLE
+%
+%    DBListVariables('name="Spectrogram"');
 %
 %  SEE
 %
-%    See also DBListFigures.
+%    See also DBGetVariables, DBGetFigures.
 %
 
-% Copyright (C) 2007-2011 by Michaël Zugaro
+% Copyright (C) 2013 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -21,4 +27,8 @@ function list = DBListVariables
 % Make sure MyM is installed and functional
 CheckMyM;
 
-list = mym('select eid,name,comments,parameters,date,user from variables');
+if nargin < 1,
+	query = '';
+end
+
+DBDisplay(DBGetVariables(query,'output','keys'));

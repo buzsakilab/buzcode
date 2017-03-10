@@ -21,8 +21,8 @@ function [ripples,sd,bad] = FindRipples(filtered,varargin)
 %    -------------------------------------------------------------------------
 %     'thresholds'  thresholds for ripple beginning/end and peak, in multiples
 %                   of the stdev (default = [2 5])
-%     'durations'   min inter-ripple interval and max ripple duration, in ms
-%                   (default = [30 100])
+%     'durations'   minimum inter-ripple interval, and minimum and maximum
+%                   ripple durations, in ms (default = [30 20 100])
 %     'baseline'    interval used to compute normalization (default = all)
 %     'restrict'    same as 'baseline' (for backwards compatibility)
 %     'frequency'   sampling rate (in Hz) (default = 1250Hz)
@@ -59,6 +59,7 @@ sd = [];
 lowThresholdFactor = 2; % Ripple envoloppe must exceed lowThresholdFactor*stdev
 highThresholdFactor = 5; % Ripple peak must exceed highThresholdFactor*stdev
 minInterRippleInterval = 30; % in ms
+minRippleDuration = 20; % in ms
 maxRippleDuration = 100; % in ms
 noise = [];
 
@@ -80,18 +81,24 @@ for i = 1:2:length(varargin),
 	switch(lower(varargin{i})),
 		case 'thresholds',
 			thresholds = varargin{i+1};
-			if ~isivector(thresholds,'#2','>0'),
+			if ~isdvector(thresholds,'#2','>0'),
 				error('Incorrect value for property ''thresholds'' (type ''help <a href="matlab:help FindRipples">FindRipples</a>'' for details).');
 			end
 			lowThresholdFactor = thresholds(1);
 			highThresholdFactor = thresholds(2);
 		case 'durations',
 			durations = varargin{i+1};
-			if ~isivector(durations,'#2','>0'),
+			if ~isdvector(durations,'#2','>0') && ~isdvector(durations,'#3','>0'),
 				error('Incorrect value for property ''durations'' (type ''help <a href="matlab:help FindRipples">FindRipples</a>'' for details).');
 			end
-			minInterRippleInterval = durations(1);
-			maxRippleDuration = durations(2);
+			if length(durations) == 2,
+				minInterRippleInterval = durations(1);
+				maxRippleDuration = durations(2);
+			else
+				minInterRippleInterval = durations(1);
+				minRippleDuration = durations(2);
+				maxRippleDuration = durations(3);
+			end
 		case 'frequency',
 			frequency = varargin{i+1};
 			if ~isdscalar(frequency,'>0'),
@@ -99,7 +106,7 @@ for i = 1:2:length(varargin),
 			end
 		case 'show',
 			show = varargin{i+1};
-			if ~isstring_FMAT(show,'on','off'),
+			if ~isstring(show,'on','off'),
 				error('Incorrect value for property ''show'' (type ''help <a href="matlab:help FindRipples">FindRipples</a>'' for details).');
 			end
 		case {'baseline','restrict'},
@@ -123,7 +130,7 @@ for i = 1:2:length(varargin),
 end
 
 % Parameters
-windowLength = frequency/1250*11;
+windowLength = round(frequency/1250*11);
 
 % Square and normalize signal
 signal = filtered(:,2);
@@ -206,12 +213,17 @@ for i=1:size(thirdPass,1),
 	peakPosition(i) = minIndex + thirdPass(i,1) - 1;
 end
 
-% Discard ripples that are way too long
+% Discard ripples that are way too short
 time = filtered(:,1);
 ripples = [time(thirdPass(:,1)) time(peakPosition) time(thirdPass(:,2)) peakNormalizedPower];
 duration = ripples(:,3)-ripples(:,1);
+ripples(duration<minRippleDuration/1000,:) = [];
+disp(['After min duration test: ' num2str(size(ripples,1)) ' events.']);
+
+% Discard ripples that are way too long
+duration = ripples(:,3)-ripples(:,1);
 ripples(duration>maxRippleDuration/1000,:) = [];
-disp(['After duration test: ' num2str(size(ripples,1)) ' events.']);
+disp(['After max duration test: ' num2str(size(ripples,1)) ' events.']);
 
 % If a noisy channel was provided, find ripple-like events and exclude them
 bad = [];
@@ -281,11 +293,11 @@ end
 
 function y = Filter0(b,x)
 
-if size(x,1) == 1
+if size(x,1) == 1,
 	x = x(:);
 end
 
-if mod(length(b),2)~=1
+if mod(length(b),2) ~= 1,
 	error('filter order should be odd');
 end
 

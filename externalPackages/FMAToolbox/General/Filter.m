@@ -46,6 +46,11 @@ if size(samples,2) < 2,
 	error('Parameter ''samples'' is not a matrix (type ''help <a href="matlab:help Filter">Filter</a>'' for details).');
 end
 
+if isempty(samples),
+	filtered = samples;
+	return;
+end
+
 % Parse parameter list
 for i = 1:2:length(varargin),
 	if ~ischar(varargin{i}),

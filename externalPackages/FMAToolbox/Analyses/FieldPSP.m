@@ -198,32 +198,22 @@ for i = 1:nStims,
 	% Plot slope and amplitude
 	slice = floor(i/nStimsPerSlice);
 	stimInSlice = floor(i-1-slice*nStimsPerSlice);
-	if show && rem(stimInSlice,nSkip) == 0 && stimInSlice > 0 && stimInSlice < nStimsPlottedPerSlice,
+	if show && rem(stimInSlice,nSkip) == 0 && stimInSlice >= 0,
 		k = ceil(nSlices*i/nStims);
 		l = floor(stimInSlice/nSkip)+1;
-		SquareSubplot(nSlices,k);
-		xlabel(num2str(slices(k)));
-		hold on;
-		PlotXY(s,'color',colors(l,:),'linewidth',3);
-		PlotSlope(tAmplitude(i),amplitude(i),0,0.005,'r');
-		PlotSlope(tSlope(i),s(j,2),slope(i),0.005,'k');
+		if l <= nStimsPlottedPerSlice,
+			SquareSubplot(nSlices,k);
+			xlabel(num2str(slices(k)));
+			hold on;
+			PlotXY(s,'color',colors(l,:),'linewidth',3);
+			PlotSlope(tAmplitude(i),amplitude(i),0,0.005,'r');
+			PlotSlope(tSlope(i),s(j,2),slope(i),0.005,'k');
+		end
 	end
 end
 
 % Make sure all subplots use the same scale
-if show,
-	sub = get(gcf,'children');
-	if ~isempty(sub),
-		for i = 1:length(sub),
-			lims(i,:) = ylim(sub(i));
-		end
-		m = min(lims(:,1));
-		M = max(lims(:,2));
-		for i = 1:length(sub),
-			ylim(sub(i),[m M]);
-		end
-	end
-end
+if show, AdjustAxes('y','uniform'); end
 
 stats.amplitude.t = tAmplitude;
 stats.amplitude.v = amplitude;
@@ -250,6 +240,8 @@ if show,
 		hold on;
 		PlotMean(stats.psp.t,m,m-e/2,m+e/2,':');
 	end
+	% Make sure all subplots use the same scale
+	AdjustAxes('y','uniform');
 
 	figure;
 	% 'Rectify' slope and amplitude
@@ -338,3 +330,4 @@ if show,
 	PlotShortTimeCCG(ccg,'x',x,'y',y);
 	clim([0 0.01]);
 end
+

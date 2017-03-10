@@ -25,6 +25,7 @@ function [data,stats] = PhasePrecession(positions,spikes,phases,varargin)
 %                   determined either automatically based on spike count
 %                   ('count', default) or using explicit firing field
 %                   boundaries ([Xstart Xstop], where each X is in [0..1])
+%     'slope'       search start value for slope (default = 0)
 %    =========================================================================
 %
 %  NOTE
@@ -34,36 +35,45 @@ function [data,stats] = PhasePrecession(positions,spikes,phases,varargin)
 %
 %  OUTPUT
 %
-%    data.x           position samples
-%    data.position    spike phase vs position:
-%     .x               x coordinates at each spike timestamp
-%     .t               spike times
-%     .phase           spike phases (in radians)
-%     .lap             lap number
+%    data.x                position samples
 %
-%    data.rate        spike phase vs spike rate:
-%     .r               spike rates at each spike timestamp
-%     .t               spike times
-%     .phase           spike phases (in radians)
-%     .lap             lap number
+%    data.position.ok      spikes occurring at valid coordinates (logical)
+%    data.position.t       spike times (only for valid coordinates)
+%    data.position.x       x coordinate for each spike
+%    data.position.phase   spike phase for each spike (in radians)
+%    data.position.lap     lap number for each spike
+%
+%    data.rate.t           spike times
+%    data.rate.r           spike rate for each spike
+%    data.rate.phase       spike phase for each spike (in radians)
+%    data.rate.lap         lap number for each spike
 %
 %    Additional statistics computed using phase vs position data:
 %
-%    stats.slope      phase precession slope (via circular regression)
-%    stats.intercept  phase precession intercept (via circular regression)
-%    stats.r2         coefficient of determination for circular regression
-%    stats.center     center x for early, middle and late subfields
-%    stats.mean       mean phase for early, middle and late subfields
-%    stats.var        phase variance for early, middle and late subfields
-%    stats.std        phase standard deviation for early, middle and late subfields
-%    stats.conf       95% confidence intervals
-%    stats.all        cell array containing all phases for each subfield
-%                     (useful for population analyses)
+%    stats.slope           phase precession slope (via circular regression)
+%    stats.intercept       phase precession intercept (via circular regression)
+%    stats.r2              coefficient of determination for circular regression
+%    stats.p               p-value for circular regression
+%    stats.x               center x for early, middle and late subfields
+%    stats.mean            mean phase for early, middle and late subfields
+%    stats.var             phase variance for early, middle and late subfields
+%    stats.std             phase standard deviation for early, middle and late subfields
+%    stats.conf            95% confidence intervals
+%    stats.all             cell array containing all phases for each subfield
+%                          (useful for population analyses)
 %
-%    stats.lap        single-lap statistics
-%     .slope          phase precession slope (via circular regression)
-%     .intercept      phase precession intercept (via circular regression)
-%     .r2             coefficient of determination for circular regression
+%    stats.lap.slope       phase precession slope (via circular regression)
+%    stats.lap.intercept   phase precession intercept (via circular regression)
+%    stats.lap.r2          coefficient of determination for circular regression
+%    stats.lap.p           p-value for circular regression
+%
+%    Additional statistics computed using phase vs rate data:
+%
+%    stats.rate.mean       mean phase for each spike rate
+%    stats.rate.var        phase variance for each spike rate
+%    stats.rate.conf       phase 95% confidence intervals for each spike rate
+%
+%    stats.boundaries      field boundaries
 %
 %  SEE
 %
@@ -79,6 +89,7 @@ function [data,stats] = PhasePrecession(positions,spikes,phases,varargin)
 % Default values
 maxGap = 0.1;
 boundaries = 'count';
+slope = 0;
 
 % Check number of parameters
 if nargin < 3 | mod(length(varargin),2) ~= 0,
@@ -110,8 +121,13 @@ for i = 1:2:length(varargin),
 			end
 		case 'maxgap',
 			maxGap = varargin{i+1};
-			if ~isdscalar(maxGap,'>0'),
+			if ~isdscalar(maxGap,'>=0'),
 				error('Incorrect value for property ''maxGap'' (type ''help <a href="matlab:help PhasePrecession">PhasePrecession</a>'' for details).');
+			end
+		case 'slope',
+			slope = varargin{i+1};
+			if ~isdscalar(slope),
+				error('Incorrect value for property ''slope'' (type ''help <a href="matlab:help CircularRegression">PhasePrecession</a>'' for details).');
 			end
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help PhasePrecession">PhasePrecession</a>'' for details).']);
@@ -120,21 +136,31 @@ end
 
 % Default values
 data.x = positions;
-data.position.x = [];
 data.position.t = [];
+data.position.x = [];
 data.position.phase = [];
 data.position.lap = [];
-data.rate.r = [];
 data.rate.t = [];
+data.rate.r = [];
 data.rate.phase = [];
 data.rate.lap = [];
-stats.slope = [];
-stats.r2 = [];
-stats.center = [0 0 0];
-stats.mean = [0 0 0];
-stats.var = [0 0 0];
-stats.std = [0 0 0];
-stats.conf = [0 0 0;0 0 0];
+stats.slope = nan;
+stats.intercept = nan;
+stats.r2 = nan;
+stats.p = nan;
+stats.x = nan(1,3);
+stats.mean = nan(1,3);
+stats.var = nan(1,3);
+stats.std = nan(1,3);
+stats.conf = nan(2,3);
+stats.all = {nan nan nan};
+stats.rate.mean = nan(1,16);
+stats.rate.conf = nan(2,16);
+stats.boundaries = [];
+stats.lap.slope = [];
+stats.lap.intercept = [];
+stats.lap.r2 = [];
+stats.lap.p = [];
 
 % Compute spike phases
 if isempty(spikes), return; end
@@ -149,6 +175,7 @@ if ~isempty(positions),
 		warning('Parameter ''positions'' should contain values in [0 1]. The data will now be transformed accordingly.');
 	end
 	[x,ignored] = Interpolate(positions,spikes,'trim','off','maxGap',maxGap);
+	data.position.ok = ~ignored;
 	data.position.t = spikes(~ignored);
 	data.position.x = x(:,2);
 	data.position.phase = spikePhases(~ignored,2);
@@ -178,6 +205,8 @@ data.rate.phase = spikePhases(:,2);
 
 if isdvector(boundaries,'#2') && ~isempty(positions),
 
+	stats.boundaries = boundaries;
+
 	% Firing curve boundaries
 	fieldStart = boundaries(1);
 	fieldStop = boundaries(2);
@@ -191,40 +220,57 @@ if isdvector(boundaries,'#2') && ~isempty(positions),
 	% Determine when the animal enters/leaves the field:
 	% 1) the animal enters the field when x1 is inside and x0 is not inside and near x1
 	% 2) the animal leaves the field when x1 is inside and x2 is not inside and near x1
+	% There are two additional cases:
+	% 1) the animal enters the field in the first lap when x1 is inside and close to the entrance
+	% 1) the animal leaves the field in the last lap when x1 is inside and close to the exit
 	if fieldStart < fieldStop,
 		x0_inside = x0 >= fieldStart & x0 <= fieldStop;
 		x1_inside = x1 >= fieldStart & x1 <= fieldStop;
 		x2_inside = x2 >= fieldStart & x2 <= fieldStop;
+		x0_near_x1 = abs(x0-x1)<0.1*fieldSize;
+		x2_near_x1 = abs(x2-x1)<0.1*fieldSize;
 	else
 		x0_inside = x0 >= fieldStart | x0 <= fieldStop;
 		x1_inside = x1 >= fieldStart | x1 <= fieldStop;
 		x2_inside = x2 >= fieldStart | x2 <= fieldStop;
+		x0_near_x1 = abs(x0-x1)<0.1*fieldSize | 1-abs(x0-x1)<0.1*fieldSize;
+		x2_near_x1 = abs(x2-x1)<0.1*fieldSize | 1-abs(x2-x1)<0.1*fieldSize;
 	end
-	x0_near_x1 = abs(x0-x1)<0.1*fieldSize;
-	x2_near_x1 = abs(x2-x1)<0.1*fieldSize;
 	start = x1_inside & ~(x0_inside & x0_near_x1);
+	start(1) = x1_inside(1) & abs(x1(1)-fieldStart)<0.1*fieldSize;
 	stop = x1_inside & ~(x2_inside & x2_near_x1);
-	start = positions(start,1);
-	stop = positions(stop,1);
+	stop(end) = x1_inside(end) & abs(x1(end)-fieldStop)<0.1*fieldSize;
 
 	if any(start) && any(stop),
+		startT = positions(start,1);
+		stopT = positions(stop,1);
 		% Get rid of duplicate events (e.g. the rat enters twice before it exits)
-		s = [start ones(size(start));stop 2*ones(size(stop))];
+		s = [startT ones(size(startT));stopT 2*ones(size(stopT))];
 		s = sortrows(s);
 		ds = [1;diff(s(:,2))];
 		s = s(ds~=0,:);
-		start = s(s(:,2)==1);
-		stop = s(s(:,2)==2);
+		startT = s(s(:,2)==1);
+		stopT = s(s(:,2)==2);
 		% Drop incomplete traversals of the field
-		if start(1) > stop(1), stop(1) = []; end
-		if start(end) > stop(end), start(end) = []; end
-		traversals = [start stop];
+		if startT(1) > stopT(1), stopT(1) = []; end
+		if ~isempty(stopT),
+			if startT(end) > stopT(end), startT(end) = []; end
+			traversals = [startT stopT];
 
-		% Determine lap number
-		[unused,lap] = InIntervals(data.position.t,traversals);
-		data.position.lap = lap;
-		[unused,lap] = InIntervals(data.rate.t,traversals);
-		data.rate.lap = lap;
+			% Show laps (debugging)
+			%figure;hold on;
+			%nn = positions(:,1);
+			%plot(nn,x1);
+			%PlotHVLines([fieldStart fieldStop],'h',':k');
+			%PlotHVLines(startT,'v','g');
+			%PlotHVLines(stopT,'v','r');
+
+			% Determine lap number
+			[~,lap] = InIntervals(data.position.t,traversals);
+			data.position.lap = lap;
+			[~,lap] = InIntervals(data.rate.t,traversals);
+			data.rate.lap = lap;
+		end
 	end
 
 elseif strcmp(boundaries,'count'),
@@ -250,9 +296,9 @@ elseif strcmp(boundaries,'count'),
 		if start(end) >= stop(end), start(end) = []; end
 		traversals = [start stop];
 		% Determine lap number
-		[unused,lap] = InIntervals(data.position.t,traversals);
+		[~,lap] = InIntervals(data.position.t,traversals);
 		data.position.lap = lap;
-		[unused,lap] = InIntervals(data.rate.t,traversals);
+		[~,lap] = InIntervals(data.rate.t,traversals);
 		data.rate.lap = lap;
 	end
 
@@ -260,18 +306,36 @@ end
 
 % Statistics: regression + circular means and variances for early, middle and late subfields
 if ~isempty(positions) && nargout >= 2,
-	ok = ~isnan(data.position.x);
-	[beta,r2] = CircularRegression(data.position.x(ok),data.position.phase(ok));
+	% For circular/circular regression, shift the field leftward along x (if necessary)
+	% to treat as circular-linear regression - as a result, the intercept corresponds to
+	% the right portion of the field
+	x = data.position.x;
+	dx = 0;
+	if isdvector(boundaries,'#2'),
+		if fieldStart > fieldStop,
+			dx = fieldStop; % shift by this amount
+			left = x < fieldStart;
+			x(left) = x(left) + 1 - dx;
+			x(~left) = x(~left) - dx;
+		end
+	end
+	% Circular regression for average data
+	ok = ~isnan(x);
+	[beta,r2,p] = CircularRegression(x(ok),data.position.phase(ok),'slope',slope);
 	stats.slope = beta(1);
-	stats.intercept = beta(2);
+	stats.intercept = beta(2) + stats.slope*dx; % Correction for circular/circular regression (see above)
 	stats.r2 = r2;
+	stats.p = p;
+	% Circular regression for each lap separately
 	for lap = 1:max(data.rate.lap),
 		thisLap = data.position.lap == lap;
-		[beta,r2] = CircularRegression(data.position.x(thisLap&ok),data.position.phase(thisLap&ok),stats.slope);
+		[beta,r2,p] = CircularRegression(x(thisLap&ok),data.position.phase(thisLap&ok),'slope',stats.slope);
 		stats.lap.slope(lap,1) = beta(1);
-		stats.lap.intercept(lap,1) = beta(2);
+		stats.lap.intercept(lap,1) = beta(2) + stats.lap.slope(lap,1)*dx;
 		stats.lap.r2(lap,1) = r2;
+		stats.lap.p(lap,1) = p;
 	end
+	% Mean phase for each subfield
 	x0 = min(data.position.x);
 	x1 = max(data.position.x);
 	dx = x1-x0;
@@ -285,3 +349,15 @@ if ~isempty(positions) && nargout >= 2,
 	end
 end
 
+% Statistics: phase vs rate
+if nargout >= 2,
+	for rate = 1:max(data.rate.r),
+		ok = data.rate.r==rate;
+		if any(ok),
+			[stats.rate.mean(rate),stats.rate.conf(:,rate)] = CircularConfidenceIntervals(data.rate.phase(ok));
+		else
+			stats.rate.mean(rate) = NaN;
+			stats.rate.conf(1:2,rate) = NaN;
+		end
+	end
+end

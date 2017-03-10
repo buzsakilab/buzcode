@@ -6,7 +6,7 @@ function [maps,data,stats] = RippleStats(filtered,ripples,varargin)
 %
 %    [maps,data,stats] = RippleStats(filtered,ripples,<options>)
 %
-%    filtered       ripple-band filtered samples (one channel)*1000
+%    filtered       ripple-band filtered samples (one channel)
 %    ripples        ripple timing information (obtained using <a href="matlab:help FindRipples">FindRipples</a>)
 %    <options>      optional list of property-value pairs (see table below)
 %
@@ -61,9 +61,14 @@ end
 if size(filtered,2) ~= 2,
 	error('Parameter ''filtered'' is not a Nx2 matrix (type ''help <a href="matlab:help RippleStats">RippleStats</a>'' for details).');
 end
-if size(ripples,2) ~= 4,
-	error('Parameter ''ripples'' is not a Nx4 matrix (type ''help <a href="matlab:help RippleStats">RippleStats</a>'' for details).');
+%  if size(ripples,2) ~= 4,
+%  	error('Parameter ''ripples'' is not a Nx4 matrix (type ''help <a href="matlab:help RippleStats">RippleStats</a>'' for details).');
+%  end
+if size(ripples,2) < 3,
+	error('Parameter ''ripples'' is not a Nx4 or Nx4 matrix (type ''help <a href="matlab:help RippleStats">RippleStats</a>'' for details).');
 end
+
+
 
 % Parse parameter list
 for i = 1:2:length(varargin),
@@ -127,11 +132,10 @@ data.peakAmplitude = maps.amplitude(:,centerBin);
 data.duration = ripples(:,3)-ripples(:,1);
 
 % Autocorrelogram and correlations
- [stats.acg.data,stats.acg.t] = CCG(ripples(:,2)*1000,1,'binSize',corrBinSize,'duration',1000);
- stats.acg.t = stats.acg.t/1000;
-%  [stats.acg.data,stats.acg.t] = CCG_ken(ripples(:,2)*20000,1,'binSize',corrBinSize,'halfBins',nCorrBins/2);
-%  stats.acg.t = stats.acg.t/1000;
-% [stats.acg.data,stats.acg.t] = CCG(ripples(:,2),1,'binSize',corrBinSize,'halfBins',nCorrBins/2);
-[stats.amplitudeFrequency.rho,stats.amplitudeFrequency.p] = corrcoef(data.peakAmplitude,data.peakFrequency);
-[stats.durationFrequency.rho,stats.durationFrequency.p] = corrcoef(data.duration,data.peakFrequency);
-[stats.durationAmplitude.rho,stats.durationAmplitude.p] = corrcoef(data.duration,data.peakAmplitude);
+%  if nargin > 2,
+%  	[stats.acg.data,stats.acg.t] = CCG(ripples(:,2),1,'binSize',corrBinSize,'halfBins',nCorrBins/2);
+	[stats.acg.data,stats.acg.t] = CCG(ripples(:,2),1,'binSize',corrBinSize);
+	[stats.amplitudeFrequency.rho,stats.amplitudeFrequency.p] = corrcoef(data.peakAmplitude,data.peakFrequency);
+	[stats.durationFrequency.rho,stats.durationFrequency.p] = corrcoef(data.duration,data.peakFrequency);
+	[stats.durationAmplitude.rho,stats.durationAmplitude.p] = corrcoef(data.duration,data.peakAmplitude);
+%  end

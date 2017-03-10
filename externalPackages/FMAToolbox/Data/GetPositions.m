@@ -17,11 +17,13 @@ function positions = GetPositions(varargin)
 %     'coordinates'  'video' gets position samples in video frame coordinates
 %                    (e.g., [0..368]x[0..284]), 'normalized' uses normalized
 %                    values (i.e. [0..1]x[0..1]), 'real' converts pixels to
-%                    centimeters  (default 'normalized')
+%                    centimeters (default 'normalized')
 %     'pixel'        size of the video pixel in cm (no default value)
 %     'discard'      discard position samples when one or more LED is missing
 %                    ('partial', default) or only when no LEDs are detected
 %                    ('none', coordinates for missing LEDs are set to NaN)
+%     'distances'    min and max distances [m M] allowed between LEDs
+%                    (in pixels, default [0 Inf])
 %    =========================================================================
 %
 %  EXAMPLES
@@ -31,10 +33,10 @@ function positions = GetPositions(varargin)
 %
 %  CUSTOM DEFAULTS
 %
-%    Properties 'mode', 'coordinates' and 'pixel' can have custom default values
-%    (type 'help <a href="matlab:help CustomDefaults">CustomDefaults</a>' for details).
+%    Properties 'mode', 'coordinates', 'pixel' and 'distances' can have custom
+%    default values (type 'help <a href="matlab:help CustomDefaults">CustomDefaults</a>' for details).
 
-% Copyright (C) 2004-2011 by Michaël Zugaro
+% Copyright (C) 2004-2014 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -46,10 +48,11 @@ if isempty(DATA),
 	error('No session defined (did you forget to call SetCurrentSession? Type ''help <a href="matlab:help Data">Data</a>'' for details).');
 end
 
-% Default values
-mode = GetCustomDefaults('mode','clean');
-coordinates = GetCustomDefaults('coordinates','normalized');
-pixel = GetCustomDefaults('pixel',[]);
+% Default values (customizable defaults must be empty at this point)
+mode = '';
+coordinates = '';
+pixel = [];
+distances = [];
 discard = 'partial';
 
 if mod(length(varargin),2) ~= 0,
@@ -82,15 +85,28 @@ for i = 1:2:length(varargin),
 			if ~isstring_FMAT(discard,'partial','none'),
 				error('Incorrect value for property ''discard'' (type ''help <a href="matlab:help GetPositions">GetPositions</a>'' for details).');
 			end
+		case 'distances',
+			distances = lower(varargin{i+1});
+			if ~isdvector(distances,'#2','>=0'),
+				error('Incorrect value for property ''distances'' (type ''help <a href="matlab:help GetPositions">GetPositions</a>'' for details).');
+			end
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help GetPositions">GetPositions</a>'' for details).']);
 	end
 end
 
+% Customizable defaults (if not already set)
+mode = GetCustomDefaults(mode,'mode','clean');
+coordinates = GetCustomDefaults(coordinates,'coordinates','normalized');
+pixel = GetCustomDefaults(pixel,'pixel',[]);
+distances = GetCustomDefaults(distances,'distances',[0 Inf]);
+
+minDistance = distances(1);
+maxDistance = distances(2);
+
 if strcmp(coordinates,'real') & isempty(pixel),
 	error(['Missing ''pixel'' property-value pair (type ''help <a href="matlab:help GetPositions">GetPositions</a>'' for details).']);
 end
-
 
 positions = DATA.positions;
 if isempty(positions), return; end
@@ -101,8 +117,8 @@ if strcmp(mode,'clean'),
 		% Two head lamps
 		distance = sqrt((positions(:,4)-positions(:,2)).^2+(positions(:,5)-positions(:,3)).^2);
 		selected = ( ...
-				distance >= SETTINGS.minDistance ...
-				& distance <= SETTINGS.maxDistance ...
+				distance >= minDistance ...
+				& distance <= maxDistance ...
 			);
 		positions = positions(selected,:);
 	end
@@ -114,7 +130,8 @@ if strcmp(discard,'none'),
 	partiallyDetected = positions == -1;
 	positions(partiallyDetected) = NaN;
 else
-	undetected = any(positions(:,2:end) == -1,2);
+    undetected = any(positions(:,2:end) == -1,2);
+
 end
 %  positions(undetected,2:end) = -1; % Make sure all values are -1
 good = ~undetected;

@@ -106,7 +106,7 @@ for i = 1:2:length(varargin),
 		case 'track',
 			track = lower(varargin{i+1});
 			if ~isstring_FMAT(track,'linear','circular'),
-				error('Incorrect value for property ''track'' (type ''help <a href="matlab:help SurveyPhasePrecession">SurveyPhasePrecession</a>'' for details).');		
+				error('Incorrect value for property ''track'' (type ''help <a href="matlab:help SurveyPhasePrecession">SurveyPhasePrecession</a>'' for details).');
 			end
 		case 'slopes',
 			slopes = varargin{i+1};
@@ -123,19 +123,10 @@ for i = 1:2:length(varargin),
 	end
 end
 
-% Default linearization function
-if isempty(linearize),
-	linearize = GetCustomDefaults('linearize','');
-end
-% Default pixel size
-if isempty(pixel),
-	linearize = GetCustomDefaults('pixel','');
-end
-% Default minimum velocity
-if isempty(minv),
-	linearize = GetCustomDefaults('minv','');
-end
-
+% Customizable defaults (if not already set)
+linearize = GetCustomDefaults(linearize,'linearize','');
+pixel = GetCustomDefaults(pixel,'pixel','');
+minv = GetCustomDefaults(minv,'minv','');
 
 % Do we need to compute phases or can we restore them from a previous run?
 phase = Recall('phase',channel);
@@ -203,7 +194,7 @@ try
 		if strcmp(show,'on') && strcmp(figs,'single'),
 			figureList = [figureList figure];
 		end
-		
+
 		% Loop through subsessions
 		for i = 1:nSubsessions,
 			subsession = subsessions(i);
@@ -214,7 +205,7 @@ try
 			end
 			subsessionX = Restrict(x,[start(subsession) stop(subsession)]);
 			if isempty(subsessionX), continue; end
-			
+
 	%  f=gcf;figureList = [figureList figure];PlotXY(subsessionX);figure(f);
 			subsessionPhase = Restrict(phase,[start(subsession) stop(subsession)]);
 			[d,st] = PhasePrecession(subsessionX,subsessionSpikes,subsessionPhase,'slope',slopes(i));
@@ -245,7 +236,7 @@ catch err
 	end
 	err.rethrow;
 end
-	
+
 if strcmp(show,'on'),
 	Hide(status);
 	Hide(figureList,status);

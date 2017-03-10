@@ -36,7 +36,7 @@ function [a,b,c] = SyncHist(synchronized,indices,varargin)
 %                   the type of data in the raster (default 'linear')
 %     'smooth'      standard deviation for Gaussian kernel (default 0, no
 %                   smoothing)
-%     'hist'        [m M n], lower and upper bounds, and number of bins,
+%     'bins'        [m M n], lower and upper bounds, and number of bins,
 %                   respectively (default [min max 100]) (only for 'dist' mode)
 %     'error'       either 'std' to compute standard deviation (default),
 %                   'sem' to compute standard error of the mean, or '95%' to
@@ -68,7 +68,7 @@ function [a,b,c] = SyncHist(synchronized,indices,varargin)
 %
 %    See also Sync, SyncMap, PlotSync, PETHTransition.
 
-% Copyright (C) 2004-2011 by Michaël Zugaro
+% Copyright (C) 2004-2013 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ durations = [-0.5 0.5];
 nBins = 100;
 smooth = 0;
 type = 'linear';
-hist = [];
+bins = [];
 a = [];
 b = [];
 c = [];
@@ -132,10 +132,10 @@ for i = 1:2:length(varargin),
 				error('Incorrect value for property ''smooth'' (type ''help <a href="matlab:help SyncHist">SyncHist</a>'' for details).');
 			end
 
-		case 'hist',
-			hist = varargin{i+1};
-			if ~isdvector(hist,'#3') | hist(1) > hist(2) | ~isiscalar(hist(3),'>0'),
-				error('Incorrect value for property ''hist'' (type ''help <a href="matlab:help SyncHist">SyncHist</a>'' for details).');
+		case {'bins','hist'},
+			bins = varargin{i+1};
+			if ~isdvector(bins,'#3') | bins(1) > bins(2) | ~isiscalar(bins(3),'>0'),
+				error('Incorrect value for property ''bins'' (type ''help <a href="matlab:help SyncHist">SyncHist</a>'' for details).');
 			end
 
 		case 'type',
@@ -176,14 +176,14 @@ if size(synchronized,2) == 1,
 	% Point process data
 	pointProcess = true;
 	synchronized(:,2) = 1;
-	if isempty(hist),
-		hist = [0 max(synchronized(:,2)) 100];
+	if isempty(bins),
+		bins = [0 max(synchronized(:,2)) 100];
 	end
 else
 	% Continuous data
 	pointProcess = false;
-	if isempty(hist),
-		hist = [min(min(synchronized(:,2:end))) max(max(synchronized(:,2:end))) 100];
+	if isempty(bins),
+		bins = [min(min(synchronized(:,2:end))) max(max(synchronized(:,2:end))) 100];
 	end
 end
 
@@ -207,7 +207,11 @@ switch(mode),
 	case 'sum',
 		% Smoothed sum
 		for j = 2:size(synchronized,2),
+		    if sum(isnan(binnedTime))~=size(binnedTime,1)
 			a(:,j-1) = Smooth(Accumulate(binnedTime,synchronized(:,j),nBins),smooth);
+		    else
+			a(:,j-1) = NaN;
+		    end
 		end
 		b = timeBins;
 		c = [];
@@ -215,9 +219,14 @@ switch(mode),
 		if pointProcess,
 			% Smoothed mean
 			for j = 2:size(synchronized,2),
-				a(:,j-1) = Smooth(Accumulate(binnedTime,synchronized(:,j),nBins),smooth)/(nTrials*timeBinSize);
+			  if sum(isnan(binnedTime))~=size(binnedTime,1)
+			    a(:,j-1) = Smooth(Accumulate(binnedTime,synchronized(:,j),nBins),smooth)/(nTrials*timeBinSize);
+			  else
+			    a(:,j-1) = NaN;
+			  end   
 			end
-			b = []; % Not yet implemented
+%  			b = []; % Not yet implemented
+			b=timeBins;
 		else
 			% Number of values in each time bin
 			n = Smooth(Accumulate(binnedTime,1,nBins),smooth);
@@ -261,9 +270,9 @@ switch(mode),
 			b = timeBins;
 			c = 0:max(max(n));
 		else
-			minValue = hist(1);
-			maxValue = hist(2);
-			nValueBins = hist(3);
+			minValue = bins(1);
+			maxValue = bins(2);
+			nValueBins = bins(3);
 			% Number of values in each time bin
 			n = Accumulate(binnedTime,1,nBins);
 			for j = 2:size(synchronized,2),

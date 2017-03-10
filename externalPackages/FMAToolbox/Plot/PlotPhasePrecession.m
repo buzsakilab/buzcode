@@ -87,6 +87,11 @@ for i = 1:2:length(varargin),
 end
 
 if isempty(parent), parent = gcf; end
+if strcmp(track,'linear'),
+	curveType = 'll';
+else
+	curveType = 'cl';
+end
 
 % Initialize a few variables
 t = data.position.t;
@@ -103,7 +108,7 @@ if strcmp(laps,'all'),
 	% Rate vs position plot
 	a = subplot(4,1,1,'parent',parent);
 	nBins = 200;
-	curve = FiringCurve(data.x,t,'nbins',nBins,'smooth',2,'type','c');
+	curve = FiringCurve(data.x,t,'nbins',nBins,'smooth',2,'type',curveType);
 	if strcmp(track,'linear'),
 		plot(curve.x,curve.rate,'b');
 		xlim([0 1]);
@@ -118,22 +123,32 @@ if strcmp(laps,'all'),
 	a = subplot(4,1,2,'parent',parent);
 	if strcmp(track,'linear'),
 		plot([x;x],[pp;pp+2*pi]*180/pi,'k.','markersize',4);
-		if ~isempty(stats),
+		if ~isempty(stats) && ~isempty(stats.slope),
 			hold on;
 			dx = max(x)-min(x);
 			xm = mean([min(x);max(x)]);
-			ym = (stats.slope*xm+stats.intercept)*180/pi;
+			ym = wrap(stats.slope*xm+stats.intercept,2)*180/pi;
 			PlotSlope(xm,ym,stats.slope*180/pi,dx,'r');
 			PlotSlope(xm,ym+360,stats.slope*180/pi,dx,'r');
 		end
 		xlim([0 1]);
 	else
 		plot([x;x;x+1;x+1],[pp;pp+2*pi;pp;pp+2*pi]*180/pi,'k.','markersize',4);
-		if ~isempty(stats),
+		if ~isempty(stats) && ~isempty(stats.slope),
 			hold on;
-			dx = max(x)-min(x);
-			xm = mean([min(x);max(x)]);
-			ym = (stats.slope*xm+stats.intercept)*180/pi;
+			if diff(stats.boundaries) < 0,
+				% Field wraps around boundaries
+				% (we use the right portion of the field as a 'reference' and shift the left portion
+				% accordingly, therefore the intercept can be used as is - see PhasePrecession)
+				fieldStart = stats.boundaries(1);
+				fieldStop = max(x)+stats.boundaries(2);
+			else
+				fieldStart = min(x);
+				fieldStop = max(x);
+			end
+			dx = fieldStop - fieldStart;
+			xm = mean([fieldStop fieldStart]);
+			ym = wrap(stats.slope*xm+stats.intercept,2)*180/pi;
 			PlotSlope(xm,ym,stats.slope*180/pi,dx,'r');
 			PlotSlope(xm,ym+360,stats.slope*180/pi,dx,'r');
 			PlotSlope(xm+1,ym,stats.slope*180/pi,dx,'r');
@@ -187,7 +202,7 @@ if strcmp(laps,'all'),
 	xlabel('Firing Rate (spikes / 2 cycles)');
 	ylabel('Phase (°)');
 
-else
+else % Plot laps separately
 
 	colors = 'bk';
 
@@ -200,7 +215,7 @@ else
 	a = subplot(2,1,1,'parent',parent);
 	hold on;
 	nBins = 200;
-	curve = FiringCurve(data.x,t,'nbins',nBins,'smooth',2,'type','c');
+	curve = FiringCurve(data.x,t,'nbins',nBins,'smooth',2,'type',curveType);
 	for i = 1:nLaps,
 		style = colors(mod(i,2)+1);
 		if strcmp(track,'linear'),
@@ -222,22 +237,22 @@ else
 		style = [colors(mod(i,2)+1) '.'];
 		if strcmp(track,'linear'),
 			plot([x(l==i);x(l==i)]+(i-1),[pp(l==i);pp(l==i)+2*pi]*180/pi,style,'markersize',4);
-			if ~isempty(stats),
+			if ~isempty(stats) && ~isempty(stats.slope),
 				hold on;
 				dx = max(x(l==i))-min(x(l==i));
 				xm = mean([min(x(l==i));max(x(l==i))])+(i-1);
-				ym = (stats.lap.slope(i)*xm+stats.lap.intercept(i))*180/pi;
+				ym = wrap(stats.lap.slope(i)*xm+stats.lap.intercept(i),2)*180/pi;
 				PlotSlope(xm,ym,stats.lap.slope(i)*180/pi,dx,'r');
 				PlotSlope(xm,ym+360,stats.lap.slope(i)*180/pi,dx,'r');
 			end
 			xlim([0 nLaps]);
 		else
 			plot([x(l==i);x(l==i);x(l==i)+1;x(l==i)+1]+2*(i-1),[pp(l==i);pp(l==i)+2*pi;pp(l==i);pp(l==i)+2*pi]*180/pi,style,'markersize',4);
-			if ~isempty(stats),
+			if ~isempty(stats) && ~isempty(stats.slope),
 				hold on;
 				dx = max(x(l==i))-min(x(l==i));
 				xm = mean([min(x(l==i));max(x(l==i))]);
-				ym = (stats.lap.slope(i)*xm+stats.lap.intercept(i))*180/pi;
+				ym = wrap(stats.lap.slope(i)*xm+stats.lap.intercept(i),2)*180/pi;
 				PlotSlope(xm+2*(i-1),ym,stats.lap.slope(i)*180/pi,dx,'r');
 				PlotSlope(xm+2*(i-1),ym+360,stats.lap.slope(i)*180/pi,dx,'r');
 				PlotSlope(xm+1+2*(i-1),ym,stats.lap.slope(i)*180/pi,dx,'r');

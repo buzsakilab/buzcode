@@ -17,18 +17,23 @@ function [exploration,sws,rem] = BrainStates(s,t,f,q,emg,varargin)
 %     Properties    Values
 %    -------------------------------------------------------------------------
 %     'nClusters'   number of clusters for K-means clustering (default = 2)
-%     'method'      whether brain rhythms should be determined based on a PCA
-%                   on the spectrogram ('pca'), or using predefined frequency
-%                   band ratios, such as the theta/delta ratio ('direct', by
-%                   default) or the heuristic ratios described in Gervasoni et
-%                   al. 2004 ('ratios')
-%     'nComponents' number of principal components (for spectrogram PCA)
+%     'method'      see below (default = 'hippocampus')
+%     'nComponents' number of principal components (for 'pca' method only)
 %                   (default = automatically computed to account for 85% of
 %                   the variance)
 %     'show'        plot K-means clustering in feature space ('kmeans'),
 %                   clusters on spectrogram ('clusters') or both ('all')
 %                   (default = 'none')
 %    =========================================================================
+%
+%  METHODS
+%
+%    Option 'method' can take several possible values:
+%
+%     'pca'         PCA on the spectrogram
+%     'hippocampus' theta / delta ratio
+%     'amygdala'    gamma / low ratio
+%     'cortex'      heuristic ratios described in Gervasoni et al. (2004)
 %
 %  OUTPUT
 %
@@ -43,9 +48,9 @@ function [exploration,sws,rem] = BrainStates(s,t,f,q,emg,varargin)
 %
 %  SEE
 %
-%    See also QuietPeriods.
+%    See also QuietPeriods, SpectrogramBands.
 
-% Copyright (C) 2008-2011 by Micha??l Zugaro
+% Copyright (C) 2008-2014 by Michaël Zugaro, Gabrielle Girardeau
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -57,7 +62,7 @@ nClusters = 2;
 window = 5*1250;
 show = 'none';
 nComponents = 0;
-method = 'direct';
+method = 'hippocampus';
 
 % Check number of parameters
 if nargin < 5,
@@ -81,7 +86,8 @@ for i = 1:2:length(varargin),
 			end
 		case 'method',
 			method = lower(varargin{i+1});
-			if ~isstring_FMAT(method,'pca','direct','ratios'),
+			% 'direct' and 'ratios' are for backward compatibility (deprecated)
+			if ~isstring_FMAT(method,'pca','hippocampus','cortex','amygdala','direct','ratios'),
 				error('Incorrect value for property ''method'' (type ''help <a href="matlab:help BrainStates">BrainStates</a>'' for details).');
 			end
 		case 'ncomponents',
@@ -126,7 +132,7 @@ sleep = zeros(size(t));
 sleep(usable) = q0(usable);
 sleep = logical(sleep);
 
-% Get theta/delta ratio
+% Get ratios
 bands = SpectrogramBands(s,f);
 
 % Determine features for automatic data clustering
@@ -144,12 +150,15 @@ switch(method),
 		lambda = lambda(1:nComponents);
 		projected = projected(:,1:nComponents);
 		features = projected;
-	case 'direct',
+	case {'hippocampus','direct'},
 		% Use theta/delta ratio
-		features = bands.ratio(sleep);
-	case 'ratios',
-		% Use heuristic ratios
-		features = [bands.ratio1(sleep) bands.ratio2(sleep)];
+		features = bands.ratios.hippocampus(sleep);
+	case {'cortex','ratios'},
+		% Use heuristic ratios of Gervasoni et al. (2004)
+		features = bands.ratios.cortex(sleep);
+	case 'amygdala',
+		% Use gamma / low ratio
+		features = bands.ratios.amygdala(sleep);
 end
 
 % Add EMG to feature list
@@ -167,22 +176,27 @@ cluster = kmeans(features,nClusters);
 % Identify clusters
 sws = logical(zeros(size(t)));
 rem = logical(zeros(size(t)));
-% 1) Measure mean theta/delta ratio for each state
-r = bands.ratio(sleep);
-for i = 1:nClusters,
-	ratio(i) = mean(r(cluster==i));
+% 1) Measure mean ratio for each state
+switch(method),
+    case 'amygdala',
+        ratio = bands.ratios.amygdala(sleep);
+    otherwise,
+        ratio = bands.ratios.hippocampus(sleep);
 end
-% 2) REM is the quiet state with highest theta/delta ratio
-[unused,i] = sort(ratio(:),1,'descend');
+for i = 1:nClusters,
+	meanRatio(i) = mean(ratio(cluster==i));
+end
+% 2) REM is the quiet state with highest mean ratio
+[~,i] = sort(meanRatio(:),1,'descend');
 h = i(1);
 rem(sleep) = cluster==h;
-highest = ratio(h);
-% 3) SWS is the quiet state with lowest theta/delta ratio
-[unused,i] = sort(ratio(:),1,'ascend');
+highest = meanRatio(h);
+% 3) SWS is the quiet state with lowest mean ratio
+[~,i] = sort(meanRatio(:),1,'ascend');
 l = i(1);
 sws(sleep) = cluster==l;
-lowest = ratio(l);
-% 4) REM must have a theta/delta ratio at least twice as high as SWS
+lowest = meanRatio(l);
+% 4) REM must have a ratio at least twice as high as SWS
 if highest < 2*lowest,
 	sws(sleep) = 1;
 	rem(sleep) = 0;
@@ -241,14 +255,26 @@ if strcmp(show,'kmeans') | strcmp(show,'all'),
 	end
 end
 
+%%%%%PLOT%%%%%%
+
+% Redefine ratios for plotting
+switch(method)
+  case 'amygdala'
+    ratio=bands.ratios.amygdala;
+  case {'hippocampus','pca'}
+    ratio=bands.ratios.hippocampus;
+  case 'cortex'
+    ratio=bands.ratios.cortex;
+end
+
 % Show clusters on spectrogram
 if strcmp(show,'clusters') | strcmp(show,'all'),
 	figure;
-	% 1) Plot spectrogram and theta/delta ratio
+	% 1) Plot spectrogram and ratio
 	subplot(2,1,1);hold on;
 	PlotColorMap(log(s),1,'cutoffs',[0 12],'x',t,'y',f);
-	plot(t,bands.ratio,'k');
-	l = 'h = legend(''\theta/\delta ratio'',''q''';
+	plot(t,ratio*10,'k');
+	l = ['h = legend(''' method ' ratio'',''q'''];
 	ylim([0 30]);
 	yLim = ylim;
 	dy = yLim(2) - yLim(1);

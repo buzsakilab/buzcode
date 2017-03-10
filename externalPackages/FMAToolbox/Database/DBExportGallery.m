@@ -1,4 +1,4 @@
-function DBExportGallery(query,name,varargin)
+function DBExportGallery(name,query,varargin)
 
 %DBExportGallery - Create figure gallery from current database.
 %
@@ -7,10 +7,10 @@ function DBExportGallery(query,name,varargin)
 %
 %  USAGE
 %
-%    DBExportGallery(query,name,<options>)
+%    DBExportGallery(name,query,<options>)
 %
-%    query          figure list query (WHERE clause; see Example)
 %    name           gallery name
+%    query          optional figure list query (WHERE clause; see Example)
 %    <options>      optional list of property-value pairs (see table below)
 %
 %    =========================================================================
@@ -26,15 +26,15 @@ function DBExportGallery(query,name,varargin)
 %  EXAMPLES
 %
 %    % Export entire gallery with extensive information
-%    DBExportGallery('','Complete Gallery','info','on');
+%    DBExportGallery('Complete Gallery','info','on');
 %
 %    % Export only figures for the session named 'SESSION1'
-%    DBExportGallery('eid="SESSION1"','Partial Gallery');
+%    DBExportGallery('Partial Gallery','eid="SESSION1"');
 %
 %    % Export figures for all sessions with names starting with 'SLEEP'
-%    DBExportGallery('eid like "SLEEP%"','Sleep Gallery');
+%    DBExportGallery('Sleep Gallery','eid like "SLEEP%"');
 
-% Copyright (C) 2007-2011 by Michaël Zugaro
+% Copyright (C) 2007-2013 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -52,9 +52,22 @@ showInfo = 'off';
 showCode = 'off';
 
 % Check number of parameters
-if nargin < 2,
+if nargin < 1,
 	error('Incorrect number of parameters (type ''help <a href="matlab:help DBExportGallery">DBExportGallery</a>'' for details).');
 end
+
+% Optional query provided?
+if nargin == 1,
+	query = '';
+elseif isstring_FMAT(query,'size','ncolumns','info','code'),
+	varargin = {query varargin{:}};
+	query = '';
+end
+
+% Edit query
+query = strtrim(query);
+query = regexprep(query,'^where','');
+if ~isempty(query), query = [' where ' query]; end
 
 % Parse parameter list
 for j = 1:2:length(varargin),
@@ -99,21 +112,30 @@ showCode = strcmp(showCode,'on');
 
 % Edit query
 query = strtrim(query);
-query = regexprep(query,'^where','');
-if ~isempty(query), query = [' where ' query]; end
+fullQuery = regexprep(query,'^where','');
+if ~isempty(fullQuery), fullQuery = [' where ' fullQuery]; end
 
 % Query database
-f = mym(['select png,eid,name,parameters,comments,mfiles,code,date,user from figures' query]);
-if isempty(f),
-	warning(['No figures match (' query ').']);
+f = mym(['select png,eid,name,parameters,comments,mfiles,code,date,user from figures' fullQuery]);
+if isempty(f.eid),
+	warning(['No figures match ''' query '''.']);
 end
 
+% Reformat code
+code = {};
 for i = 1:length(f.code),
 	for j = 1:length(f.code{i}),
 		code{i}{j} = char(f.code{i}{j})';
 	end
 end
 f.code = code;
+
+% Correct eids and names: replace / with _ to avoid conflicts with filesystem
+nFigures = length(f.png);
+for i = 1:nFigures,
+	f.eid{i} = strrep(f.eid{i},'/','_');
+        f.name{i} = strrep(f.name{i},'/','_');
+end
 
 % Create root directory
 try
@@ -127,8 +149,6 @@ catch
 	error('Cannot create gallery (check file access permissions).');
 end
 [path,name] = fileparts(name);
-
-nFigures = length(f.png);
 
 % Export png images + thumbnails (and code pages if required)
 for i = 1:nFigures,
@@ -152,7 +172,7 @@ for i = 1:nFigures,
    imwrite(thumbnail,[path name '/thumbs/' figureName{i}],'png');
 
 	% Code
-	if showCode && ~isempty(f.code{i}),
+	if showCode && ~isempty(f.code) && ~isempty(f.code{i}),
 		file = fopen([path name '/code/' figureName{i}(1:end-4) '.m'],'w');
 		if file == -1,
 			error('Could not create code output.');
@@ -245,7 +265,7 @@ for line = 1:nLines,
 			fprintf(fid,'       </td>\n');
 			fprintf(fid,'      </tr>\n');
 		end
-		if showCode && ~isempty(f.code{i}),
+		if showCode && ~isempty(f.code) && ~isempty(f.code{i}),
 			codeName = [figureName{i}(1:end-4) '.m'];
 			fprintf(fid,'      <tr>\n');
 			fprintf(fid,'       <td class="left">\n');

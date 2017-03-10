@@ -1,12 +1,13 @@
-function DBUse(database)
+function database = DBUse(database)
 
-%DBUse - Set current database.
+%DBUse - Set (or determine) current database.
 %
-% Set current database to store/retrieve processed data.
+% Set (or determine) current database to store/retrieve processed data.
 %
 %  USAGE
 %
 %    DBUse(database)
+%    database = DBUse()
 %
 %    database           database name
 %
@@ -15,7 +16,7 @@ function DBUse(database)
 %    See also DBConnect.
 %
 
-% Copyright (C) 2007-2011 by Michaël Zugaro
+% Copyright (C) 2007-2012 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -25,8 +26,18 @@ function DBUse(database)
 % Make sure MyM is installed and functional
 CheckMyM;
 
-try
-	h = mym(['use ' database]);
-catch
-   error(['Could not open database ''' database '''.']);
+if nargin == 0,
+	try
+		h = mym('select database();');
+	catch
+		error(['Could not determine current database (check DB server connection).']);
+	end
+	database = getfield(h,'database()');
+	database = database{1};
+else
+	try
+		h = mym(['use ' database]);
+	catch
+		error(['Could not open database ''' database '''.']);
+	end
 end

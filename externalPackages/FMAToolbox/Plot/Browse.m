@@ -216,8 +216,19 @@ if isempty(lims), return; end
 xLim = lims(1,:);
 yLim = lims(2,:);
 
-disp(['X [' num2str(xLim(1)) '   ' num2str(xLim(2)) ']']);
-disp(['Y [' num2str(yLim(1)) '   ' num2str(yLim(2)) ']']);
+x1 = num2str(xLim(1));
+y1 = num2str(yLim(1));
+n = length(x1)-length(y1);
+spaces = repmat(' ',1,abs(n));
+if n < 0, x1 = [spaces x1]; else y1 = [spaces y1] ; end
+x2 = num2str(xLim(2));
+y2 = num2str(yLim(2));
+n = length(x2)-length(y2);
+spaces = repmat(' ',1,abs(n));
+if n < 0, x2 = [spaces x2]; else y2 = [spaces y2] ; end
+
+disp(['X = [' x1 '   ' x2 ']   dX = ' num2str(diff(xLim))]);
+disp(['Y = [' y1 '   ' y2 ']   dY = ' num2str(diff(yLim))]);
 
 %-----------------------------------------------------------------------------------------------------------------
 %   Plot mean and std of data enclosed in selection

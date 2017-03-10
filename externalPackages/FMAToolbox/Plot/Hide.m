@@ -1,4 +1,4 @@
-function Hide(parameter1,parameter2)
+function status = Hide(parameter1,parameter2)
 
 %Hide - Hide (or show) existing or future figures, e.g. to speed up batch processing.
 %
@@ -13,14 +13,21 @@ function Hide(parameter1,parameter2)
 %
 %    Hide(figures)        % same as Hide(figures,'on')
 %    Hide                 % same as Hide(gcf,'on')
+%    Hide('status')       % returns the current default behavior ('on' or 'off')
+%
+%  SEE ALSO
+%
+%    See also sca, scf, StartBatch.
 %
 
-% Copyright (C) 2011-2012 by Michaël Zugaro
+% Copyright (C) 2011-2013 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
+
+status = [];
 
 % Name of this function
 name = mfilename;
@@ -29,8 +36,14 @@ default = get(0,'DefaultFigureCreateFcn');
 if isa(default,'function_handle'), default = func2str(default); end
 
 % Special cases: Hide('on'), Hide('off'), Hide('all'), Hide('none')
-if nargin == 1 && isstring_FMAT(lower(parameter1),'on','off','all','none'),
+if nargin == 1 && isstring(lower(parameter1),'on','off','all','none','status'),
 	switch lower(parameter1),
+		case 'status',
+			if isempty(regexp(default,name)),
+				status = 'off';
+			else
+				status = 'on';
+			end
 		case 'on',
 			if isempty(regexp(default,name)),
 				set(0,'DefaultFigureCreateFcn',[name ';' default]);

@@ -77,6 +77,6 @@ dbUser = user;
 
 try
 	h = mym('open',host,user,password);
-catch
-   error('Could not connect to MySQL. Check your login/password.');
+catch e
+   error(['Could not connect to MySQL. Check your login/password (' e.message ').']);
 end

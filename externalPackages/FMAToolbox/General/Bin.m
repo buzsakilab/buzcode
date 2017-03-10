@@ -60,13 +60,18 @@ if nargin < 2,
 	error('Incorrect number of parameters (type ''help <a href="matlab:help Bin">Bin</a>'' for details).');
 end
 
+if isempty(x),
+	bins = [];
+	binned = [];
+	return
+end
 if ~isdvector(x),
 	error('Data is not a vector (type ''help <a href="matlab:help Bin">Bin</a>'' for details).');
 end
 
-if ~isdvector(a),
-	error('Incorrect second parameter (type ''help <a href="matlab:help Bin">Bin</a>'' for details).');
-end
+%  if ~isdvector(a),
+%  	error('Incorrect second parameter (type ''help <a href="matlab:help Bin">Bin</a>'' for details).');
+%  end
 
 if length(a) == 1,
 	% Second parameter is a scalar, i.e. the number of bins

@@ -68,7 +68,7 @@ end
 intervals = [];
 indices = [];
 if strcmp(strict,'on'),
-	for i = 1:length(intervals1),
+	for i = 1:size(intervals1,1),
 		% List all intervals (to exclude) that overlap with the current interval
 		intersect = (intervals1(i,1) <= intervals2(:,1) & intervals1(i,2) > intervals2(:,1)) ...
 			| (intervals1(i,1) >= intervals2(:,1) & intervals1(i,2) <= intervals2(:,2)) ...
@@ -80,7 +80,7 @@ if strcmp(strict,'on'),
 		end
 	end
 else
-	for i = 1:length(intervals1),
+	for i = 1:size(intervals1,1),
 		% List all intervals (to exclude) that overlap with the current interval
 		intersect = (intervals1(i,1) <= intervals2(:,1) & intervals1(i,2) >= intervals2(:,1)) ...
 			| (intervals1(i,1) >= intervals2(:,1) & intervals1(i,2) <= intervals2(:,2)) ...

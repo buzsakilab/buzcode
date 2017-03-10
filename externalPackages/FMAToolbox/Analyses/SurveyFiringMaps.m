@@ -83,8 +83,6 @@ end
 
 % Get positions
 positions = GetPositions;
-positions=[positions(:,1) positions(:,4:5)];
-positions(234:244,:)
 if isempty(positions), warning('No positions found for current subsession'); return; end
 if ~isempty(minv),
 	if isempty(pixel),

@@ -30,7 +30,7 @@ function stats = MapStats(map,varargin)
 %                   linear, 'lc' if X is linear and Y circular, or 'cc' if X
 %                   and Y are circular - for 1D data, a single letter is used
 %                   (default = 'll')
-%     'debug'       display processing information (default = 'off')
+%     'verbose'     display processing information (default = 'off')
 %    =========================================================================
 %
 %  OUTPUT
@@ -45,11 +45,18 @@ function stats = MapStats(map,varargin)
 %    stats.fieldY        field y boundaries (in bins)
 %    stats.specificity   spatial specificity (Skaggs et al., 1993)
 %
+%    For 1D circular data:
+%
+%    stats.m             mean angle
+%    stats.mode          distribution mode (in bins)
+%    stats.r             mean resultant length
+%    stats.k             von Mises concentration
+%
 %  SEE
 %
 %    See also Map, FiringMap, FiringCurve.
 
-% Copyright (C) 2002-2011 by Michaël Zugaro
+% Copyright (C) 2002-2012 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -70,7 +77,7 @@ end
 threshold = 0.2;
 minPeak = 1;
 type = 'll';
-debug = 0;
+verbose = 0;
 
 nDims = sum(size(map.z)>=2);
 if nDims == 2,
@@ -110,12 +117,12 @@ for i = 1:2:length(varargin),
 				error('Incorrect value for property ''type'' (type ''help <a href="matlab:help MapStats">MapStats</a>'' for details).');
 			end
 
-		case 'debug',
-			debug = lower(varargin{i+1});
-			if ~isstring_FMAT(debug,'on','off'),
-				error('Incorrect value for property ''debug'' (type ''help <a href="matlab:help MapStats">MapStats</a>'' for details).');
+		case {'verbose','debug'},
+			verbose = lower(varargin{i+1});
+			if ~isstring_FMAT(verbose,'on','off'),
+				error('Incorrect value for property ''verbose'' (type ''help <a href="matlab:help MapStats">MapStats</a>'' for details).');
 			end
-			debug = strcmp(debug,'on');
+			verbose = strcmp(verbose,'on');
 
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help MapStats">MapStats</a>'' for details).']);
@@ -130,12 +137,17 @@ circY = size(map.z,1) > 1 && ((size(map.z,2) > 1 && strcmp(type(2),'c')) || strc
 % Default values
 stats.x = NaN;
 stats.y = NaN;
-stats.field = logical([]);
+stats.field = logical(zeros(0,0,0));
 stats.size = 0;
 stats.peak = 0;
 stats.mean = 0;
 stats.fieldX = [NaN NaN];
 stats.fieldY = [NaN NaN];
+stats.specificity = 0;
+stats.m = nan;
+stats.r = nan;
+stats.mode = nan;
+stats.k = nan;
 
 if isempty(map.z), return; end
 
@@ -151,6 +163,8 @@ else
   else
     logArg = map.count/m;
     logArg(logArg <= 1) = 1;
+
+%      stats.specificity = sum(sum(map.count.smooth.*log2(logArg).*occupancy))/m;
     stats.specificity = sum(sum(map.count.*log2(logArg).*occupancy))/m;
   end
 end
@@ -171,49 +185,45 @@ z = map.z;
 % Try to find more fields until no remaining bin exceeds min value
 i = 1;
 while true,
-	% Are there any candidate (unvisited) bins left?
-	candidates = z > minPeak;
-	if ~any(candidates(:)), break; end
-	% Determine coordinates of first candidate bin
-	idx = find(candidates);
-	[y1,x1] = ind2sub(size(candidates),idx(1));
-	% Find field (at this point, all bins >0 are counted in the field)
-	field1 = FindField(z,x1,y1,0,circX,circY);
+	% Are there any candidate (unvisited) peaks left?
+	[peak,idx] = max(z(:));
+	if peak < minPeak, break; end
+	% Determine coordinates of largest candidate peak
+	[y,x] = ind2sub(size(z),idx);
+	% Find field (using min threshold for inclusion)
+	field1 = FindField(z,x,y,peak*threshold,circX,circY);
 	size1 = sum(field1(:));
-	% Compute peak value and location and refine field using min threshold for inclusion
-	peak = max(z(field1));
-	idx = find(field1 & z == peak);
-	[y2,x2] = ind2sub(size(z),idx(1));
-	field2 = FindField(z,x2,y2,peak*threshold,circX,circY);
-	size2 = sum(field2(:));
 	% Does this field include two coalescent subfields?
 	% To answer this question, we simply re-run the same field-searching procedure on the field
 	% we then either keep the original field or choose the subfield if the latter is less than
 	% 1/2 the size of the former
 	m = peak*threshold;
-	field3 = FindField(z-m,x2,y2,(peak-m)*threshold,circX,circY);
-	size3 = sum(field3(:));
-	if size3 < 1/2*size2,
-		field = field3;
+	field2 = FindField(z-m,x,y,(peak-m)*threshold,circX,circY);
+	size2 = sum(field2(:));
+	if size2< 1/2*size1,
+		field = field2;
 		tc = ' ';sc = '*'; % for debugging messages
 	else
-		field = field2;
+		field = field1;
 		tc = '*';sc = ' '; % for debugging messages
 	end
 	% Display debugging info
-	if debug,
-		disp([int2str(i) ') candidates        ' int2str(sum(candidates(:)))]);
-		disp(['   starting          (' int2str(x1) ',' int2str(y1) ')']);
-		disp(['   raw field size    ' int2str(size1)]);
-		disp([' ' tc ' thresholded size  ' int2str(size2)]);
-		disp([' ' sc ' subfield size     ' int2str(size3)]);
-		disp(['   peak              ' num2str(peak) ' @ (' int2str(x2) ',' int2str(y2) ')']);
+	if verbose,
+		disp([int2zstr(i,2) ') peak  ' num2str(peak) ' @ (' int2str(x) ',' int2str(y) ')']);
+		disp([' ' tc ' field size       ' int2str(size1)]);
+		disp([' ' sc ' subfield size    ' int2str(size2)]);
 		disp(' ');
 		figure;
-		subplot(4,1,1);if nDims == 1,plot(z);else imagesc(z);end;xlabel('Data');
-		subplot(4,1,2);imagesc(field1);clim([0 1]);xlabel('Raw field');
-		subplot(4,1,3);imagesc(field2);clim([0 1]);ylabel(tc);xlabel('Thresholded field');
-		subplot(4,1,4);imagesc(field3);clim([0 1]);ylabel(sc);xlabel('Subfield');
+		if nDims == 1,
+			plot(z);hold on;
+			PlotIntervals(ToIntervals(field1),'rectangles');
+			PlotIntervals(ToIntervals(field2),'bars');
+			ylabel(tc);
+		else
+			subplot(3,1,1);imagesc(z);xlabel('Data');
+			subplot(3,1,2);imagesc(field1);clim([0 1]);xlabel('Field');
+			subplot(3,1,3);imagesc(field2);clim([0 1]);ylabel(tc);xlabel('Subfield');
+		end
 	end
 	fieldSize = sum(field(:));
 	% Keep this field if its size is sufficient
@@ -230,8 +240,29 @@ while true,
 	end
 	% Mark field bins as visited
 	z(field) = NaN;
+	if all(isnan(z)), break; end
 end
 
+% ----------------------------- Circular statistics -----------------------------
+
+if ~(nDims == 1 && circX), return; end
+
+complex = map.z .* exp(j*map.x*2*pi) / sum(map.z);
+stats.m = angle(nanmean(complex));
+stats.r = abs(nansum(complex));
+%  [~,stats.mode] = max(map.z);
+[maxZ, iMax] = max(map.z);
+TMax = map.x(iMax);
+stats.mode = TMax*2*pi;
+
+% Compute kappa (Fisher, "Statistical Analysis of Circular Data" p.88)
+if stats.r < 0.53,
+	stats.k = 2*stats.r+stats.r^3+5*stats.r^5/6;
+elseif stats.r < 0.85,
+	stats.k = -0.4+1.39*stats.r+0.43/(1-stats.r);
+else
+	stats.k = 1/(stats.r^3-4*stats.r^2+3*stats.r);
+end
 
 % ------------------------------- Helper functions -------------------------------
 

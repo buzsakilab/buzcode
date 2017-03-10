@@ -11,7 +11,7 @@ function p = PlotHVLines(positions,direction,varargin)
 %    <options>      options for function <a href="matlab:help plot">plot</a>
 %
 
-% Copyright (C) 2008-2011 by Michaël Zugaro
+% Copyright (C) 2008-2012 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -30,6 +30,11 @@ if min(size(positions)) > 2,
  	error('List of abscissae/ordinates is not a vector (type ''help <a href="matlab:help PlotHVLines">PlotHVLines</a>'' for details).');
 else
 	positions = positions(:);
+end
+
+if ~isstring_FMAT(direction,'h','v'),
+	varargin = {direction,varargin{:}};
+	direction = 'v';
 end
 
 hold on;

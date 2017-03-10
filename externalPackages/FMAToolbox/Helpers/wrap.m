@@ -10,7 +10,7 @@
 %
 %  SEE ALSO
 %
-%    See also isradians.
+%    See also isradians, clinspace.
 %
 
 % Copyright (C) 2010-2011 by Michaël Zugaro

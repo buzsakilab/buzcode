@@ -48,6 +48,11 @@ if nargin < 2 | mod(length(varargin),2) ~= 0,
   error('Incorrect number of parameters (type ''help <a href="matlab:help Restrict">Restrict</a>'' for details).');
 end
 
+% Check parameters
+if ~isdmatrix(intervals) || size(intervals,2) ~= 2,
+  error('Incorrect intervals (type ''help <a href="matlab:help Restrict">Restrict</a>'' for details).');
+end
+
 if size(samples,1) == 1,
 	samples = samples(:);
 end
@@ -63,16 +68,20 @@ for i = 1:2:length(varargin),
 			if ~isstring_FMAT(shift,'on','off'),
 				error('Incorrect value for property ''shift'' (type ''help <a href="matlab:help Restrict">Restrict</a>'' for details).');
 			end
-
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help Restrict">Restrict</a>'' for details).']);
 	end
 end
 
 % Restrict
-[status,interval,index] = InIntervals(samples,intervals);
-samples = samples(status,:);
-
+if ~isempty(samples)
+    [status,interval,index] = InIntervals(samples,intervals);
+    samples = samples(status,:);
+elseif isempty(samples)
+    samples = [];
+    disp('No samples to restrict');
+end
+    
 % Shift?
 if strcmp(shift,'on'),
 	% Discard interval IDs for samples which belong to none of the intervals

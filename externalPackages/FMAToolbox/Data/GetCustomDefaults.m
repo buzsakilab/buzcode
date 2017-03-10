@@ -1,4 +1,4 @@
-function default = GetCustomDefaults(property,value)
+function output = GetCustomDefaults(current,property,value)
 
 %GetCustomDefaults - Get custom default value for a given function property.
 %
@@ -17,33 +17,44 @@ function default = GetCustomDefaults(property,value)
 %
 %  USAGE
 %
-%    default = GetCustomDefaults(property,value,<options>)
+%    output = GetCustomDefaults(current,property,value)
 %
+%    current        current value
 %    property       property name
 %    value          default value if custom default value is undefined
 %
 %  EXAMPLE
 %
-%    The function GetPositions has three optional property-value pairs:
+%    The function GetPositions has optional property-value pairs, including:
 %
 %     - 'mode' (default value 'clean')
 %     - 'coordinates' (default value 'normalized')
 %     - 'pixel' (no default value)
+%     - 'distances' (default value [0 Inf])
 %
 %    Users may want to change default values, e.g. have 'coordinates'
 %    set to 'video' whenever they call GetPositions without an explicit
-%    value. In GetPositions, the following code:
+%    value. GetPositions therefore includes the following code:
 %
-%     C = GetCustomDefaults('coordinates','normalized');
+%      % Default values (customizable defaults must be empty at this point)
+%      c = '';
 %
-%    will determine is there is a user-defined default value for 'coordinates',
-%    and set C to this value if it exists, or 'normalized' otherwise.
+%      % Parse parameters
+%      (possibly set a value for c, if supplied among optional input parameters)
+%
+%      % Customizable defaults
+%      c = GetCustomDefaults(c,'coordinates','normalized');
+%
+%    GetCustomDefaults will first test if c was already set (non-empty), in which
+%    case c will remain unaltered. Otherwise, it will test if there is a user-defined
+%    default value for 'coordinates', and issue a warning and set c to this value if
+%    it exists, or set it to 'normalized' otherwise.
 %
 %    To define a custom default value, users would have to e.g. add the following
 %    lines to their startup.m file:
 %
 %     global SETTINGS;
-%     SETTINGS.GetPositions.video = 'video';
+%     SETTINGS.GetPositions.coordinates = 'video';
 %
 %  NOTE
 %
@@ -51,15 +62,28 @@ function default = GetCustomDefaults(property,value)
 %    See the code for GetPositions for an example.
 
 
-% Copyright (C) 2010-2011 by Michaël Zugaro
+% Copyright (C) 2010-2014 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
+if nargin == 2,
+	% Backward compatibility for former usage: output = GetCustomDefaults(property,value)
+	value = property;
+	property = current;
+	warning('Deprecated usage (type ''help <a href="matlab:help GetCustomDefaults">GetCustomDefaults</a>'' for details).');
+else
+	% Non-empty input
+	if ~isempty(current),
+		output = current;
+		return
+	end
+end
+
 % Default value
-default = value;
+output = value;
 
 % Find out calling function name
 stack = dbstack;
@@ -72,22 +96,21 @@ if ~exist('SETTINGS'), return; end
 if ~isfield(SETTINGS,functionName), return; end
 p = getfield(SETTINGS,functionName);
 if ~isfield(p,property), return; end
-default = getfield(p,property);
+output = getfield(p,property);
 
 % Warn user
-if isdvector(default),
-	d =  sprintf('%g ',default);
+if isdvector(output),
+	d =  sprintf('%g ',output);
 	d = d(1:end-1);
-	if length(default) ~= 1,
+	if length(output) ~= 1,
 		d = ['[' d '] '];
 	else
 		d = [d ' '];
 	end
-elseif isstring_FMAT(default),
-	d = ['''' default ''' '];
+elseif isstring_FMAT(output),
+	d = ['''' output ''' '];
 else
 	d = '';
 end
-
 warning(['Using custom default value ' d 'for ''' property ''' in function ''' functionName '''.']);
 

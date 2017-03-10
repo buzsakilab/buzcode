@@ -73,15 +73,16 @@ for i = 1:2:length(varargin),
 end
 
 original = intervals;
-% To simplify the code below, use separate variables for lower (L) and upper (U) interval bounds
-L = intervals(:,1);
-U = intervals(:,2);
+
 % Mark already consolidated intervals to avoid retesting them
-done = logical(zeros(size(L)));
+done = logical(zeros(size(intervals(:,1))));
 
 if strcmp(strict,'on'),
 	for i = 1:length(intervals),
 		if done(i), continue; end
+		% Lower (L) and upper (U) interval bounds
+		L = intervals(:,1);
+		U = intervals(:,2);
 		% Current interval is I = [l u], but we replace it with [l-e u+e] to take parameter 'epsilon' into account
 		l = L(i)-epsilon;u = U(i)+epsilon;
 		% Find all intervals that overlap with I:
@@ -106,15 +107,15 @@ else
 	% (same as above, but replacing e.g. < with <=)
 	for i = 1:length(intervals),
 		if done(i), continue; end
+		% Lower (L) and upper (U) interval bounds
+		L = intervals(:,1);
+		U = intervals(:,2);
 		% Current interval is I = [l u], but we replace it with [l-e u+e] to take parameter 'epsilon' into account
 		l = L(i)-epsilon;u = U(i)+epsilon;
 		% Find all intervals that overlap with I:
 		% 1) one of their bounds is inside I
 		% (their upper bound is greater than or equal to l, and their lower bound is lower than or equal to u)
 		intersect = (U >= l & L <= u);
-		% 2) they contain I
-		intersect = intersect | (L <= l & u <= U);
-		% Determine smallest enclosing interval
 		m = min(L(intersect));
 		M = max(U(intersect));
 		% Consolidate
@@ -138,6 +139,13 @@ target = target';
 
 consolidated = unique(intervals,'rows');
 
-% Empty intervals belong to none
+% Remove empty intervals from output...
+empty = diff(consolidated,1,2) < 0;
+consolidated(empty,:) = [];
+% ... and update target IDs
 empty = diff(original,1,2) < 0;
+[t,i] = sortrows([target empty]);
+target(i) = t(:,1)-cumsum(t(:,2));
+
+% Empty intervals belong to none
 target(empty) = NaN;

@@ -7,7 +7,7 @@ function [periods,in] = Threshold(x,criterion,threshold,varargin)
 %
 %  USAGE
 %
-%    [periods,in] = Threshold(x,threshold,<options>)
+%    [periods,in] = Threshold(x,criterion,threshold,<options>)
 %
 %    x              list of time-value pairs
 %    criterion      one of '>', '>=', '<' or '<='

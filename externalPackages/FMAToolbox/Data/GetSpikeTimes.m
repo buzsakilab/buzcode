@@ -8,17 +8,21 @@ function spikes = GetSpikeTimes(units,varargin)
 %
 %    units          optional list of units, i.e. [electrode group, cluster] pairs;
 %                   special conventions:
-%                     cluster = -1   all clusters
-%                     cluster = -2   all clusters except artefacts (cluster 0)
-%                     cluster = -3   all clusters except artefacts (cluster 0)
-%                                    and MUA (cluster 1)
+%                     cluster = -1   all clusters except artefacts and MUA
+%                     cluster = -2   all clusters except artefacts
+%                     cluster = -3   all clusters
+%                   (artefacts are assumed to be in cluster 0, and MUA in 1)
 %    <options>      optional list of property-value pairs (see table below)
 %
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
-%     'output'      'time' returns only timestamps, 'full' lists electrode
-%                   group and cluster for each spike (default = 'time')
+%     'output'      'time' returns only timestamps, 'full' returns timestamps,
+%                   electrode groups and clusters, and 'numbered' returns
+%                   timestamps and arbitrary unique identifiers corresponding
+%                   to single units (see EXAMPLE below) (default = 'time')
+%                   'total' returns timestamps, electrode group,
+%                   cluster AND unique identifier (4 columns)
 %    =========================================================================
 %
 %  EXAMPLES
@@ -29,7 +33,7 @@ function spikes = GetSpikeTimes(units,varargin)
 %    % timestamps for units [1 7] and [4 3]
 %    s = GetSpikeTimes([1 7;4 3]);
 %
-%    % timestamps for all units on electrode group 5 and unit [6 3]
+%    % timestamps for all single units on electrode group 5, and unit [6 3]
 %    s = GetSpikeTimes([5 -1;6 3]);
 %
 %    % timestamps for all units on electrode group 5, except artefacts
@@ -37,6 +41,11 @@ function spikes = GetSpikeTimes(units,varargin)
 %
 %    % timestamps, electrode groups and clusters, for all spikes
 %    s = GetSpikeTimes('output','full');
+%
+%    % timestamps and identifiers, for units [1 7], [4 3] and [2 5]
+%    % unit [1 7] will be assigned number 1, unit [2 5] number 2, and
+%    % unit [4 3] number 3, independent from the order in which they are listed
+%    s = GetSpikeTimes([1 7;4 3;2 5],'output','numbered');
 %
 %  NOTE
 %
@@ -49,7 +58,7 @@ function spikes = GetSpikeTimes(units,varargin)
 %    See also LoadSpikeTimes, PlotTicks.
 
 
-% Copyright (C) 2004-2011 by Michaël Zugaro
+% Copyright (C) 2004-2013 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -82,7 +91,7 @@ for i = 1:2:length(varargin),
 	switch(lower(varargin{i})),
 		case 'output',
 			output = lower(varargin{i+1});
-			if ~isstring_FMAT(output,'time','full'),
+			if ~isstring_FMAT(output,'time','full','numbered','total'),
 				error('Incorrect value for property ''output'' (type ''help <a href="matlab:help GetSpikeTimes">GetSpikeTimes</a>'' for details).');
 			end
 		otherwise,
@@ -103,11 +112,11 @@ if ~isempty(units),
 		cluster = units(i,2);
 		switch cluster,
 			case -1,
-				selected = selected | spikes(:,2) == channel;
+				selected = selected | (spikes(:,2) == channel & spikes(:,3) ~= 0 & spikes(:,3) ~= 1);
 			case -2,
 				selected = selected | (spikes(:,2) == channel & spikes(:,3) ~= 0);
 			case -3,
-				selected = selected | (spikes(:,2) == channel & spikes(:,3) ~= 0 & spikes(:,3) ~= 1);
+				selected = selected | spikes(:,2) == channel;
 			otherwise,
 				selected = selected | (spikes(:,2) == channel & spikes(:,3) == cluster);
 		end
@@ -117,4 +126,16 @@ end
 
 if strcmp(output,'time'),
 	spikes = spikes(:,1);
+elseif strcmp(output,'numbered'),
+	[units,~,i] = unique(spikes(:,2:end),'rows');
+	nUnits = length(units);
+	index = 1:nUnits;
+	id = index(i)';
+	spikes = [spikes(:,1) id];
+elseif strcmp(output,'total')
+    [units,~,i] = unique(spikes(:,2:end),'rows');
+	nUnits = length(units);
+	index = 1:nUnits;
+	id = index(i)';
+    spikes = [spikes id];
 end

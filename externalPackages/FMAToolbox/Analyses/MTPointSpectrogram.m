@@ -21,7 +21,7 @@ function [spectrogram,t,f] = MTPointSpectrogram(times,varargin)
 %     'step'        step between successive windows (default = window/2)
 %     'tapers'      relative resolution and order of the tapers [NW K]
 %                   (default = [3 5])
-%     'pad'         FFT padding (see help for <a href="matlab:help mtspecgramc">mtspecgramc</a>) (default = 0)
+%     'pad'         FFT padding (see help for <a href="matlab:help mtspecgrampt">mtspecgrampt</a>) (default = 0)
 %     'show'        plot spectrogram (default = 'off')
 %     'parent'      parent figure or uipanel handle (default = gcf)
 %     'cutoffs'     cutoff values for color plot (default = [0 13])
@@ -55,7 +55,7 @@ function [spectrogram,t,f] = MTPointSpectrogram(times,varargin)
 % (at your option) any later version.
 
 % Make sure chronux is installed and functional
-CheckChronux;
+CheckChronux('mtspecgrampt');
 
 % Defaults
 frequency = 20000;
@@ -69,11 +69,6 @@ tapers = [3 5];
 pad = 0;
 parent = [];
 averageTrials = 1;
-
-% Check dependencies
-if isempty(which('mtspecgramc')),
-	error('This function requires the <a href="http://www.chronux.org">chronux</a> toolbox by P. Mitra, which does not appear to be installed on this system.');
-end
 
 % Check number of parameters
 if nargin < 1 | mod(length(varargin),2) ~= 0,
@@ -173,4 +168,7 @@ if strcmp(lower(show),'on'),
 	if isempty(parent), parent = figure; end
 	logTransformed = log(spectrogram);
 	PlotColorMap(logTransformed,1,'x',t,'y',f,'cutoffs',cutoffs);
+	xlabel('Time (s)');
+	ylabel('Frequency (Hz)');
+	title('Power Spectrogram');
 end

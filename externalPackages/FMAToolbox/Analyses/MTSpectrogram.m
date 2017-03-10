@@ -1,4 +1,4 @@
-function [spectrogram,t,f,ratio] = MTSpectrogram(lfp,varargin)
+function [spectrogram,t,f] = MTSpectrogram(lfp,varargin)
 
 %MTSpectrogram - Compute LFP spectrogram by multi-taper estimation.
 %
@@ -14,7 +14,8 @@ function [spectrogram,t,f,ratio] = MTSpectrogram(lfp,varargin)
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
-%     'frequency'   sampling rate (in Hz) (default = 1250Hz)
+%     'frequency'   sampling rate (in Hz) (default = from timestamps if
+%                   available, otherwise 1250Hz)
 %     'range'       frequency range (in Hz) (default = all)
 %     'window'      duration (in s) of the time window (default = 5)
 %     'overlap'     overlap between successive windows (default = window/2)
@@ -23,7 +24,6 @@ function [spectrogram,t,f,ratio] = MTSpectrogram(lfp,varargin)
 %                   (default = [3 5])
 %     'pad'         FFT padding (see help for <a href="matlab:help mtspecgramc">mtspecgramc</a>) (default = 0)
 %     'show'        plot spectrogram (default = 'off')
-%     'parent'      parent figure or uipanel handle (default = gcf)
 %     'cutoffs'     cutoff values for color plot (default = [0 13])
 %    =========================================================================
 %
@@ -48,9 +48,9 @@ function [spectrogram,t,f,ratio] = MTSpectrogram(lfp,varargin)
 %
 %  SEE
 %
-%    See also SpectrogramBands, PlotColorMap.
+%    See also MTSpectrum, SpectrogramBands, MTCoherence, MTCoherogram, PlotColorMap.
 
-% Copyright (C) 2004-2011 by Michaël Zugaro
+% Copyright (C) 2004-2014 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ function [spectrogram,t,f,ratio] = MTSpectrogram(lfp,varargin)
 % (at your option) any later version.
 
 % Make sure chronux is installed and functional
-CheckChronux;
+CheckChronux('mtspecgramc');
 
 % Defaults
 f = 1250;
@@ -71,12 +71,6 @@ show = 'off';
 cutoffs = [0 13];
 tapers = [3 5];
 pad = 0;
-parent = [];
-
-% Check dependencies
-if isempty(which('mtspecgramc')),
-	error('This function requires the <a href="http://www.chronux.org">chronux</a> toolbox by P. Mitra, which does not appear to be installed on this system.');
-end
 
 % Check number of parameters
 if nargin < 1 | mod(length(varargin),2) ~= 0,
@@ -126,23 +120,18 @@ for i = 1:2:length(varargin),
 			end
 		case 'pad',
 			pad = varargin{i+1};
-			if ~isdscalar(pad,'>-1'),
+			if ~isiscalar(pad,'>-1'),
 				error('Incorrect value for property ''pad'' (type ''help <a href="matlab:help MTSpectrogram">MTSpectrogram</a>'' for details).');
 			end
 		case 'show',
 			show = varargin{i+1};
 			if ~isstring_FMAT(show,'on','off'),
-				error('Incorrect value for property ''show'' (type ''help <a href="matlab:help FindRipples">FindRipples</a>'' for details).');
+				error('Incorrect value for property ''show'' (type ''help <a href="matlab:help MTSpectrogram">MTSpectrogram</a>'' for details).');
 			end
 		case 'cutoffs',
 			cutoffs = varargin{i+1};
 			if ~isdvector(cutoffs,'#2','>=0','<'),
 				error('Incorrect value for property ''cutoffs'' (type ''help <a href="matlab:help MTSpectrogram">MTSpectrogram</a>'' for details).');
-			end
-		case 'parent',
-			parent = varargin{i+1};
-			if ~ishandle(parent),
-				error('Incorrect value for property ''parent'' (type ''help <a href="matlab:help MTSpectrogram">MTSpectrogram</a>'' for details).');
 			end
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help MTSpectrogram">MTSpectrogram</a>'' for details).']);
@@ -152,7 +141,7 @@ end
 % Determine LFP frequency
 if isempty(frequency),
 	if size(lfp,2) == 2,
-		frequency = round(1/median(diff(lfp(:,1))));
+		frequency = 1/median(diff(lfp(:,1)));
 	else
 		frequency = f;
 	end
@@ -166,10 +155,8 @@ if isempty(step),
 else
 	if isempty(overlap),
 		overlap = window-step;
-	else
-		if overlap ~= window-step,
-			error('Incompatible ''step'' and ''overlap'' parameters (type ''help <a href="matlab:help MTSpectrogram">MTSpectrogram</a>'' for details).');
-		end
+	elseif overlap ~= window-step,
+		error('Incompatible ''step'' and ''overlap'' parameters (type ''help <a href="matlab:help MTSpectrogram">MTSpectrogram</a>'' for details).');
 	end
 end
 
@@ -179,10 +166,14 @@ if ~isempty(range), parameters.fpass = range; end
 parameters.tapers = tapers;
 parameters.pad = pad;
 [spectrogram,t,f] = mtspecgramc(lfp(:,2),[window window-overlap],parameters);
-t = t+lfp(1,1);
+t = t'+lfp(1,1);
+f = f';
 spectrogram = spectrogram';
 if strcmp(lower(show),'on'),
-	if isempty(parent), parent = figure; end
+%  	figure;
 	logTransformed = log(spectrogram);
-	PlotColorMap(logTransformed,1,'x',t,'y',f,'cutoffs',cutoffs);
+	PlotColorMap(logTransformed,1,'x',t,'y',f,'cutoffs',cutoffs,'newfig','off');
+	xlabel('Time (s)');
+	ylabel('Frequency (Hz)');
+	title('Power Spectrogram');
 end

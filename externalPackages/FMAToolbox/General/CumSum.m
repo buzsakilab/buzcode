@@ -42,8 +42,16 @@ if nargin == 2,
 	end
 end
 
-s = cumsum(data)
+% Simple cumulative sum
+s = cumsum(data);
 if nargin == 1, return; end
 
-data(stops) = 2*data(stops)-s(stops);
-s = cumsum(data);
+% Use stops to restart cumulative sum (tricky vector computation)
+stops(1) = 0;
+i = find(stops);
+k = s(i-1);
+dk = diff([0;k]);
+z = zeros(size(data));
+z(i) = dk;
+s = s-cumsum(z);
+

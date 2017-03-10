@@ -1,17 +1,23 @@
-function list = DBListFigures
+function DBListFigures(query)
 
-%DBListFigures - List figures in current database.
+%DBListFigures - List figures matching certain criteria.
 %
 %  USAGE
 %
-%    list = DBListFigures
+%    DBListFigures(query)
+%
+%    query          optional database query (WHERE clause)
+%
+%  EXAMPLE
+%
+%    DBListFigures('name="Spectrogram"');
 %
 %  SEE
 %
-%    See also DBListVariables.
+%    See also DBGetVariables, DBGetFigures.
 %
 
-% Copyright (C) 2007-2011 by Michaël Zugaro
+% Copyright (C) 2013 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -21,5 +27,8 @@ function list = DBListFigures
 % Make sure MyM is installed and functional
 CheckMyM;
 
-list = mym('select eid,name,comments,parameters,date,user from figures');
+if nargin < 1,
+	query = '';
+end
 
+DBDisplay(DBGetFigures(query,'output','keys'));

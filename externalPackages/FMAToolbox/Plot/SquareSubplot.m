@@ -23,4 +23,4 @@ end
 
 M = round(sqrt(n));
 N = ceil(n/M);
-subplot(M,N,i);
+p = subplot(M,N,i);

@@ -66,7 +66,7 @@ if ~ischar(name),
 	error('Incorrect figure name (type ''help <a href="matlab:help DBAddFigure">DBAddFigure</a>'' for details).');
 end
 if ~isempty(strfind(eid,'/')) || ~isempty(strfind(name,'/')),
-	error('EIDs and names should not contain '/' (type ''help <a href="matlab:help DBAddFigure">DBAddFigure</a>'' for details).');
+	error('EIDs and names should not contain ''/'' (type ''help <a href="matlab:help DBAddFigure">DBAddFigure</a>'' for details).');
 end
 if ~ischar(comments),
 	error('Incorrect comment string (type ''help <a href="matlab:help DBAddFigure">DBAddFigure</a>'' for details).');

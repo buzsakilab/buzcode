@@ -13,7 +13,7 @@
 %                   2 for [0,2pi]
 %  SEE ALSO
 %
-%    See also wrap.
+%    See also wrap, clinspace.
 %
 
 % Copyright (C) 2010 by Michaël Zugaro

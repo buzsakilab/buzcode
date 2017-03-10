@@ -52,6 +52,11 @@ if nargin < 2 | mod(length(varargin),2) ~= 0,
   error('Incorrect number of parameters (type ''help <a href="matlab:help InIntervals">InIntervals</a>'' for details).');
 end
 
+% Check parameters
+if ~isdmatrix(intervals) || size(intervals,2) ~= 2,
+  error('Incorrect intervals (type ''help <a href="matlab:help InIntervals">InIntervals</a>'' for details).');
+end
+
 if size(values,1) == 1,
 	values = values(:);
 end

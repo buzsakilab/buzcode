@@ -1,10 +1,10 @@
-function PlotDistribution2(var1,var2,varargin)
+function [h,a] = PlotDistribution2(var1,var2,varargin)
 
 %PlotDistribution2 - Plot bivariate data along with respective distributions.
 %
 %  USAGE
 %
-%    PlotDistribution2(var1,var2,<options>)
+%    [h,a] = PlotDistribution2(var1,var2,<options>)
 %
 %    Using cell arrays will overlay variable pairs.
 %
@@ -16,10 +16,21 @@ function PlotDistribution2(var1,var2,varargin)
 %     Properties    Values
 %    -------------------------------------------------------------------------
 %     'nBins'       number of bins for distributions (default = 100)
+%     'xbins'       [m M n], lower and upper bounds, and number of bins,
+%                   respectively, for x axis (default [min max 100])
+%     'ybins'       [m M n], lower and upper bounds, and number of bins,
+%                   respectively, for y axis (default [min max 100])
 %     'smooth'      standard deviation of Gaussian kernel (default = 5)
 %    =========================================================================
+%
+%  OUTPUT
+%
+%    h              handles to the plots and histograms (one line per set of
+%                   variables)
+%    a              axes for the plots and histograms: [main top right]
 
-% Copyright (C) 2004-2011 by Michaël Zugaro
+
+% Copyright (C) 2004-2013 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -30,6 +41,8 @@ colors = [1 0.2 0;0 0.4 1;0 1 0.2;1 0.6 0;0.8 0 1;0.8 1 0];
 % Default values
 nBins = 100;
 smooth = 5;
+xbins = [];
+ybins = [];
 
 % Check number of parameters
 if nargin < 2 | mod(length(varargin),2) ~= 0,
@@ -57,22 +70,32 @@ end
 
 % Parse parameter list
 for i = 1:2:length(varargin),
-  if ~ischar(varargin{i}),
-    error(['Parameter ' num2str(i+2) ' is not a property (type ''help <a href="matlab:help PlotDistribution2">PlotDistribution2</a>'' for details).']);
-  end
-  switch(lower(varargin{i})),
-    case 'nbins',
-      nBins = varargin{i+1};
-      if ~isiscalar(nBins,'>0'),
-        error('Incorrect value for property ''nBins'' (type ''help <a href="matlab:help PlotDistribution2">PlotDistribution2</a>'' for details).');
-      end
-    case 'smooth',
-      smooth = varargin{i+1};
-      if ~isdscalar(smooth,'>=0'),
-        error('Incorrect value for property ''smooth'' (type ''help <a href="matlab:help PlotDistribution2">PlotDistribution2</a>'' for details).');
-      end
-    otherwise,
-      error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help PlotDistribution2">PlotDistribution2</a>'' for details).']);
+	if ~ischar(varargin{i}),
+		error(['Parameter ' num2str(i+2) ' is not a property (type ''help <a href="matlab:help PlotDistribution2">PlotDistribution2</a>'' for details).']);
+	end
+	switch(lower(varargin{i})),
+		case 'nbins',
+		nBins = varargin{i+1};
+		if ~isiscalar(nBins,'>0'),
+			error('Incorrect value for property ''nBins'' (type ''help <a href="matlab:help PlotDistribution2">PlotDistribution2</a>'' for details).');
+		end
+	case 'xbins',
+		xbins = varargin{i+1};
+		if ~isdvector(xbins,'#3') | xbins(1) > xbins(2) | ~isiscalar(xbins(3),'>0'),
+			error('Incorrect value for property ''xbins'' (type ''help <a href="matlab:help PlotDistribution2">PlotDistribution2</a>'' for details).');
+		end
+	case 'ybins',
+		ybins = varargin{i+1};
+		if ~isdvector(ybins,'#3') | ybins(1) > ybins(2) | ~isiscalar(ybins(3),'>0'),
+			error('Incorrect value for property ''ybins'' (type ''help <a href="matlab:help PlotDistribution2">PlotDistribution2</a>'' for details).');
+		end
+	case 'smooth',
+		smooth = varargin{i+1};
+		if ~isdscalar(smooth,'>=0'),
+			error('Incorrect value for property ''smooth'' (type ''help <a href="matlab:help PlotDistribution2">PlotDistribution2</a>'' for details).');
+		end
+	otherwise,
+		error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help PlottDistribution2">PlotDistribution2</a>'' for details).']);
   end
 end
 
@@ -93,15 +116,31 @@ right = axes('position',[x+h2*2/3+hg y h2/3 v2*2/3]);
 top = axes('position',[x y+v2*2/3+vg h2*2/3 v2/3]);
 
 % Axis limits
-m1 = min(var1{1});
-M1 = max(var1{1});
-m2 = min(var2{1});
-M2 = max(var2{1});
-for i = 2:length(var1),
-	m1 = min([m1;var1{i}]);
-	M1 = max([M1;var1{i}]);
-	m2 = min([m2;var2{i}]);
-	M2 = max([M2;var2{i}]);
+if isempty(xbins),
+	m1 = min(var1{1});
+	M1 = max(var1{1});
+	for i = 2:length(var1),
+		m1 = min([m1;var1{i}]);
+		M1 = max([M1;var1{i}]);
+	end
+	nBinsX = nBins;
+else
+	m1 = xbins(1);
+	M1 = xbins(2);
+	nBinsX = xbins(3);
+end
+if isempty(ybins),
+	m2 = min(var2{1});
+	M2 = max(var2{1});
+	for i = 2:length(var1),
+		m2 = min([m2;var2{i}]);
+		M2 = max([M2;var2{i}]);
+	end
+	nBinsY = nBins;
+else
+	m2 = ybins(1);
+	M2 = ybins(2);
+	nBinsY = ybins(3);
 end
 d1 = M1-m1;
 m1 = m1-d1/10;
@@ -110,11 +149,13 @@ d2 = M2-m2;
 m2 = m2-d2/10;
 M2 = M2+d2/10;
 
+h = [];
+a = [main top right];
+
 for i = 1:length(var1),
 	% Plot bivariate data
 	axes(main);hold on;
 	p = plot(var1{i},var2{i},'o');
-%  	colors = get(main,'colororder');
 	k = mod(i,size(colors,1)+1);
 	set(p,'MarkerFaceColor',colors(k,:),'MarkerEdgeColor',colors(i,:));
 	if i > 1,
@@ -131,25 +172,26 @@ for i = 1:length(var1),
 
 	% Distribution of var1
 	axes(top);hold on;
-	dist1 = hist(var1{i},m1:(M1-m1)/nBins:M1);
+	[dist1,x1] = hist(var1{i},m1:(M1-m1)/nBinsX:M1);
 	dist1 = Smooth(dist1/sum(dist1),smooth);
-	b = bar(dist1);
-%  	colors = get(top,'colororder');
+	bv = bar(x1,dist1,1);
 	k = mod(i,size(colors,1)+1);
-	set(b,'FaceColor',colors(k,:),'EdgeColor',colors(i,:));
-	xlim([1 nBins]);
+	set(bv,'FaceColor',colors(k,:),'EdgeColor',colors(i,:));
 	set(top,'xtick',[]);
+	xlim([m1 M1]);
 
 	% Distribution of var2
 	axes(right);hold on;
-	dist2 = hist(var2{i},m2:(M2-m2)/nBins:M2);
+	[dist2,x2] = hist(var2{i},m2:(M2-m2)/nBinsY:M2);
 	dist2 = Smooth(dist2/sum(dist2),smooth);
-	b = barh(dist2);
-%  	colors = get(top,'colororder');
+	bh = barh(x2,dist2,1);
 	k = mod(i,size(colors,1)+1);
-	set(b,'FaceColor',colors(k,:),'EdgeColor',colors(i,:));
-	ylim([1 nBins]);
+	set(bh,'FaceColor',colors(k,:),'EdgeColor',colors(i,:));
 	set(right,'ytick',[]);
+	ylim([m2 M2]);
+	
+	% store
+	h = [h;p bv bh];
 end
 
 % Adjust axis locations

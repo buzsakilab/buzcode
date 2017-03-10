@@ -18,8 +18,7 @@ function [spectrum,f,s] = MTPointSpectrum(times,varargin)
 %     'range'       frequency range (in Hz) (default = all)
 %     'tapers'      relative resolution and order of the tapers [NW K]
 %                   (default = [3 5])
-%     'pad'         FFT padding (see help for <a href="matlab:help mtspecgramc">mtspectrumc</a>) (default = 0)
-%     'error'       error type (see help for <a href="matlab:help mtspecgramc">mtspectrumc</a>) (default = [1 0.95])
+%     'pad'         FFT padding (see help for <a href="matlab:help mtspectrumpt">mtspectrumpt</a>) (default = 0)
 %     'show'        plot spectrum (default = 'off')
 %    =========================================================================
 %
@@ -37,7 +36,7 @@ function [spectrum,f,s] = MTPointSpectrum(times,varargin)
 %
 %    See also MTSpectrum, MTSpectrogram, SpectrogramBands.
 
-% Copyright (C) 2010-2012 by Michaël Zugaro
+% Copyright (C) 2010-2014 by Michaël Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -45,7 +44,7 @@ function [spectrum,f,s] = MTPointSpectrum(times,varargin)
 % (at your option) any later version.
 
 % Make sure chronux is installed and functional
-CheckChronux;
+CheckChronux('mtspectrumpt');
 
 % Defaults
 frequency = 20000;
@@ -54,11 +53,6 @@ show = 'off';
 tapers = [3 5];
 pad = 0;
 err = [1 0.95];
-
-% Check dependencies
-if isempty(which('mtspectrumpt')),
-	error('This function requires the <a href="http://www.chronux.org">chronux</a> toolbox by P. Mitra, which does not appear to be installed on this system.');
-end
 
 % Check number of parameters
 if nargin < 1 | mod(length(varargin),2) ~= 0,
@@ -71,6 +65,7 @@ if size(times,2) ~= 1 && size(times,2) ~= 2,
 end
 
 % Parse parameter list
+v = {};
 for i = 1:2:length(varargin),
 	if ~ischar(varargin{i}),
 		error(['Parameter ' num2str(i+2) ' is not a property (type ''help <a href="matlab:help MTPointSpectrum">MTPointSpectrum</a>'' for details).']);
@@ -104,16 +99,24 @@ for i = 1:2:length(varargin),
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help MTPointSpectrum">MTPointSpectrum</a>'' for details).']);
 	end
+	if ~strcmp(varargin{i},'show'), v = {v{:},varargin{i:i+1}}; end
 end
 
-% Compute and plot spectrum
-parameters.Fs = frequency;
-if ~isempty(range), parameters.fpass = range; end
-parameters.tapers = tapers;
-parameters.pad = pad;
-parameters.err = err;
-[spectrum,f,s] = mtspectrumpt(times,parameters);
-s = s';
+% Compute point spectrogram and moments
+[spectrogram,~,f] = MTPointSpectrogram(lfp,v{:});
+spectrogram = spectrogram';
+spectrum = mean(spectrogram);
+s = var(spectrogram);
+
+% Plot log, i.e. mean E[log(spectrogram)] and stdev sqrt(Var[log(spectrogram)])
+% (see http://en.wikipedia.org/wiki/Taylor_expansions_for_the_moments_of_functions_of_random_variables)
 if strcmp(lower(show),'on'),
-	PlotMean(f,log(spectrum),log(s(:,1)),log(s(:,2)),':');
+	figure;
+	%logSpectrum = log(spectrum);         % classic value
+	logSpectrum = log(mu)-v./(2*mu.*mu);  % corrected value, valid for mu/s > 1.5
+	logS = sqrt(v./mu.^2);               % valid for mu/s > 2.5
+	PlotMean(f,logSpectrum,logSpectrum-logS,logSpectrum+logS,':');
+	xlabel('Frequency (Hz)');
+	ylabel('Power');
+	title('Power Spectrum');
 end

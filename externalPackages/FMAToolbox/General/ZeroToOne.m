@@ -6,11 +6,11 @@ function [x,varargout] = ZeroToOne(x,varargin)
 %
 %    [y,b0,b1...] = ZeroToOne(x,a0,a1,...)
 %
-%    x              array to normalize
+%    x              array to normalize (vector OR matrix)
 %    a0...          additional inputs to transform using the same
 %                   scale as x
 
-% Copyright (C) 2008-2011 by Michaël Zugaro
+% Copyright (C) 2008-2011 by Michaël Zugaro, modified GG 2015
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -25,9 +25,15 @@ if nargin ~= nargout,
 	error('Different numbers of input and output parameters (type ''help <a href="matlab:help ZeroToOne">ZeroToOne</a>'' for details).');
 end
 
-m = min(x);
-M = max(x);
-x = (x-m)/(M-m);
+if isvector(x)
+    m = min(x);
+    M = max(x);
+    x = (x-m)/(M-m);
+elseif ismatrix(x)
+    m = min(min(x));
+    M = max(max(x));
+    x = (x-m)./(M-m);
+end
 
 for i = 1:nargin-1,
 	varargout{i} = (varargin{i}-m)/(M-m);
