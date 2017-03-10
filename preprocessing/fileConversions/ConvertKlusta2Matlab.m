@@ -1,14 +1,10 @@
 function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wvformExtract,saveFiles,numCores)
-% Converts .kwik/kwx files from Klusta into klusters-compatible
-% fet,res,clu,spk files.  Works on a single shank of a recording, assumes a
-% 16bit .dat and an .xml file is present in "basepath" (home folder) and 
-% that they are named basename.dat and basename.xml.  Also assumes that
-% subdirectories in that basepath are made for each shank with names
-% specified by numbers (ie 1,2,3,4..8).  In each shank folder should be
-% .kwik and .kwx files made by klusta with names as follows:
-% basename_sh[shankumber].kwik/kwx.  
+% USAGE
+%
+% [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wvformExtract,saveFiles,numCores)
 % 
-% Inputs:
+% INPUTS
+%
 % shank - the shank number (as a number, not text) equalling the name of
 %         the folder under basepath with the data of interst.  Default = 1.
 % basepath - directory path to the main recording folder with .dat and .xml
@@ -16,12 +12,30 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wv
 %            current directory matlab is pointed to)
 % basename - shared file name of .dat and .xml (default is last part of
 %            current directory path, ie most immediate folder name)
-%            wvformExtract - binary (0 or 1) to choose whether to extract raw waveforms
+% wvformExtract - binary (0 or 1) to choose whether to extract raw waveforms
 % saveFiles - binary (0 or 1) to choose whether to save clu, res, fet, wav(.spk) 
 %             files or just return them as outputs
 % numCores  - double between 1 and inf that sets the number of cores for a
 %             parloop to run (set 2-12 on SSD or RAID0 systems, set to 1
 %             for data stored on a single hard drive
+%
+%
+% OUTPUTS
+%
+% fet - features of waveforms
+% clu - cluster ID's for waveforms
+% spktimes(res) - spike times of waveforms(in sample #'s, not seconds)
+% wav- waveform shapes taken from raw .dat file
+%
+%Converts .kwik/kwx files from Klusta into klusters-compatible
+% fet,res,clu,spk files.  Works on a single shank of a recording, assumes a
+% 16bit .dat and an .xml file is present in "basepath" (home folder) and 
+% that they are named basename.dat and basename.xml.  Also assumes that
+% subdirectories in that basepath are made for each shank with names
+% specified by numbers (ie 1,2,3,4..8).  In each shank folder should be
+% .kwik and .kwx files made by klusta with names as follows:
+% basename_sh[shankumber].kwik/kwx. 
+%
 %
 % Brendon Watson 2016 
 % edited by David Tingley 1/2017
