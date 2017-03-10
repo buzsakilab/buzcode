@@ -57,7 +57,7 @@ end
 
 grouplookup = zeros(totalch,1);
 for a= 1:par.nElecGps
-    grouplookup(par.ElecGp{a}+1) = a;
+    grouplookup(par.SpkGrps(a).Channels+1) = a;
 end
 allgroups = unique(grouplookup);
 

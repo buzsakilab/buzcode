@@ -113,3 +113,4 @@ for a = 1:parameters.spikeGroups.nGroups
     parameters.SpkGrps(a).PeakSample = str2num(p.spikeDetection.channelGroups.group{a}.peakSampleIndex); 
     parameters.SpkGrps(a).nFeatures =  str2num(p.spikeDetection.channelGroups.group{a}.nFeatures); 
 end
+
