@@ -1,12 +1,12 @@
 function processConvertOptitrack2Behav(fbasename,varargin)
-
 % USAGE
 %
-%   processConvertOptitrack2Behav(fbasename,varargin)
+%   bz_processConvertOptitrack2Behav(fbasename,varargin)
 %    
 % 
-% 
-%    fbasename   basename of the video file (should be filebasenmae.avi)
+% INPUTS
+%    fbasename   -basename of the recording (this is only used in generating
+%                 the .mat output file)
 %    <options>      optional list of property-value pairs (see table below)
 %
 %    =========================================================================
@@ -21,13 +21,15 @@ function processConvertOptitrack2Behav(fbasename,varargin)
 %                   interpolation)
 %    =========================================================================
 %
+% OUTPUTS
+%
 % 
 % This function assumes that a Motive (Optitrack) behavioral session 
 % has been exported to a .CSV file with default settings.
 % (http://wiki.optitrack.com/index.php?title=Data_Export:_CSV)
 %
 % 
-%
+% David Tingley, 2017 (adapted from A. Peyrache, convert2pos.m)
 
 syncDatFile = ['digitalin.dat']; % defaults if args aren't given... assuming a single digitalin channel on Intan
 syncSampFq  = 20000;
@@ -87,6 +89,8 @@ elseif ~isempty(dir('Session*')) % Looks for a /Session*/ folder that Motive/Opt
     dat = importdata(csv.name);
     dat = scrubTracking(dat);
     cd ..
+else
+    error('couldnt find a .csv tracking file')
 end
 
 pos = dat.data;    
@@ -139,9 +143,7 @@ behav.orientation.rw = pos(:,8);
 behav.timestamps = pos(:,1);
 behav.errorPerMarker = pos(:,9);
 behav.frameCount = pos(:,10);
-save([fbasename '.behavior.mat','behav')
-
-% dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);
+save([fbasename '.tracking.behavior.mat','behav')
 
 end
 

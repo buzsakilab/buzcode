@@ -148,7 +148,7 @@ end
 	ang = mod(ang,2*pi);
     behav.orientations.z = ang; 
     warning('come up with a better head dir calculation...') 
-
+error('this function is unfinished and may not comform to the new data formatting standards...')
     behav.timestamps = pos(:,1);
 %     dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);
 

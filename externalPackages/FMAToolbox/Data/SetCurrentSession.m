@@ -34,13 +34,20 @@ function SetCurrentSession(varargin)
 spikes = 'on';
 filename = '';
 
-% Filename?
-if nargin ~= 0,
-	if ~isstring_FMAT(varargin{1},'spikes'),
-		filename = varargin{1};
-		varargin = {varargin{2:end}};
-	end
+if nargin == 0
+    xml = dir('*xml');
+    if size(xml,1) == 1
+        filename = xml.name;
+    end
 end
+
+% % Filename?
+% if nargin ~= 0 || ~isempty(filename) && 
+% 	if ~isstring_FMAT(varargin{1},'spikes'),
+% 		filename = varargin{1};
+% 		varargin = {varargin{2:end}};
+% 	end
+% end
 
 % Check number of parameters
 if mod(length(varargin),2) ~= 0,
