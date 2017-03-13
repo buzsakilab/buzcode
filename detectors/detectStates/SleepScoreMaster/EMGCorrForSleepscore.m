@@ -18,15 +18,15 @@ function [EMGCorr,sf_EMG] = EMGCorrForSleepscore(basenamepath,scoretime,specialc
 savebool = 0;
 
 %% get basics about.lfp/lfp file
-if strcmp(basenamepath(end-3:end),'.lfp') || strcmp(basenamepath(end-3:end),'.lfp')
-   .lfploc = basenamepath;
+if strcmp(basenamepath(end-3:end),'.lfp') || strcmp(basenamepath(end-3:end),'.eeg')
+    lfploc = basenamepath;
     xmlloc = [basenamepath(1:end-4),'.xml'];
     saveloc = [basenamepath(1:end-4),'_EMGCorr.mat'];
 else
     if ~isempty(dir('*.lfp'))
-       .lfploc = [basenamepath '.lfp'];
-    elseif ~isempty(dir('*.lfp'))
-       .lfploc = [basenamepath '.lfp'];
+       lfploc = [basenamepath '.lfp'];
+    elseif ~isempty(dir('*.eeg'))
+       lfploc = [basenamepath '.eeg'];
     else
         return
     end
@@ -137,11 +137,11 @@ end
 
 %% Read and filter channel
 % read channel
-.lfp = readmulti.lfploc, nChannels, xcorr_chs); %read and convert to mV    
+lfp = readmulti(lfploc, nChannels, xcorr_chs); %read and convert to mV    
 % Filter first in high frequency band to remove low-freq physiologically
 % correlated LFPs (e.g., theta, delta, SPWs, etc.)
 
-eeg = LoadBinary_Down_ss.lfploc,'frequency',Fs,...
+eeg = LoadBinary_Down_ss(lfploc,'frequency',Fs,...
     'nchannels',nChannels,'channels',xcorr_chs+1,...
     'start',scoretime(1),'duration',diff(scoretime));
 %+1 is applied to channel numbers here for 0 (neuroscope) vs 1 (LoadBinary)
@@ -149,7 +149,7 @@ eeg = LoadBinary_Down_ss.lfploc,'frequency',Fs,...
 
 
 xcorr_freqband = [275 300 600 625]; % Hz
-eeg = filtsig_in.lfp, Fs, xcorr_freqband);
+eeg = filtsig_in(lfp, Fs, xcorr_freqband);
 
 %% xcorr 'strength' is the summed correlation coefficients between channel
 % pairs for a sliding window of 25 ms
@@ -180,7 +180,7 @@ xcorr_window_inds = -xcorr_window_samps:xcorr_window_samps;%+- that number of ms
 
 
 % new version... batches of correlation calculated at once
-timestamps = (1+xcorr_window_inds(end)):binScootSamps:(size.lfp,1)-xcorr_window_inds(end));
+timestamps = (1+xcorr_window_inds(end)):binScootSamps:(size(lfp,1)-xcorr_window_inds(end));
 numbins = length(timestamps);
 EMGCorr = zeros(numbins, 1);
 % tic
@@ -192,8 +192,8 @@ for j=1:(length(xcorr_chs)-1)
         binindstart = 1;
         for i = timestamps
             binind = binind+1;
-            s1 =.lfp(i + xcorr_window_inds, j);
-            s2 =.lfp(i + xcorr_window_inds, k);
+            s1 =lfp(i + xcorr_window_inds, j);
+            s2 =lfp(i + xcorr_window_inds, k);
             c1 = cat(2,c1,s1);
             c2 = cat(2,c2,s2);
             if size(c1,2) == corrChunkSz || i == timestamps(end)

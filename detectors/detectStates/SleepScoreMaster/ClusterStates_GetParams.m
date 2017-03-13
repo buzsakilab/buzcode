@@ -1,4 +1,4 @@
-function [PC1weights,PC1expvar,broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes, reclength,histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams)
+function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes, reclength,histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
@@ -52,10 +52,10 @@ badtimes = find(totz>5);
 zFFTspec(badtimes,:) = 0;
 
 %% PCA for Broadband Slow Wave
- [COEFF, SCORE, ~, ~, EXPLAINED] = pca(zFFTspec);
- % broadbandSlowWave = SCORE(:,1);
-PC1weights = COEFF(:,1);
-PC1expvar = EXPLAINED(1);
+%  [COEFF, SCORE, ~, ~, EXPLAINED] = pca(zFFTspec);
+%  % broadbandSlowWave = SCORE(:,1);
+% PC1weights = COEFF(:,1);
+% PC1expvar = EXPLAINED(1);
  
 %% Set Broadband filter weights for Slow Wave
 load('SWweights.mat')

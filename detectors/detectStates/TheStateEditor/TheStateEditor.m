@@ -1,21 +1,21 @@
 %function StateEditorProBeta(baseName, inputData, supressGUI, makePortable)
-% SIMPLE USAGE (NO INPUT VARIABLES, if run from dir with .xml and .lfp/lfp):
+% SIMPLE USAGE (NO INPUT VARIABLES, if run from dir with .xml and .lfp/eeg):
 % Add StateEditor to your Matlab path. Within Matlab navigate to a folder
-% containing '.xml' and '.lfp' (or '.lfp') files. Type in the name of this 
+% containing '.xml' and '.lfp' (or '.eeg') files. Type in the name of this 
 % .m file and press enter (StateEditor will get the relevant baseName from 
 % the name of the first available '.xml' file in the folder). The StateEditor
 % loading GUI will guide you through channel selection and processing. Once 
 % the TheStateEditor GUI loads, press 'H' for further information on using 
 % StateEditor.
 % 
-% THE '.lfpstates.mat' FILE: When it first runs on a new folder
-% StateEditor creates a 'baseName.lfpstates.mat' file. This file contains
+% THE 'eegstates.mat' FILE: When it first runs on a new folder
+% StateEditor creates a 'baseName.eegstates.mat' file. This file contains
 % your channel selection as well as the (whitened) spectrograms. Subsequent
 % runs on this folder will automatically load and use the selections found
-% in the '.lfpstates.mat' file, substantially speeding up the loading
+% in the 'eegstates.mat' file, substantially speeding up the loading
 % process. In order to view different channels you must first delete or
 % rename this file. Note that in order to save space StateEditor does not
-% save the lfp channels selected in the .lfpstates.mat' file unless the
+% save the lfp channels selected in the lfpstates.mat' file unless the
 % 'makePortable' input variable is set to 1.
 % 
 % SAVING AND LOADING STATE EDITOR WORK: Pressing 'S' allows you to save
@@ -24,7 +24,7 @@
 % fields: 
 %    'states' - the state vector is of length N, where N is the number
 %               of seconds	bins in your spectrogram 
-%               (N = round((length.lfp).lfpFS) - 1). It has a value between
+%               (N = round((lengtheeg)eegFS) - 1). It has a value between
 %               0 and 5 for each bin (0 = 'no state', 1 = 'awake', 2 = 
 %               'Light/Drowzy', 3 = 'NREM', 4 = 'Intermediate', 5 = 'REM').
 %   'events' -  a N by 2 matrix where the first column are event type ID's 
@@ -113,7 +113,7 @@ if exist('Chs', 'var') & exist('rawEeg', 'var') & exist('MotionType', 'var') & ~
     nCh = max(Chs);
 end
 
-if ~exist(.lfpFS', 'var')
+if ~exist('lfpFS', 'var')
        .lfpFS = 1250;%this is dangerous, creates some problems I'll try to fix below, BW
 end
 LoadFromPortable = 0;
@@ -298,7 +298,7 @@ if FileExistsIn([baseName,'.lfpstates.mat'])
 else
     StateInfo = [];
     info1 = LoadParIn([baseName, '.xml']);
-   .lfpFS = info1.lfpSampleRate;
+    .lfpFS = info1.lfpSampleRate;
 
     if ~exist('nCh', 'var')
 %             info1 = LoadXmlIn([baseName, '.xml']);
@@ -386,7 +386,7 @@ else
     
     
     if ~exist('rawEeg', 'var')
-        .lfp = {};
+        lfp = {};
         fspec = {};
         
         disp(['Loading.lfp channels: ', int2str(Chs)]);
@@ -396,8 +396,8 @@ else
 %            .lfp1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
 %         catch
             %Otherwise try to use Micheal Zugaro
-           .lfp1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
-           .lfp1 = single.lfp1);
+           lfp1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
+           lfp1 = single.lfp1);
 %         end
         disp('Done.');
         for i = 1:length(Chs)
