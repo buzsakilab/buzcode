@@ -81,12 +81,18 @@ if exist([fbasename '.csv'],'file') % assumes csv naming matches basename
 elseif ~isempty(dir('*.csv')) % looks for any csv file in the current recording folder
     csv = dir('*.csv');
     dat = importdata(csv.name);
+    if ~isstruct(dat)
+        d.data = dat; clear dat; dat = d;
+    end
     dat = scrubTracking(dat);
 elseif ~isempty(dir('Session*')) % Looks for a /Session*/ folder that Motive/Optitrack has created
     d = dir('Session*');
     cd(d.name)
     csv = dir('*.csv');
     dat = importdata(csv.name);
+    if ~isstruct(dat)
+        d.data = dat; clear dat; dat = d;
+    end
     dat = scrubTracking(dat);
     cd ..
 end
