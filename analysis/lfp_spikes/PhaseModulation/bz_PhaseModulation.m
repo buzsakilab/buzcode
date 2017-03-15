@@ -3,10 +3,8 @@ function [phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(varargin)
 %[phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,samplingRate,method,plotting)
 % 
 % INPUTS
-% spikes        - spike train, in seconds, a population or a single cell
-%                   - may be a cell array where each element is a vector of
-%                   spiketimes for each cell
-%                   - may be a vector of spike times for a single cell
+% spikes        - cell array where each element is a vector of
+%                   spiketimes for each cell (time in seconds)
 %
 % lfp           - lfp values (1250kHz default), must be a single vector 
 %
@@ -75,10 +73,10 @@ numBins = p.Results.numBins;
 switch lower(method)
     case ('hilbert')
         [b a] = butter(4,[passband(1)/(samplingRate/2) passband(2)/(samplingRate/2)],'bandpass');
-%         fil=FilterLFP(lfp,'passband',passband); %from FMAToolbox
+%         [b a] = cheby2(4,20,passband/(samplingRate/2));
         filt = FiltFiltM(b,a,lfp);
         hilb = hilbert(filt);
-        lfpphase = mod(angle(hilb+pi),2*pi);
+        lfpphase = mod(angle(hilb),2*pi);
         clear fil
     case ('wavelet')% Use Wavelet transform to calulate the signal phases
         [wave,f,t,coh,wphases,raw,coi,scale,priod,scalef]=getWavelet(lfp(:,2),samplingRate,passband(1),passband(2),8,0);

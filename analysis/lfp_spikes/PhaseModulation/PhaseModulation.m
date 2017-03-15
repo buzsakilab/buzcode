@@ -65,14 +65,14 @@ end
 
 numbins = 180;
 
-p = inputParser;
-addParameter(p,'intervals',[0 inf],@isnumeric)
-addParameter(p,',lfpfreq',1250,@isnumeric)
-addParameter(p,'methods','hilbert',@isstr)
-addParameter(p,'plotting',1,@isnumberic)
-addParameter(p,'numbins',[180],@isnumeric)
-
-parse(p,varargin{:})
+% p = inputParser;
+% addParameter(p,'intervals',[0 inf],@isnumeric)
+% addParameter(p,'lfpfreq',1250,@isnumeric)
+% addParameter(p,'methods','hilbert',@isstr)
+% addParameter(p,'plotting',1,@isnumberic)
+% addParameter(p,'numbins',[180],@isnumeric)
+% 
+% parse(p,varargin{:})
 
 
 %% handle inputs, shape them as necessary
