@@ -17,6 +17,11 @@ function parameters = LoadParameters(filename)
 
 % updated for compatibility by David Tingley 02/2017
 
+if nargin < 1 % if we're especially lazy, we assume there is one XML in the current working directory....
+   xml = dir('*xml'); 
+   filename = xml.name;
+end
+
 if ~exist(filename),
 	error(['File ''' filename ''' not found.']);
 end

@@ -1,8 +1,7 @@
-function [phasedistros,phasebins,phasestats,h] = PhaseModulation(spikes,lfp,passband,intervals,lfpfreq,method,plotting)
-% [phasedistros,phasebins,phasestats,h] = PhaseModulation(spikes,lfp,passband,intervals,lfpfreq,method,plotting)
+function [phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,lfpfreq,method,plotting)
+% USAGE
+%[phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,lfpfreq,method,plotting)
 % 
-% Calculates distribution of spikes over various phases from a specified
-% cycle of an lfp vector.   Phase 0 means peak of lfp wave.
 %
 % INPUTS
 % spikes        - spike train, in seconds, a population or a single cell
@@ -36,7 +35,13 @@ function [phasedistros,phasebins,phasestats,h] = PhaseModulation(spikes,lfp,pass
 %                    phasestats.p        p-value for Rayleigh test
 % h            - handles collection for all plotted figures
 % 
+%
+%
+% Calculates distribution of spikes over various phases from a specified
+% cycle of an lfp vector.   Phase 0 means peak of lfp wave.
+%
 % Brendon Watson 2015
+% edited by david tingley, 2017
 
 
 
@@ -59,6 +64,15 @@ if ~exist('plotting','var')
 end
 
 numbins = 180;
+
+p = inputParser;
+addParameter(p,'intervals',[0 inf],@isnumeric)
+addParameter(p,',lfpfreq',1250,@isnumeric)
+addParameter(p,'methods','hilbert',@isstr)
+addParameter(p,'plotting',1,@isnumberic)
+addParameter(p,'numbins',[180],@isnumeric)
+
+parse(p,varargin{:})
 
 
 %% handle inputs, shape them as necessary
