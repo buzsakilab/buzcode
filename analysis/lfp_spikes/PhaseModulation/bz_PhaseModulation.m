@@ -1,4 +1,4 @@
-function [phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,samplingRate,method,plotting)
+function [phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(varargin)
 % USAGE
 %[phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,samplingRate,method,plotting)
 % 
@@ -6,19 +6,21 @@ function [phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,p
 % spikes        - spike train, in seconds, a population or a single cell
 %                   - may be a cell array where each element is a vector of
 %                   spiketimes for each cell
-%                   - may be tsdArray of multiple spike trains
 %                   - may be a vector of spike times for a single cell
-% lfp           - lfp values (1250kHz default), may be a single vector or
-%               maybe in FMAtoolbox format of double vector with
-%               times;values (only 2 columns not more)
+%
+% lfp           - lfp values (1250kHz default), must be a single vector 
+%
 % passband      - frequency range for phase modulation [lowHz highHz] form
-%               (may be also other inputs valid for FilterLFP.m (FMAToolbox)
+%
 % intervals     - (optional) may specify timespans over which to calculate 
 %               phase modulation.  Formats accepted: tstoolbox intervalSet
 %               or a 2column matrix of [starts stops] in seconds
+%
 % samplingRate  - (optional) specifies lfp sampling frequency default:1250
+%
 % method        - (optional) method selection for how to generate phase, 
 %               possibilties are: 'hilbert' (default) or 'wavelet'
+%
 % plotting      - (optional) 1 if want to plot, 0 if not. Default:1
 %
 %
@@ -42,32 +44,40 @@ function [phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,p
 % Brendon Watson 2015
 % edited by david tingley, 2017
 
-
-
 %% defaults
 p = inputParser;
+addRequired(p,'spikes',@iscell);
+addRequired(p,'lfp',@isnumeric);
+addRequired(p,'passband',@isnumeric)
+
 addParameter(p,'intervals',[0 inf],@isnumeric)
-addParameter(p,',samplingRate',1250,@isnumeric)
+addParameter(p,'samplingRate',1250,@isnumeric)
 addParameter(p,'method','hilbert',@isstr)
-addParameter(p,'plotting',1,@isnumberic)
+addParameter(p,'plotting',0,@isnumeric)
 addParameter(p,'numBins',[180],@isnumeric)
 % addParameter(p,'threshold',0,@isnumeric)
 
 parse(p,varargin{:})
+
+spikes = p.Results.spikes;
+lfp = p.Results.lfp;
+passband = p.Results.passband;
 
 intervals = p.Results.intervals; % interval(s) over which to calculate
 samplingRate = p.Results.samplingRate; % sampling rate of continuous signal (LFP)
 method = p.Results.method; 
 plotting = p.Results.plotting;
 numBins = p.Results.numBins;
-% threshold = p.Results.threshold;
+
 
 
 %% Get phase for every time point in LFP
 switch lower(method)
     case ('hilbert')
-        fil=FilterLFP(lfp,'passband',passband); %from FMAToolbox
-        hilb = hilbert(fil(:,2));
+        [b a] = butter(4,[passband(1)/(samplingRate/2) passband(2)/(samplingRate/2)],'bandpass');
+%         fil=FilterLFP(lfp,'passband',passband); %from FMAToolbox
+        filt = FiltFiltM(b,a,lfp);
+        hilb = hilbert(filt);
         lfpphase = mod(angle(hilb+pi),2*pi);
         clear fil
     case ('wavelet')% Use Wavelet transform to calulate the signal phases
@@ -84,7 +94,7 @@ clear lfp
 
 %% Get phases for each spike for each cell
 h = [];
-cum_spkphases = [];
+% cum_spkphases = [];
 spkphases = cell(1,length(spikes));
 for a = 1:length(spikes)
     
@@ -100,9 +110,9 @@ for a = 1:length(spikes)
         phasestats.mode(a) = nan;
         spkphases{a} = nan;
     else
-        spkphases{a} = lfpphase(round(s));
+        spkphases{a} = lfpphase(round(s*samplingRate));
 
-        cum_spkphases = vertcat(cum_spkphases, spkphases{a});
+%         cum_spkphases = vertcat(cum_spkphases, spkphases{a});
 
     %% Gather binned counts and stats (incl Rayleigh Test)
         [phasedistros(:,a),phasebins,ps]=CircularDistribution(spkphases{a},'nBins',numBins);
@@ -131,24 +141,24 @@ for a = 1:length(spikes)
 end
 
 %% Cumulative effect across all spikes from all cells... not saving these stats for now
-phasebins=[];
-if length(cum_spkphases) > 10
-    [cpd,phasebins,cps]=CircularDistribution(cum_spkphases,'nBins',180);
-    cRp = cps.p;
-
-    if plotting
-        h(end+1) = figure;
-        hax = subplot(1,2,1); 
-        rose(cum_spkphases)
-        title(hax,['All Spikes/Cells Accumulated. Rayleigh p = ' num2str(cps.p) '.'])
-
-        hax = subplot(1,2,2); 
-        bar(phasebins*180/pi,cpd)
-        xlim([0 360])
-        set(hax,'XTick',[0 90 180 270 360]) 
-        hold on;
-        plot([0:360],cos(pi/180*[0:360])*0.05*max(cpd)+0.95*max(cpd),'color',[.7 .7 .7])
-        set(h(end),'name',['PhaseModPlotsForAllCells']);
-    end
-end
+% phasebins=[];
+% if length(cum_spkphases) > 10
+%     [cpd,phasebins,cps]=CircularDistribution(cum_spkphases,'nBins',180);
+%     cRp = cps.p;
+% 
+%     if plotting
+%         h(end+1) = figure;
+%         hax = subplot(1,2,1); 
+%         rose(cum_spkphases)
+%         title(hax,['All Spikes/Cells Accumulated. Rayleigh p = ' num2str(cps.p) '.'])
+% 
+%         hax = subplot(1,2,2); 
+%         bar(phasebins*180/pi,cpd)
+%         xlim([0 360])
+%         set(hax,'XTick',[0 90 180 270 360]) 
+%         hold on;
+%         plot([0:360],cos(pi/180*[0:360])*0.05*max(cpd)+0.95*max(cpd),'color',[.7 .7 .7])
+%         set(h(end),'name',['PhaseModPlotsForAllCells']);
+%     end
+% end
 
