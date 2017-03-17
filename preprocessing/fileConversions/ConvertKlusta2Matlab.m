@@ -54,7 +54,7 @@ if ~exist('numCores','var');
     numCores = 1;
 end
 if ~exist('basename','var');
-    [~,basename] = fileparts(cd);
+    [~,basename] = fileparts(pwd);
 elseif strcmp(basename, 'lfpfile') 
     d = dir('*lfp');
     basename = d.name(1:end-4);

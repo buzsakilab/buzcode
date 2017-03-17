@@ -23,7 +23,7 @@ function AutoClustering(fbasename,elec,varargin)
 % 2012). Threshold can be set in the parameter section of this file
 % ("Rogue spike threshold"). Then, it separates electrical
 % artifats from MUA based on the assumption that electrical artifacts are
-% highly correlated on the different channels: the average waveform of at
+% highly correlated on thel different channels: the average waveform of at
 % least one channel has to be different from the across-channel average
 % waveform by a certrain amount of total variance (can be set in the
 % parameter section, "Deviation from average spike threshold")
@@ -41,6 +41,15 @@ function AutoClustering(fbasename,elec,varargin)
 % or the newer klusta-3.0 (.kwik) algorithms, organize this data for easier 
 % manual cluster cutting, and save to the klusta-3.0 (.kwik) format
 
+
+%  if nargin < 1
+%     basepath = pwd;
+%     name = dir('*alg*');
+%     s = split(name.name,'.');
+%     fbasename = s{1};
+%     elec = str2num(s{end});
+%  end
+    
 dbstop if error
 % Parameters
 % Number recording sites
@@ -64,7 +73,7 @@ end
 
 samplingRate = 20000;
 % Load spike waveforms? Used for detection of electrical artifacts
-loadspk = 1;
+loadspk = 0;
 % Refractory period in msec
 tR = 1.5./1000;
 % Censored period in msec (specific to the spike detection process)
@@ -117,6 +126,7 @@ else
         elseif loadspk 
            [fet clu res wav] = ConvertKlusta2Matlab(elec,basepath,fbasename,1,0,1);
         end
+        clu_orig = clu;
         clu = double(clu);
         cluster_names = unique(clu);
     else
@@ -275,27 +285,44 @@ else
 
      % reorder clusters here
     [clu log] = renumberclu(clu,log);
-    
+    disp(log)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Write new clu file
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if rewriteclu
         h5write(tkwik,['/channel_groups/' num2str(elec) '/spikes/clusters/main'],uint32(clu));
+        
         if length(cluster_names) > length(kwikinfo.Groups)
             error('we added to the number of clusters?')
         end
+
         fid = H5F.open(tkwik,'H5F_ACC_RDWR','H5P_DEFAULT');
         for i =1:length(cluster_names) % rewrite cluster groups
-            try
-            H5L.copy(fid,[kwikinfo.Groups(i).Name],...
-                fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
-                'H5P_DEFAULT','H5P_DEFAULT')
-            catch
+            if ~H5L.exists(fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
+                'H5P_DEFAULT')
+                % time to add a cluster to the kwik... (both main and
+                % orig?)
+                H5L.copy(fid,[kwikinfo.Groups(i).Name],...
+                    fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
+                    'H5P_DEFAULT','H5P_DEFAULT')
+                disp(['added ' num2str(cluster_names(i)) ' from kwik/main'])
+
+            elseif H5L.exists(fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
+                'H5P_DEFAULT') && isempty(find(cluster_names(i)==clu))
+                % time to remove a cluster with no spikes from kwik...
+                H5L.copy(fid,[kwikinfo.Groups(i).Name],...
+                    fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
+                    'H5P_DEFAULT','H5P_DEFAULT')
+                disp(['removed ' num2str(cluster_names(i)) ' from kwik/main'])
+            else
                 disp(['cluster ' num2str(i) ' already exists...'])
             end
+            h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/'...
+            num2str(cluster_names(i))],'cluster_group',3) % a human has not looked at these results, everything should be 'unsorted' (3 in .kwik format)
         end
         H5F.close(fid)
-        if exist([num2str(elec) '/nohup.out'])
+        
+if exist([num2str(elec) '/nohup.out'])
             if exist([fbasename '_sh' num2str(elec) '.kwik']) > 0
                 fileID = fopen('nohup.out','a');
             else
@@ -316,3 +343,4 @@ else
         fprintf(fid,[log 'That took %f seconds\n'],time_tot);
     end
 end
+
