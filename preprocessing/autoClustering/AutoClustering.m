@@ -41,14 +41,14 @@ function AutoClustering(fbasename,elec,varargin)
 % or the newer klusta-3.0 (.kwik) algorithms, organize this data for easier 
 % manual cluster cutting, and save to the klusta-3.0 (.kwik) format
 
-
-%  if nargin < 1
-%     basepath = pwd;
-%     name = dir('*alg*');
-%     s = split(name.name,'.');
-%     fbasename = s{1};
-%     elec = str2num(s{end});
-%  end
+if ~isempty(dir('*kwik'))
+ if nargin < 1 
+    basepath = pwd;
+    name = dir('*alg*');
+    s = split(name.name,'.');
+    fbasename = s{1};
+    elec = str2num(s{end});
+ end
     
 dbstop if error
 % Parameters
@@ -120,7 +120,7 @@ else
             tkwik = fullfile(pwd,num2str(elec),[fbasename '_sh' num2str(elec) '.kwik']);
             basepath = pwd; 
         end
-        kwikinfo = h5info(tkwik,['/channel_groups/' num2str(elec) '/clusters/main']);
+        kwikinfo = h5info(tkwik,['/channel_groups/' num2str(elec) '/clusters/original']);
         if ~loadspk
             [fet clu res ~] = ConvertKlusta2Matlab(elec,basepath,fbasename,0,0,1);
         elseif loadspk 
@@ -290,35 +290,53 @@ else
     % Write new clu file
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if rewriteclu
-        h5write(tkwik,['/channel_groups/' num2str(elec) '/spikes/clusters/main'],uint32(clu));
+        kwikinfo = h5info(tkwik,['/channel_groups/' num2str(elec) '/clusters/main']);
+        kwikinfo_original = h5info(tkwik,['/channel_groups/' num2str(elec) '/clusters/original']);
         
         if length(cluster_names) > length(kwikinfo.Groups)
+%             kwikinfo = h5info(tkwik,['/channel_groups/' num2str(elec) '/clusters/main']);
             error('we added to the number of clusters?')
         end
+          
+        h5write(tkwik,['/channel_groups/' num2str(elec) '/spikes/clusters/main'],uint32(clu));
 
         fid = H5F.open(tkwik,'H5F_ACC_RDWR','H5P_DEFAULT');
         for i =1:length(cluster_names) % rewrite cluster groups
             if ~H5L.exists(fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
                 'H5P_DEFAULT')
+            
                 % time to add a cluster to the kwik... (both main and
                 % orig?)
-                H5L.copy(fid,[kwikinfo.Groups(i).Name],...
+                H5L.copy(fid,[kwikinfo_original.Groups(i).Name],...
                     fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
                     'H5P_DEFAULT','H5P_DEFAULT')
+                
+                h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/'...
+                    num2str(cluster_names(i))],'cluster_group',3) % a human has not looked at these results, everything should be 'unsorted' (3 in .kwik format)
+                
                 disp(['added ' num2str(cluster_names(i)) ' from kwik/main'])
 
             elseif H5L.exists(fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
                 'H5P_DEFAULT') && isempty(find(cluster_names(i)==clu))
+            
                 % time to remove a cluster with no spikes from kwik...
-                H5L.copy(fid,[kwikinfo.Groups(i).Name],...
-                    fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
-                    'H5P_DEFAULT','H5P_DEFAULT')
-                disp(['removed ' num2str(cluster_names(i)) ' from kwik/main'])
+                H5L.delete(fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
+                    'H5P_DEFAULT')
+                
+%                 disp(['removed ' num2str(cluster_names(i)) ' from kwik/main'])
             else
                 disp(['cluster ' num2str(i) ' already exists...'])
+                
+                h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/'...
+                    num2str(cluster_names(i))],'cluster_group',3) % a human has not looked at these results, everything should be 'unsorted' (3 in .kwik format)
             end
-            h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/'...
-            num2str(cluster_names(i))],'cluster_group',3) % a human has not looked at these results, everything should be 'unsorted' (3 in .kwik format)
+            
+        end
+        
+        
+        for i =1:length(cluster_names) % rewrite cluster groups
+            
+            
         end
         H5F.close(fid)
         
@@ -344,3 +362,4 @@ if exist([num2str(elec) '/nohup.out'])
     end
 end
 
+end

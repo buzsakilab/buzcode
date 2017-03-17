@@ -135,6 +135,9 @@ timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';
 pos(pos==-1) = NaN;
 newPos = interp1(frameT,pos,timestamps);
 
+timestamps(isnan(newPos(:,2))) = [];
+newPos(isnan(newPos(:,2)),:)=[];
+
 dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);
 
 end
