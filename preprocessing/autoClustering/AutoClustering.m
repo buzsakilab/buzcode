@@ -144,7 +144,7 @@ else
 %     pw = sqrt(sum(sum(wav.^2,2),3));
     % Percentile of the power
 %     p = prctile(pw,0.99);
-    nFeats = size(fet,2);  % to calculate accurate stats, we should have more rows that features for all cells
+    nFeats = size(fet,2);  % to calculate accurate stats, we should have more rows than features for all cells
     
     %  devFromMean quantifies how much the spike are different on
     %  the different channels (what is the maximal distance from the averaged
@@ -163,26 +163,28 @@ else
     if loadspk
         ff = find([devFromMean < devMinThres |...
              devFromMean > devMaxThres]);  % enforces variability across channels (muscle)
-        fff = find([fractRogue > rogThres]);  % enforces refractory period 
-        
-        for ii=1:length(cluster_names)
-            if length(find(clu==cluster_names(ii))) > nFeats
-                [L(ii) LRatio(ii)] = L_Ratio(fet,find(clu==cluster_names(ii)));
-                iso(ii) = IsolationDistance(fet,find(clu==cluster_names(ii)));
-            else
-                L(ii)=nan;LRatio(ii)=nan;iso(ii)=nan; % not enough spikes to quantify anything...
-            end
-        end
-        % Here let's toss out clusters that are clearly muscle/electrical
-        % we have: fractRogue, devFromMean, LRatio, and iso to use
-        f = find([LRatio<lratioMinThresh |...
-                LRatio > lratioMaxThresh &...
-                iso < isoMinTresh |...
-                iso > isoMaxTresh]);          % finds large artefacts 
-        noiseIx = find(ismember(clu,cluster_names(unique([f,ff,fff]))));
     else
-        noiseIx = [];
+        ff = [];
     end
+    
+    fff = find([fractRogue > rogThres]);  % enforces refractory period 
+
+    for ii=1:length(cluster_names)
+        if length(find(clu==cluster_names(ii))) > nFeats
+            [L(ii) LRatio(ii)] = L_Ratio(fet,find(clu==cluster_names(ii)));
+            iso(ii) = IsolationDistance(fet,find(clu==cluster_names(ii)));
+        else
+            L(ii)=nan;LRatio(ii)=nan;iso(ii)=nan; % not enough spikes to quantify anything...
+        end
+    end
+    % Here let's toss out clusters that are clearly muscle/electrical
+    % we have: fractRogue, devFromMean, LRatio, and iso to use
+    f = find([LRatio<lratioMinThresh |...
+            LRatio > lratioMaxThresh &...
+            iso < isoMinTresh |...
+            iso > isoMaxTresh]);          % finds large artefacts 
+    noiseIx = find(ismember(clu,cluster_names(unique([f,ff,fff]))));
+
     
     % takes all muscle/electrical artefact and merges to a single
     % garbage cluster
@@ -293,50 +295,32 @@ else
         kwikinfo = h5info(tkwik,['/channel_groups/' num2str(elec) '/clusters/main']);
         kwikinfo_original = h5info(tkwik,['/channel_groups/' num2str(elec) '/clusters/original']);
         
-        if length(cluster_names) > length(kwikinfo.Groups)
+        if length(cluster_names) > length(kwikinfo_original.Groups)
 %             kwikinfo = h5info(tkwik,['/channel_groups/' num2str(elec) '/clusters/main']);
             error('we added to the number of clusters?')
         end
-          
+        % rewrite cluster ID's
         h5write(tkwik,['/channel_groups/' num2str(elec) '/spikes/clusters/main'],uint32(clu));
-
+        
+%         I need to change autoclustering to selectively delete cluster groups that no longer have units....
+        % delete all old cluster gropus from /main
+%         fid = H5F.open(kwikinfo.Filename,'H5F_ACC_RDWR','H5P_DEFAULT');
+%         for gg = 1:length(kwikinfo.Groups)
+%             H5L.delete(fid,[kwikinfo.Groups(gg).Name],'H5P_DEFAULT')
+%         end
+%         H5F.close(fid)
+        % copy cluster groups from /original to /main for new clusters
         fid = H5F.open(tkwik,'H5F_ACC_RDWR','H5P_DEFAULT');
         for i =1:length(cluster_names) % rewrite cluster groups
-            if ~H5L.exists(fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
-                'H5P_DEFAULT')
-            
-                % time to add a cluster to the kwik... (both main and
-                % orig?)
-                H5L.copy(fid,[kwikinfo_original.Groups(i).Name],...
-                    fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
-                    'H5P_DEFAULT','H5P_DEFAULT')
-                
-                h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/'...
-                    num2str(cluster_names(i))],'cluster_group',3) % a human has not looked at these results, everything should be 'unsorted' (3 in .kwik format)
-                
-                disp(['added ' num2str(cluster_names(i)) ' from kwik/main'])
-
-            elseif H5L.exists(fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
-                'H5P_DEFAULT') && isempty(find(cluster_names(i)==clu))
-            
-                % time to remove a cluster with no spikes from kwik...
-                H5L.delete(fid,['/channel_groups/' num2str(elec) '/clusters/main/' num2str(cluster_names(i))],...
-                    'H5P_DEFAULT')
-                
-%                 disp(['removed ' num2str(cluster_names(i)) ' from kwik/main'])
-            else
-                disp(['cluster ' num2str(i) ' already exists...'])
-                
-                h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/'...
-                    num2str(cluster_names(i))],'cluster_group',3) % a human has not looked at these results, everything should be 'unsorted' (3 in .kwik format)
+            try  % this may fail if something didn't get deleted... that's ok
+            H5L.copy(fid,kwikinfo_original.Groups(i).Name,...
+                            fid,[kwikinfo.Name '/' num2str(cluster_names(i))],...
+                            'H5P_DEFAULT','H5P_DEFAULT')
+            catch
+                disp([ num2str(cluster_names(i)) ' cluster group already exists'])
             end
-            
-        end
-        
-        
-        for i =1:length(cluster_names) % rewrite cluster groups
-            
-            
+            h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/'...
+                num2str(cluster_names(i))],'cluster_group',3) % a human has not looked at these results, everything should be 'unsorted' (3 in .kwik format)
         end
         H5F.close(fid)
         
