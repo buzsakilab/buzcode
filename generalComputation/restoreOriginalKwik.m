@@ -16,10 +16,14 @@ p = inputParser;
 addParameter(p,'tkwik','',@isstr)
 parse(p,varargin{:})
 tkwik = p.Results.tkwik;
+disp(tkwik)
 
 if isempty(tkwik)  % remove this? we shouldn't assume there is a single .kwik in the cwd..
+    try
     tkwik = dir('*.kwik');
     tkwik = tkwik.name;
+    catch
+    end
 end
 
 if ~isempty(tkwik)

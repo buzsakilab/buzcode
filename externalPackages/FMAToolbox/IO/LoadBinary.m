@@ -215,7 +215,7 @@ else
 	nSamplesPerChunk = floor(maxSamplesPerChunk/nChannels)*nChannels;
 	nChunks = floor(nSamples/nSamplesPerChunk);
 	% Preallocate memory
-	data = zeros(nSamplesPerChannel,length(channels));
+	data = zeros(nSamplesPerChannel,length(channels),precision);
 	% Read all chunks
 	i = 1;
 	for j = 1:nChunks,
@@ -243,10 +243,10 @@ fclose(f);
 function data = LoadChunk(fid,nChannels,channels,nSamples,precision,skip)
 
 if skip ~= 0,
-	data = fread(fid,[nChannels nSamples],precision,skip);
+	data = fread(fid,[nChannels nSamples],[precision '=>' precision],skip);
     %data = fread(fid,[nChannels nSamples],[num2str(nChannels),'*',precision],nChannels*skip);
 else
-	data = fread(fid,[nChannels nSamples],precision);
+	data = fread(fid,[nChannels nSamples],[precision '=>' precision]);
 end
 data=data';
 
