@@ -1,13 +1,12 @@
-function [lfp,indices] = bz_GetLFP(channels,varargin)
-
+function [lfp] = bz_GetLFP(channels,varargin)
 %GetLFP - Get local field potentials.
 %
-%  Load local field potentials from disk (unlike spikes or positions, LFP data
-%  is usually too large to keep in memory).
+%  Load local field potentials from disk. No longer dependent on
+%  FMAT/SetCurrentSession.
 %
 %  USAGE
 %
-%    [lfp,indices] = GetLFP(channels,<options>)
+%    [lfp] = GetLFP(channels,<options>)
 %
 %    channels       list of channels to load (use keyword 'all' for all)
 %    <options>      optional list of property-value pairs (see table below)
@@ -17,15 +16,20 @@ function [lfp,indices] = bz_GetLFP(channels,varargin)
 %    -------------------------------------------------------------------------
 %     'restrict'    list of time intervals to read from the LFP file
 %     'intervals'   same as 'restrict' (for backwards compatibility)
-%     'select'      select channel by ID ('id', counted from 0 a la NeuroScope)
-%                   or by number ('number', counted from 1 a la Matlab)
-%                   (default = 'id')
 %    =========================================================================
 %
 %  OUTPUT
 %
-%    lfp            list of (time,voltage1,...,voltageN) tuples
-%    indices        for each tuple, the index of the interval it falls in
+%    lfp             struct of lfp data. Can be a single struct or an array
+%                    of structs for different intervals.  lfp(1), lfp(2),
+%                    etc for intervals(1,:), intervals(2,:), etc
+%    .data           [Nt x Nd] matrix of the LFP data
+%    .timestamps     [Nt x 1] vector of timestamps to match LFP data
+%    .interval       [1 x 2] vector of start/stop times of LFP interval
+%    .channels       [Nd X 1] vector of channel ID's
+%    .samplingRate   LFP sampling rate [default = 1250]
+%    .duration       duration, in seconds, of LFP interval
+%
 %
 %  EXAMPLES
 %
@@ -39,6 +43,10 @@ function [lfp,indices] = bz_GetLFP(channels,varargin)
 %    lfp = GetLFP(3,'restrict',[0 120],'select','number');
 
 % Copyright (C) 2004-2011 by Michaël Zugaro
+% editied by David Tingley, 2017
+%
+% 'select' option has been removed, it allowed switching between 0 and 1
+% indexing.  This should no longer be necessary with .lfp.mat structs
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -46,65 +54,80 @@ function [lfp,indices] = bz_GetLFP(channels,varargin)
 % (at your option) any later version.
 
 global DATA;
-if isempty(DATA),
-	error('No session defined (did you forget to call SetCurrentSession? Type ''help <a href="matlab:help Data">Data</a>'' for details).');
+if isempty(DATA)
+	warning('No session defined, so we look for a *lfp file...')
+    try
+       d = dir('*lfp');
+       lfpFile = d.name; % we assume one .lfp file or this should break
+       xml = LoadParameters;
+       basename = split(lfpFile,'.');
+       basename = basename{1};
+       path = pwd;
+       nChannels = xml.nChannels;
+       samplingRate = xml.lfpSampleRate;
+    catch
+        
+    end
+else  % backwards compatible with FMAT setcurrentsession
+    basename = DATA.session.basename;
+    path = DATA.session.path;
+    nChannels = DATA.nChannels;
+    samplingRate = DATA.rates.lfp;
 end
 
 % Default values
 intervals = [0 Inf];
-select = 'id';
+select = 'number';
 
-if nargin < 1 | mod(length(varargin),2) ~= 0,
+if nargin < 1 | mod(length(varargin),2) ~= 0
   error('Incorrect number of parameters (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).');
 end
 
 % Parse parameter list
-for i = 1:2:length(varargin),
-  if ~ischar(varargin{i}),
+for i = 1:2:length(varargin)
+  if ~ischar(varargin{i})
     error(['Parameter ' num2str(i+1) ' is not a property (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).']);
   end
-  switch(lower(varargin{i})),
-    case {'intervals','restrict'},
+  switch(lower(varargin{i}))
+    case {'intervals','restrict'}
       intervals = varargin{i+1};
-      if ~isdmatrix(intervals) || size(intervals,2) ~= 2,
+      if ~isdmatrix(intervals) || size(intervals,2) ~= 2
         error('Incorrect value for property ''intervals'' (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).');
       end
-    case 'select',
-      select = lower(varargin{i+1});
-      if ~isstring_FMAT(select,'id','number'),
-        error('Incorrect value for property ''select'' (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).');
-      end
-    otherwise,
-      error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).']);
-  end
+    end
 end
 
-filename = [DATA.session.path '/' DATA.session.basename '.lfp'];
-if ~exist(filename,'file'),
-    filename = [DATA.session.path '/' DATA.session.basename '.lfp'];
-    if ~exist(filename,'file'),
+filename = [path '/' basename '.lfp'];
+if ~exist(filename,'file')
+    filename = [path '/' basename '.lfp'];
+    if ~exist(filename,'file')
         error(['File ''' filename ''' not found.']);
     end
 end
-nChannels = DATA.nChannels;
-if isa(channels,'char') && strcmp(lower(channels),'all'),
+nChannels = nChannels;
+if isa(channels,'char') && strcmp(lower(channels),'all')
 	channels = (1:nChannels)-1;
 end
 
-if strcmp(select,'id'),
-	channels = channels + 1;
-end
-
 nIntervals = size(intervals,1);
-lfp = [];
-indices = [];
-for i = 1:nIntervals,
-	duration = (intervals(i,2)-intervals(i,1));
-	start = intervals(i,1);
-	% Load data
-	data = LoadBinary(filename,'duration',duration,'frequency',DATA.rates.lfp,'nchannels',nChannels,'start',start,'channels',channels);
-	t = start:(1/DATA.rates.lfp):(start+(length(data)-1)/DATA.rates.lfp);t=t';
-	lfp = [lfp ; t data];
-	indices = [indices ; i*ones(size(t))];
+% returns lfp/bz format
+for i = 1:nIntervals
+    lfp(i).duration = (intervals(i,2)-intervals(i,1));
+    lfp(i).interval = [intervals(i,1) intervals(i,2)];
+    
+	% Load data and put into struct
+	lfp(i).data = LoadBinary(filename,'duration',lfp(i).duration,...
+                  'frequency',samplingRate,'nchannels',nChannels,...
+                  'start',lfp(i).interval(1),'channels',channels);
+	lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRate):...
+                        (lfp(i).interval(1)+(length(lfp(i).data)-1)/...
+                        samplingRate)]';
+    lfp(i).channels = channels;
+    lfp(i).samplingRate = samplingRate;
+    % check if duration is inf, and reset to actual duration...
+    if lfp(i).interval(2) == inf
+        lfp(i).interval(2) = length(lfp(i).timestamps)/lfp(i).samplingRate;
+        lfp(i).duration = (intervals(i,2)-intervals(i,1));
+    end
 end
 

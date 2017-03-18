@@ -89,7 +89,7 @@ catch
 	parameters.rates.video = 0;
 % 	parameters.maxX = 0;  % Deprecated with new tracking systems
 % 	parameters.maxY = 0;  % Deprecated with new tracking systems 
-	disp('... warning: missing video parameters (set to zero)');
+% 	disp('... warning: missing video parameters (set to zero)');
 end
 
 % for backwards compatibility with LoadPar.m
