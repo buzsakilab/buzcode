@@ -41,13 +41,13 @@ if nargin == 0
     end
 end
 
-% % Filename?
-% if nargin ~= 0 || ~isempty(filename) && 
-% 	if ~isstring_FMAT(varargin{1},'spikes'),
-% 		filename = varargin{1};
-% 		varargin = {varargin{2:end}};
-% 	end
-% end
+% Filename?
+if nargin ~= 0 || ~isempty(filename)  
+	if ~isstring_FMAT(varargin{1},'spikes'),
+		filename = varargin{1};
+		varargin = {varargin{2:end}};
+	end
+end
 
 % Check number of parameters
 if mod(length(varargin),2) ~= 0,

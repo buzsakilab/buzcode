@@ -137,19 +137,19 @@ end
 
 %% Read and filter channel
 % read channel
-lfp = readmulti(lfploc, nChannels, xcorr_chs); %read and convert to mV    
+lfp = LoadBinary(lfploc,'nChannels',nChannels,'channels',xcorr_chs); %read and convert to mV    
 % Filter first in high frequency band to remove low-freq physiologically
 % correlated LFPs (e.g., theta, delta, SPWs, etc.)
 
-eeg = LoadBinary_Down_ss(lfploc,'frequency',Fs,...
-    'nchannels',nChannels,'channels',xcorr_chs+1,...
-    'start',scoretime(1),'duration',diff(scoretime));
-%+1 is applied to channel numbers here for 0 (neuroscope) vs 1 (LoadBinary)
-%indexing.
+% eeg = LoadBinary_Down_ss(lfploc,'frequency',Fs,...
+%     'nchannels',nChannels,'channels',xcorr_chs+1,...
+%     'start',scoretime(1),'duration',diff(scoretime));
+% %+1 is applied to channel numbers here for 0 (neuroscope) vs 1 (LoadBinary)
+% %indexing.
 
 
 xcorr_freqband = [275 300 600 625]; % Hz
-eeg = filtsig_in(lfp, Fs, xcorr_freqband);
+lfp = filtsig_in(lfp, Fs, xcorr_freqband);
 
 %% xcorr 'strength' is the summed correlation coefficients between channel
 % pairs for a sliding window of 25 ms
@@ -184,8 +184,10 @@ timestamps = (1+xcorr_window_inds(end)):binScootSamps:(size(lfp,1)-xcorr_window_
 numbins = length(timestamps);
 EMGCorr = zeros(numbins, 1);
 % tic
+counter = 1;
 for j=1:(length(xcorr_chs)-1)
     for k=(j+1):length(xcorr_chs)
+        disp(counter)
         c1 = [];
         c2 = [];
         binind = 0;
@@ -205,6 +207,7 @@ for j=1:(length(xcorr_chs)-1)
                 c2 = [];
                 binindstart = binind+1;
             end
+            counter = counter+1;
         end
     end
 end

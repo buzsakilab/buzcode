@@ -1,4 +1,4 @@
-function chkinputdatatype(varargin)
+function chkinputdatatype_SleepScore(varargin)
 %CHKINPUTDATATYPE Check that all inputs are double
 
 %   Copyright 2009-2013 The MathWorks, Inc.
