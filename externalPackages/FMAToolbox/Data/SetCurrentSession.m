@@ -162,12 +162,12 @@ DATA.positions = [];
 if exist([path separator basename '.pos']),
 	DATA.positions = LoadPositions([path separator basename '.pos'],DATA.rates.video);
 	disp(['... loaded position file ''' basename '.pos''']);
-elseif exist([path separator basename '.whl']),
-	DATA.positions = LoadPositions([path separator basename '.whl'],DATA.rates.video);
-	disp(['... loaded position file ''' basename '.whl''']);
-elseif exist([path separator basename '.whl']),
-	DATA.positions = LoadPositions([path separator basename '.mqa'],DATA.rates.video);
-	disp(['... loaded position file ''' basename '.mqa''']);
+% elseif exist([path separator basename '.whl']),
+% 	DATA.positions = LoadPositions([path separator basename '.whl'],DATA.rates.video);
+% 	disp(['... loaded position file ''' basename '.whl''']);
+% elseif exist([path separator basename '.whl']),  % this looks like a bug?
+% 	DATA.positions = LoadPositions([path separator basename '.mqa'],DATA.rates.video);
+% 	disp(['... loaded position file ''' basename '.mqa''']);
 else
 	disp('... (no position file found)');
 end
