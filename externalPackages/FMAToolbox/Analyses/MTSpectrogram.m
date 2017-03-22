@@ -64,7 +64,7 @@ CheckChronux();
 f = 1250;
 frequency = [];
 window = 5;
-range = [];
+range = [];s
 overlap = [];
 step = [];
 show = 'off';
