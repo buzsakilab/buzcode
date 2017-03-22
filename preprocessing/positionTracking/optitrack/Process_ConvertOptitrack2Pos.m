@@ -80,7 +80,15 @@ if exist([fbasename '.csv'],'file') % assumes csv naming matches basename
     dat = scrubTracking(dat); 
 elseif ~isempty(dir('*.csv')) % looks for any csv file in the current recording folder
     csv = dir('*.csv');
-    dat = importdata(csv.name);
+    if length(csv) > 1
+        dat=[];
+       for i=1:length(csv)
+           dat = [dat; importdata(csv(i).name)];
+       end
+    else
+        dat = importdata(csv.name);
+    end
+    
     if ~isstruct(dat)
         d.data = dat; clear dat; dat = d;
     end

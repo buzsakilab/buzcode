@@ -58,7 +58,10 @@ if isempty(DATA)
 	warning('No session defined, so we look for a *lfp file...')
     try
        d = dir('*lfp');
-       lfpFile = d.name; % we assume one .lfp file or this should break
+       if length(d) > 1 % we assume one .lfp file or this should break
+          error('there is more than one .lfp file in this directory?');
+       end
+       lfpFile = d.name; 
        xml = LoadParameters;
        basename = split(lfpFile,'.');
        basename = basename{1};
