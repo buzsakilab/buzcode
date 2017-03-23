@@ -24,7 +24,7 @@ Fint       = 1;
 
 % Initialize background as a grayscale image of the first frame
 bg_bw     = rgb2gray(read(readerobj,Fint));
-
+pos
 % Initialize foreground image and difference image
 fg          = zeros(size(bg_bw));
 fr_diff     = zeros(size(bg_bw));

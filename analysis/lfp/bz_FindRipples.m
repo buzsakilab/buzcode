@@ -70,7 +70,7 @@ p = inputParser;
 addParameter(p,'frequency',1250,@isnumeric)
 addParameter(p,'show','off',@isstr)
 addParameter(p,'thresholds',[2 5],@isivector)
-addParameter(p,'durations',[30 100],@isnumberic)
+addParameter(p,'durations',[30 100],@isnumeric)
 addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'stdev',[],@isnumeric)
 addParameter(p,'noise',[],@ismatrix)
