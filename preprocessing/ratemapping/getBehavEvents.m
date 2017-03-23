@@ -69,6 +69,8 @@ dbstop if error
 
 disp('pick start/stop locations')
 [x,y] = ginput();
+x = x(2:end);
+y = y(2:end); % laptop hack....
 ff = find(isnan(p(:,2)));
 % p=pos(:,1:2);
 

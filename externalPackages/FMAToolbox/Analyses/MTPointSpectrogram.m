@@ -55,7 +55,7 @@ function [spectrogram,t,f] = MTPointSpectrogram(times,varargin)
 % (at your option) any later version.
 
 % Make sure chronux is installed and functional
-CheckChronux('mtspecgrampt');
+CheckChronux();
 
 % Defaults
 frequency = 20000;

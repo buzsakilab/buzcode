@@ -58,7 +58,10 @@ if isempty(DATA)
 	warning('No session defined, so we look for a *lfp file...')
     try
        d = dir('*lfp');
-       lfpFile = d.name; % we assume one .lfp file or this should break
+       if length(d) > 1 % we assume one .lfp file or this should break
+          error('there is more than one .lfp file in this directory?');
+       end
+       lfpFile = d.name; 
        xml = LoadParameters;
        basename = split(lfpFile,'.');
        basename = basename{1};
@@ -77,7 +80,6 @@ end
 
 % Default values
 intervals = [0 Inf];
-select = 'number';
 
 if nargin < 1 | mod(length(varargin),2) ~= 0
   error('Incorrect number of parameters (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).');
@@ -104,10 +106,12 @@ if ~exist(filename,'file')
         error(['File ''' filename ''' not found.']);
     end
 end
-nChannels = nChannels;
-if isa(channels,'char') && strcmp(lower(channels),'all')
-	channels = (1:nChannels)-1;
-end
+
+
+% we assume 0-indexing like neuroscope, but LoadBinary using 1-indexing to
+% load....
+channels = channels + 1;
+
 
 nIntervals = size(intervals,1);
 % returns lfp/bz format
@@ -127,7 +131,7 @@ for i = 1:nIntervals
     % check if duration is inf, and reset to actual duration...
     if lfp(i).interval(2) == inf
         lfp(i).interval(2) = length(lfp(i).timestamps)/lfp(i).samplingRate;
-        lfp(i).duration = (intervals(i,2)-intervals(i,1));
+        lfp(i).duration = (lfp(i).interval(i,2)-lfp(i).interval(i,1));
     end
 end
 

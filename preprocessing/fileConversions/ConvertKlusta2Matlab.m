@@ -69,8 +69,14 @@ clu = h5read(tkwik,['/channel_groups/' num2str(shank) '/spikes/clusters/main']);
 cluster_names = unique(clu);
 
 totalch = h5readatt(tkwik,'/application_data/spikedetekt','nchannels');
-sbefore = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_before');
-safter = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_after');
+try % some files don't have these variables saved in them?
+    sbefore = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_before');
+    safter = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_after');
+catch
+    wvform_nsamples = h5readatt(tkwik,'/application_data/spikedetekt','waveforms_nsamples');
+    sbefore = wvform_nsamples/2;
+    safter = wvform_nsamples/2;
+end
 channellist = h5readatt(tkwik,['/channel_groups/' num2str(shank)],'channel_order')+1;
 
 %% Getting spiketimes

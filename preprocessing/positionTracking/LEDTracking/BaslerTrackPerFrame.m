@@ -16,23 +16,23 @@ readerobj  = VideoReader([movname]);
 frames = read(readerobj);
 
 
-whl = ApproxMedianFilter_RB_LED([movname]);
+pos = ApproxMedianFilter_RB_LED([movname]);
 % figure(1),clf
-% plot(whl(:,1),whl(:,2))
+% plot(pos(:,1),pos(:,2))
 % hold on
-% plot(whl(:,3),whl(:,4),'r')
+% plot(pos(:,3),pos(:,4),'r')
 
-nDiff = nFramesTsp - size(whl,1);
+nDiff = nFramesTsp - size(pos,1);
 if nDiff ~=0 %in case of frame drop, interpolate the output
 
-    twhl = (1:size(whl,1));
+    tpos = (1:size(pos,1));
     ttsp = (1:size(tspdata,1));
-    whl(whl==-1) = NaN;
-    interpData = interp1(twhl,whl,ttsp);
+    pos(pos==-1) = NaN;
+    interpData = interp1(tpos,pos,ttsp);
     interpData(isnan(interpData)) = -1;
     tspnew(:,[2 3 6 7]) = interpData;
 else
-    tspnew(:,[2 3 6 7]) = whl;
+    tspnew(:,[2 3 6 7]) = pos;
 end
 
 fid = fopen([movname '.tsp'],'w');

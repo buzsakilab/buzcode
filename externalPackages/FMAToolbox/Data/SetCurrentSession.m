@@ -42,7 +42,7 @@ if nargin == 0
 end
 
 % Filename?
-if nargin ~= 0 || ~isempty(filename)  
+if nargin ~= 0 
 	if ~isstring_FMAT(varargin{1},'spikes'),
 		filename = varargin{1};
 		varargin = {varargin{2:end}};
@@ -165,7 +165,7 @@ if exist([path separator basename '.pos']),
 elseif exist([path separator basename '.whl']),
 	DATA.positions = LoadPositions([path separator basename '.whl'],DATA.rates.video);
 	disp(['... loaded position file ''' basename '.whl''']);
-elseif exist([path separator basename '.whl']),
+elseif exist([path separator basename '.whl']),  % this looks like a bug?
 	DATA.positions = LoadPositions([path separator basename '.mqa'],DATA.rates.video);
 	disp(['... loaded position file ''' basename '.mqa''']);
 else
