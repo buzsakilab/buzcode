@@ -1,6 +1,37 @@
-function MakeXMLFromProbeMaps
+function MakeXMLFromProbeMaps(basepath)
+%MakeXMLFromProbeMaps - Generate a .xml file to accompany .dat files for a
+%recording in the neuroscope/klusters/ndmanager system.  Uses a library of
+%probe map layouts.
+%
+%  USAGE
+%
+%    MakeXMLFromProbeMaps(basepath)
+%
+%    Writes a standardized .xml file based on a user-selection of probe
+%    maps and in a sequence specified by the user (ie 64site probe first
+%    then 32site probe second).  Probe maps can be found at:
+%    /buzcode/tree/master/generalComputation/geometries
+%
+%  INPUT
+%
+%    basepath       path to directory to which to write output xml file and
+%                   where to potentially find .rhd file 
+%
+%  OUTPUT
+%
+%    (.xml file written to disk at basepath)
+%
+%  SEE
+%
+%    See also 
+% Copyright (C) 2017 Brendon Watson
+%
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 3 of the License, or
+% (at your option) any later version.
 
-%% Define text components
+%% Define text components to assemble later
 header = {'<?xml version=''1.0''?>';...
 '<parameters version=''1.0'' creator=''MakeXMLFromProbeMaps.m''>';...
  '<acquisitionSystem>';...
@@ -16,21 +47,21 @@ header = {'<?xml version=''1.0''?>';...
  '</fieldPotentials>';...
  '<anatomicalDescription>';...
   '<channelGroups>'};
-anatomygroupstart = '<group>';
-anatomychannelnumberline_start = ['<channel skip="0">'];
-anatomychannelnumberline_end = ['</channel>'];
-anatomygroupend = '</group>';
+anatomygroupstart = '<group>';%repeats w every new anatomical group
+anatomychannelnumberline_start = ['<channel skip="0">'];%for each channel in an anatomical group - first part of entry
+anatomychannelnumberline_end = ['</channel>'];%for each channel in an anatomical group - last part of entry
+anatomygroupend = '</group>';%comes at end of each anatomical group
 
 anatomyspikegroupinterface = {' </anatomicalDescription>';...
  '<spikeDetection>';...
-  '<channelGroups>'};
+  '<channelGroups>'};%comes after anatomical groups and before spike groups
 
 spikegroupstart = {'<group>';...
-        '<channels>'};
-spikechannelnumberline_start = ['<channel>']
-spikechannelnumberline_end = ['</channel>'];
+        '<channels>'};%repeats w every new spike group
+spikechannelnumberline_start = ['<channel>'];%for each channel in a spike group - first part of entry
+spikechannelnumberline_end = ['</channel>'];%for each channel in a spike group - last part of entry
 spikegroupend = {'</channels>';...
-    '</group>'};
+    '</group>'};%comes at end of each spike group
 
 footer = {'</channelGroups>';...
  '</spikeDetection>';...
@@ -64,14 +95,12 @@ footer = {'</channelGroups>';...
  '</neuroscope>';...
 '</parameters>'};
 
-
-
 lineend = '\n';
 
 %% Gather probe maps
 
 
-%% Make file
+%% Make basic text 
 s = header;
 
 for gidx = each group
@@ -96,4 +125,5 @@ end
  
 s = {s,footer};
 
+%% Format and output
 
