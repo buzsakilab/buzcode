@@ -42,7 +42,7 @@ if nargin == 0
 end
 
 % Filename?
-if nargin ~= 0 || ~isempty(filename)  
+if nargin ~= 0 
 	if ~isstring_FMAT(varargin{1},'spikes'),
 		filename = varargin{1};
 		varargin = {varargin{2:end}};
