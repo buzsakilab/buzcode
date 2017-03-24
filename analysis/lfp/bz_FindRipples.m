@@ -62,6 +62,8 @@ function [ripples] = bz_FindRipples(varargin)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
+%% TODO
+% make compatible with LFP being int16 instead of double
 
 warning('this function is under development and may not work... yet')
 
@@ -268,12 +270,16 @@ end
 rips = ripples; clear ripples
 ripples.times = rips(:,[1 3]);
 ripples.detectorName = 'bz_FindRipples';
-ripples.detectorParams = varargin;
 ripples.peaks = rips(:,2);
 ripples.peakNormedPower = rips(:,4);
-ripples.stdev = stdev;
-ripples.noise = noise;
+ripples.stdev = sd;
+ripples.noise.times = bad(:,[1 3]);
+ripples.noise.peaks = bad(:,[2]);
+ripples.noise.peakNormedPower = bad(:,[4]);
 
+
+ripples.detectorParams = p.Results;
+ripples.detectorParams = rmfield(ripples.detectorParams,{'noise','filtered','timestamps'})
 
 function y = Filter0(b,x)
 
