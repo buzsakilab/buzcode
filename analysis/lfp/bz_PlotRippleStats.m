@@ -131,91 +131,91 @@ for electrode = 1:nElectrodes,
 end
 
 % Pairwise stats
-
-if nElectrodes == 2,
-
-		% Match ripple pairs
-		ripplePairs = MatchPairs(ripples{1}(:,2),ripples{2}(:,2),'error',0.01); % within 10 ms
-		% Ripples on LFP 1 only
-		only1 = isnan(ripplePairs(:,2));
-		% Ripples on LFP 2 only
-		only2 = isnan(ripplePairs(:,1));
-		% Ripples on both electrodes
-		both = ~only1 & ~only2;
-		% Peak time on LFP 1 when there are ripples on both electrodes
-		ripplePairTimes = ripplePairs(both,1);
-		% For each ripple on LFP 1, whether there are ripples on both electrodes
-		ripplesOn1AlsoOn2 = ~isnan(ripplePairs(~only2,2));
-		% For each ripple on LFP 2, whether there are ripples on both electrodes
-		ripplesOn2AlsoOn1 = ~isnan(ripplePairs(~only1,1));
-		% For each ripple on LFP 1, whether there are no ripples on LFP 2
-		ripplesOn1NotOn2 = isnan(ripplePairs(~only2,2));
-		% For each ripple on LFP 2, whether there are no ripples on LFP 1
-		ripplesOn2NotOn1 = isnan(ripplePairs(~only1,1));
-
-%  		% Compute phase shift map
-%  		size(maps{1}.phase)
-%  		[p1,i1] = Sync(maps{1}.phase,ripplePairTimes,'durations',durations);
-%  		[p2,i2] = Sync(maps{2}.phase,ripplePairTimes,'durations',durations);
-%  		shift(:,1) = p1(:,1);
-%  		shift(:,2) = p1(:,2)-p2(:,2);
-%  		phaseShiftMap = SyncMap(shift,i1,'durations',durations,'nbins',nBins,'smooth',0);
-%  		phaseShiftMap(phaseShiftMap<-pi) = phaseShiftMap(phaseShiftMap<-pi) + 2*pi;
-%  		phaseShiftMap(phaseShiftMap>pi) = phaseShiftMap(phaseShiftMap>pi) - 2*pi;
-%
-%  		% Determine average phase shift using center bins
-%  		meanCenterPhaseShift = mean(phaseShiftMap(:,centerBins),2);
-%  		[unused,order] = sortrows(meanCenterPhaseShift);
-
-		% Plot phase difference, frequency and amplitude (1 vs 2)
-		f = figure;set(f,'name','Pairwise Stats');
-
-%  		subplot(2,2,1);PlotColorMap(phaseShiftMap,1,'bar','on','type','circular');xlabel('Phase Shift');
-%  		hold on;plot([1 1]*size(phaseShiftMap,2)/2,ylim,'w');
-%
-%  		subplot(2,2,2);PlotColorMap(phaseShiftMap(order,:),1,'bar','on','type','circular');xlabel('Phase Shift');
-%  		hold on;plot([1 1]*size(phaseShiftMap,2)/2,ylim,'w');
-
-		subplot(2,3,4);a = gca;
-		[rho,p] = corrcoef(data{1}.peakFrequency(ripplesOn1AlsoOn2),data{2}.peakFrequency(ripplesOn2AlsoOn1));
-		PlotDistribution2(data{1}.peakFrequency(ripplesOn1AlsoOn2),data{2}.peakFrequency(ripplesOn2AlsoOn1),'nbins',1000,'smooth',50);
-		axes(a);xlabel(['r=' num2str(rho(1,2)) ' p=' num2str(p(1,2))]);ylabel('Frequency (1 vs 2)');
-
-		subplot(2,3,5);a = gca;
-		[rho,p] = corrcoef(data{1}.peakAmplitude(ripplesOn1AlsoOn2),data{2}.peakAmplitude(ripplesOn2AlsoOn1));
-		PlotDistribution2(data{1}.peakAmplitude(ripplesOn1AlsoOn2),data{2}.peakAmplitude(ripplesOn2AlsoOn1),'nbins',1000,'smooth',50);
-		axes(a);xlabel(['r=' num2str(rho(1,2)) ' p=' num2str(p(1,2))]);ylabel('Amplitude (1 vs 2)');
-
-		subplot(2,3,6);a = gca;
-		rippleDurations1 = data{1}.duration(ripplesOn1AlsoOn2);
-		rippleDurations2 = data{2}.duration(ripplesOn2AlsoOn1);
-		discard = rippleDurations1>0.05|rippleDurations2>0.05;
-		rippleDurations1 = rippleDurations1(~discard);
-		rippleDurations2 = rippleDurations2(~discard);
-		[rho,p] = corrcoef(rippleDurations1,rippleDurations2);
-		PlotDistribution2(rippleDurations1,rippleDurations2,'nbins',1000,'smooth',50);
-		axes(a);xlabel(['r=' num2str(rho(1,2)) ' p=' num2str(p(1,2))]);ylabel('Duration (1 vs 2)');
-		% Plot info for unilateral vs bilateral ripples
-		f = figure;set(f,'name','Unilateral vs Bilateral Stats');
-
-		subplot(2,2,1);
-		S_boxplot([data{1}.peakFrequency(ripplesOn1NotOn2);data{1}.peakFrequency(ripplesOn1AlsoOn2);data{2}.peakFrequency(ripplesOn2NotOn1);data{2}.peakFrequency(ripplesOn2AlsoOn1)],[ones(sum(ripplesOn1NotOn2),1);2*ones(sum(ripplesOn1AlsoOn2),1);3*ones(sum(ripplesOn2NotOn1),1);4*ones(sum(ripplesOn2AlsoOn1),1)]);
-		p1 = S_ranksum(data{1}.peakFrequency(ripplesOn1NotOn2),data{1}.peakFrequency(ripplesOn1AlsoOn2));
-		p2 = S_ranksum(data{2}.peakFrequency(ripplesOn2NotOn1),data{2}.peakFrequency(ripplesOn2AlsoOn1));
-		xlabel(['p=' num2str(p1) ' N=' num2str(sum(ripplesOn1NotOn2)) ',' num2str(sum(ripplesOn1AlsoOn2)) ' p=' num2str(p2) ' N=' num2str(sum(ripplesOn2NotOn1)) ',' num2str(sum(ripplesOn2AlsoOn1))]);
-		ylabel('Frequency (1-2,1+2,2-1,2+1)');
-
-		subplot(2,2,2);
-		S_boxplot([data{1}.peakAmplitude(ripplesOn1NotOn2);data{1}.peakAmplitude(ripplesOn1AlsoOn2);data{2}.peakAmplitude(ripplesOn2NotOn1);data{2}.peakAmplitude(ripplesOn2AlsoOn1)],[ones(sum(ripplesOn1NotOn2),1);2*ones(sum(ripplesOn1AlsoOn2),1);3*ones(sum(ripplesOn2NotOn1),1);4*ones(sum(ripplesOn2AlsoOn1),1)]);
-		p1 = S_ranksum(data{1}.peakAmplitude(ripplesOn1NotOn2),data{1}.peakAmplitude(ripplesOn1AlsoOn2));
-		p2 = S_ranksum(data{2}.peakAmplitude(ripplesOn2NotOn1),data{2}.peakAmplitude(ripplesOn2AlsoOn1));
-		xlabel(['p=' num2str(p1) ' N=' num2str(sum(ripplesOn1NotOn2)) ',' num2str(sum(ripplesOn1AlsoOn2)) ' p=' num2str(p2) ' N=' num2str(sum(ripplesOn2NotOn1)) ',' num2str(sum(ripplesOn2AlsoOn1))]);
-		ylabel('Amplitude (1-2,1+2,2-1,2+1)');
-
-		subplot(2,2,3);
-		S_boxplot([data{1}.duration(ripplesOn1NotOn2);data{1}.duration(ripplesOn1AlsoOn2);data{2}.duration(ripplesOn2NotOn1);data{2}.duration(ripplesOn2AlsoOn1)],[ones(sum(ripplesOn1NotOn2),1);2*ones(sum(ripplesOn1AlsoOn2),1);3*ones(sum(ripplesOn2NotOn1),1);4*ones(sum(ripplesOn2AlsoOn1),1)]);
-		p1 = S_ranksum(data{1}.duration(ripplesOn1NotOn2),data{1}.duration(ripplesOn1AlsoOn2));
-		p2 = S_ranksum(data{2}.duration(ripplesOn2NotOn1),data{2}.duration(ripplesOn2AlsoOn1));
-		xlabel(['p=' num2str(p1) ' N=' num2str(sum(ripplesOn1NotOn2)) ',' num2str(sum(ripplesOn1AlsoOn2)) ' p=' num2str(p2) ' N=' num2str(sum(ripplesOn2NotOn1)) ',' num2str(sum(ripplesOn2AlsoOn1))]);
-		ylabel('Duration (1-2,1+2,2-1,2+1)');
-end
+% deal with this later...
+% if nElectrodes == 2,
+% 
+% 		% Match ripple pairs
+% 		ripplePairs = MatchPairs(ripples{1}(:,2),ripples{2}(:,2),'error',0.01); % within 10 ms
+% 		% Ripples on LFP 1 only
+% 		only1 = isnan(ripplePairs(:,2));
+% 		% Ripples on LFP 2 only
+% 		only2 = isnan(ripplePairs(:,1));
+% 		% Ripples on both electrodes
+% 		both = ~only1 & ~only2;
+% 		% Peak time on LFP 1 when there are ripples on both electrodes
+% 		ripplePairTimes = ripplePairs(both,1);
+% 		% For each ripple on LFP 1, whether there are ripples on both electrodes
+% 		ripplesOn1AlsoOn2 = ~isnan(ripplePairs(~only2,2));
+% 		% For each ripple on LFP 2, whether there are ripples on both electrodes
+% 		ripplesOn2AlsoOn1 = ~isnan(ripplePairs(~only1,1));
+% 		% For each ripple on LFP 1, whether there are no ripples on LFP 2
+% 		ripplesOn1NotOn2 = isnan(ripplePairs(~only2,2));
+% 		% For each ripple on LFP 2, whether there are no ripples on LFP 1
+% 		ripplesOn2NotOn1 = isnan(ripplePairs(~only1,1));
+% 
+% %  		% Compute phase shift map
+% %  		size(maps{1}.phase)
+% %  		[p1,i1] = Sync(maps{1}.phase,ripplePairTimes,'durations',durations);
+% %  		[p2,i2] = Sync(maps{2}.phase,ripplePairTimes,'durations',durations);
+% %  		shift(:,1) = p1(:,1);
+% %  		shift(:,2) = p1(:,2)-p2(:,2);
+% %  		phaseShiftMap = SyncMap(shift,i1,'durations',durations,'nbins',nBins,'smooth',0);
+% %  		phaseShiftMap(phaseShiftMap<-pi) = phaseShiftMap(phaseShiftMap<-pi) + 2*pi;
+% %  		phaseShiftMap(phaseShiftMap>pi) = phaseShiftMap(phaseShiftMap>pi) - 2*pi;
+% %
+% %  		% Determine average phase shift using center bins
+% %  		meanCenterPhaseShift = mean(phaseShiftMap(:,centerBins),2);
+% %  		[unused,order] = sortrows(meanCenterPhaseShift);
+% 
+% 		% Plot phase difference, frequency and amplitude (1 vs 2)
+% 		f = figure;set(f,'name','Pairwise Stats');
+% 
+% %  		subplot(2,2,1);PlotColorMap(phaseShiftMap,1,'bar','on','type','circular');xlabel('Phase Shift');
+% %  		hold on;plot([1 1]*size(phaseShiftMap,2)/2,ylim,'w');
+% %
+% %  		subplot(2,2,2);PlotColorMap(phaseShiftMap(order,:),1,'bar','on','type','circular');xlabel('Phase Shift');
+% %  		hold on;plot([1 1]*size(phaseShiftMap,2)/2,ylim,'w');
+% 
+% 		subplot(2,3,4);a = gca;
+% 		[rho,p] = corrcoef(data{1}.peakFrequency(ripplesOn1AlsoOn2),data{2}.peakFrequency(ripplesOn2AlsoOn1));
+% 		PlotDistribution2(data{1}.peakFrequency(ripplesOn1AlsoOn2),data{2}.peakFrequency(ripplesOn2AlsoOn1),'nbins',1000,'smooth',50);
+% 		axes(a);xlabel(['r=' num2str(rho(1,2)) ' p=' num2str(p(1,2))]);ylabel('Frequency (1 vs 2)');
+% 
+% 		subplot(2,3,5);a = gca;
+% 		[rho,p] = corrcoef(data{1}.peakAmplitude(ripplesOn1AlsoOn2),data{2}.peakAmplitude(ripplesOn2AlsoOn1));
+% 		PlotDistribution2(data{1}.peakAmplitude(ripplesOn1AlsoOn2),data{2}.peakAmplitude(ripplesOn2AlsoOn1),'nbins',1000,'smooth',50);
+% 		axes(a);xlabel(['r=' num2str(rho(1,2)) ' p=' num2str(p(1,2))]);ylabel('Amplitude (1 vs 2)');
+% 
+% 		subplot(2,3,6);a = gca;
+% 		rippleDurations1 = data{1}.duration(ripplesOn1AlsoOn2);
+% 		rippleDurations2 = data{2}.duration(ripplesOn2AlsoOn1);
+% 		discard = rippleDurations1>0.05|rippleDurations2>0.05;
+% 		rippleDurations1 = rippleDurations1(~discard);
+% 		rippleDurations2 = rippleDurations2(~discard);
+% 		[rho,p] = corrcoef(rippleDurations1,rippleDurations2);
+% 		PlotDistribution2(rippleDurations1,rippleDurations2,'nbins',1000,'smooth',50);
+% 		axes(a);xlabel(['r=' num2str(rho(1,2)) ' p=' num2str(p(1,2))]);ylabel('Duration (1 vs 2)');
+% 		% Plot info for unilateral vs bilateral ripples
+% 		f = figure;set(f,'name','Unilateral vs Bilateral Stats');
+% 
+% 		subplot(2,2,1);
+% 		S_boxplot([data{1}.peakFrequency(ripplesOn1NotOn2);data{1}.peakFrequency(ripplesOn1AlsoOn2);data{2}.peakFrequency(ripplesOn2NotOn1);data{2}.peakFrequency(ripplesOn2AlsoOn1)],[ones(sum(ripplesOn1NotOn2),1);2*ones(sum(ripplesOn1AlsoOn2),1);3*ones(sum(ripplesOn2NotOn1),1);4*ones(sum(ripplesOn2AlsoOn1),1)]);
+% 		p1 = S_ranksum(data{1}.peakFrequency(ripplesOn1NotOn2),data{1}.peakFrequency(ripplesOn1AlsoOn2));
+% 		p2 = S_ranksum(data{2}.peakFrequency(ripplesOn2NotOn1),data{2}.peakFrequency(ripplesOn2AlsoOn1));
+% 		xlabel(['p=' num2str(p1) ' N=' num2str(sum(ripplesOn1NotOn2)) ',' num2str(sum(ripplesOn1AlsoOn2)) ' p=' num2str(p2) ' N=' num2str(sum(ripplesOn2NotOn1)) ',' num2str(sum(ripplesOn2AlsoOn1))]);
+% 		ylabel('Frequency (1-2,1+2,2-1,2+1)');
+% 
+% 		subplot(2,2,2);
+% 		S_boxplot([data{1}.peakAmplitude(ripplesOn1NotOn2);data{1}.peakAmplitude(ripplesOn1AlsoOn2);data{2}.peakAmplitude(ripplesOn2NotOn1);data{2}.peakAmplitude(ripplesOn2AlsoOn1)],[ones(sum(ripplesOn1NotOn2),1);2*ones(sum(ripplesOn1AlsoOn2),1);3*ones(sum(ripplesOn2NotOn1),1);4*ones(sum(ripplesOn2AlsoOn1),1)]);
+% 		p1 = S_ranksum(data{1}.peakAmplitude(ripplesOn1NotOn2),data{1}.peakAmplitude(ripplesOn1AlsoOn2));
+% 		p2 = S_ranksum(data{2}.peakAmplitude(ripplesOn2NotOn1),data{2}.peakAmplitude(ripplesOn2AlsoOn1));
+% 		xlabel(['p=' num2str(p1) ' N=' num2str(sum(ripplesOn1NotOn2)) ',' num2str(sum(ripplesOn1AlsoOn2)) ' p=' num2str(p2) ' N=' num2str(sum(ripplesOn2NotOn1)) ',' num2str(sum(ripplesOn2AlsoOn1))]);
+% 		ylabel('Amplitude (1-2,1+2,2-1,2+1)');
+% 
+% 		subplot(2,2,3);
+% 		S_boxplot([data{1}.duration(ripplesOn1NotOn2);data{1}.duration(ripplesOn1AlsoOn2);data{2}.duration(ripplesOn2NotOn1);data{2}.duration(ripplesOn2AlsoOn1)],[ones(sum(ripplesOn1NotOn2),1);2*ones(sum(ripplesOn1AlsoOn2),1);3*ones(sum(ripplesOn2NotOn1),1);4*ones(sum(ripplesOn2AlsoOn1),1)]);
+% 		p1 = S_ranksum(data{1}.duration(ripplesOn1NotOn2),data{1}.duration(ripplesOn1AlsoOn2));
+% 		p2 = S_ranksum(data{2}.duration(ripplesOn2NotOn1),data{2}.duration(ripplesOn2AlsoOn1));
+% 		xlabel(['p=' num2str(p1) ' N=' num2str(sum(ripplesOn1NotOn2)) ',' num2str(sum(ripplesOn1AlsoOn2)) ' p=' num2str(p2) ' N=' num2str(sum(ripplesOn2NotOn1)) ',' num2str(sum(ripplesOn2AlsoOn1))]);
+% 		ylabel('Duration (1-2,1+2,2-1,2+1)');
+% end

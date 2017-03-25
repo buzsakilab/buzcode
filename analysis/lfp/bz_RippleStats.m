@@ -33,6 +33,7 @@ function [maps,data,stats] = bz_RippleStats(filtered,timestamps,ripples,varargin
 %    stats.acg.data             autocorrelogram data
 %    stats.acg.t                autocorrelogram time bins
 
+% edited by David Tingley to fit buzcode formatting standards, 2017
 
 % Default values
 samplingRate = 1250;
@@ -79,7 +80,7 @@ phase = angle(h);
 amplitude = abs(h);
 unwrapped = unwrap(phase);
 % Compute instantaneous frequency
-frequency = Diff(unwrapped,'smooth',0);
+frequency = bz_Diff(unwrapped,timestamps,'smooth',0);
 frequency = frequency/(2*pi);
 
 % Compute ripple map
@@ -103,7 +104,7 @@ data.peakFrequency = maps.frequency(:,centerBin);
 data.peakAmplitude = maps.amplitude(:,centerBin);
 
 % Ripple durations
-data.duration = abs(diff(ripples.times'));
+data.duration = abs(diff(ripples.times'))';
 
 % Autocorrelogram and correlations
 %  if nargin > 2,

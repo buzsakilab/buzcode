@@ -52,7 +52,7 @@ function PlotColorMap(data,dimm,varargin)
 % (at your option) any later version.
 
 % Default values
-newfig='on';
+newfig='off';
 cutoffs = [];
 hgamma = 1;
 gamma = 1;
