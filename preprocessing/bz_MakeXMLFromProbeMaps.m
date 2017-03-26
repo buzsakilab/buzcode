@@ -1,13 +1,13 @@
-function MakeXMLFromProbeMaps(basepath,varargin)
+function bz_MakeXMLFromProbeMaps(basepath,basename,probemaplist,plugorder)
 %MakeXMLFromProbeMaps - Generate a .xml file to accompany .dat files for a
 %recording in the neuroscope/klusters/ndmanager system.  Uses a library of
 %probe map layouts.
 %
 %  USAGE
 %
-%    MakeXMLFromProbeMaps(basepath,ProbeFileName1,ProbeFileName2...)
+%    MakeXMLFromProbeMaps(basepath,basename,ProbeFileName1,ProbeFileName2...)
 %       Example:
-%    MakeXMLFromProbeMaps(cd,'NRX_Buzsaki64_8X8','NRX_Buzsaki64_6X10');
+%    MakeXMLFromProbeMaps(cd,'','NRX_Buzsaki64_8X8','NRX_Buzsaki64_6X10');
 %
 %    Writes a standardized .xml file based on a user-selection of probe
 %    maps and in a sequence specified by the user (ie 64site probe first
@@ -16,18 +16,22 @@ function MakeXMLFromProbeMaps(basepath,varargin)
 %
 %  INPUT
 %
-%    basepath       path to directory to which to write output xml file and
-%                   where to potentially find .rhd file 
-%    ProbeFileNames names of .xlsx files specifying probe geometries, must 
-%                   be on the path, ie from
-%                   buzcode/GeneralComputation/Geometries).
-%                   Must have the following format features:
-%                       - A column with row 1 having text "BY VERTICAL POSITION/SHANK (IE FOR DISPLAY)".
-%                       In this row must be cells specifying SHANK 1, 
-%                       SHANK 2, etc.  
-%                       - Two rows right of that a column with channel
-%                       numbers listed from superficial to deep in the
-%                       shank group specified two to the left.
+%    basepath       Path to directory to which to write output xml file and
+%                   where to potentially find .rhd file. Default is path to
+%                   the current directory.
+%
+%    basename       Shared name for this file and all others for this
+%                   recording.  Default will the name of the basepath.
+%
+%    probemaplist   CharacterCell of names of .xlsx files specifying probe 
+%                   geometries, must be on the path, ie from
+%                   buzcode/GeneralComputation/Geometries).  See
+%                   bz_ReadProbeMapFiles.m for more details
+%
+%    plugorder      Index/ordering of probemaplists to build into the
+%                   xml... so if plugorder = [2 1] then the second listed 
+%                   probe is put first, and the first named is added to the
+%                   xml later
 %
 %  OUTPUT
 %
@@ -53,6 +57,31 @@ lfpsamprate = 1250;
 pointsperwaveform = 32;
 peakpointinwaveform = 16;
 numfeatures = 4;
+
+%% Variable parsing
+if ~exist('basepath','var')
+    basepath = cd;
+elseif isempty(basepath)
+    basepath = cd;
+end
+if ~exist('basename','var')
+    [~,basename] = fileparts(basepath);
+elseif isempty(basename)
+    [~,basename] = fileparts(basepath);
+end
+
+if ~exist('probemaplist','var') %make gui
+    % mapfolder = fileparts(which 'NRX_Buzsaki64_8X8.xlsx');
+    probemaplist = [];
+end
+
+if ~exist('plugorder','var') %make gui
+    % mapfolder = fileparts(which 'NRX_Buzsaki64_8X8.xlsx');
+    plugorder = 1:length(probemaplist);
+end
+
+probemaplist = probemaplist(plugorder);%re-sequence map list based on plugging
+
 
 %% Define text components to assemble later
 chunk1 = {'<?xml version=''1.0''?>';...
@@ -139,9 +168,7 @@ chunk5 = {   '</channels>';...
  '</neuroscope>';...
 '</parameters>'};
 
-lineend = '\n';
-
-% % basic scaffolding
+% % basic scaffolding examample for 1 channel probe
 % thischan = 0;
 % s = chunk1;
 %     s = cat(1,s,anatomygroupstart);
@@ -154,52 +181,52 @@ lineend = '\n';
 % s = cat(1,s, chunk3);
 
 %% Gather probe maps
-if ~isempty(varargin)
-    probemaplist = varargin;
-else %make gui
-    % mapfolder = fileparts(which 'NRX_Buzsaki64_8X8.xlsx');
-    probemaplist = [];
+[groupchans_byprobe,~,NumChansPerProbe] = bz_ReadProbeMapFiles(probemaplist);
+offsets = cat(2,0,cumsum(NumChansPerProbe));
+for pidx = 2:size(groupchans_byprobe,1);%add to channel numbers to acount for previous probes
+    for gidx = 1:size(groupchans_byprobe,2)
+        groupchans_byprobe{pidx,gidx} = groupchans_byprobe{pidx,gidx}+offsets(pidx);
+    end
 end
-
-grouplist_all = [];
-groupchans_all = [];
-channelcountoffset = 0;
-for pmidx = 1:size(probemaplist,2)
-    tpf = probemaplist{pmidx};
-    if ~strcmp(probemaplist{pmidx}(end-4:end),'.xlsx')
-        tpf = strcat(tpf,'.xlsx');
-    end
-    tpp = which(tpf);
-    [tpnum,tptxt,tpraw] = xlsread(tpp);
-    
-    %find groups
-    groupcolumn = strmatch('BY VERTI',tptxt(1,:));
-    groupdenoterows = strmatch('SHANK ',tptxt(:,groupcolumn));
-    groupperchannel = [];
-    for ridx = 1:length(groupdenoterows);
-       groupperchannel = cat(1,groupperchannel,str2num(tptxt{groupdenoterows(ridx),groupcolumn}(7:end))); 
-    end
-    grouplist_byprobe{pmidx} = unique(groupperchannel);
-    grouplist_all = cat(1,grouplist_all,unique(groupperchannel));
-    
-    %find channels
-    channelcolumn = groupcolumn+2;%may definitely to change this
-%     groupcolumn = strmatch('Neuroscope channel',tptxt(1,:));
-    tc = tpraw(groupdenoterows,channelcolumn);
-    for cidx = 1:length(tc)
-        channelnums(cidx,1) = tc{cidx};
-    end
-    
-    %for each group, find the channels in it, save in sequence
-    for gidx = 1:length(grouplist_byprobe{pmidx})
-       tgidx = groupperchannel==grouplist_byprobe{pmidx}(gidx);%find rows whith this group/shank denotation 
-       groupchans_byprobe{pmidx,gidx} = channelnums(tgidx)+channelcountoffset;
-       groupchans_all = cat(1,groupchans_all,channelnums(tgidx))+channelcountoffset; 
-    end
-    numchansthisprobe = length(channelnums);
-    channelcountoffset = numchansthisprobe;
-    numchans = length(groupchans_all);
-end
+% grouplist_all = [];
+% groupchans_all = [];
+% channelcountoffset = 0;
+% for pmidx = 1:size(probemaplist,2)
+%     tpf = probemaplist{pmidx};
+%     if ~strcmp(probemaplist{pmidx}(end-4:end),'.xlsx')
+%         tpf = strcat(tpf,'.xlsx');
+%     end
+%     tpp = which(tpf);
+%     [tpnum,tptxt,tpraw] = xlsread(tpp);
+%     
+%     %find groups
+%     groupcolumn = strmatch('BY VERTI',tptxt(1,:));
+%     groupdenoterows = strmatch('SHANK ',tptxt(:,groupcolumn));
+%     groupperchannel = [];
+%     for ridx = 1:length(groupdenoterows);
+%        groupperchannel = cat(1,groupperchannel,str2num(tptxt{groupdenoterows(ridx),groupcolumn}(7:end))); 
+%     end
+%     grouplist_byprobe{pmidx} = unique(groupperchannel);
+%     grouplist_all = cat(1,grouplist_all,unique(groupperchannel));
+%     
+%     %find channels
+%     channelcolumn = groupcolumn+2;%may definitely to change this
+% %     groupcolumn = strmatch('Neuroscope channel',tptxt(1,:));
+%     tc = tpraw(groupdenoterows,channelcolumn);
+%     for cidx = 1:length(tc)
+%         channelnums(cidx,1) = tc{cidx};
+%     end
+%     
+%     %for each group, find the channels in it, save in sequence
+%     for gidx = 1:length(grouplist_byprobe{pmidx})
+%        tgidx = groupperchannel==grouplist_byprobe{pmidx}(gidx);%find rows whith this group/shank denotation 
+%        groupchans_byprobe{pmidx,gidx} = channelnums(tgidx)+channelcountoffset;
+%        groupchans_all = cat(1,groupchans_all,channelnums(tgidx))+channelcountoffset; 
+%     end
+%     numchansthisprobe = length(channelnums);
+%     channelcountoffset = numchansthisprobe;
+%     numchans = length(groupchans_all);
+% end
 
 if isempty(probemaplist)
     groupchans_byprobe{1,1} = [0:numchans-1];
@@ -208,7 +235,7 @@ end
 %% Make basic text 
 s = chunk1;
 
-s = cat(1,s,[channelcountlinestart, num2str(length(groupchans_all)) channelcountlineend]);
+s = cat(1,s,[channelcountlinestart, num2str(sum(NumChansPerProbe)) channelcountlineend]);
 
 s = cat(1,s,chunk2);
 
@@ -216,13 +243,15 @@ s = cat(1,s,chunk2);
 
 for pidx = 1:size(groupchans_byprobe,1)%for each probe
     for gidx = 1:size(groupchans_byprobe,2)%for each spike group
-        s = cat(1,s,anatomygroupstart);
-        tchanlist = groupchans_byprobe{pidx,gidx};
-        for chidx = 1:length(tchanlist)
-            thischan = tchanlist(chidx);
-            s = cat(1,s,[anatomychannelnumberline_start, num2str(thischan) anatomychannelnumberline_end]);
+        if ~isempty(groupchans_byprobe{pidx,gidx})
+            s = cat(1,s,anatomygroupstart);
+            tchanlist = groupchans_byprobe{pidx,gidx};
+            for chidx = 1:length(tchanlist)
+                thischan = tchanlist(chidx);
+                s = cat(1,s,[anatomychannelnumberline_start, num2str(thischan) anatomychannelnumberline_end]);
+            end
+            s = cat(1,s,anatomygroupend);
         end
-        s = cat(1,s,anatomygroupend);
     end
 end
 
@@ -230,13 +259,15 @@ s = cat(1,s,chunk3);
 
 for pidx = 1:size(groupchans_byprobe,1)%for each probe
     for gidx = 1:size(groupchans_byprobe,2)%for each spike group
-        s = cat(1,s,spikegroupstart);
-        tchanlist = groupchans_byprobe{pidx,gidx};
-        for chidx = 1:length(tchanlist)
-            thischan = tchanlist(chidx);
-            s = cat(1,s,[spikechannelnumberline_start, num2str(thischan) spikechannelnumberline_end]);
+        if ~isempty(groupchans_byprobe{pidx,gidx})
+            s = cat(1,s,spikegroupstart);
+            tchanlist = groupchans_byprobe{pidx,gidx};
+            for chidx = 1:length(tchanlist)
+                thischan = tchanlist(chidx);
+                s = cat(1,s,[spikechannelnumberline_start, num2str(thischan) spikechannelnumberline_end]);
+            end
+            s = cat(1,s,spikegroupend);
         end
-        s = cat(1,s,spikegroupend);
     end
 end
 
@@ -244,15 +275,17 @@ s = cat(1,s, chunk4);
 
 for pidx = 1:size(groupchans_byprobe,1)%for each probe
     for gidx = 1:size(groupchans_byprobe,2)%for each spike group
-        tchanlist = groupchans_byprobe{pidx,gidx};
-        for chidx = 1:length(tchanlist)
-            thischan = tchanlist(chidx);
-            s = cat(1,s,channelcolorstart);
-            s = cat(1,s,[channelcolorlinestart, num2str(thischan) channelcolorlineend]);
-            s = cat(1,s,channelcolorend);
-            s = cat(1,s,channeloffsetstart);
-            s = cat(1,s,[channeloffsetlinestart, num2str(thischan) channeloffsetlineend]);
-            s = cat(1,s,channeloffsetend);
+        if ~isempty(groupchans_byprobe{pidx,gidx})
+            tchanlist = groupchans_byprobe{pidx,gidx};
+            for chidx = 1:length(tchanlist)
+                thischan = tchanlist(chidx);
+                s = cat(1,s,channelcolorstart);
+                s = cat(1,s,[channelcolorlinestart, num2str(thischan) channelcolorlineend]);
+                s = cat(1,s,channelcolorend);
+                s = cat(1,s,channeloffsetstart);
+                s = cat(1,s,[channeloffsetlinestart, num2str(thischan) channeloffsetlineend]);
+                s = cat(1,s,channeloffsetend);
+            end
         end
     end
 end
@@ -261,7 +294,7 @@ s = cat(1,s, chunk5);
 
 
 %% Output
-charcelltotext(s,'name.xml')
+charcelltotext(s,fullfile(basepath,[basename '.xml']));
 
 
 function charcelltotext(charcell,filename)
