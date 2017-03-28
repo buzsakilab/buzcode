@@ -186,6 +186,6 @@ colormap(Bright(100,'hgamma',hgamma,'type',type));
 
 if strcmp(drawBar,'on'),
 	b = colorbar('vert');
-	set(b,'xtick',[],'tickdir','out','box','off','ycolor','k');
+% 	set(b,'xtick',[],'tickdir','out','box','off','ycolor','k');
 	set(gcf,'currentaxes',gca);
 end

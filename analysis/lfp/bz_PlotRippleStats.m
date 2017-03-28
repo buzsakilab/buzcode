@@ -1,15 +1,14 @@
-function bz_PlotRippleStats(r,m,d,s,varargin)
+function bz_PlotRippleStats(maps,data,stats,varargin)
 
 %bz_PlotRippleStats - Plot descriptive stats for ripples (100~200Hz oscillations).
 %
 %  USAGE
 %
-%    bz_PlotRippleStats(ripples,maps,data,stats,<options>)
+%    bz_PlotRippleStats(maps,data,stats,<options>)
 %
 %    Use the ouputs of <a href="matlab:help RippleStats">RippleStats</a> as input parameters. Using cell arrays of
 %    repeated measures will yield pairwise statistics.
 %
-%    ripples        ripple timing info (provided by <a href="matlab:help FindRipples">FindRipples</a>)
 %    maps           ripple instantaneous amplitude, frequency, and phase maps
 %    data           frequency and amplitude at peak, durations
 %    stats          autocorrelogram and correlations
@@ -65,16 +64,14 @@ for i = 1:2:length(varargin),
 	end
 end
 
-if isa(m,'cell'),
-	ripples = r;
-	maps = m;
-	data = d;
-	stats = s;
-else
-	ripples{1} = r;
-	maps{1} = m;
-	data{1} = d;
-	stats{1} = s;
+if isa(maps,'cell')
+else % remove the completetely, eventually...
+	m{1} = maps;
+	d{1} = data;
+	s{1} = stats;
+    maps = m;
+    data = d;
+    stats = s;
 end
 nElectrodes = length(maps);
 
@@ -87,25 +84,22 @@ centerBins = centerBin-nHalfCenterBins:centerBin+nHalfCenterBins;
 
 % Stats for individual electrodes
 
-for electrode = 1:nElectrodes,
+for electrode = 1:nElectrodes
 
 	% Unsorted color plots
 	f = figure;
 	set(f,'name',['Ripples (unsorted) - ' int2str(electrode)]);
 	dx = diff(durations);
 	x = durations(1):dx/size(maps{electrode}.ripples,2):durations(2);
-	subplot(2,2,1);PlotColorMap(maps{electrode}.ripples,1,'bar','on','cutoffs',[-1000 1000],'x',x);xlabel('Ripples');
-	subplot(2,2,2);PlotColorMap(maps{electrode}.phase,1,'bar','on','type','circular','x',x);xlabel('Ripple Phase');
-	subplot(2,2,3);PlotColorMap(maps{electrode}.frequency,1,'bar','on','cutoffs',[100 250],'x',x);xlabel('Ripple Frequency');
-	subplot(2,2,4);PlotColorMap(maps{electrode}.amplitude,1,'bar','on','x',x);xlabel('Ripple Amplitude'); %,'cutoffs',[0 3500]
-
-	% Sorted color plots (sort by ripple frequency)
-	%  f = figure;
-	%  set(f,'name',['Ripples (sorted by frequency) - ' int2str(electrode)]);
-	%  subplot(2,2,1);PlotColorMap(maps.ripples{electrode}(order,:),1,'bar','on');xlabel('Ripples');
-	%  subplot(2,2,2);PlotColorMap(maps.phase{electrode}(order,:),1,'bar','on','type','circular');xlabel('Ripple Phase');
-	%  subplot(2,2,3);PlotColorMap(maps.frequency{electrode}(order,:),1,'bar','on','cutoffs',[100 250]);xlabel('Ripple Frequency');
-	%  subplot(2,2,4);PlotColorMap(maps.amplitude{electrode}(order,:),1,'bar','on','cutoffs',[0 3500]);xlabel('Ripple Amplitude');
+	subplot(2,2,1);PlotColorMap(maps{electrode}.ripples,1,'bar','on',...
+        'cutoffs',[min(maps{electrode}.ripples(:)) max(maps{electrode}.ripples(:))],...
+        'x',x);xlabel('Ripples');
+	subplot(2,2,2);PlotColorMap(maps{electrode}.phase,1,'bar','on','type',...
+        'circular','x',x);xlabel('Ripple Phase');
+	subplot(2,2,3);PlotColorMap(maps{electrode}.frequency,1,'bar','on',...
+        'cutoffs',[100 250],'x',x);xlabel('Ripple Frequency');
+	subplot(2,2,4);PlotColorMap(maps{electrode}.amplitude,1,'bar','on',...
+        'x',x);xlabel('Ripple Amplitude'); 
 
 	% Ripples stats: ripples, peak frequency vs amplitude, autocorrelogram, peak frequency vs duration, peak amplitude vs duration
 	f = figure;set(f,'name',['Ripple Stats - ' int2str(electrode)]);

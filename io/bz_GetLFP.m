@@ -1,4 +1,4 @@
-function [lfp] = bz_GetLFP(channels,varargin)
+function [lfp] = bz_GetLFP(varargin)
 %GetLFP - Get local field potentials.
 %
 %  Load local field potentials from disk. No longer dependent on
@@ -14,6 +14,7 @@ function [lfp] = bz_GetLFP(channels,varargin)
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
+%     'fbasename'   base file name to load
 %     'restrict'    list of time intervals to read from the LFP file
 %     'intervals'   same as 'restrict' (for backwards compatibility)
 %    =========================================================================
@@ -55,53 +56,48 @@ function [lfp] = bz_GetLFP(channels,varargin)
 
 global DATA;
 if isempty(DATA)
-	warning('No session defined, so we look for a *lfp file...')
-    try
+   p = inputParser;
+   addRequired(p,'channels',@isnumeric)
+   
+   addParameter(p,'fbasename','',@isstr)
+   addParameter(p,'restrict',[0 Inf],@isnumeric)
+   addParameter(p,'intervals',[0 Inf],@isnumeric)
+   
+   parse(p,varargin{:})
+   fbasename = p.Results.fbasename;
+   channels = p.Results.channels;
+   % backwards compatible with FMAT
+   if sum(p.Results.restrict ~= [0 inf]) > 0
+       intervals = p.Results.restrict;
+   else
+       intervals = p.Results.intervals;
+   end
+   
+   if isempty(fbasename)
+       warning('No session defined, so we look for a *lfp file...')
        d = dir('*lfp');
        if length(d) > 1 % we assume one .lfp file or this should break
-          error('there is more than one .lfp file in this directory?');
+           error('there is more than one .lfp file in this directory?');
        end
-       lfpFile = d.name; 
-       xml = LoadParameters;
-       basename = split(lfpFile,'.');
-       basename = basename{1};
-       path = pwd;
-       nChannels = xml.nChannels;
-       samplingRate = xml.lfpSampleRate;
-    catch
-        
-    end
+       lfp.Filename = d.name;
+       fbasename = strsplit(lfp.Filename,'.');
+       fbasename = fbasename{1};
+   end
+   xml = LoadParameters([fbasename '.xml']);
+   path = pwd;
+   nChannels = xml.nChannels;
+   samplingRate = xml.lfpSampleRate;
+
 else  % backwards compatible with FMAT setcurrentsession
-    basename = DATA.session.basename;
+   fbasename = DATA.session.basename;
     path = DATA.session.path;
     nChannels = DATA.nChannels;
     samplingRate = DATA.rates.lfp;
 end
 
-% Default values
-intervals = [0 Inf];
-
-if nargin < 1 | mod(length(varargin),2) ~= 0
-  error('Incorrect number of parameters (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).');
-end
-
-% Parse parameter list
-for i = 1:2:length(varargin)
-  if ~ischar(varargin{i})
-    error(['Parameter ' num2str(i+1) ' is not a property (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).']);
-  end
-  switch(lower(varargin{i}))
-    case {'intervals','restrict'}
-      intervals = varargin{i+1};
-      if ~isdmatrix(intervals) || size(intervals,2) ~= 2
-        error('Incorrect value for property ''intervals'' (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).');
-      end
-    end
-end
-
-filename = [path '/' basename '.lfp'];
+filename = [path '/' fbasename '.lfp'];
 if ~exist(filename,'file')
-    filename = [path '/' basename '.lfp'];
+    filename = [path '/' fbasename '.lfp'];
     if ~exist(filename,'file')
         error(['File ''' filename ''' not found.']);
     end
