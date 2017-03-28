@@ -73,45 +73,20 @@ elseif isempty(basename)
 end
 
 %% Value setting - humans must do this
-AnimalMetadata.AnimalName = 'Ket1';
-AnimalMetadata.AnimalBasepath = '/balrog_zpool/Ket1';%this can be changed for each computer and can then act as a handle for all subsequent analyses
+notesname = [basename,'_NoteText.m'];
+if ~exist(fullfile(basepath,notesname),'file')
+    w = which('bz_AnimalNotesTemplate.m');% copy an example header here to edit
+    copyfile(w,notesname);
+    edit(notesname)
+end
+run(notesname);%save to disk
 
-AnimalMetadata.Species = 'Rat';
-AnimalMetadata.Strain = 'SpragueDawley';
-AnimalMetadata.GeneticLine = 'WildType';
-AnimalMetadata.Sex = 'male';
-AnimalMetadata.DateOfBirth = '20161221';%YYYYMMDD format
-AnimalMetadata.WeightGramsAtSurgery = 405;%grams
+prompt = 'Push any key in this window when done editing the NoteText file ';
+str = input(prompt,'s');
 
-AnimalMetadata.Surgery.Date = '20140317';
-AnimalMetadata.Surgery.Anesthesia.Name = 'Isoflurane';
-AnimalMetadata.Surgery.Anesthesia.ConcentrationPercent = '1';
-AnimalMetadata.Surgery.Analgesic.Name = 'Buprenex';
-AnimalMetadata.Surgery.Analgesic.Milligrams = 0.06;%usually given at 0.15mg/ml
-AnimalMetadata.Surgery.Antibiotics.Topical = 'Neopredef';
-AnimalMetadata.Surgery.Antibiotics.Intraperitoneal = '';
-AnimalMetadata.Surgery.Complications = '';
-AnimalMetadata.Surgery.DamageSites = '';
-AnimalMetadata.Surgery.Notes = 'Good';
-
-AnimalMetadata.Virus.Strain = '';
-AnimalMetadata.Virus.Coordinates.Anteroposterior = [];%one for each injection
-AnimalMetadata.Virus.InjectionDate = '';
-
-AnimalMetadata.Probes.UmPerScrewTurn = [288 288];
-AnimalMetadata.Probes.NumberOfProbes = 2;
-AnimalMetadata.Probes.TargetRegions = {'dCA1','mPFC'};
-AnimalMetadata.Probes.ImplantCoordinates.Anteroposterior = [-3.5,2.7];%one for each probe
-AnimalMetadata.Probes.ImplantCoordinates.Mediolateral = [2.5,0.3];
-AnimalMetadata.Probes.ImplantAngle.Anteroposterior = [0,0];%degrees of top anterior as sitting behind animal
-AnimalMetadata.Probes.ImplantAngle.Mediolateral = [0,10];%degrees clockwise as sitting behind animal
-AnimalMetadata.Probes.ImplantCoordinates.DepthFromSurface = [1.5,2];
-AnimalMetadata.Probes.OrientationOfProbe.FirstGroupRelativeToLastGroupClockwiseDegrees = [90,135];%assumes linear arrays
-AnimalMetadata.Probes.OrientationOfProbe.GroupOffsetsFromCenter_ApMlDv = [];%for non-linear arrangements: group x 3 coordinates for change from center
-AnimalMetadata.Probes.PluggingOrder = [2,1];% order will be represented in .xml, ie if intan splitter dicates
-AnimalMetadata.Probes.SiteSizesInUmSq = [160];%In square microns
-AnimalMetadata.Probes.ProbeLayoutFilenames = {'NRX_Buzsaki64_5X12';'NRX_Buzsaki64_8X8'};%filenames in /buzcode/GeneralComputation/geometries
-AnimalMetadata.Channels.ImpedanceFilenames = {};%Filenames in basepath
+load(fullfile(basepath,[basename '_AnimalNotes.mat']))%load AnimalNotes
+AnimalMetadata = AnimalNotes;
+clear AnimalNotes
 
 %% Automated after this point
 [PerGroupSuperficialToDeep,SpatialXY,NumChansPerProbe,GroupsPerChannel] = bz_ReadProbeMapFiles(AnimalMetadata.Probes.ProbeLayoutFilenames);
