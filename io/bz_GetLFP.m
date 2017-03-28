@@ -80,7 +80,7 @@ if isempty(DATA)
            error('there is more than one .lfp file in this directory?');
        end
        lfp.Filename = d.name;
-       fbasename = split(lfp.Filename,'.');
+       fbasename = strsplit(lfp.Filename,'.');
        fbasename = fbasename{1};
    end
    xml = LoadParameters([fbasename '.xml']);
