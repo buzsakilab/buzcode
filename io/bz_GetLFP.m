@@ -1,4 +1,4 @@
-function [lfp] = bz_GetLFP(channels,varargin)
+function [lfp] = bz_GetLFP(fbasename,channels,varargin)
 %GetLFP - Get local field potentials.
 %
 %  Load local field potentials from disk. No longer dependent on
@@ -56,21 +56,27 @@ function [lfp] = bz_GetLFP(channels,varargin)
 global DATA;
 if isempty(DATA)
 	warning('No session defined, so we look for a *lfp file...')
-    try
+    %try
+       if nargin == 1
        d = dir('*lfp');
-       if length(d) > 1 % we assume one .lfp file or this should break
-          error('there is more than one .lfp file in this directory?');
+        if length(d) > 1 % we assume one .lfp file or this should break
+        %           error('there is more than one .lfp file in this directory?');
+        d=d(1);
+        end
+       else
+        d = fbasename;
        end
-       lfpFile = d.name; 
-       xml = LoadParameters;
-       basename = split(lfpFile,'.');
-       basename = basename{1};
+       
+       lfp.Filename = d; 
+       xml = LoadParameters([lfp.Filename '.xml']);
+       basename = lfp.Filename; %split(lfp.Filename,'.');
+       %basename = basename{1};
        path = pwd;
        nChannels = xml.nChannels;
        samplingRate = xml.lfpSampleRate;
-    catch
+    %catch
         
-    end
+   % end
 else  % backwards compatible with FMAT setcurrentsession
     basename = DATA.session.basename;
     path = DATA.session.path;
@@ -95,8 +101,9 @@ for i = 1:2:length(varargin)
       intervals = varargin{i+1};
       if ~isdmatrix(intervals) || size(intervals,2) ~= 2
         error('Incorrect value for property ''intervals'' (type ''help <a href="matlab:help GetLFP">GetLFP</a>'' for details).');
-      end
-    end
+      end 
+  end
+  
 end
 
 filename = [path '/' basename '.lfp'];

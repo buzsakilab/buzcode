@@ -107,15 +107,21 @@ parameters.Offset = str2num(p.acquisitionSystem.offset);
 parameters.lfpSampleRate = str2num(p.fieldPotentials.lfpSamplingRate);
 
 % fixing AnatGrps and SpkGrps
-for a = 1:length(p.anatomicalDescription.channelGroups.group)
-    for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
-        parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
-    end        
-end
-for a = 1:parameters.spikeGroups.nGroups
-    parameters.SpkGrps(a).Channels = parameters.spikeGroups.groups{a};
-    parameters.SpkGrps(a).nSamples =  str2num(p.spikeDetection.channelGroups.group{a}.nSamples);
-    parameters.SpkGrps(a).PeakSample = str2num(p.spikeDetection.channelGroups.group{a}.peakSampleIndex); 
-    parameters.SpkGrps(a).nFeatures =  str2num(p.spikeDetection.channelGroups.group{a}.nFeatures); 
+% the below code fails with certain XMl files people in the lab use
+% so we'll wrap this in a try/catch for now..
+try
+    for a = 1:length(p.anatomicalDescription.channelGroups.group)
+        for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
+            parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
+        end        
+    end
+    for a = 1:parameters.spikeGroups.nGroups
+        parameters.SpkGrps(a).Channels = parameters.spikeGroups.groups{a};
+        parameters.SpkGrps(a).nSamples =  str2num(p.spikeDetection.channelGroups.group{a}.nSamples);
+        parameters.SpkGrps(a).PeakSample = str2num(p.spikeDetection.channelGroups.group{a}.peakSampleIndex); 
+        parameters.SpkGrps(a).nFeatures =  str2num(p.spikeDetection.channelGroups.group{a}.nFeatures); 
+    end
+catch
+   warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
 end
 
