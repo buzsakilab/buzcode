@@ -4,9 +4,10 @@ function [maps,data,stats] = bz_RippleStats(filtered,timestamps,ripples,varargin
 %
 %  USAGE
 %
-%    [maps,data,stats] = bz_RippleStats(filtered,ripples,<options>)
+%    [maps,data,stats] = bz_RippleStats(filtered,timestamps,ripples,<options>)
 %
 %    filtered       ripple-band filtered samples (one channel)
+%    timestamps	    timestamps (in seconds) to match filtered vector
 %    ripples        ripple timing information (STRUCT VERSION) (obtained using <a href="matlab:help bz_FindRipples">bz_FindRipples</a>)
 %    <options>      optional list of property-value pairs (see table below)
 %
