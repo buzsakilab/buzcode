@@ -23,7 +23,7 @@ WAKEIntervals = WAKEints(WAKElengths>maxMicroarousalDuration,:);
 
 %% Identify MAs preceeding REM and separate them into MA_REM
 %Find the MA states that are before (or between two) REM states
-[ ~,~,MA_REM,~ ] = FindIntsNextToInts(MAIntervals.MAstate,REMints);
+[ ~,~,MA_REM,~ ] = FindIntsNextToInts(MAIntervals,REMints);
 %"Real" MAs are those that are not before REM state
 realMA = setdiff(1:length(MAIntervals),MA_REM);
 

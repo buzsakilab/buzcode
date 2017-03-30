@@ -189,17 +189,20 @@ end
 
 %Filenames for EMG, thLFP, and swLFP .mat files in the database.
 %ALL OF THESE NEED TO BE CLEANED INTO BUZCODE FORMAT
-EMGpath = fullfile(savefolder,[recordingname '_EMGCorr.mat']);
+%Theta/SWLFP are depreciated - replaced with scorelfppath
 thetalfppath = fullfile(savefolder,[recordingname,'_ThetaLFP.mat']);
 swlfppath = fullfile(savefolder,[recordingname,'_SWLFP.mat']);
 scorelfppath = fullfile(savefolder,[recordingname,'_SleepScoreLFP.mat']);
+EMGpath = fullfile(savefolder,[recordingname '_EMGCorr.mat']);
 %Filenames for State and Event .mat files.
 sleepstatepath = fullfile(savefolder,[recordingname,'_SleepScore.mat']);
 %Filenames for StateCluster Metrics (broadband/theta)
 scoremetricspath = fullfile(savefolder,[recordingname,'_SleepScoreMetrics.mat']);
 
-%Buzcode output - SleepState.states.mat
+%Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
+bz_scorelfppath = fullfile(savefolder,[recordingname,'.SleepScoreLFP.LFP.mat']);
+bz_EMGpath = fullfile(savefolder,[recordingname '.EMGCorr.LFP.mat']);
 
 
 %Filename for .lfp file
@@ -230,7 +233,14 @@ if ~exist(EMGpath,'file') || overwrite;
     % .xml filename - ok
     %     Save ..._EMGCorr file
     if savebool
+        %Old Format - update to buzcode
         save(EMGpath,'EMGCorr','sf_EMG')
+        
+        %Buzcode format - wrap this into EMGCorrForSleepScore - make a
+        %standalone buzcode detector
+        CorrEMG.data = EMGCorr;
+        CorrEMG.sf = sf_EMG;
+        save(bz_EMGpath,'CorrEMG')
     end
 
 else
@@ -254,32 +264,36 @@ if ((~exist(thetalfppath,'file') && ~exist(swlfppath,'file')) && ~exist(scorelfp
     end
 else
     display('SW and TH Channels Already Extracted, Loading...')
-    
-    %For updating state score LFP storage...
-    if ~exist(scorelfppath,'file')%... if old-fashioned scoring was done, open and convert to newer style
-        load(swlfppath,'swLFP','SWchannum','sf_LFP')
-        load(thetalfppath,'thLFP','THchannum','sf_LFP')
-
-        load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
-        
-        if sf_LFP==1250
-            display('LFP saved as 1250 - downsampling to 250 for save')
-            swLFP = downsample(swLFP,5);
-            thLFP = downsample(thLFP,5);
-            sf_LFP = sf_LFP./5;
-
-            delete(swlfppath,thetalfppath)
-        else
-            display('LFP was not saved at 1250... bug?')
-            keyboard
-        end
-        
-        %save in newer format for compatibility.
-        save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','sf_LFP','SWfreqlist','SWweights');
-    end
-    
     load(scorelfppath,'swLFP','SWchannum','thLFP','THchannum','sf_LFP','SWfreqlist','SWweights')
+
+    
+%     %For updating state score LFP storage... DEPRECIATED - delete all
+%     %your score files and rescore.... or maybe try uncommenting this
+%     if ~exist(scorelfppath,'file')%... if old-fashioned scoring was done, open and convert to newer style
+%         load(swlfppath,'swLFP','SWchannum','sf_LFP')
+%         load(thetalfppath,'thLFP','THchannum','sf_LFP')
+% 
+%         load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
+%         
+%         if sf_LFP==1250
+%             display('LFP saved as 1250 - downsampling to 250 for save')
+%             swLFP = downsample(swLFP,5);
+%             thLFP = downsample(thLFP,5);
+%             sf_LFP = sf_LFP./5;
+% 
+%             delete(swlfppath,thetalfppath)
+%         else
+%             display('LFP was not saved at 1250... bug?')
+%             keyboard
+%         end
+%         
+%         %save in newer format for compatibility.
+%         save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','sf_LFP','SWfreqlist','SWweights');
+%     end
+    
 end
+
+%CAN THIS BE REMOVED?
 if ~exist('SWfreqlist','var')
         load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
 end
