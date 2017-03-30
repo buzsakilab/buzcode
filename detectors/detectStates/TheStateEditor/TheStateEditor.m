@@ -3054,7 +3054,7 @@ end
 
 
 if FileExistsIn([FileBase '.xml']) %& ~isempty(strfind(FileName,'.xml'))
-    Par = LoadXml(FileBase);
+    Par = LoadParameters([FileBase '.xml']);
 elseif FileExistsIn([FileBase '.par'])
 
 
