@@ -21,7 +21,6 @@ function SleepScoreMaster(datasetfolder,recordingname,varargin)
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false
 %   'savebool'      Default: true
-%   'spindledelta'  Default: false (spindle detector not ready yet...)
 %   'scoretime'     Default: [0 Inf]
 %   'badchannels'   file datasetfolder/recordingname/'bad_channels.txt'
 %                   that lists channels will omit certain channels from EMG
@@ -136,7 +135,6 @@ p = inputParser;
 
 defaultOverwrite = false;    %Pick new and Overwrite existing ThLFP, SWLFP?
 defaultSavebool = true;    %Save Stuff (EMG, LFP)
-defaultSpindledelta = false; %Detect spindles/delta?
 
 defaultSavedir = datasetfolder;
 
@@ -151,7 +149,6 @@ defaultThetaChannels = 0;
 
 addParameter(p,'overwrite',defaultOverwrite)
 addParameter(p,'savebool',defaultSavebool,@islogical)
-addParameter(p,'spindledelta',defaultSpindledelta,@islogical)
 addParameter(p,'savedir',defaultSavedir)
 addParameter(p,'scoretime',defaultScoretime)
 addParameter(p,'SWWeightsName',defaultSWWeightsName)
@@ -166,7 +163,6 @@ parse(p,varargin{:})
 %Clean up this junk...
 overwrite = p.Results.overwrite; 
 savebool = p.Results.savebool;
-spindledelta = p.Results.spindledelta;
 savedir = p.Results.savedir;
 scoretime = p.Results.scoretime;
 SWWeightsName = p.Results.SWWeightsName;
@@ -190,17 +186,21 @@ if ~exist(figloc,'dir')
     mkdir(figloc)
 end
 
+
 %Filenames for EMG, thLFP, and swLFP .mat files in the database.
+%ALL OF THESE NEED TO BE CLEANED INTO BUZCODE FORMAT
 EMGpath = fullfile(savefolder,[recordingname '_EMGCorr.mat']);
 thetalfppath = fullfile(savefolder,[recordingname,'_ThetaLFP.mat']);
 swlfppath = fullfile(savefolder,[recordingname,'_SWLFP.mat']);
 scorelfppath = fullfile(savefolder,[recordingname,'_SleepScoreLFP.mat']);
 %Filenames for State and Event .mat files.
 sleepstatepath = fullfile(savefolder,[recordingname,'_SleepScore.mat']);
-sleepeventpath = fullfile(savefolder,[recordingname,'_SleepEvents.mat']);
-spindlestatspath = fullfile(savefolder,[recordingname,'_SpindleStats.mat']);
 %Filenames for StateCluster Metrics (broadband/theta)
 scoremetricspath = fullfile(savefolder,[recordingname,'_SleepScoreMetrics.mat']);
+
+%Buzcode output - SleepState.states.mat
+bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
+
 
 %Filename for .lfp file
 if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
@@ -311,26 +311,21 @@ NREMints = stateintervals{2};
 REMints = stateintervals{3};
 WAKEints = stateintervals{1};
 
-StateIntervals = StatesToFinalScoring(NREMints,WAKEints,REMints);
+[StateIntervals,SleepState] = StatesToFinalScoring(NREMints,WAKEints,REMints);
+
+%Old Style - remove once bzCompadible with StateEditor
 StateIntervals.metadata.SWchannum = SWchannum;
 StateIntervals.metadata.THchannum = THchannum;
-
 save(sleepstatepath,'StateIntervals');
+
+%bzStyle
+SleepState.detectorparms.SWchannum = SWchannum;
+SleepState.detectorparms.THchannum = THchannum;
+SleepState.detectorname = 'SleepScoreMaster';
+SleepState.detectiondate = today;
+save(bz_sleepstatepath,'SleepState');
 
 display(['Sleep Score ',recordingname,': Complete!']);
 
-%% Find Slow Waves and Spindle Times
-if spindledelta
-
-    [ pSpindleInts,cycletimemap,deltapeaks,SpindleStats ] = FindSpindlesAndSWs(datasetfolder,recordingname,figloc,StateIntervals);
-
-    SleepEvents.Spindles = pSpindleInts;
-    SleepEvents.DeltaPeaks = deltapeaks;
-    SleepEvents.SpindleCycleTime = cycletimemap;
-
-
-    save(sleepeventpath,'SleepEvents');
-    save(spindlestatspath,'SpindleStats')
-end
 end
 
