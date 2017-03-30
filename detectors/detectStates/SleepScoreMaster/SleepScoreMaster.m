@@ -259,8 +259,19 @@ if ((~exist(thetalfppath,'file') && ~exist(swlfppath,'file')) && ~exist(scorelfp
     [SWchannum,THchannum,swLFP,thLFP,t_LFP,sf_LFP,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figloc,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels);
     if savebool
         %Transfer this into scoremetricspath? predownsampled to what it
-        %needs to be for ClusterStates.
+        %needs to be for ClusterStates. 
+        %old format - delete and update everything
         save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','t_LFP','sf_LFP','SWfreqlist','SWweights');
+        
+        %buzcode format - make everything in this function compadible
+        SleepScoreLFP.thLFP = thLFP;
+        SleepScoreLFP.swLFP = swLFP;
+        SleepScoreLFP.THchanID = THchannum;
+        SleepScoreLFP.SWchanID = SWchannum;
+        SleepScoreLFP.sf = sf_LFP;
+        SleepScoreLFP.SWfreqlist = SWfreqlist;
+        SleepScoreLFP.SWweights = SWweights;
+        save(bz_scorelfppath,'SleepScoreLFP');  
     end
 else
     display('SW and TH Channels Already Extracted, Loading...')
