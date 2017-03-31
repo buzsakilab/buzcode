@@ -89,10 +89,22 @@ if isempty(DATA)
    samplingRate = xml.lfpSampleRate;
 
 else  % backwards compatible with FMAT setcurrentsession
+   p = inputParser;
    fbasename = DATA.session.basename;
-    path = DATA.session.path;
-    nChannels = DATA.nChannels;
-    samplingRate = DATA.rates.lfp;
+   path = DATA.session.path;
+   nChannels = DATA.nChannels;
+   samplingRate = DATA.rates.lfp;
+   addRequired(p,'channels',@isnumeric)
+   addParameter(p,'restrict',[0 Inf],@isnumeric)
+   addParameter(p,'intervals',[0 Inf],@isnumeric)
+   parse(p,varargin{:})
+   channels = p.Results.channels;
+
+   if sum(p.Results.restrict ~= [0 inf]) > 0
+       intervals = p.Results.restrict;
+   else
+       intervals = p.Results.intervals;
+   end
 end
 
 filename = [path '/' fbasename '.lfp'];

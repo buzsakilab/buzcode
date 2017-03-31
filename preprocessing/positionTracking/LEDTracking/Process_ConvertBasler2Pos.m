@@ -32,11 +32,9 @@
 % it under the terms of the GNU General Public License as published by
 % the Free Software Foundation; either version 2 of the License, or
 % (at your option) any later version.
+function Process_ConvertBasler2Pos(fbasename,varargin)
 
 warning('This function is now deprecated and has been replaced by processConvertLED2Behav.m')
-
-
-function Process_ConvertBasler2Pos(fbasename,varargin)
 
 syncDatFile = ['analogin.dat'];
 syncSampFq  = 20000;
@@ -105,7 +103,7 @@ end
     
     %It's a pull-off, trigger is toward 0
 %     dat = double(fastrms(fastrms(fastrms(dat,10),50),100)<500);
-	dat = uint16(smooth(single(dat)))<1000;
+	dat = uint16(smooth(single(dat)))<20000;
 
 % if bad camera pulses, use below
 %     dat = smooth(dat,100);
@@ -128,7 +126,7 @@ end
     %recording. So we skipthe last frames of the TTL
     if length(frameT)<size(pos,1);
         warning('Too many video frames!')
-        keyboad
+        pause
     elseif length(frameT)>size(pos,1);
         frameT = frameT(1:size(pos,1));
     end
@@ -137,7 +135,7 @@ end
     %arguments)
     recDuration = length(dat)/syncSampFq;
     
-    timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';
+    timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';    
     pos(pos==-1) = NaN;
     newPos = interp1(frameT,pos,timestamps);
     
