@@ -196,6 +196,6 @@ else
 %     REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
 end
 
-histsandthreshs = v2struct_ss(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
+histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
 
 
