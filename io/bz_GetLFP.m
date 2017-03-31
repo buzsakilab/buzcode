@@ -9,6 +9,7 @@ function [lfp] = bz_GetLFP(varargin)
 %    [lfp] = GetLFP(channels,<options>)
 %
 %    channels       list of channels to load (use keyword 'all' for all)
+%                   channID is 0-indexing, a la neuroscope
 %    <options>      optional list of property-value pairs (see table below)
 %
 %    =========================================================================
