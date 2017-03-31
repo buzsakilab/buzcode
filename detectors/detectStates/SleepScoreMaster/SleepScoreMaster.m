@@ -73,7 +73,7 @@ minWinREM = 6;
 minREMinW = 6;
 minREM = 6;
 minWAKE = 6;
-MinWinParams = v2struct_ss(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE);
+MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE);
 
 %% Recording Selection
 %if recname is 'select' or something
