@@ -4643,9 +4643,7 @@ end
 function histsandthreshs = SSHistogramsAndThresholds_In(baseName)
 % Get initial histograms and thresholds as calculated by Dan's code
 
-broadbandSlowWave = load([baseName '_StateScoreMetrics.mat'],'broadbandSlowWave');
-% badtimes = GetBadTimes_In(baseName);
-
+load([baseName '_StateScoreMetrics.mat']);
 
 %% SWBand power
 numpeaks = 1;

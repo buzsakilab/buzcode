@@ -197,7 +197,7 @@ EMGpath = fullfile(savefolder,[recordingname '_EMGCorr.mat']);
 %Filenames for State and Event .mat files.
 sleepstatepath = fullfile(savefolder,[recordingname,'_SleepScore.mat']);
 %Filenames for StateCluster Metrics (broadband/theta)
-scoremetricspath = fullfile(savefolder,[recordingname,'_SleepScoreMetrics.mat']);
+scoremetricspath = fullfile(savefolder,[recordingname,'_StateScoreMetrics.mat']);
 
 %Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
