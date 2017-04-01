@@ -86,7 +86,7 @@ if isstr(varargin{1})  % if first arg is basepath
     SetCurrentSession([p.Results.basepath '/' xmlfile.name]);
     lfp = GetLFP(p.Results.channel);
     
-    signal = FilterLFP(lfp,'passband',[120 220]);
+    signal = FilterLFP(double(lfp),'passband',[120 220]);
 elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     addRequired(p,'filtered',@isnumeric)
     addRequired(p,'timestamps',@isnumeric)
