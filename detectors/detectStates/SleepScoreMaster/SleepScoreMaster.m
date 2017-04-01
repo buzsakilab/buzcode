@@ -21,7 +21,6 @@ function SleepScoreMaster(datasetfolder,recordingname,varargin)
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false
 %   'savebool'      Default: true
-%   'spindledelta'  Default: false (spindle detector not ready yet...)
 %   'scoretime'     Default: [0 Inf]
 %   'badchannels'   file datasetfolder/recordingname/'bad_channels.txt'
 %                   that lists channels will omit certain channels from EMG
@@ -74,7 +73,7 @@ minWinREM = 6;
 minREMinW = 6;
 minREM = 6;
 minWAKE = 6;
-MinWinParams = v2struct_ss(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE);
+MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE);
 
 %% Recording Selection
 %if recname is 'select' or something
@@ -136,7 +135,6 @@ p = inputParser;
 
 defaultOverwrite = false;    %Pick new and Overwrite existing ThLFP, SWLFP?
 defaultSavebool = true;    %Save Stuff (EMG, LFP)
-defaultSpindledelta = false; %Detect spindles/delta?
 
 defaultSavedir = datasetfolder;
 
@@ -151,7 +149,6 @@ defaultThetaChannels = 0;
 
 addParameter(p,'overwrite',defaultOverwrite)
 addParameter(p,'savebool',defaultSavebool,@islogical)
-addParameter(p,'spindledelta',defaultSpindledelta,@islogical)
 addParameter(p,'savedir',defaultSavedir)
 addParameter(p,'scoretime',defaultScoretime)
 addParameter(p,'SWWeightsName',defaultSWWeightsName)
@@ -166,7 +163,6 @@ parse(p,varargin{:})
 %Clean up this junk...
 overwrite = p.Results.overwrite; 
 savebool = p.Results.savebool;
-spindledelta = p.Results.spindledelta;
 savedir = p.Results.savedir;
 scoretime = p.Results.scoretime;
 SWWeightsName = p.Results.SWWeightsName;
@@ -190,17 +186,24 @@ if ~exist(figloc,'dir')
     mkdir(figloc)
 end
 
+
 %Filenames for EMG, thLFP, and swLFP .mat files in the database.
-EMGpath = fullfile(savefolder,[recordingname '_EMGCorr.mat']);
+%ALL OF THESE NEED TO BE CLEANED INTO BUZCODE FORMAT
+%Theta/SWLFP are depreciated - replaced with scorelfppath
 thetalfppath = fullfile(savefolder,[recordingname,'_ThetaLFP.mat']);
 swlfppath = fullfile(savefolder,[recordingname,'_SWLFP.mat']);
 scorelfppath = fullfile(savefolder,[recordingname,'_SleepScoreLFP.mat']);
+EMGpath = fullfile(savefolder,[recordingname '_EMGCorr.mat']);
 %Filenames for State and Event .mat files.
 sleepstatepath = fullfile(savefolder,[recordingname,'_SleepScore.mat']);
-sleepeventpath = fullfile(savefolder,[recordingname,'_SleepEvents.mat']);
-spindlestatspath = fullfile(savefolder,[recordingname,'_SpindleStats.mat']);
 %Filenames for StateCluster Metrics (broadband/theta)
-scoremetricspath = fullfile(savefolder,[recordingname,'_SleepScoreMetrics.mat']);
+scoremetricspath = fullfile(savefolder,[recordingname,'_StateScoreMetrics.mat']);
+
+%Buzcode outputs
+bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
+bz_scorelfppath = fullfile(savefolder,[recordingname,'.SleepScoreLFP.LFP.mat']);
+bz_EMGpath = fullfile(savefolder,[recordingname '.EMGCorr.LFP.mat']);
+
 
 %Filename for .lfp file
 if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
@@ -230,7 +233,14 @@ if ~exist(EMGpath,'file') || overwrite;
     % .xml filename - ok
     %     Save ..._EMGCorr file
     if savebool
+        %Old Format - update to buzcode
         save(EMGpath,'EMGCorr','sf_EMG')
+        
+        %Buzcode format - wrap this into EMGCorrForSleepScore - make a
+        %standalone buzcode detector
+        CorrEMG.data = EMGCorr;
+        CorrEMG.sf = sf_EMG;
+        save(bz_EMGpath,'CorrEMG')
     end
 
 else
@@ -249,37 +259,52 @@ if ((~exist(thetalfppath,'file') && ~exist(swlfppath,'file')) && ~exist(scorelfp
     [SWchannum,THchannum,swLFP,thLFP,t_LFP,sf_LFP,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figloc,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels);
     if savebool
         %Transfer this into scoremetricspath? predownsampled to what it
-        %needs to be for ClusterStates.
+        %needs to be for ClusterStates. 
+        %old format - delete and update everything
         save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','t_LFP','sf_LFP','SWfreqlist','SWweights');
+        
+        %buzcode format - make everything in this function compadible
+        SleepScoreLFP.thLFP = thLFP;
+        SleepScoreLFP.swLFP = swLFP;
+        SleepScoreLFP.THchanID = THchannum;
+        SleepScoreLFP.SWchanID = SWchannum;
+        SleepScoreLFP.sf = sf_LFP;
+        SleepScoreLFP.SWfreqlist = SWfreqlist;
+        SleepScoreLFP.SWweights = SWweights;
+        save(bz_scorelfppath,'SleepScoreLFP');  
     end
 else
     display('SW and TH Channels Already Extracted, Loading...')
-    
-    %For updating state score LFP storage...
-    if ~exist(scorelfppath,'file')%... if old-fashioned scoring was done, open and convert to newer style
-        load(swlfppath,'swLFP','SWchannum','sf_LFP')
-        load(thetalfppath,'thLFP','THchannum','sf_LFP')
-
-        load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
-        
-        if sf_LFP==1250
-            display('LFP saved as 1250 - downsampling to 250 for save')
-            swLFP = downsample(swLFP,5);
-            thLFP = downsample(thLFP,5);
-            sf_LFP = sf_LFP./5;
-
-            delete(swlfppath,thetalfppath)
-        else
-            display('LFP was not saved at 1250... bug?')
-            keyboard
-        end
-        
-        %save in newer format for compatibility.
-        save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','sf_LFP','SWfreqlist','SWweights');
-    end
-    
     load(scorelfppath,'swLFP','SWchannum','thLFP','THchannum','sf_LFP','SWfreqlist','SWweights')
+
+    
+%     %For updating state score LFP storage... DEPRECIATED - delete all
+%     %your score files and rescore.... or maybe try uncommenting this
+%     if ~exist(scorelfppath,'file')%... if old-fashioned scoring was done, open and convert to newer style
+%         load(swlfppath,'swLFP','SWchannum','sf_LFP')
+%         load(thetalfppath,'thLFP','THchannum','sf_LFP')
+% 
+%         load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
+%         
+%         if sf_LFP==1250
+%             display('LFP saved as 1250 - downsampling to 250 for save')
+%             swLFP = downsample(swLFP,5);
+%             thLFP = downsample(thLFP,5);
+%             sf_LFP = sf_LFP./5;
+% 
+%             delete(swlfppath,thetalfppath)
+%         else
+%             display('LFP was not saved at 1250... bug?')
+%             keyboard
+%         end
+%         
+%         %save in newer format for compatibility.
+%         save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','sf_LFP','SWfreqlist','SWweights');
+%     end
+    
 end
+
+%CAN THIS BE REMOVED?
 if ~exist('SWfreqlist','var')
         load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
 end
@@ -311,26 +336,21 @@ NREMints = stateintervals{2};
 REMints = stateintervals{3};
 WAKEints = stateintervals{1};
 
-StateIntervals = StatesToFinalScoring(NREMints,WAKEints,REMints);
+[StateIntervals,SleepState] = StatesToFinalScoring(NREMints,WAKEints,REMints);
+
+%Old Style - remove once bzCompadible with StateEditor
 StateIntervals.metadata.SWchannum = SWchannum;
 StateIntervals.metadata.THchannum = THchannum;
-
 save(sleepstatepath,'StateIntervals');
+
+%bzStyle
+SleepState.detectorparms.SWchannum = SWchannum;
+SleepState.detectorparms.THchannum = THchannum;
+SleepState.detectorname = 'SleepScoreMaster';
+SleepState.detectiondate = today;
+save(bz_sleepstatepath,'SleepState');
 
 display(['Sleep Score ',recordingname,': Complete!']);
 
-%% Find Slow Waves and Spindle Times
-if spindledelta
-
-    [ pSpindleInts,cycletimemap,deltapeaks,SpindleStats ] = FindSpindlesAndSWs(datasetfolder,recordingname,figloc,StateIntervals);
-
-    SleepEvents.Spindles = pSpindleInts;
-    SleepEvents.DeltaPeaks = deltapeaks;
-    SleepEvents.SpindleCycleTime = cycletimemap;
-
-
-    save(sleepeventpath,'SleepEvents');
-    save(spindlestatspath,'SpindleStats')
-end
 end
 

@@ -1,7 +1,7 @@
-function varargout = v2struct(varargin)
-
 %% v2struct
 % v2struct Pack/Unpack Variables to/from a scalar structure.
+function varargout = v2struct(varargin)
+
 %% Description
 %    v2struct has dual functionality in packing & unpacking variables into structures and
 %    vice versa, according to the syntax and inputs.

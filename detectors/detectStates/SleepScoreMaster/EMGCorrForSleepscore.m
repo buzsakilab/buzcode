@@ -218,7 +218,7 @@ EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2);
 EMGCorr = cat(2,timestamps'/Fs,EMGCorr);
 ChannelsCompared = xcorr_chs;
 % EMGCorrData = v2struct_ss(EMGCorr,ChannelsCompared,AnatShankSite);
-EMGCorrData = v2struct_ss(EMGCorr,ChannelsCompared);
+EMGCorrData = v2struct(EMGCorr,ChannelsCompared);
 if savebool
     % save...
     save(saveloc,'EMGCorrData','EMGCorr','sf_EMG');
