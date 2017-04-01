@@ -36,6 +36,9 @@ filename = '';
 
 if nargin == 0
     xml = dir('*xml');
+    if size(xml,1)>1
+        error('you have more than one XML file in this directory')
+    end
     if size(xml,1) == 1
         filename = xml.name;
     end
