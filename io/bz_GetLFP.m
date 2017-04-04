@@ -92,8 +92,11 @@ if isempty(DATA)
    xml = LoadParameters([fbasename '.xml']);
    path = pwd;
    nChannels = xml.nChannels;
-   samplingRate = xml.lfpSampleRate;
-
+try
+    samplingRate = xml.lfpSampleRate;
+catch
+     samplingRate = xml.rates.lfp; % old ugliness we need to get rid of
+end
 else  % backwards compatible with FMAT setcurrentsession
    p = inputParser;
    fbasename = DATA.session.basename;
@@ -113,15 +116,6 @@ else  % backwards compatible with FMAT setcurrentsession
    end
 end
 
-filename = [path '/' fbasename '.lfp'];
-if ~exist(filename,'file')
-    filename = [path '/' fbasename '.lfp'];
-    if ~exist(filename,'file')
-        error(['File ''' filename ''' not found.']);
-    end
-end
-
-
 % we assume 0-indexing like neuroscope, but LoadBinary using 1-indexing to
 % load....
 channels = channels + 1;
@@ -134,7 +128,7 @@ for i = 1:nIntervals
     lfp(i).interval = [intervals(i,1) intervals(i,2)];
     
 	% Load data and put into struct
-	lfp(i).data = LoadBinary(filename,'duration',lfp(i).duration,...
+	lfp(i).data = LoadBinary(lfp.Filename,'duration',lfp(i).duration,...
                   'frequency',samplingRate,'nchannels',nChannels,...
                   'start',lfp(i).interval(1),'channels',channels);
 	lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRate):...
