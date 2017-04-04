@@ -95,8 +95,8 @@ end
 % for backwards compatibility with LoadPar.m
 parameters.FileName = parameters.session.name;  % killing me slowly with redundancy 
 parameters.SampleTime = (1/str2num(p.acquisitionSystem.samplingRate)) * 1e+6; % duration of a sample in microseconds
-parameters.nElecGps = length(p.spikeDetection.channelGroups.group);
-parameters.ElecGp = p.spikeDetection.channelGroups.group;
+parameters.nElecGps = length(p.anatomicalDescription.channelGroups.group);
+parameters.ElecGp = p.anatomicalDescription.channelGroups.group;
 parameters.HiPassFreq = 500; % default hi-pass for klusta-3.0 w/ intan data
 
 % for backwards compatibility with loadXml_old.m and variants

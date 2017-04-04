@@ -79,6 +79,11 @@ if isempty(DATA)
        d = dir('*lfp');
        if length(d) > 1 % we assume one .lfp file or this should break
            error('there is more than one .lfp file in this directory?');
+       elseif length(d) == 0
+           d = dir('*eeg');
+           if isempty(d)
+               error('could not find an lfp/eeg file..')
+           end
        end
        lfp.Filename = d.name;
        fbasename = strsplit(lfp.Filename,'.');
