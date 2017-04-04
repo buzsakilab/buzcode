@@ -1,4 +1,4 @@
-cd function  [chan] = bz_GetBestRippleChan(lfp)
+function  [chan] = bz_GetBestRippleChan(lfp)
 % eventually this will detect which lfp channel has the highest SNR for the
 % ripple componenent of SPWR events....
 
