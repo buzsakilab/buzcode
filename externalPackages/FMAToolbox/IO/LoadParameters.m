@@ -96,22 +96,22 @@ end
 
 parameters.FileName = parameters.session.name;  % killing me slowly with redundancy 
 parameters.SampleTime = (1/str2num(p.acquisitionSystem.samplingRate)) * 1e+6; % duration of a sample in microseconds
-% the below code fails with certain XMl files people in the lab use
-% so we'll wrap this in a try/catch for now..
-try
 parameters.nElecGps = length(p.anatomicalDescription.channelGroups.group);
 parameters.ElecGp = p.anatomicalDescription.channelGroups.group;
 parameters.HiPassFreq = 500; % default hi-pass for klusta-3.0 w/ intan data
-catch
-   warning('could not load .nElecGps, .ElecGp, and HipassFreq. something may be wrong with your xml...') 
-end
+
 % for backwards compatibility with loadXml_old.m and variants
+% the below code fails with certain XMl files people in the lab use
+% so we'll wrap this in a try/catch for now..
+try
 parameters.Date = p.generalInfo.date;
 parameters.VoltageRange = str2num(p.acquisitionSystem.voltageRange);
 parameters.Amplification = str2num(p.acquisitionSystem.amplification);
 parameters.Offset = str2num(p.acquisitionSystem.offset);
 parameters.lfpSampleRate = str2num(p.fieldPotentials.lfpSamplingRate);
-
+catch
+   warning('could not load .Date, something may be wrong with your xml...') 
+end
 % fixing AnatGrps and SpkGrps
 % the below code fails with certain XMl files people in the lab use
 % so we'll wrap this in a try/catch for now..
