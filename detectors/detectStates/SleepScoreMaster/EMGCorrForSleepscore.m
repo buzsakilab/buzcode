@@ -34,7 +34,7 @@ else
     saveloc = [basenamepath,'_EMGCorr.mat'];
 end
 
-Par = LoadPar_SleepScore(xmlloc);
+Par = LoadParameters(xmlloc); % now using the updated version
 
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
@@ -136,7 +136,9 @@ end
     
 
 %% Read and filter channel
-% read channel
+% read channels
+xcorr_chs = xcorr_chs + 1; % loadparameters returns 0 indexed (neuroscope) channels, 
+                           % but Loadbinary.m takes 1-indexed channel #'s
 lfp = LoadBinary(lfploc,'nChannels',nChannels,'channels',xcorr_chs); %read and convert to mV    
 % Filter first in high frequency band to remove low-freq physiologically
 % correlated LFPs (e.g., theta, delta, SPWs, etc.)
