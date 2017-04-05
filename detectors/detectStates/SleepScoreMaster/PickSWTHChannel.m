@@ -98,6 +98,7 @@ downsamplefactor = 10;
 allLFP = LoadBinary(rawlfppath,'frequency',Fs,...
     'nchannels',nChannels,'channels',usechannels+1,'downsample',downsamplefactor,...
     'start',scoretime(1),'duration',diff(scoretime));
+allLFP = double(allLFP); % hack fix
 Fs = Fs./downsamplefactor;
 %+1 to channel number here to account for 0-indexing vs 1-indexing
 
