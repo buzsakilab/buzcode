@@ -245,7 +245,7 @@ fclose(f);
 function data = LoadChunk(fid,nChannels,channels,nSamples,precision,skip)
 
 if skip ~= 0,
-	data = fread(fid,[nChannels nSamples],[precision '=>' precision],skip);
+	data = fread(fid,[nChannels nSamples],[num2str(nChannels),'*',precision '=>' precision],skip);
     %data = fread(fid,[nChannels nSamples],[num2str(nChannels),'*',precision],nChannels*skip);
 else
 	data = fread(fid,[nChannels nSamples],[precision '=>' precision]);
