@@ -26,6 +26,8 @@ if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
     rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
 elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
     rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
+elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
+    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.eeg']);
 else 
     display('No .lfp file')
 end
