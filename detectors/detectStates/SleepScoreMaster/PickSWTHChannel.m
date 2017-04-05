@@ -231,8 +231,8 @@ swthLFP = LoadBinary(rawlfppath,'frequency',Fs,...
     'nchannels',nChannels,'channels',[SWchannum+1,THchannum+1],...
     'start',scoretime(1),'duration',diff(scoretime));
 
-swLFP = swthLFP(:,1);
-thLFP = swthLFP(:,2);
+swLFP = double(swthLFP(:,1));
+thLFP = double(swthLFP(:,2));
 t_LFP = [1:length(swLFP)]./Fs_save;
 
 %% Find Inverted PC1s and flip them for plot

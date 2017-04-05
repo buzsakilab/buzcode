@@ -210,6 +210,9 @@ if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
     rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
 elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
     rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
+elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
+    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.eeg']);
+    
 elseif ~overwrite
     display('No .lfp file... but using saved files so maybe it''s ok!')
 else
@@ -314,10 +317,16 @@ end
 
 display('Quantifying metrics for state scoring')
 % [stateintervals,~,~,~,~,broadbandSlowWave,thratio,EMG,t_clus,badtimes,reclength] = ClusterStates(swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname);
-[broadbandSlowWave,thratio,EMG,t_EMG,t_clus,badtimes,reclength,histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams);
+[broadbandSlowWave,thratio,EMG,t_EMG,t_clus,badtimes,reclength,histsandthreshs,...
+    FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(swLFP,...
+    thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams);
+
 display('Clustering States Based on EMG, SW, and TH LFP channels')
-[stateintervals,stateIDX,~] = ClusterStates_DetermineStates(broadbandSlowWave,thratio,t_clus,EMG,histsandthreshs,MinWinParams,reclength,figloc);
-ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec,t_clus,recordingname,broadbandSlowWave,thratio,EMG,t_EMG);
+[stateintervals,stateIDX,~] = ClusterStates_DetermineStates(...
+    broadbandSlowWave,thratio,t_clus,EMG,histsandthreshs,MinWinParams,reclength,figloc);
+
+ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,FFTfreqs,FFTspec,...
+    thFFTfreqs,thFFTspec,t_clus,recordingname,broadbandSlowWave,thratio,EMG,t_EMG);
 
 if savebool
     %Should save (downsampled to what's used in clusterstates...)
