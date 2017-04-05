@@ -199,7 +199,9 @@ if isinf(nSamplesPerChannel) || nSamplesPerChannel > maxNSamplesPerChannel,
 end
 
 if downsamplefactor>1
-    precision = [num2str(nChannels),'*',precision];
+%     precision = [num2str(nChannels),'*',precision]; % this line is
+%     incorrect, the precision variable is a string that does not depend on
+%     the number of channels
     skip = nChannels*(downsamplefactor-1)*sampleSize;
     nSamplesPerChannel = floor(nSamplesPerChannel./downsamplefactor);
 end
