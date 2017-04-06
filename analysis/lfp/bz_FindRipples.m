@@ -115,8 +115,11 @@ squaredSignal = signal.^2;
 window = ones(windowLength,1)/windowLength;
 keep = [];
 if ~isempty(restrict)
-	keep = timestamps>=restrict(1)&timestamps<=restrict(2);
+    for i=1:size(restrict,1)
+	keep(timestamps>=restrict(i,1)&timestamps<=restrict(i,2)) = 1;
+    end
 end
+keep = logical(keep); 
 
 [normalizedSquaredSignal,sd] = unity(Filter0(window,sum(squaredSignal,2)),sd,keep);
 
@@ -279,7 +282,7 @@ ripples.noise.peakNormedPower = bad(:,[4]);
 
 
 ripples.detectorParams = p.Results;
-ripples.detectorParams = rmfield(ripples.detectorParams,{'noise','filtered','timestamps'})
+ripples.detectorParams = rmfield(ripples.detectorParams,{'noise','filtered','timestamps'});
 
 function y = Filter0(b,x)
 

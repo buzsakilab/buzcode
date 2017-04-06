@@ -27,3 +27,12 @@ cd('analysis/spikes/correlation/')
 mex -O CCGHeart.c
 cd('../../..')
 
+% below is incomplete
+% below adds buzcode to the matlab path and saves
+
+
+% below adds the /buzcode/generalComputation/scripts/ folder to the system path
+if isunix
+
+
+end
