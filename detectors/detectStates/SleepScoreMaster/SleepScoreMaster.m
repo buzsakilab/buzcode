@@ -345,7 +345,7 @@ NREMints = stateintervals{2};
 REMints = stateintervals{3};
 WAKEints = stateintervals{1};
 
-[StateIntervals,SleepState] = StatesToFinalScoring(NREMints,WAKEints,REMints);
+[StateIntervals,SleepState,durationprams] = StatesToFinalScoring(NREMints,WAKEints,REMints);
 
 %Old Style - remove once bzCompadible with StateEditor
 StateIntervals.metadata.SWchannum = SWchannum;
@@ -355,6 +355,7 @@ save(sleepstatepath,'StateIntervals');
 %bzStyle
 SleepState.detectorparms.SWchannum = SWchannum;
 SleepState.detectorparms.THchannum = THchannum;
+SleepState.detectorparms.durationprams = durationprams;
 SleepState.detectorname = 'SleepScoreMaster';
 SleepState.detectiondate = today;
 save(bz_sleepstatepath,'SleepState');

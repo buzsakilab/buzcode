@@ -1,4 +1,4 @@
-function [StateIntervals,SleepState] = StatesToFinalScoring(NREMints,WAKEints,REMints)
+function [StateIntervals,SleepState,durationprams] = StatesToFinalScoring(NREMints,WAKEints,REMints)
 
 minPacketDuration = 30;
 maxMicroarousalDuration = 100;
@@ -7,6 +7,13 @@ maxEpisodeDuration = 40;
 minSWSEpisodeDuration = 20;
 minWAKEEpisodeDuration = 20;
 minREMEpisodeDuration = 20;
+
+durationprams.minPacketDuration = minPacketDuration;
+durationprams.maxMicroarousalDuration = maxMicroarousalDuration;
+durationprams.maxEpisodeDuration = maxEpisodeDuration;
+durationprams.minSWSEpisodeDuration = minSWSEpisodeDuration;
+durationprams.minWAKEEpisodeDuration = minWAKEEpisodeDuration;
+durationprams.minREMEpisodeDuration = minREMEpisodeDuration;
 
 
 SWSlengths = NREMints(:,2)-NREMints(:,1);
