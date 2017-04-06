@@ -44,9 +44,6 @@ if isfield(Par,'SpkGrps')
 elseif isfield(Par,'AnatGrps')
     SpkGrps = Par.AnatGrps;
     display('No SpikeGroups, Using AnatomyGroups')
-elseif isfield(Par,'ElecGp')
-    for i=1:length(Par.ElecGp.channel)
-    SpkGrps.Channels = str2num(Par.ElecGp.channel);
 else
     error('No SpikeGroups...')
 end

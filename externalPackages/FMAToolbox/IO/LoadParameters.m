@@ -74,7 +74,7 @@ if ~isempty(p.spikeDetection),
 else
 	parameters.spikeGroups.nSamples = [];
 	parameters.spikeGroups.groups = {};
-	parameters.spikeGroups.nGroups = 0;
+	parameters.spikeGroups.nGroups = length(p.anatomicalDescription.channelGroups);
 end
 
 parameters.nChannels = str2num(p.acquisitionSystem.nChannels);
@@ -129,10 +129,19 @@ try
         end
     end
     for a = 1:parameters.spikeGroups.nGroups
+        if ~isempty(parameters.spikeGroups.nSamples)
         parameters.SpkGrps(a).Channels = parameters.spikeGroups.groups{a};
         parameters.SpkGrps(a).nSamples =  str2num(p.spikeDetection.channelGroups.group{a}.nSamples);
         parameters.SpkGrps(a).PeakSample = str2num(p.spikeDetection.channelGroups.group{a}.peakSampleIndex); 
         parameters.SpkGrps(a).nFeatures =  str2num(p.spikeDetection.channelGroups.group{a}.nFeatures); 
+        else
+            for b = 1:length(p.anatomicalDescription.channelGroups.group.channel)
+                parameters.SpkGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group.channel{b});
+                parameters.SpkGrps(a).nSamples =  [];
+                parameters.SpkGrps(a).PeakSample = [];
+                parameters.SpkGrps(a).nFeatures =  [];  
+            end
+        end
     end
 catch
    warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
