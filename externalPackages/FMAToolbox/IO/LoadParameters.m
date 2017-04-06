@@ -111,15 +111,22 @@ parameters.Offset = str2num(p.acquisitionSystem.offset);
 parameters.lfpSampleRate = str2num(p.fieldPotentials.lfpSamplingRate);
 catch
    warning('could not load .Date, something may be wrong with your xml...') 
+   parameters.lfpSampleRate = parameters.rates.lfp;
 end
 % fixing AnatGrps and SpkGrps
 % the below code fails with certain XMl files people in the lab use
 % so we'll wrap this in a try/catch for now..
 try
     for a = 1:length(p.anatomicalDescription.channelGroups.group)
-        for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
-            parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
-        end        
+        if isstruct(p.anatomicalDescription.channelGroups.group)
+            for b = 1:length(p.anatomicalDescription.channelGroups.group(a).channel)
+                parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group(a).channel{b});
+            end 
+        elseif iscell(p.anatomicalDescription.channelGroups.group)
+            for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
+                parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
+            end 
+        end
     end
     for a = 1:parameters.spikeGroups.nGroups
         parameters.SpkGrps(a).Channels = parameters.spikeGroups.groups{a};
