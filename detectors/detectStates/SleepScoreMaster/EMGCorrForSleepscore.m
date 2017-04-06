@@ -126,12 +126,14 @@ xcorr_chs = unique(xcorr_chs);
 
 %This is a crappy catch for the issue of no channels due to too many
 %rejectchannels
-if length(xcorr_chs)>=2
-    break
-elseif length(xcorr_chs)<2 && nn==2
-    display('You have no channels for EMG... This is a bug?')
-    return
-end
+% if length(xcorr_chs)>=2
+%     break
+% elseif length(xcorr_chs)<2 && nn==2
+%     display('You have no channels for EMG... This is a bug?')
+%     return
+% end
+% with a single anatomical/spike group, the above code doesn't allow for
+% sleep scoring
 end
     
 
