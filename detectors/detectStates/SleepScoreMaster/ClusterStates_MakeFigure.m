@@ -7,7 +7,7 @@ function ClusterStates_MakeFigure(INT,IDX,figloc,FFTfreqs,FFTspec,thFFTfreqs,thF
  viewwin  =[t_FFT(1) t_FFT(end)];
  %viewwin  =[32000 34000];
 %viewwin=[9000 11000];
-figure
+clusterfig = figure;
 	subplot(8,1,[1:2])
         imagesc(t_FFT,log2(FFTfreqs),log10(FFTspec))
         axis xy
@@ -73,7 +73,7 @@ figure
         xlim(viewwin)
         xlabel('t (s)')
         
-	saveas(gcf,[figloc,recordingname,'_ClusterResults'],'jpeg')
+	saveas(clusterfig,[figloc,recordingname,'_ClusterResults'],'jpeg')
         
 
         
