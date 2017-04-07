@@ -89,6 +89,9 @@ end
 % get list of spike groups (aka shanks) that should be used
 
 spkgrpstouse = 1:length(SpkGrps);
+% check for good/bad shanks and update here
+
+
 % get list of channels (1 from each good spike group)
 
 
