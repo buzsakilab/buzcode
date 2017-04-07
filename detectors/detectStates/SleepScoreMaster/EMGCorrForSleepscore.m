@@ -1,4 +1,4 @@
-function [EMGCorr,sf_EMG] = EMGCorrForSleepscore(basenamepath,scoretime,specialchannels,specialshanks)
+function [EMGCorr,sf_EMG] = EMGCorrForSleepscore(basenamepath,specialchannels,specialshanks)
 % Based on Erik Schomburg's work and code.  Grabs channels and calculates
 % their correlations in the 300-600Hz band over sliding windows of 0.5sec.
 % Channels are automatically selected and are a combination first channels
@@ -82,6 +82,17 @@ end
 %This is potentially dangerous in combination with rejectchannels... i.e.
 %what if you pick every other shank but then the ones you pick are all
 %reject because noisy shank.
+
+% xcorrs_chs is a list of channels that will be loaded 
+% spkgrpstouse is a list of spike groups to find channels from 
+
+% get list of spike groups (aka shanks) that should be used
+
+spkgrpstouse = 1:length(SpkGrps);
+% get list of channels (1 from each good spike group)
+
+
+
 for nn = 1:2  %This loop is part of the crappy fix for that problem
 
 spkgrpstouse = nn:2:length(SpkGrps);
@@ -124,14 +135,18 @@ end
 
 xcorr_chs = unique(xcorr_chs);
 
+
+
+
+
 %This is a crappy catch for the issue of no channels due to too many
 %rejectchannels
-% if length(xcorr_chs)>=2
-%     break
-% elseif length(xcorr_chs)<2 && nn==2
-%     display('You have no channels for EMG... This is a bug?')
-%     return
-% end
+if length(xcorr_chs)>=2
+    break
+elseif length(xcorr_chs)<2 && nn==2
+    display('You have no channels for EMG... This is a bug?')
+    return
+end
 % with a single anatomical/spike group, the above code doesn't allow for
 % sleep scoring
 end
