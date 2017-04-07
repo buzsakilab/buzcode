@@ -1,4 +1,6 @@
-function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes, reclength,histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams)
+function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes, reclength,...
+    histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(...
+    swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
