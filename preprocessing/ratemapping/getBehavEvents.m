@@ -47,11 +47,11 @@ if size(pos,2)>6
     vel(vel>100) = 0;
     vel = fastrms(fastrms(vel,40),100);
     subplot(2,1,1)
-    hist(vel(~isnan(p(:,1))),1000);
-    axis([ 0 mean(vel)+8*std(vel) 0 max(hist(vel(~isnan(p(:,1))),1000))])
+    hist(vel(~isnan(p(2:end,1))),1000);
+    axis([ 0 mean(vel)+8*std(vel) 0 max(hist(vel(~isnan(p(2:end,1))),1000))])
     subplot(2,1,2)
-    plot(vel(~isnan(p(:,1)))',1:sum(~isnan(p(:,1)))')
-    axis([ 0 mean(vel)+8*std(vel) 0 sum(~isnan(p(:,1)))])
+    plot(vel(~isnan(p(2:end,1)))',1:sum(~isnan(p(2:end,1)))')
+    axis([ 0 mean(vel)+8*std(vel) 0 sum(~isnan(p(2:end,1)))])
 %     thresh = min(-vel);
 %     while max(diff((lo))) > 500
 %         [pl lo]=findpeaks(-vel,'MINPEAKHEIGHT',thresh);

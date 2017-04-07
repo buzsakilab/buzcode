@@ -99,7 +99,14 @@ catch
 end
 else  % backwards compatible with FMAT setcurrentsession
    p = inputParser;
-   fbasename = DATA.session.basename;
+   if exist([DATA.session.basename '.lfp'])
+       lfp.Filename = [DATA.session.basename '.lfp'];
+   elseif exist([DATA.session.basename '.eeg'])
+       lfp.Filename = [DATA.session.basename '.eeg']; 
+   else
+       error('could not find lfp file...')
+   end
+   
    path = DATA.session.path;
    nChannels = DATA.nChannels;
    samplingRate = DATA.rates.lfp;
