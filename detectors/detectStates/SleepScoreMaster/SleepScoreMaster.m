@@ -230,11 +230,16 @@ end
 
 % sf_EMG = 2;
 if ~exist(EMGpath,'file') || overwrite;
+    
+    rejectchannels = [];
+    [PATHSTR] = fileparts(basenamepath);
+    if exist(fullfile(PATHSTR,'bad_channels.txt'),'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
+        t = ReadBadChannels_ss(PATHSTR);
+        rejectchannels = cat(1,rejectchannels(:),t(:));
+    end % this should be replaced by a search of the meta data file instead of a separate bad_chans file
+    
     display('Calculating EMG')
-    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime);%BW modify this to have different dependencies, currently assumes presence of: 
-    %.lfp filename - ok
-    % .xml filename - ok
-    %     Save ..._EMGCorr file
+    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);%BW modify this to have different dependencies, currently assumes presence of: 
     if savebool
         %Old Format - update to buzcode
         save(EMGpath,'EMGCorr','sf_EMG')
