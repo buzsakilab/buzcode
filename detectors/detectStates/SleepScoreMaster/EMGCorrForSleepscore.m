@@ -1,11 +1,33 @@
 function [EMGCorr,sf_EMG] = EMGCorrForSleepscore(basenamepath,scoretime,specialchannels,rejectchannels)
+
+% USAGE
+%
+% [EMGCorr,sf_EMG] = EMGCorrForSleepscore(basenamepath,scoretime,specialchannels,rejectchannels)
+%
+% INPUTS
+%
+%       basenamepath      - string combination of base'path and basename of recording
+%                           example: '/animal/recording/recording01'
+%       scoretime         - interval of time (relative torecording) to sleep score
+%                            default = [0 inf]
+%       specialchannels   - vector of 'special' channels that you DO want to use for EMG calc
+%       rejectchannels    - vector of 'bad' channels that you DO NOT want to use for EMG calc
+%       
+%
+% OUTPUTS
+% 
+%       EMGCorr           -
+%       sf_EMG            -
+%
+%
+% DESCRIPTION
+%
 % Based on Erik Schomburg's work and code.  Grabs channels and calculates
 % their correlations in the 300-600Hz band over sliding windows of 0.5sec.
-% Channels are automatically selected and are a combination first channels
-% on each shank (not using directly adjacent shanks, they must be at least 
-% 2 shanks away.  
-% First channels on "specialshanks" are always used
-% "specialchannels" are also always used. 
+% Channels are automatically selected and are a combination of first and last channels
+% on each shank.  This is based on the xml formatting standard that channel ordering goes 
+% from superficial to deep for each channel/spike group. 
+%
 % Special channels should be 0-indexed, per neuroscope convention
 % Requires .lfp/lfp and .xml.  Assumes each spikegroup in the .xml
 % represents a "shank"
@@ -94,79 +116,15 @@ for i=1:length(spkgrpstouse)
 end
 xcorr_chs = unique([xcorr_chs,specialchannels]);
 
-% %%
-% for nn = 1:2  %This loop is part of the crappy fix for that problem
-% 
-% spkgrpstouse = nn:2:length(SpkGrps);
-% spkgrpstouse = spkgrpstouse(:);
-% 
-% if ~isempty(specialshanks) 
-%     ;
-% end
-% if ~isempty(specialchannels)
-%     for a = 1:length(specialchannels)
-%         for b = 1:length(SpkGrps)
-%             if ismember(specialchannels(a),SpkGrps(b).Channels)
-%                 spkgrpstouse = cat(1,spkgrpstouse,b);
-%                 continue
-%             end
-%         end
-%     end
-% end
-% 
-% %Go through each spike group and add one channel to the list of channels to
-% %use for calculating high-f correlation.
-% xcorr_chs = [];
-% for a = 1:length(spkgrpstouse)
-%     spkgroup = spkgrpstouse(a);
-%     %Are any of the channels in this spike group "special channels"?
-%     [lia,lib]=ismember(specialchannels,SpkGrps(spkgroup).Channels);
-%     if any(lia)
-%         xcorr_chs(end+1) = SpkGrps(spkgroup).Channels(lib);
-%     else
-%         availchans = SpkGrps(spkgroup).Channels;
-%         %Don't add rejectchannels to the list of available channels
-%         availchans = setdiff(availchans,rejectchannels); 
-% 
-%         
-%         if length(availchans)>=1
-%             xcorr_chs(end+1) = availchans(1); %Pick the first channel
-%         end
-%     end
-% end
-% 
-% xcorr_chs = unique(xcorr_chs);
-
-
-
-
-% %This is a crappy catch for the issue of no channels due to too many
-% %rejectchannels
-% if length(xcorr_chs)>=2
-%     break
-% elseif length(xcorr_chs)<2 && nn==2
-%     display('You have no channels for EMG... This is a bug?')
-%     return
-% end
-% % with a single anatomical/spike group, the above code doesn't allow for
-% % sleep scoring
-% end
-
 %% Read and filter channel
 % read channels
 xcorr_chs = xcorr_chs + 1; % loadparameters returns 0 indexed (neuroscope) channels, 
                            % but Loadbinary.m takes 1-indexed channel #'s
 lfp = LoadBinary(lfploc,'nChannels',nChannels,'channels',xcorr_chs,...
     'start',scoretime(1),'duration',diff(scoretime)); %read and convert to mV    
+
 % Filter first in high frequency band to remove low-freq physiologically
 % correlated LFPs (e.g., theta, delta, SPWs, etc.)
-
-% eeg = LoadBinary_Down_ss(lfploc,'frequency',Fs,...
-%     'nchannels',nChannels,'channels',xcorr_chs+1,...
-%     'start',scoretime(1),'duration',diff(scoretime));
-% %+1 is applied to channel numbers here for 0 (neuroscope) vs 1 (LoadBinary)
-% %indexing.
-
 
 xcorr_freqband = [275 300 600 625]; % Hz
 lfp = filtsig_in(lfp, Fs, xcorr_freqband);
