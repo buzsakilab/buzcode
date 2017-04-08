@@ -147,8 +147,10 @@ if saveFiles
     cluster_names = unique(clu);
     for i=1:length(cluster_names)
         group(i) = h5readatt(tkwik,kwikinfo.Groups(i).Name,'cluster_group');
+        temp = strsplit(kwikinfo.Groups(i).Name,'/');
+        clusterID(i) = str2num(temp{length(temp)}); % fix for if channel ordering is mixed up (we don't know that the first clusters are noise/MUA)
         if group(i)~=2
-        clu(clu == cluster_names(i)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
+        clu(clu == clusterID(i)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
         end
     end
     
