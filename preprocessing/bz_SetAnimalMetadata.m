@@ -50,6 +50,7 @@ function AnimalMetadata = bz_SetAnimalMetadata(basepath,basename)
 % (at your option) any later version.
 
 %% Defaults... will be overwritten by incoming data
+! put this in the human-editable area
 df.NumberOfChannels = 1;%this is corrected below
 df.SampleRate = 20000;
 df.BitsPerSample = 16;
@@ -72,6 +73,14 @@ elseif isempty(basename)
     [~,basename] = fileparts(basepath);
 end
 
+%% Ask which modules to use
+% AnimalAndSurgery
+% ExtracellEphys
+% IntracellEphys
+% Virus
+% Imaging
+
+
 %% Value setting - humans must do this
 notesname = [basename,'_NoteText.m'];
 if ~exist(fullfile(basepath,notesname),'file')
@@ -79,10 +88,10 @@ if ~exist(fullfile(basepath,notesname),'file')
     copyfile(w,notesname);
     edit(notesname)
 end
-run(notesname);%save to disk
 
 prompt = 'Push any key in this window when done editing the NoteText file ';
 str = input(prompt,'s');
+run(notesname);%save to disk
 
 load(fullfile(basepath,[basename '_AnimalNotes.mat']))%load AnimalNotes
 AnimalMetadata = AnimalNotes;
@@ -90,10 +99,11 @@ clear AnimalNotes
 
 %% Automated after this point
 [PerGroupSuperficialToDeep,SpatialXY,NumChansPerProbe,GroupsPerChannel] = bz_ReadProbeMapFiles(AnimalMetadata.Probes.ProbeLayoutFilenames);
+%make contingency here
 AnimalMetadata.Probes.NumGroupsPerProbe = sum(~cellfun(@isempty,PerGroupSuperficialToDeep),2);
 AnimalMetadata.Probes.WithinProbeXYLocations = SpatialXY;
 AnimalMetadata.Probes.NumChansPerProbe = NumChansPerProbe;%to do
-AnimalMetadata.Probes.ProbeSpikeGroupLayoutSuperficialToDeep = PerGroupSuperficialToDeep;%to do
+AnimalMetadata.Probes.ProbeSpikeGroupLayoutSuperficialToDeep = PerGroupSuperficialToDeep;
 AnimalMetadata.Channels.NumChannelsTotal = sum(NumChansPerProbe);
     df.NumberOfChannels = AnimalMetadata.Channels.NumChannelsTotal;
 %make lookup tables for probe number and anatomy for each channel
@@ -112,6 +122,8 @@ for pidx = 1:AnimalMetadata.Probes.NumberOfProbes
     pglut = cat(1,pglut,[1:AnimalMetadata.Probes.NumGroupsPerProbe(pidx)]'+length(pglut));
     pglut_p = cat(1,pglut_p,pidx*ones(AnimalMetadata.Probes.NumGroupsPerProbe(pidx),1));
 end
+
+!string for column and row labels for LUTs
 AnimalMetadata.Probes.ProbeToGroupLookupTable = [pglut_p pglut];
 AnimalMetadata.Channels.ChannelToProbeLookupTable = [[1:AnimalMetadata.Channels.NumChannelsTotal]' lut];
 AnimalMetadata.Channels.ChannelToGroupLookupTable = [[1:AnimalMetadata.Channels.NumChannelsTotal]' glut];
@@ -120,7 +132,7 @@ AnimalMetadata.Channels.ChannelToProbeLookupTable_AsPlugged = [[1:AnimalMetadata
 AnimalMetadata.Channels.ChannelToGroupLookupTable_AsPlugged = [[1:AnimalMetadata.Channels.NumChannelsTotal]' glut_ap];
 AnimalMetadata.Channels.ChannelToAnatomyLookupTable_AsPlugged = AnimalMetadata.Probes.TargetRegions(lut_ap)';
 
-%Get impedances per channel
+%Get impedances per channel based on intan impedance files
 if ~isempty(AnimalMetadata.Channels.ImpedanceFilenames)
     AnimalMetadata.Channels.ImpedanceByChannel = cell(AnimalMetadata.Probes.NumberOfProbes);
     for pidx = 1:length(AnimalMetadata.Channels.ImpedanceFilenames)
@@ -146,8 +158,10 @@ AnimalMetadata.RecordingParameterDefaults = df;
 %coordinates to map each site at day of implant
 
 %% Make XML for animal
-aname = AnimalMetadata.AnimalName;
-apath = AnimalMetadata.AnimalBasepath;
+% aname = AnimalMetadata.AnimalName;
+% apath = AnimalMetadata.AnimalBasepath;
+aname = basename;
+apath = basepath;
 pfiles = AnimalMetadata.Probes.ProbeLayoutFilenames;
 plugord = AnimalMetadata.Probes.PluggingOrder;
 bz_MakeXMLFromProbeMaps(apath,aname,pfiles,plugord,df);

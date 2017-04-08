@@ -35,10 +35,16 @@ AnimalNotes.Surgery.Complications = '';
 AnimalNotes.Surgery.DamageSites = '';
 AnimalNotes.Surgery.Notes = 'Good';
 
+
+!new file
 AnimalNotes.Virus.Strain = '';
 AnimalNotes.Virus.Coordinates.Anteroposterior = [];%one for each injection
 AnimalNotes.Virus.InjectionDate = '';
 
+!new file
+%On probe subfields below: if multiple probes, put in one entry in each field
+%per probe, make sure they align with each other properly and all
+%subsequent assumptions will work.
 AnimalNotes.Probes.UmPerScrewTurn = [288 288];
 AnimalNotes.Probes.NumberOfProbes = 2;
 AnimalNotes.Probes.TargetRegions = {'dCA1','mPFC'};

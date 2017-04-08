@@ -36,13 +36,14 @@ thisxmlpath = fullfile(basepath,[basename,'.xml']);
 copyfile(upperxmlpath,thisxmlpath);
 
 % set basic info based on AnimalMetadata
+!make the animal metadata a field in sessionmetadata
 SessionMetadata.Basepath = basepath;
 SessionMetadata.Basename = basename;
 SessionMetadata.AnimalBasepath = AnimalMetadata.AnimalBasepath;
 SessionMetadata.Weight = [];
 SessionMetadata.RecordingParameters = AnimalMetadata.RecordingParameterDefaults;
 
-SessionMetadata.Anatomy.TargetRegions = AnimalMetadata.Probes.TargetRegions;
+% SessionMetadata.Anatomy.TargetRegions = AnimalMetadata.Probes.TargetRegions;
 SessionMetadata.Anatomy.NumberOfTurnsSinceSurgery = [0 0];
 SessionMetadata.Anatomy.ProbeDepths = SessionMetadata.Anatomy.NumberOfTurnsSinceSurgery .* AnimalMetadata.Probes.UmPerScrewTurn;
 SessionMetadata.Anatomy.ProbeCenterCoordinates = [];
@@ -56,6 +57,7 @@ SessionMetadata.Probes.BadShanks = [];%manual... can be used to make badchannels
 SessionMetadata.Channels.ChannelToProbeLookupTable_AsPlugged = AnimalMetadata.Channels.ChannelToProbeLookupTable_AsPlugged;
 SessionMetadata.Channels.ChannelToGroupLookupTable_AsPlugged = AnimalMetadata.Channels.ChannelToGroupLookupTable_AsPlugged;
 SessionMetadata.Channels.ChannelToAnatomyLookupTable_AsPlugged = AnimalMetadata.Channels.ChannelToAnatomyLookupTable_AsPlugged;
+
 SessionMetadata.Channels.BadChannels = BadChannels;%manual list in addition to channels that can be derived from .Probes.BadShanks
 SessionMetadata.Channels.ChannelNotes = ChannelNotes;%manual list in addition to channels that can be derived from .Probes.BadShanks
 
@@ -104,7 +106,7 @@ if ~isempty(d);%if from an amplipex
         else%if all the same
             SessionMetadata.RecordingParameters.SampleRate = SamplingRate(1);
             if SamplingRate(1) ~= SessionMetadata.RecordingParameters.SampleRate
-                warning('The Sampling Rates recorded is different from that in AnimalMetadata.  Original XML File invalid');
+                warning('The Sampling Rates recorded are different from that in AnimalMetadata.  Original XML File invalid');
             end
         end
         
@@ -141,7 +143,7 @@ else %basically if intan
 
                [amplifier_channels, notes, aux_input_channels, spike_triggers,...         
                board_dig_in_channels, supply_voltage_channels, frequency_parameters ] =...
-               read_Intan_RHD2000_file(fullfile(basepath,d(didx).name),'info.rhd');
+               read_Intan_RHD2000_file(fullfile(basepath,d(didx).name),'info.rhd');%function from Intan
            
                NAmpChannels(end+1) = length(amplifier_channels);
                NAuxChannels(end+1) = length(aux_input_channels);

@@ -19,7 +19,7 @@ for pmidx = 1:length(probemaplist)
         tpf = strcat(tpf,'.xlsx');
     end
     tpp = which(tpf);
-    [tpnum,tptxt,tpraw] = xlsread(tpp);
+    [tpnum,tptxt,tpraw] = xlsread(tpp,1);
     
     %find shanks/groups
     groupcolumn = strmatch('BY VERTI',tptxt(1,:));
