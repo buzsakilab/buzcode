@@ -1,4 +1,4 @@
-function [SWchannum,THchannum,swLFP,thLFP,t_LFP,Fs_save,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figfolder,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels);
+function [SWchannum,THchannum,swLFP,thLFP,t_LFP,Fs_save,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figfolder,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels);
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %
@@ -65,12 +65,12 @@ noverlap = noverlap*Fs;
 spkgroupchannels = [SpkGrps.Channels];
 
 %Add reject channels here...
-rejectchannels = [];
-if exist(fullfile(datasetfolder,recordingname,'bad_channels.txt'),'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
-    t = ReadBadChannels_ss(fullfile(datasetfolder,recordingname));
-    t = t+1;%account for offset
-    rejectchannels = cat(1,rejectchannels(:),t(:));
-end
+% rejectchannels = [];
+% if exist(fullfile(datasetfolder,recordingname,'bad_channels.txt'),'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
+%     t = ReadBadChannels_ss(fullfile(datasetfolder,recordingname));
+%     t = t+1;%account for offset
+%     rejectchannels = cat(1,rejectchannels(:),t(:));
+% end
 if sum(SWChannels)>0 && sum(ThetaChannels)>0%use all channels unless SWChannels and ThetaChannels are specified... if both specified then we know those are the only good ones
     goodchannels = union(SWChannels,ThetaChannels);
     badchannels = setdiff(spkgroupchannels,goodchannels);

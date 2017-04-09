@@ -190,6 +190,7 @@ end
 %Filenames for EMG, thLFP, and swLFP .mat files in the database.
 %ALL OF THESE NEED TO BE CLEANED INTO BUZCODE FORMAT
 %Theta/SWLFP are depreciated - replaced with scorelfppath
+sessionmetadatapath = fullfile(savefolder,[recordingname,'_SessionMetadata.mat']);
 thetalfppath = fullfile(savefolder,[recordingname,'_ThetaLFP.mat']);
 swlfppath = fullfile(savefolder,[recordingname,'_SWLFP.mat']);
 scorelfppath = fullfile(savefolder,[recordingname,'_SleepScoreLFP.mat']);
@@ -220,6 +221,15 @@ else
     return
 end
 
+%% Get channels not to use
+if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
+    load(sessionmetadatapath)
+    rejectchannels = SessionMetadata.ExtraEphys.BadChannels;
+else
+    rejectchannels = [];
+end
+
+
 %% CALCULATE EMG FROM HIGH-FREQUENCY COHERENCE
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
@@ -230,16 +240,14 @@ end
 
 % sf_EMG = 2;
 if ~exist(EMGpath,'file') || overwrite;
-    
-    rejectchannels = [];
-    [PATHSTR] = fileparts([datasetfolder '/' recordingname]);
-    if exist(fullfile(PATHSTR,'bad_channels.txt'),'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
-        t = ReadBadChannels_ss(PATHSTR);
-        rejectchannels = cat(1,rejectchannels(:),t(:));
-    end % this should be replaced by a search of the meta data file instead of a separate bad_chans file
-    
+%     [PATHSTR] = fileparts([datasetfolder '/' recordingname]);
+%     if exist(fullfile(PATHSTR,'bad_channels.txt'),'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
+%         t = ReadBadChannels_ss(PATHSTR);
+%         rejectchannels = cat(1,rejectchannels(:),t(:));
+%     end % this should be replaced by a search of the meta data file instead of a separate bad_chans file
+
     display('Calculating EMG')
-    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);%BW modify this to have different dependencies, currently assumes presence of: 
+    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);
     if savebool
         %Old Format - update to buzcode
         save(EMGpath,'EMGCorr','sf_EMG')
@@ -264,7 +272,7 @@ clear EMGCorr
 if ((~exist(thetalfppath,'file') && ~exist(swlfppath,'file')) && ~exist(scorelfppath,'file')) || overwrite; % if no lfp file already, load lfp and make lfp file?
 
     display('Picking SW and TH Channels')
-    [SWchannum,THchannum,swLFP,thLFP,t_LFP,sf_LFP,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figloc,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels);
+    [SWchannum,THchannum,swLFP,thLFP,t_LFP,sf_LFP,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figloc,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels);
     if savebool
         %Transfer this into scoremetricspath? predownsampled to what it
         %needs to be for ClusterStates. 
