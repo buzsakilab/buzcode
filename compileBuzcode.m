@@ -11,7 +11,8 @@ catch
     display('Please navigate to your local buzcode main directory')
 end
 
-mex -O FilterX.c % compiles FilterM (faster filtering than filtfilt)
+% mex -O FilterX.c % compiles FilterM (faster filtering than filtfilt)
+mex('CFLAGS="\$CFLAGS -std=c99"', 'FilterX.c') % the above line fails with newer compilers but this works
 cd('../..')
     
 
