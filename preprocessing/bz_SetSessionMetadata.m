@@ -193,6 +193,10 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
     plugord = SessionMetadata.AnimalMetadata.Probes.PluggingOrder;
     bz_MakeXMLFromProbeMaps(basepath,basename,pfiles,plugord,SessionMetadata.ExtraEphys.Parameters);
 end
+
+%% Re-present data to the user to allow them to add new bad channels and bad shanks, after seeing the 
+
+
 %% Save all metadata
 save(fullfile(basepath,[basename '_SessionMetadata.mat']),'SessionMetadata')
 
