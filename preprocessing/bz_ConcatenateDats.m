@@ -69,7 +69,7 @@ end
 %% Concatenate the main data files
 if isunix
     cs = strjoin(datpaths);
-    catstring = ['! cat -v ', cs, ' > ',newdatpath];
+    catstring = ['! cat ', cs, ' > ',newdatpath];
 elseif ispc%As of 4/9/2017 - never tested
     if length(datpaths)>1
         for didx = 1:length(datpaths)-1;
