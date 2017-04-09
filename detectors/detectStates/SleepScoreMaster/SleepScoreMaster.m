@@ -190,6 +190,7 @@ end
 %Filenames for EMG, thLFP, and swLFP .mat files in the database.
 %ALL OF THESE NEED TO BE CLEANED INTO BUZCODE FORMAT
 %Theta/SWLFP are depreciated - replaced with scorelfppath
+sessionmetadatapath = fullfile(savefolder,[recordingname,'_SessionMetadata.mat']);
 thetalfppath = fullfile(savefolder,[recordingname,'_ThetaLFP.mat']);
 swlfppath = fullfile(savefolder,[recordingname,'_SWLFP.mat']);
 scorelfppath = fullfile(savefolder,[recordingname,'_SleepScoreLFP.mat']);
@@ -220,6 +221,15 @@ else
     return
 end
 
+%% Get channels not to use
+if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
+    load(sessionmetadatapath)
+    rejectchannels = SessionMetadata.ExtraEphys.BadChannels;
+else
+    rejectchannels = [];
+end
+
+
 %% CALCULATE EMG FROM HIGH-FREQUENCY COHERENCE
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
@@ -230,11 +240,14 @@ end
 
 % sf_EMG = 2;
 if ~exist(EMGpath,'file') || overwrite;
+%     [PATHSTR] = fileparts([datasetfolder '/' recordingname]);
+%     if exist(fullfile(PATHSTR,'bad_channels.txt'),'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
+%         t = ReadBadChannels_ss(PATHSTR);
+%         rejectchannels = cat(1,rejectchannels(:),t(:));
+%     end % this should be replaced by a search of the meta data file instead of a separate bad_chans file
+
     display('Calculating EMG')
-    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime);%BW modify this to have different dependencies, currently assumes presence of: 
-    %.lfp filename - ok
-    % .xml filename - ok
-    %     Save ..._EMGCorr file
+    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);
     if savebool
         %Old Format - update to buzcode
         save(EMGpath,'EMGCorr','sf_EMG')
@@ -259,7 +272,7 @@ clear EMGCorr
 if ((~exist(thetalfppath,'file') && ~exist(swlfppath,'file')) && ~exist(scorelfppath,'file')) || overwrite; % if no lfp file already, load lfp and make lfp file?
 
     display('Picking SW and TH Channels')
-    [SWchannum,THchannum,swLFP,thLFP,t_LFP,sf_LFP,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figloc,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels);
+    [SWchannum,THchannum,swLFP,thLFP,t_LFP,sf_LFP,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figloc,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels);
     if savebool
         %Transfer this into scoremetricspath? predownsampled to what it
         %needs to be for ClusterStates. 
@@ -318,7 +331,7 @@ end
 display('Quantifying metrics for state scoring')
 % [stateintervals,~,~,~,~,broadbandSlowWave,thratio,EMG,t_clus,badtimes,reclength] = ClusterStates(swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname);
 [broadbandSlowWave,thratio,EMG,t_EMG,t_clus,badtimes,reclength,histsandthreshs,...
-    FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(swLFP,...
+    FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(swLFP,... 
     thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams);
 
 display('Clustering States Based on EMG, SW, and TH LFP channels')
