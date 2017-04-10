@@ -193,7 +193,7 @@ EMG.channels = xcorr_chs;
 EMG.detectorName = 'bz_EMGFromLFP';
 EMG.samplingFreq = samplingFrequency;
 
-if savebool
+if saveFiles
     % save...
     save(saveLocation,'EMG');
 end
