@@ -226,7 +226,7 @@ end
 %% Get channels not to use
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
-    rejectchannels = SessionMetadata.ExtraEphys.BadChannels;
+    rejectchannels = SessionMetadata.ExtracellEphys.BadChannels;
 else
     rejectchannels = [];
 end

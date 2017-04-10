@@ -65,6 +65,6 @@ for pmidx = 1:length(probemaplist)
         SpatialChannelXY{pmidx} = [channelnums X Y];
     end
     GroupsPerChannel{pmidx} = groupperchannel(channelnums+1);
-    
+    clear channelnums X Y
 end
 1;

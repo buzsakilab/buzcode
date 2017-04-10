@@ -1,5 +1,10 @@
 function bz_SessionNotesTemplate(basepath,basename,AnimalMetadata)
 
+if ~exist('AnimalMetadata','var')
+    load(fullfile(basepath,[basename '_AnimalMetadata.mat']))
+end
+
+%%
 SessionNotes.basepath = basepath;
 SessionNotes.basename = basename;
 
@@ -12,15 +17,15 @@ end
 
 % Extracell Ephys metadata
 if AnimalMetadata.Modules.ExtracellEphys
-    SessionNotes.ExtraEphys.NumberOfTurnsSinceSurgery = [0 0];%vector, one entry per probe
-    SessionNotes.ExtraEphys.BadShanks = [];
-    SessionNotes.ExtraEphys.BadChannels = [];
-    SessionNotes.ExtraEphys.ChannelNotes = {''};
+    SessionNotes.ExtracellEphys.NumberOfTurnsSinceSurgery = [0 0];%vector, one entry per probe
+    SessionNotes.ExtracellEphys.BadShanks = [];
+    SessionNotes.ExtracellEphys.BadChannels = [];
+    SessionNotes.ExtracellEphys.ChannelNotes = {''};
     
-    SessionNotes.ExtraEphys.Parameters.LfpSampleRate = 1250;%assumed default
-    SessionNotes.ExtraEphys.Parameters.PointsPerWaveform = 32;%default
-    SessionNotes.ExtraEphys.Parameters.PeakPointInWaveform = 16;%default
-    SessionNotes.ExtraEphys.Parameters.FeaturesPerWave = 4;%default
+    SessionNotes.ExtracellEphys.Parameters.LfpSampleRate = 1250;%assumed default
+    SessionNotes.ExtracellEphys.Parameters.PointsPerWaveform = 32;%default
+    SessionNotes.ExtracellEphys.Parameters.PeakPointInWaveform = 16;%default
+    SessionNotes.ExtracellEphys.Parameters.FeaturesPerWave = 4;%default
 end
 
 %% Virus metadata

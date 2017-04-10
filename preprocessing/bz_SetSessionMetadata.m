@@ -55,31 +55,31 @@ clear SessionNotes AnimalMetadata
 
 %%
 if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
-    SessionMetadata.Probes.NumberOfTurnsSinceSurgery = [0 0];
-    SessionMetadata.Probes.ProbeDepths = SessionMetadata.ExtraEphys.NumberOfTurnsSinceSurgery .* SessionMetadata.AnimalMetadata.Probes.UmPerScrewTurn;
-    SessionMetadata.Probes.ProbeCenterCoordinates = [];%someone should do this
-    SessionMetadata.Probes.ChannelCenterCoordinates = [];%someone should do this
+    SessionMetadata.ExtracellEphys.Probes.NumberOfTurnsSinceSurgery = [0 0];
+    SessionMetadata.ExtracellEphys.Probes.ProbeDepths = SessionMetadata.ExtracellEphys.NumberOfTurnsSinceSurgery .* SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.UmPerScrewTurn;
+    SessionMetadata.ExtracellEphys.Probes.ProbeCenterCoordinates = [];%someone should do this
+    SessionMetadata.ExtracellEphys.Probes.ChannelCenterCoordinates = [];%someone should do this
 
     % Read recording system-based metadata from either .rhd or .meta (Intan or Amplirec) 
     % Check for compatibility with AnimalMetadata, overwrite using this and
     % warn the user of the conflict.
 
-    SessionMetadata.ExtraEphys.Files.Names = {};
-    SessionMetadata.ExtraEphys.Files.Bytes = [];
-    SessionMetadata.ExtraEphys.Files.Seconds = [];
+    SessionMetadata.ExtracellEphys.Files.Names = {};
+    SessionMetadata.ExtracellEphys.Files.Bytes = [];
+    SessionMetadata.ExtracellEphys.Files.Seconds = [];
 
     d = dir(fullfile(basepath,'*.meta'));
     if ~isempty(d);%if from an amplipex
-        SessionMetadata.ExtraEphys.RecordingSystem = 'Amplipex';
+        SessionMetadata.ExtracellEphys.RecordingSystem = 'Amplipex';
         for idx = 1:length(d);
-            SessionMetadata.ExtraEphys.Files.Names{idx} = d(idx).name(1:end-5);
+            SessionMetadata.ExtracellEphys.Files.Names{idx} = d(idx).name(1:end-5);
             tdat = strcat(d(idx).name(1:end-5),'.dat');
             t = dir(fullfile(basepath,tdat));
             if ~isempty(t) %if original .dat still around
-                SessionMetadata.ExtraEphys.Files.Bytes(idx) = t.bytes;
+                SessionMetadata.ExtracellEphys.Files.Bytes(idx) = t.bytes;
             else%if no .dat around (ie anymore), get bytes from .meta 
                 disp([tdat ' not found']);
-                SessionMetadata.ExtraEphys.Files.Bytes{idx} = str2num(bz_ReadAmplipexMetafileAspects(fullfile(basepath,d(idx).name),'filebytes'));
+                SessionMetadata.ExtracellEphys.Files.Bytes{idx} = str2num(bz_ReadAmplipexMetafileAspects(fullfile(basepath,d(idx).name),'filebytes'));
             end
             NChannels(idx) = str2num(bz_ReadAmplipexMetafileAspects(fullfile(basepath,d(idx).name),'NumChans'));
             SamplingRate(idx) = str2num(bz_ReadAmplipexMetafileAspects(fullfile(basepath,d(idx).name),'SamplingRate'));
@@ -90,23 +90,23 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
             if sum(abs(diff(NChannels)))%if different numbers of channels differed across recordings in session, error out
                 warning('Rercordings contain different numbers of channels - per .meta files.  Will use count from first recording.')
             end
-            SessionMetadata.ExtraEphys.Parameters.NumberOfChannels = NChannels(1);
+            SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels = NChannels(1);
             
             %Sampling Rate
             if sum(abs(diff(SamplingRate)))%if different numbers of channels differed across recordings in session, error out
                 warning('Rercordings contain different SamplingRates - per .meta files.  Will use number from first recording.')
             end
-            SessionMetadata.ExtraEphys.Parameters.SampleRate = SamplingRate(1);
+            SessionMetadata.ExtracellEphys.Parameters.SampleRate = SamplingRate(1);
             
             %Amplification
             if sum(abs(diff(Amplification)))%if different numbers of channels differed across recordings in session, error out
                 warning('Rercordings contain different Amplifications - per .meta files.  Will use number from first recording.')
             end
-            SessionMetadata.ExtraEphys.Parameters.Amplification = Amplification(1);
+            SessionMetadata.ExtracellEphys.Parameters.Amplification = Amplification(1);
             
-            SessionMetadata.ExtraEphys.Parameters.VoltsPerUnit = VoltsPerUnit_Amplirec(basename,basepath);%calculate from .metas/.inis
-            SessionMetadata.ExtraEphys.Parameters.BitsPerSample = 16;%amplirec default
-            SessionMetadata.ExtraEphys.Parameters.VoltageRange = 10;%not used except to make xml
+            SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit = VoltsPerUnit_Amplirec(basename,basepath);%calculate from .metas/.inis
+            SessionMetadata.ExtracellEphys.Parameters.BitsPerSample = 16;%amplirec default
+            SessionMetadata.ExtracellEphys.Parameters.VoltageRange = 10;%not used except to make xml
         end
     else %if not amplipex, look for intan
         NAmpChannels = [];
@@ -118,11 +118,11 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
            if d(didx).isdir
                t = dir(fullfile(basepath,d(didx).name,'info.rhd'));
                if ~isempty(t)%only use folders with info.rhd inside
-                   SessionMetadata.ExtraEphys.RecordingSystem = 'Intan';
+                   SessionMetadata.ExtracellEphys.RecordingSystem = 'Intan';
                    rhd = fullfile(basepath,d(didx).name,'info.rhd');
     %                ampdats{end+1} = fullfile(basepath,d(didx).name,'amplifier.dat');
     %                recordingdiridxs = didx;
-                   SessionMetadata.ExtraEphys.Files.Names{end+1} = d(didx).name;
+                   SessionMetadata.ExtracellEphys.Files.Names{end+1} = d(didx).name;
 
                    % read the info.rhd file for each individual recorded
                    % file/folder
@@ -137,11 +137,11 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
 
                    t = dir(fullfile(basepath,d(didx).name,'amplifier.dat'));
                    if ~isempty(t) %if original .dat still around
-                       SessionMetadata.ExtraEphys.Files.Bytes(end+1) = t.bytes;
+                       SessionMetadata.ExtracellEphys.Files.Bytes(end+1) = t.bytes;
                    else%if no .dat around
-                       disp([SessionMetadata.ExtraEphys.Files.Names{end} ' not found']);
+                       disp([SessionMetadata.ExtracellEphys.Files.Names{end} ' not found']);
                        timedat = dir(fullfile(basepath,d(didx).name,'time.dat'));
-                       SessionMetadata.ExtraEphys.Files.Bytes(end+1) = timedat(1).bytes/2*NAmpChannels(end);
+                       SessionMetadata.ExtracellEphys.Files.Bytes(end+1) = timedat(1).bytes/2*NAmpChannels(end);
                    end
 
                end
@@ -152,46 +152,61 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
             if sum(abs(diff(NAmpChannels)))%if different numbers of channels differed across recordings in session, error out
                 warning('Rercordings contain different numbers of channels - per info.rhd files.  Will use count from first recording.')
             end
-            SessionMetadata.ExtraEphys.Parameters.NumberOfChannels = NAmpChannels(1);
+            SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels = NAmpChannels(1);
 
             if sum(abs(diff(NAuxChannels)))%if different numbers of channels differed across recordings in session, error out
                 warning('Rercordings contain different numbers auxiliary of channels - per info.rhd files.  Will use count from first recording.')
             end
-            SessionData.ExtraEphys.NumAuxiliaryChannels = NAuxChannels(1);
+            SessionData.ExtracellEphys.NumAuxiliaryChannels = NAuxChannels(1);
             
             if sum(abs(diff(NDigitalChannels)))%if different numbers of channels differed across recordings in session, error out
                 warning('Rercordings contain different numbers digital of channels - per info.rhd files.  Will use count from first recording.')
             end
-            SessionData.ExtraEphys.NumDigitalChannels = NAuxChannels(1);
+            SessionData.ExtracellEphys.NumDigitalChannels = NAuxChannels(1);
 
             %sampling rate
             if sum(abs(diff(SamplingRate)))%if different numbers of channels differed across recordings in session, error out
                 warning('Rercordings contain different SamplingRates - per info.rhd files.  Will use number from first recording.')
             end
-            SessionMetadata.ExtraEphys.Parameters.SampleRate = SamplingRate(1);
+            SessionMetadata.ExtracellEphys.Parameters.SampleRate = SamplingRate(1);
 
             % getting bytes and seconds per file
-            SessionMetadata.ExtraEphys.Parameters.Amplification = 1;%digitized on chip, let's say 1
-            SessionMetadata.ExtraEphys.Parameters.VoltsPerUnit = 0.0000002;%intan default                
-            SessionMetadata.ExtraEphys.Parameters.BitsPerSample = 16;%intan default
-            SessionMetadata.ExtraEphys.Parameters.VoltageRange = 10;%not used except to make xml
+            SessionMetadata.ExtracellEphys.Parameters.Amplification = 1;%digitized on chip, let's say 1
+            SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit = 0.0000002;%intan default                
+            SessionMetadata.ExtracellEphys.Parameters.BitsPerSample = 16;%intan default
+            SessionMetadata.ExtracellEphys.Parameters.VoltageRange = 10;%not used except to make xml
         end
     end
 
-    SessionMetadata.ExtraEphys.Files.Seconds = SessionMetadata.ExtraEphys.Files.Bytes/SessionMetadata.ExtraEphys.Parameters.NumberOfChannels/2/SessionMetadata.ExtraEphys.Parameters.SampleRate;
+    SessionMetadata.ExtracellEphys.Files.Seconds = SessionMetadata.ExtracellEphys.Files.Bytes/SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels/2/SessionMetadata.ExtracellEphys.Parameters.SampleRate;
 
-    % xml making
-    % Defaults... necessary at this point only for purposes of making an .xml l
-%     SessionMetadata.ExtraEphys.Parameters.LfpSampleRate = LfpSampleRate;%from manual input
-%     SessionMetadata.EphysDefaults.PointsPerWaveform = PointsPerWaveform;%from manual input
-%     SessionMetadata.EphysDefaults.PeakPointinWaveform = PeakPointInWaveform;%from manual input
-%     SessionMetadata.EphysDefaults.FeaturesPerWave = FeaturesPerWave;%from manual input
-    %% Make XML for animal
-    % aname = AnimalMetadata.AnimalName;
-    % apath = AnimalMetadata.AnimalBasepath;
-    pfiles = SessionMetadata.AnimalMetadata.Probes.ProbeLayoutFilenames;
-    plugord = SessionMetadata.AnimalMetadata.Probes.PluggingOrder;
-    bz_MakeXMLFromProbeMaps(basepath,basename,pfiles,plugord,SessionMetadata.ExtraEphys.Parameters);
+    %% Make XML for session?
+    %Check for conflicts between original animal-based ephys params and
+    %those based on files in this particular recording.
+    aparams = SessionMetadata.AnimalMetadata.ExtracellEphys.Parameters;
+    sparams = SessionMetadata.ExtracellEphys.Parameters;
+    fn = fieldnames(aparams);
+    divergentfields = {};
+    for fidx = 1:length(fn);
+        if getfield(aparams,fn{fidx}) ~= getfield(sparams,fn{fidx})
+            divergentfields{end+1} = fn{fidx};
+        end
+    end
+            
+    if isempty(divergentfields) % if no conflicts copy the animal-based xml
+        apath = SessionMetadata.AnimalMetadata.AnimalBasepath;
+        aname = SessionMetadata.AnimalMetadata.AnimalName;
+        axml = fullfile(apath,[aname '.xml']);
+        sxml = fullfile(basepath,[basename,'.xml']);
+        copyfile(axml,sxml);
+    else % if conflicts make a new xml, and warn
+        warning('Conflicts between ephys parameters specified for Animal and those found in this recording')
+        warning('Conflicts found in:')
+        disp(divergentfields)
+        pfiles = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames;
+        plugord = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.PluggingOrder;
+        bz_MakeXMLFromProbeMaps(basepath,basename,pfiles,plugord,SessionMetadata.ExtracellEphys.Parameters);
+    end
 end
 
 %% Re-present data to the user to allow them to add new bad channels and bad shanks, after seeing the 

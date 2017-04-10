@@ -22,19 +22,19 @@ end
 %%
 load(fullfile(basepath,[basename,'_SessionMetadata.mat']));
 newdatpath = fullfile(basepath,[basename,'.dat']);
-switch SessionMetadata.ExtraEphys.RecordingSystem
+switch SessionMetadata.ExtracellEphys.RecordingSystem
     case 'Intan'
         otherdattypes = {'analogin';'digitalin';'auxiliary';'time';'supply'};
         for odidx = 1:length(otherdattypes)
             eval(['new' otherdattypes{odidx} 'path = fullfile(basepath,''' otherdattypes{odidx} '.dat'');'])
         end
         
-        for fidx = 1:length(SessionMetadata.ExtraEphys.Files.Names)% go through each folder in basepath to look for various .dats
-            datpaths{fidx} = fullfile(basepath,SessionMetadata.ExtraEphys.Files.Names{fidx},'amplifier.dat');%int16
+        for fidx = 1:length(SessionMetadata.ExtracellEphys.Files.Names)% go through each folder in basepath to look for various .dats
+            datpaths{fidx} = fullfile(basepath,SessionMetadata.ExtracellEphys.Files.Names{fidx},'amplifier.dat');%int16
             %datbytes already saved in SessionMetadata
             
             for odidx = 1:length(otherdattypes)%loop through other .dat types found here
-                eval([otherdattypes{odidx} 'datpaths{fidx} = fullfile(basepath,SessionMetadata.ExtraEphys.Files.Names{fidx},''' otherdattypes{odidx} '.dat'');'])
+                eval([otherdattypes{odidx} 'datpaths{fidx} = fullfile(basepath,SessionMetadata.ExtracellEphys.Files.Names{fidx},''' otherdattypes{odidx} '.dat'');'])
                 eval(['d = dir(' otherdattypes{odidx} 'datpaths{fidx});'])
                 if isempty(d)
                     bad_otherdattypes(odidx) = 1;
@@ -43,26 +43,26 @@ switch SessionMetadata.ExtraEphys.RecordingSystem
                 end
             end
 % 
-%             analogindatpaths{fidx} = fullfile(basepath,SessionMetadata.ExtraEphys.Files.Names{fidx},'analogin.dat');
+%             analogindatpaths{fidx} = fullfile(basepath,SessionMetadata.ExtracellEphys.Files.Names{fidx},'analogin.dat');
 %             d = dir(timedatpaths{fidx});
 %             analogindatsizes(fidx) = d(1).bytes;
 % 
-%             auxiliarydatpaths{fidx} = fullfile(basepath,SessionMetadata.ExtraEphys.Files.Names{fidx},'auxiliary.dat');
+%             auxiliarydatpaths{fidx} = fullfile(basepath,SessionMetadata.ExtracellEphys.Files.Names{fidx},'auxiliary.dat');
 %             d = dir(timedatpaths{fidx});
 %             auxiliarydatsizes(fidx) = d(1).bytes;
 % 
-%             timedatpaths{fidx} = fullfile(basepath,SessionMetadata.ExtraEphys.Files.Names{fidx},'time.dat');%int32
+%             timedatpaths{fidx} = fullfile(basepath,SessionMetadata.ExtracellEphys.Files.Names{fidx},'time.dat');%int32
 %             d = dir(timedatpaths{fidx});
 %             timedatsizes(fidx) = d(1).bytes;
 % 
-%             supplydatpaths{fidx} = fullfile(basepath,SessionMetadata.ExtraEphys.Files.Names{fidx},'supply.dat');%uint16
+%             supplydatpaths{fidx} = fullfile(basepath,SessionMetadata.ExtracellEphys.Files.Names{fidx},'supply.dat');%uint16
 %             d = dir(timedatpaths{fidx});
 %             supplydatsizes(fidx) = d(1).bytes;
         end
         otherdattypes(find(bad_otherdattypes)) = [];
     case 'Amplipex'%As of 4/9/2017 - never tested
-        for fidx = 1:length(SessionMetadata.ExtraEphys.Files.Names)
-            datpaths{fidx} = fullfile(basepath,[SessionMetadata.ExtraEphys.Files.Names{fidx} '.dat']);
+        for fidx = 1:length(SessionMetadata.ExtracellEphys.Files.Names)
+            datpaths{fidx} = fullfile(basepath,[SessionMetadata.ExtracellEphys.Files.Names{fidx} '.dat']);
         end        
 end
 
@@ -86,7 +86,7 @@ eval(catstring)%execute concatention
 
 % Check that size of resultant .dat is equal to the sum of the components
 t = dir(newdatpath);
-recordingbytes = SessionMetadata.ExtraEphys.Files.Bytes;
+recordingbytes = SessionMetadata.ExtracellEphys.Files.Bytes;
 if t.bytes ~= sum(recordingbytes)
     error('New .dat size not right.  Exiting')
     return
@@ -95,7 +95,7 @@ else
 end
 
 %% if intan, also concatenate the other .datss
-if strcmp(SessionMetadata.ExtraEphys.RecordingSystem,'Intan')
+if strcmp(SessionMetadata.ExtracellEphys.RecordingSystem,'Intan')
     for odidx = 1:length(otherdattypes)
         eval(['tdatpaths = ' otherdattypes{odidx} 'datpaths;']);
         eval(['tnewdatpath = new' otherdattypes{odidx} 'path;']);
