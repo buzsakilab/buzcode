@@ -18,6 +18,11 @@ function [EMG] = bz_EMGFromLFP(varargin)
 % OUTPUTS
 % 
 %       EMG - struct of the LFP datatype 
+%          .timestamps
+%          .data
+%          .channels
+%          .detectorName
+%          .samplingFrequency
 %
 % DESCRIPTION
 %
@@ -181,7 +186,7 @@ EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
 EMG.timestamps = timestamps';
 EMG.data = EMGCorr;
 EMG.channels = xcorr_chs;
-EMG.detectorName = 'bz_detectEMG';
+EMG.detectorName = 'bz_EMGFromLFP';
 EMG.samplingFreq = samplingFrequency;
 
 if savebool

@@ -249,25 +249,27 @@ if ~exist(EMGpath,'file') || overwrite;
 %     end % this should be replaced by a search of the meta data file instead of a separate bad_chans file
 
     display('Calculating EMG')
-    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);
-    if savebool
-        %Old Format - update to buzcode
-        save(EMGpath,'EMGCorr','sf_EMG')
-        
-        %Buzcode format - wrap this into EMGCorrForSleepScore - make a
-        %standalone buzcode detector
-        CorrEMG.data = EMGCorr;
-        CorrEMG.sf = sf_EMG;
-        save(bz_EMGpath,'CorrEMG')
-    end
+%     [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);
+    [EMG] = bz_EMGFromLFP(rawlfppath,'restrict',scoretime,[]...
+                                     ,'rejectChannels',rejectchannels);
+%     if savebool
+%         %Old Format - update to buzcode
+%         save(EMGpath,'EMGCorr','sf_EMG')
+%         
+%         %Buzcode format - wrap this into EMGCorrForSleepScore - make a
+%         %standalone buzcode detector
+%         CorrEMG.data = EMGCorr;
+%         CorrEMG.sf = sf_EMG;
+%         save(bz_EMGpath,'CorrEMG')
+%     end
 
 else
     display('EMG aleady calculated: Loading...')
-    load(EMGpath,'EMGCorr')
-    load(EMGpath,'sf_EMG')
+    load(EMGpath,'EMG')
+%     load(EMGpath,'sf_EMG')
 end
-EMG = EMGCorr(:,2);
-clear EMGCorr
+% EMG = EMGCorr(:,2);
+% clear EMGCorr
 
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
