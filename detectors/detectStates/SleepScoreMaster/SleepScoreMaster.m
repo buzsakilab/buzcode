@@ -2,22 +2,16 @@ function SleepScoreMaster(basePath,varargin)
 %SleepScoreMaster(datasetfolder,recordingname)
 %This is the master function for sleep state scoring.
 %
-%INPUT (optional)   If no inputs included, select folder containing .lfp
+%INPUT 
+%   basePath        folder containing .xml and .lfp files.
+%                   basePath and files should be of the form:
+%                   datasetFolder/recordingName/recordingName.lfp
+%   (optional)      If no inputs included, select folder(s) containing .lfp
 %                   and .xml file in prompt.
-%                   
-%   datasetfolder   Top level folder in which the dataset resides. 
-%                   For example:
-%                   '/Users/dlevenstein/Dropbox/Research/Datasets/BWData/'
-%                   -if not included, prompt comes up to
-%                   navigate to the folder holding your recording.
-%   recordingname   (optional)
-%                   Name of the recording, this will be the name of the
-%                   folder in which the .lfp file and other files reside.
-%                   For example, the .lfp file should be:
-%                   'datasetfolder/recordingname/recordingname.lfp'
-%                   ... it is also assumed that this serves as the basename
-%                   for the files for instance data will be at
-%                   /datasetfolder/recordingname/recordingname.lfp
+%   (optional)      if no .lfp in basePath, option to select multiple 
+%                   lfp-containing subfolders
+%                          
+%   OPTIONS
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false
 %   'savebool'      Default: true
