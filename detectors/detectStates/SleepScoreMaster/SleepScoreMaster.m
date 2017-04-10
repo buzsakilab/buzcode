@@ -295,31 +295,7 @@ else
     display('SW and TH Channels Already Extracted, Loading...')
     load(scorelfppath,'swLFP','SWchannum','thLFP','THchannum','sf_LFP','SWfreqlist','SWweights')
 
-    
-%     %For updating state score LFP storage... DEPRECIATED - delete all
-%     %your score files and rescore.... or maybe try uncommenting this
-%     if ~exist(scorelfppath,'file')%... if old-fashioned scoring was done, open and convert to newer style
-%         load(swlfppath,'swLFP','SWchannum','sf_LFP')
-%         load(thetalfppath,'thLFP','THchannum','sf_LFP')
-% 
-%         load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
-%         
-%         if sf_LFP==1250
-%             display('LFP saved as 1250 - downsampling to 250 for save')
-%             swLFP = downsample(swLFP,5);
-%             thLFP = downsample(thLFP,5);
-%             sf_LFP = sf_LFP./5;
-% 
-%             delete(swlfppath,thetalfppath)
-%         else
-%             display('LFP was not saved at 1250... bug?')
-%             keyboard
-%         end
-%         
-%         %save in newer format for compatibility.
-%         save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','sf_LFP','SWfreqlist','SWweights');
-%     end
-    
+        
 end
 
 %CAN THIS BE REMOVED?
@@ -351,6 +327,8 @@ if savebool
         'SWchannum','THchannum','badtimes','reclength','histsandthreshs',...
         'SWfreqlist','SWweights','SWWeightsName','Notch60Hz',...
         'NotchUnder3Hz','NotchHVS','NotchTheta')
+    
+    
     
 end
 
