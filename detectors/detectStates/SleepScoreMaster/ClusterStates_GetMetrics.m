@@ -1,6 +1,6 @@
-function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes, reclength,...
-    histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(...
-    swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams)
+function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes,reclength,...
+    histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(...
+    SleepScoreLFP,CorrEMG)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
@@ -15,30 +15,24 @@ function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes, reclength,...
 %% Downsample and filter
 %Make Downsample to niquest frequency
 
-if sf_LFP == 1250
+if SleepScoreLFP.sf == 1250
     downsamplefactor = 5;
-elseif sf_LFP == 250
+elseif SleepScoreLFP.sf == 250
     downsamplefactor = 1;
-elseif sf_LFP == 1000
+elseif SleepScoreLFP.sf == 1000
     downsamplefactor = 4;
 else
     display('sf not recognized... if only you made this able to set its own downsample...')
 end
-swLFP = downsample(swLFP,downsamplefactor);
-thLFP = downsample(thLFP,downsamplefactor);
-sf_LFP = sf_LFP/downsamplefactor;
-
-
-%filtbounds = [0.5 120];
-%display(['Filtering ',num2str(filtbounds(1)),'-',num2str(filtbounds(2)),' Hz...']);
-%LFP = FiltNPhase(LFP, filtbounds, sf_LFP );
+swLFP = downsample(SleepScoreLFP.swLFP,downsamplefactor);
+thLFP = downsample(SleepScoreLFP.thLFP,downsamplefactor);
+sf_LFP = SleepScoreLFP.sf/downsamplefactor;
 
 
 %% Calculate Spectrogram
 %display('FFT Spectrum for Broadband LFP')
 
 freqlist = logspace(0,2,100);
-%freqlist = linspace(0.5,55.5,111);
 window = 10;   %s
 noverlap = 9;  %s
 window = window*sf_LFP;
@@ -47,8 +41,8 @@ noverlap = noverlap*sf_LFP;
 FFTspec = abs(FFTspec);
 [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
 
-    %% Remove transients before calculating SW histogram
-    %this should be it's own whole section - removing/detecting transients
+%% Remove transients before calculating SW histogram
+%this should be it's own whole section - removing/detecting transients
 totz = zscore(abs(sum(zFFTspec')));
 badtimes = find(totz>5);
 zFFTspec(badtimes,:) = 0;
@@ -95,9 +89,9 @@ thratio = smooth(thratio,thsmoothfact);
 thratio = (thratio-min(thratio))./max(thratio-min(thratio));
  
 %% EMG
-dtEMG = 1/sf_EMG;
-t_EMG = (1:length(EMG))*dtEMG;
-EMG = smooth(EMG,smoothfact/dtEMG);
+dtEMG = 1/CorrEMG.sf;
+t_EMG = (1:length(CorrEMG.data))*dtEMG;
+EMG = smooth(CorrEMG.data,smoothfact/dtEMG);
 EMG = (EMG-min(EMG))./max(EMG-min(EMG));
 
 reclength = round(t_EMG(end));

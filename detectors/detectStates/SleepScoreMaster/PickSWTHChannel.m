@@ -1,21 +1,8 @@
-function [SWchannum,THchannum,swLFP,thLFP,t_LFP,Fs_save,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figfolder,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels);
+function [SleepScoreLFP] = PickSWTHChannel(datasetfolder,recordingname,figfolder,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels);
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %
-%TO DO
-%   -Change from GetLFP to LoadBinary or readmulti_ss
-%% DEV
-%datasetfolder = '/Users/dlevenstein/Dropbox/Research/Datasets/DTData/';
-%recordingname = 'DT2_rPPC_rCCG_362um_218um_20160209_160209_183610';
-% datasetfolder = '/Users/dlevenstein/Dropbox/Research/Datasets/BWData/~updated/Recordings (1)/';
-% recordingname = 'c3po_160202';
-% figfolder = '/Users/dlevenstein/Code Library/SleepScoreDevelopment/StateScoreFigures/';
-
-%recname = 'c3po_160202';
-%datasetfolder = '/Users/dlevenstein/Dropbox/Share Folders/Recordings/';
-
-% datasetfolder = '/Users/dlevenstein/Dropbox/Research/Datasets/GGData/';
-% recname = 'Rat08-20130717';
+%%
 
 if ~exist('SWWeightsName','var')
     SWWeightsName = 'SWweights.mat';
@@ -33,10 +20,7 @@ else
 end
 
 %% FMA
-% 
-% SetCurrentSession(xmlfilename);
-% global DATA
-%nChannels = DATA.nChannels;
+
 
 Par = LoadPar_SleepScore(xmlfilename);
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
@@ -223,19 +207,24 @@ end
 goodSWidx = dipsortSW(end);
 goodTHidx = dipsortTH(end);
 
-SWchannum = SWChannels(goodSWidx);
-THchannum = ThetaChannels(goodTHidx);
+SWchanID = SWChannels(goodSWidx);
+THchanID = ThetaChannels(goodTHidx);
 
 downsample_save = 5;  %Not checked for bugs after adding...
-Fs_save = Par.lfpSampleRate./downsample_save;
+sf = Par.lfpSampleRate./downsample_save;
 swthLFP = LoadBinary(rawlfppath,'frequency',Fs,...
     'downsample',downsample_save,...
-    'nchannels',nChannels,'channels',[SWchannum+1,THchannum+1],...
+    'nchannels',nChannels,'channels',[SWchanID+1,THchanID+1],...
     'start',scoretime(1),'duration',diff(scoretime));
 
 swLFP = double(swthLFP(:,1));
 thLFP = double(swthLFP(:,2));
-t_LFP = [1:length(swLFP)]./Fs_save;
+t = [1:length(swLFP)]./sf;
+
+
+%% SleepScoreLFP output
+
+SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,SWfreqlist,SWweights);
 
 %% Find Inverted PC1s and flip them for plot
 % invpc1 = mean(pc1coeff(freqlist<4,:))<0 & mean(pc1coeff(freqlist>50,:))>0;
@@ -250,7 +239,7 @@ t_LFP = [1:length(swLFP)]./Fs_save;
 %% PC1 Weights and Coefficients
 
 
-swfig = figure;
+swfig = figure('visible','off');
 %     subplot(2,2,1)
 %         imagesc(log2(FFTfreqs),1:numusedchannels,pc1coeff(:,dipsortSW)')
 %         ylabel('Channel #');xlabel('f (Hz)')
@@ -283,7 +272,7 @@ saveas(swfig,[figfolder,recordingname,'_FindBestSW'],'jpeg')
 
 %% Theta Hist and Coefficients
 
-thfig = figure;
+thfig = figure('visible','off');
     subplot(2,2,1)
         imagesc(log2(thFFTfreqs),1:numusedchannels,THmeanspec(:,dipsortTH)')
         ylabel('Channel #');xlabel('f (Hz)')
