@@ -22,6 +22,11 @@ if nargin < 1 % if we're especially lazy, we assume there is one XML in the curr
    filename = xml.name;
 end
 
+if ~endsWith(filename,'.xml') % we can now give LoadParameters.m the folder location instead of an actual xml file
+    d = dir([filename '/*xml']);
+    filename = [d.folder '/' d.name];
+end
+
 if ~exist(filename),
 	error(['File ''' filename ''' not found.']);
 end

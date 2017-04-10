@@ -225,7 +225,7 @@ end
 %% Get channels not to use
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
-    rejectchannels = SessionMetadata.ExtraEphys.BadChannels;
+    rejectchannels = SessionMetadata.ExtracellEphys.BadChannels;
 else
     rejectchannels = [];
 end
@@ -248,27 +248,26 @@ if ~exist(EMGpath,'file') || overwrite;
 %     end % this should be replaced by a search of the meta data file instead of a separate bad_chans file
 
     display('Calculating EMG')
-    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);
-    if savebool
-        %Old Format - update to buzcode
-        save(EMGpath,'EMGCorr','sf_EMG')
-        
-        %Buzcode format - wrap this into EMGCorrForSleepScore - make a
-        %standalone buzcode detector
-        CorrEMG.data = EMGCorr;
-        CorrEMG.sf = sf_EMG;
-        save(bz_EMGpath,'CorrEMG')
-    end
+%     [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);
+    [EMG] = bz_EMGFromLFP(rawlfppath,'restrict',scoretime,[]...
+                                     ,'rejectChannels',rejectchannels);
+%     if savebool
+%         %Old Format - update to buzcode
+%         save(EMGpath,'EMGCorr','sf_EMG')
+%         
+%         %Buzcode format - wrap this into EMGCorrForSleepScore - make a
+%         %standalone buzcode detector
+%         CorrEMG.data = EMGCorr;
+%         CorrEMG.sf = sf_EMG;
+%         save(bz_EMGpath,'CorrEMG')
+%     end
 
 else
     display('EMG aleady calculated: Loading...')
-    load(EMGpath,'EMGCorr')
-    load(EMGpath,'sf_EMG')
-    
-    load(bz_EMGpath)
+    load(EMGpath,'EMG')
 end
-EMG = EMGCorr(:,2);
-clear EMGCorr
+% EMG = EMGCorr(:,2);
+% clear EMGCorr
 
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
@@ -294,22 +293,22 @@ end
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG
 
 display('Quantifying metrics for state scoring')
-[broadbandSlowWave,thratio,EMG,t_EMG,t_clus,badtimes,reclength,histsandthreshs,...
-    swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(SleepScoreLFP,CorrEMG);
+[broadbandSlowWave,thratio,EMG_env,t_EMG,t_clus,badtimes,reclength,histsandthreshs,...
+    swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(SleepScoreLFP,EMG);
 
 display('Clustering States Based on EMG, SW, and TH LFP channels')
 [stateintervals,stateIDX,~] = ClusterStates_DetermineStates(...
-    broadbandSlowWave,thratio,t_clus,EMG,histsandthreshs,MinWinParams,reclength,...
+    broadbandSlowWave,thratio,t_clus,EMG_env,histsandthreshs,MinWinParams,reclength,...
     figloc);
 
 ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,swFFTfreqs,swFFTspec,...
-    thFFTfreqs,thFFTspec,t_clus,recordingname,broadbandSlowWave,thratio,EMG,t_EMG);
+    thFFTfreqs,thFFTspec,t_clus,recordingname,broadbandSlowWave,thratio,EMG_env,t_EMG);
 
 if savebool
     %Should save (downsampled to what's used in clusterstates...)
     %sw/thLFP in scoremetricspath here!
     save(scoremetricspath,...
-        'broadbandSlowWave','thratio','EMG','t_clus',...
+        'broadbandSlowWave','thratio','EMG_env','t_clus',...
         'SWchannum','THchannum','badtimes','reclength','histsandthreshs',...
         'SWfreqlist','SWweights','SWWeightsName','Notch60Hz',...
         'NotchUnder3Hz','NotchHVS','NotchTheta')

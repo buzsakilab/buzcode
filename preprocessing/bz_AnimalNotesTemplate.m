@@ -51,20 +51,33 @@ if AnimalNotes.Modules.ExtracellEphys
     %On probe subfields below: if multiple probes, put in one entry in each field
     %per probe, make sure they align with each other properly and all
     %subsequent assumptions will work.
-    AnimalNotes.Probes.UmPerScrewTurn = [288 288];
-    AnimalNotes.Probes.NumberOfProbes = 2;
-    AnimalNotes.Probes.TargetRegions = {'dCA1','mPFC'};
-    AnimalNotes.Probes.ImplantCoordinates.Anteroposterior = [-3.5,2.7];%one for each probe
-    AnimalNotes.Probes.ImplantCoordinates.Mediolateral = [2.5,0.3];
-    AnimalNotes.Probes.ImplantAngle.Anteroposterior = [0,0];%degrees of top anterior as sitting behind animal
-    AnimalNotes.Probes.ImplantAngle.Mediolateral = [0,10];%degrees clockwise as sitting behind animal
-    AnimalNotes.Probes.ImplantCoordinates.DepthFromSurface = [1.5,2];
-    AnimalNotes.Probes.OrientationOfProbe.FirstGroupRelativeToLastGroupClockwiseDegreesAnteriorIsZero = [90,135];%assumes linear arrays
-    AnimalNotes.Probes.OrientationOfProbe.GroupOffsetsFromCenter_ApMlDv = [];%for non-linear arrangements: group x 3 coordinates for change from center
-    AnimalNotes.Probes.PluggingOrder = [2,1];% order will be represented in .xml, ie if intan splitter dicates
-    AnimalNotes.Probes.SiteSizesInUmSq = [160];%In square microns
-    AnimalNotes.Probes.ProbeLayoutFilenames = {'NRX_Buzsaki64_5X12';'NRX_Buzsaki64_8X8'};%filenames in /buzcode/GeneralComputation/geometries
-    AnimalNotes.Channels.ImpedanceFilenames = {'Ket1_Impedances_5Shank.csv','Ket1_Impedances_8Shank.csv'};%Filenames in basepath folder, or leave as {} if none
+    AnimalNotes.ExtracellEphys.Probes.UmPerScrewTurn = [288 288];
+    AnimalNotes.ExtracellEphys.Probes.NumberOfProbes = 2;
+    AnimalNotes.ExtracellEphys.Probes.TargetRegions = {'dCA1','mPFC'};
+    AnimalNotes.ExtracellEphys.Probes.ImplantCoordinates.Anteroposterior = [-3.5,2.7];%one for each probe
+    AnimalNotes.ExtracellEphys.Probes.ImplantCoordinates.Mediolateral = [2.5,0.3];
+    AnimalNotes.ExtracellEphys.Probes.ImplantAngle.Anteroposterior = [0,0];%degrees of top anterior as sitting behind animal
+    AnimalNotes.ExtracellEphys.Probes.ImplantAngle.Mediolateral = [0,10];%degrees clockwise as sitting behind animal
+    AnimalNotes.ExtracellEphys.Probes.ImplantCoordinates.DepthFromSurface = [1.5,2];
+    AnimalNotes.ExtracellEphys.Probes.OrientationOfProbe.FirstGroupRelativeToLastGroupClockwiseDegreesAnteriorIsZero = [90,135];%assumes linear arrays
+    AnimalNotes.ExtracellEphys.Probes.OrientationOfProbe.GroupOffsetsFromCenter_ApMlDv = [];%for non-linear arrangements: group x 3 coordinates for change from center
+    AnimalNotes.ExtracellEphys.Probes.PluggingOrder = [2,1];% order will be represented in .xml, ie if intan splitter dicates
+    AnimalNotes.ExtracellEphys.Probes.SiteSizesInUmSq = [160];%In square microns
+    AnimalNotes.ExtracellEphys.Probes.ProbeLayoutFilenames = {'NRX_Buzsaki64_5X12';'NRX_Buzsaki64_8X8'};%filenames in /buzcode/GeneralComputation/geometries
+    AnimalNotes.ExtracellEphys.Channels.ImpedanceFilenames = {'Ket1_Impedances_5Shank.csv','Ket1_Impedances_8Shank.csv'};%Filenames in basepath folder, or leave as {} if none
+
+    AnimalNotes.ExtracellEphys.Parameters.SampleRate = 20000;%Lab default
+    AnimalNotes.ExtracellEphys.Parameters.Amplification = 1;%Intan digitized on chip, let's say 1
+    AnimalNotes.ExtracellEphys.Parameters.VoltsPerUnit = 0.0000002;%Intan default                
+    AnimalNotes.ExtracellEphys.Parameters.BitsPerSample = 16;%Intan default
+    AnimalNotes.ExtracellEphys.Parameters.VoltageRange = 10;%not used except to make xml
+    AnimalNotes.ExtracellEphys.Parameters.LfpSampleRate = 1250;%Usual desired default
+    AnimalNotes.ExtracellEphys.Parameters.PointsPerWaveform = 32;%default
+    AnimalNotes.ExtracellEphys.Parameters.PeakPointInWaveform = 16;%default
+    AnimalNotes.ExtracellEphys.Parameters.FeaturesPerWave = 4;%default
+
+    % SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels = 64;
+    % This is actually set later in bz_SetSessionMetadata, based on ProbeLayoutFilenames
 end
 
 %% Virus metadata
