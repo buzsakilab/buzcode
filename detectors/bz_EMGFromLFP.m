@@ -1,8 +1,7 @@
-function [EMG] = bz_detectEMG(varargin)
-
+function [EMG] = bz_EMGFromLFP(varargin)
 % USAGE
 %
-% [EMG] = bz_detectEMG(basenamepath,restrict,specialChannels,rejectChannels,saveFiles)
+% [EMG] = bz_EMGFromLFP(basenamepath,restrict,specialChannels,rejectChannels,saveFiles)
 %
 % INPUTS
 %
@@ -36,7 +35,7 @@ function [EMG] = bz_detectEMG(varargin)
 % 
 % Brendon Watson, Dan Levenstein, David Tingley, 2017
 
-%% Parameters
+%% xmlameters
 p = inputParser;
 addRequired(p,'basenamepath',@isstr)
 addParameter(p,'restrict',[0 inf],@isnumeric)
@@ -58,29 +57,23 @@ saveLocation = p.Results.saveLocation;
 
 
 %% get basics about.lfp/lfp file
-if strcmp(basenamepath(end-3:end),'.lfp') || strcmp(basenamepath(end-3:end),'.eeg')
-    lfploc = basenamepath;
-    xmlloc = [basenamepath(1:end-4),'.xml'];
+
+xml = LoadParameters(basenamepath); % now using the updated version
+if exist([basenamepath '/' xml.FileName '.lfp'])
+    lfpFile = [basenamepath '/' xml.FileName '.lfp'];
+elseif exist([basenamepath '/' xml.FileName '.eeg'])
+    lfpFile = [basenamepath '/' xml.FileName '.eeg'];
 else
-    if ~isempty(dir('*.lfp'))
-       lfploc = [basenamepath '.lfp'];
-    elseif ~isempty(dir('*.eeg'))
-       lfploc = [basenamepath '.eeg'];
-    else
-        return
-    end
-    xmlloc = [basenamepath,'.xml'];
+    error('could not find an LFP or EEG file...')    
 end
 
-Par = LoadParameters(basenamepath); % now using the updated version
+Fs = xml.lfpSampleRate; % Hz, LFP sampling rate
+nChannels = xml.nChannels;
 
-Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
-nChannels = Par.nChannels;
-
-if isfield(Par,'SpkGrps')
-    SpkGrps = Par.SpkGrps;
-elseif isfield(Par,'AnatGrps')
-    SpkGrps = Par.AnatGrps;
+if isfield(xml,'SpkGrps')
+    SpkGrps = xml.SpkGrps;
+elseif isfield(xml,'AnatGrps')
+    SpkGrps = xml.AnatGrps;
     display('No SpikeGroups, Using AnatomyGroups')
 else
     error('No SpikeGroups...')
@@ -91,21 +84,9 @@ xcorr_halfwindow_s = 0.5;%specified in s
 % downsampleFs = 125;
 % downsampleFactor = round(Fs/downsampleFs);
 binScootS = 0.5;
-sf_EMG = 1/binScootS;
+samplingFrequency = 1/binScootS;
 binScootSamps = Fs*binScootS;
 corrChunkSz = 20;%for batch-processed correlations
-
-
-%% input handling: channel selection
-if ~exist('specialChannels','var')
-    specialChannels = [];
-end
-
-
-
-
-
-
 
 
 %% Pick shanks to analyze
@@ -145,7 +126,7 @@ xcorr_chs = unique([xcorr_chs,specialChannels]);
 
 %% Read and filter channel
 % read channels
-xcorr_chs = xcorr_chs + 1; % loadparameters returns 0 indexed (neuroscope) channels, 
+xcorr_chs = xcorr_chs + 1; % loadParameters returns 0 indexed (neuroscope) channels, 
                            % but Loadbinary.m takes 1-indexed channel #'s
 lfp = LoadBinary(lfpFile ,'nChannels',nChannels,'channels',xcorr_chs,...
     'start',restrict(1),'duration',diff(restrict)); %read and convert to mV    
@@ -169,7 +150,7 @@ EMGCorr = zeros(numbins, 1);
 counter = 1;
 for j=1:(length(xcorr_chs)-1)
     for k=(j+1):length(xcorr_chs)
-        disp(counter)
+        disp([num2str(counter*2 ./ (length(xcorr_chs)*length(xcorr_chs)*length(timestamps)))])
         c1 = [];
         c2 = [];
         binind = 0;
@@ -195,26 +176,18 @@ for j=1:(length(xcorr_chs)-1)
 end
 % toc
 
-EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2);
+EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
 
-EMGCorr = cat(2,timestamps'/Fs,EMGCorr);
-ChannelsCompared = xcorr_chs;
-% EMGCorrData = v2struct_ss(EMGCorr,ChannelsCompared,AnatShankSite);
-EMGCorrData = v2struct(EMGCorr,ChannelsCompared);
-
-EMG.timestamps = timestamps;
+EMG.timestamps = timestamps';
 EMG.data = EMGCorr;
+EMG.channels = xcorr_chs;
+EMG.detectorName = 'bz_detectEMG';
+EMG.samplingFreq = samplingFrequency;
+
 if savebool
     % save...
-    save(saveLocation,'EMGCorrData','EMGCorr','sf_EMG');
+    save(saveLocation,'EMG');
 end
-
-
-
-
-
-
-
 
 
 function [filt_sig, Filt] = filtsig_in(sig, Fs, filtband_or_Filt)
