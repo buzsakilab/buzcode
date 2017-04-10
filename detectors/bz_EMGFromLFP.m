@@ -47,7 +47,7 @@ addParameter(p,'restrict',[0 inf],@isnumeric)
 addParameter(p,'specialChannels',[],@isnumeric)
 addParameter(p,'rejectChannels',[],@isnumeric)
 addParameter(p,'saveFiles',1,@isbool)
-addParameter(p,'saveLocation',pwd,@isstr)
+addParameter(p,'saveLocation',[],@isstr)
 parse(p,varargin{:})
     
 basenamepath = p.Results.basenamepath;
@@ -55,12 +55,20 @@ restrict = p.Results.restrict;
 specialChannels = p.Results.basenamepath;
 rejectChannels = p.Results.basenamepath;
 saveFiles = p.Results.basenamepath;    
+<<<<<<< HEAD
 
 
 %Separate datasetfolder and recordingname for save file name
 [datasetfolder,recordingname] = fileparts(basePath);
 
 saveLocation = p.Results.saveLocation;
+=======
+if ~isempty(p.Results.saveLocation)
+    saveLocation = p.Results.saveLocation;
+else 
+    saveLocation = basenamepath;
+end
+>>>>>>> 56978a4ca30f9db9ec71a73c2f7509310ac297bc
 
 %% check if EMG file already exists for this reocrding....
 
@@ -195,6 +203,10 @@ EMGCorr.detectorName = 'bz_EMGFromLFP';
 EMGCorr.samplingFreq = samplingFrequency;
 
 
+<<<<<<< HEAD
+=======
+if saveFiles
+>>>>>>> 56978a4ca30f9db9ec71a73c2f7509310ac297bc
     % save...
 save(saveLocation,'EMG');
 
