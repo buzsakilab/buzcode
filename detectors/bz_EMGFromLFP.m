@@ -17,12 +17,12 @@ function [EMGCorr] = bz_EMGFromLFP(varargin)
 %
 % OUTPUTS
 % 
-%       EMG - struct of the LFP datatype 
-%          .timestamps
-%          .data
-%          .channels
-%          .detectorName
-%          .samplingFrequency
+%       EMG                     - struct of the LFP datatype 
+%          .timestamps          - timestamps (in seconds) that match .data samples
+%          .data                - correlation data
+%          .channels            - channels #'s used for analysis
+%          .detectorName        - string name of function used
+%          .samplingFrequency   - 1 / sampling rate of EMG data
 %
 % DESCRIPTION
 %
