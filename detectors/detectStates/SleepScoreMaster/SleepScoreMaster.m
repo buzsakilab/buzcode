@@ -299,8 +299,7 @@ display('Quantifying metrics for state scoring')
 
 display('Clustering States Based on EMG, SW, and TH LFP channels')
 [stateintervals,stateIDX,~] = ClusterStates_DetermineStates(...
-    SleepScoreMetrics
-    broadbandSlowWave,thratio,t_clus,EMG,histsandthreshs,MinWinParams,reclength,
+    broadbandSlowWave,thratio,t_clus,EMG,histsandthreshs,MinWinParams,reclength,...
     figloc);
 
 ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,swFFTfreqs,swFFTspec,...
