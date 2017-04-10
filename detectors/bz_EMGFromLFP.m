@@ -191,7 +191,7 @@ EMG.timestamps = timestamps';
 EMG.data = EMGCorr;
 EMG.channels = xcorr_chs;
 EMG.detectorName = 'bz_EMGFromLFP';
-EMG.samplingFreq = samplingFrequency;
+EMG.samplingFreq = samplingFrequency; 
 
 if saveFiles
     % save...
