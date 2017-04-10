@@ -22,10 +22,10 @@ load(fullfile(basepath,[basename,'_SessionMetadata.mat']));
 datname = fullfile(basepath,[basename '.dat']);
 lfpname = fullfile(basepath,[basename '.lfp']);
 
-nchannels = SessionMetadata.ExtraEphys.Parameters.NumberOfChannels;
+nchannels = SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels;
 
-oldsamplerate = SessionMetadata.ExtraEphys.Parameters.SampleRate;
-newsamplerate = SessionMetadata.ExtraEphys.Parameters.LfpSampleRate;
+oldsamplerate = SessionMetadata.ExtracellEphys.Parameters.SampleRate;
+newsamplerate = SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate;
 [N,D] = rat(newsamplerate/oldsamplerate);
 
 %% resample one file into another

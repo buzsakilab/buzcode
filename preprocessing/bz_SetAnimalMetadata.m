@@ -79,49 +79,49 @@ clear AnimalNotes
 
 %% Automated after this point, depending on modules used
 if AnimalMetadata.Modules.ExtracellEphys
-    [PerGroupSuperficialToDeep,SpatialXY,NumChansPerProbe,GroupsPerChannel] = bz_ReadProbeMapFiles(AnimalMetadata.Probes.ProbeLayoutFilenames);
-    AnimalMetadata.Probes.NumGroupsPerProbe = sum(~cellfun(@isempty,PerGroupSuperficialToDeep),2);
-    AnimalMetadata.Probes.WithinProbeXYLocations = SpatialXY;
-    AnimalMetadata.Probes.NumChansPerProbe = NumChansPerProbe;%to do
-    AnimalMetadata.Probes.ProbeSpikeGroupLayoutSuperficialToDeep = PerGroupSuperficialToDeep;
-    AnimalMetadata.Channels.NumChannelsTotal = sum(NumChansPerProbe);
+    [PerGroupSuperficialToDeep,SpatialXY,NumChansPerProbe,GroupsPerChannel] = bz_ReadProbeMapFiles(AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames);
+    AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe = sum(~cellfun(@isempty,PerGroupSuperficialToDeep),2);
+    AnimalMetadata.ExtracellEphys.Probes.WithinProbeXYLocations = SpatialXY;
+    AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe = NumChansPerProbe;%to do
+    AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep = PerGroupSuperficialToDeep;
+    AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal = sum(NumChansPerProbe);
     %make lookup tables for probe number and anatomy for each channel
-    po = AnimalMetadata.Probes.PluggingOrder;
+    po = AnimalMetadata.ExtracellEphys.Probes.PluggingOrder;
     lut = [];
     lut_ap = [];
     glut = [];
     glut_ap = [];
     pglut = [];
     pglut_p = [];
-    for pidx = 1:AnimalMetadata.Probes.NumberOfProbes
-        lut = cat(1,lut,pidx*ones(AnimalMetadata.Probes.NumChansPerProbe(pidx),1));
-        lut_ap = cat(1,lut_ap,po(pidx)*ones(AnimalMetadata.Probes.NumChansPerProbe(po(pidx)),1));
+    for pidx = 1:AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes
+        lut = cat(1,lut,pidx*ones(AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe(pidx),1));
+        lut_ap = cat(1,lut_ap,po(pidx)*ones(AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe(po(pidx)),1));
         glut = cat(1,glut,GroupsPerChannel{pidx}+length(pglut));
         glut_ap = cat(1,glut_ap,GroupsPerChannel{po(pidx)});
-        pglut = cat(1,pglut,[1:AnimalMetadata.Probes.NumGroupsPerProbe(pidx)]'+length(pglut));
-        pglut_p = cat(1,pglut_p,pidx*ones(AnimalMetadata.Probes.NumGroupsPerProbe(pidx),1));
+        pglut = cat(1,pglut,[1:AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe(pidx)]'+length(pglut));
+        pglut_p = cat(1,pglut_p,pidx*ones(AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe(pidx),1));
     end
 
-    AnimalMetadata.Probes.ProbeToGroupLookupTable.Labels = {'ProbeNumber';'GroupNumber'};
-    AnimalMetadata.Probes.ProbeToGroupLookupTable.Table = [pglut_p pglut];
-    AnimalMetadata.Channels.ChannelToProbeLookupTable.Labels = {'ChannelNumber';'ProbeNumber'};
-    AnimalMetadata.Channels.ChannelToProbeLookupTable.Table = [[1:AnimalMetadata.Channels.NumChannelsTotal]' lut];
-    AnimalMetadata.Channels.ChannelToGroupLookupTable.Labels = {'ChannelNumber';'GroupNumber'};
-    AnimalMetadata.Channels.ChannelToGroupLookupTable.Table = [[1:AnimalMetadata.Channels.NumChannelsTotal]' glut];
-    AnimalMetadata.Channels.ChannelToAnatomyLookupTable.Labels = {'AnatomyNameIndexedByChannelNumber'};
-    AnimalMetadata.Channels.ChannelToAnatomyLookupTable.Table = AnimalMetadata.Probes.TargetRegions(lut)';
-    AnimalMetadata.Channels.ChannelToProbeLookupTable_AsPlugged.Labels = {'ChannelNumber';'ProbeNumber'};
-    AnimalMetadata.Channels.ChannelToProbeLookupTable_AsPlugged.Table = [[1:AnimalMetadata.Channels.NumChannelsTotal]' lut_ap];
-    AnimalMetadata.Channels.ChannelToGroupLookupTable_AsPlugged.Labels = {'ChannelNumber';'GroupNumber'};
-    AnimalMetadata.Channels.ChannelToGroupLookupTable_AsPlugged.Table = [[1:AnimalMetadata.Channels.NumChannelsTotal]' glut_ap];
-    AnimalMetadata.Channels.ChannelToAnatomyLookupTable_AsPlugged.Labels = {'AnatomyNameIndexedByChannelNumber'};
-    AnimalMetadata.Channels.ChannelToAnatomyLookupTable_AsPlugged.Table = AnimalMetadata.Probes.TargetRegions(lut_ap)';
+    AnimalMetadata.ExtracellEphys.Probes.ProbeToGroupLookupTable.Labels = {'ProbeNumber';'GroupNumber'};
+    AnimalMetadata.ExtracellEphys.Probes.ProbeToGroupLookupTable.Table = [pglut_p pglut];
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToProbeLookupTable.Labels = {'ChannelNumber';'ProbeNumber'};
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToProbeLookupTable.Table = [[1:AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal]' lut];
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToGroupLookupTable.Labels = {'ChannelNumber';'GroupNumber'};
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToGroupLookupTable.Table = [[1:AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal]' glut];
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable.Labels = {'AnatomyNameIndexedByChannelNumber'};
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable.Table = AnimalMetadata.ExtracellEphys.Probes.TargetRegions(lut)';
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToProbeLookupTable_AsPlugged.Labels = {'ChannelNumber';'ProbeNumber'};
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToProbeLookupTable_AsPlugged.Table = [[1:AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal]' lut_ap];
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToGroupLookupTable_AsPlugged.Labels = {'ChannelNumber';'GroupNumber'};
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToGroupLookupTable_AsPlugged.Table = [[1:AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal]' glut_ap];
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable_AsPlugged.Labels = {'AnatomyNameIndexedByChannelNumber'};
+    AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable_AsPlugged.Table = AnimalMetadata.ExtracellEphys.Probes.TargetRegions(lut_ap)';
 
     %Get impedances per channel based on intan impedance files
-    if ~isempty(AnimalMetadata.Channels.ImpedanceFilenames)
-        AnimalMetadata.Channels.ImpedanceByChannel = cell(AnimalMetadata.Probes.NumberOfProbes);
-        for pidx = 1:length(AnimalMetadata.Channels.ImpedanceFilenames)
-            tf = fullfile(basepath,AnimalMetadata.Channels.ImpedanceFilenames{pidx});
+    if ~isempty(AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames)
+        AnimalMetadata.ExtracellEphys.Channels.ImpedanceByChannel = cell(AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes);
+        for pidx = 1:length(AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames)
+            tf = fullfile(basepath,AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames{pidx});
             txt = read_mixed_csv(tf);
             numchans = size(txt,1)-1;
         %     channums = 1:numchans;
@@ -131,8 +131,8 @@ if AnimalMetadata.Modules.ExtracellEphys
                 n2 = str2num(txt{cidx+1,5}(eloc+1:end));
                 imp(cidx) = n1*10^n2;
             end
-        %     AnimalMetaData.Probes.ImpedanceByChannel{pidx} = cat(2,channums',imp');
-            AnimalMetadata.Channels.ImpedanceByChannel{pidx} = imp';
+        %     AnimalMetadata.ExtracellEphys.Probes.ImpedanceByChannel{pidx} = cat(2,channums',imp');
+            AnimalMetadata.ExtracellEphys.Channels.ImpedanceByChannel{pidx} = imp';
         end
     end
 
@@ -140,9 +140,16 @@ if AnimalMetadata.Modules.ExtracellEphys
    %coordinates to map each site at day of implant
 
     % fix defaults
-    AnimalMetadata.EphysDefaults.NumberOfChannels = AnimalMetadata.Channels.NumChannelsTotal;
+    AnimalMetadata.EphysDefaults.NumberOfChannels = AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal;
 
 end
+
+%% Make an initial .xml file
+pfiles = AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames;
+plugord = AnimalMetadata.ExtracellEphys.Probes.PluggingOrder;
+dfs = AnimalMetadata.ExtracellEphys.Parameters;
+bz_MakeXMLFromProbeMaps(basepath,basename,pfiles,plugord,dfs);
+
 
 %% Save
 save(fullfile(basepath,[basename '_AnimalMetadata.mat']),'AnimalMetadata')

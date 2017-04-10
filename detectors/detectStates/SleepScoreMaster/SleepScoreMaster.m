@@ -2,22 +2,16 @@ function SleepScoreMaster(basePath,varargin)
 %SleepScoreMaster(datasetfolder,recordingname)
 %This is the master function for sleep state scoring.
 %
-%INPUT (optional)   If no inputs included, select folder containing .lfp
+%INPUT 
+%   basePath        folder containing .xml and .lfp files.
+%                   basePath and files should be of the form:
+%                   datasetFolder/recordingName/recordingName.lfp
+%   (optional)      If no inputs included, select folder(s) containing .lfp
 %                   and .xml file in prompt.
-%                   
-%   datasetfolder   Top level folder in which the dataset resides. 
-%                   For example:
-%                   '/Users/dlevenstein/Dropbox/Research/Datasets/BWData/'
-%                   -if not included, prompt comes up to
-%                   navigate to the folder holding your recording.
-%   recordingname   (optional)
-%                   Name of the recording, this will be the name of the
-%                   folder in which the .lfp file and other files reside.
-%                   For example, the .lfp file should be:
-%                   'datasetfolder/recordingname/recordingname.lfp'
-%                   ... it is also assumed that this serves as the basename
-%                   for the files for instance data will be at
-%                   /datasetfolder/recordingname/recordingname.lfp
+%   (optional)      if no .lfp in basePath, option to select multiple 
+%                   lfp-containing subfolders
+%                          
+%   OPTIONS
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false
 %   'savebool'      Default: true
@@ -232,7 +226,7 @@ end
 %% Get channels not to use
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
-    rejectchannels = SessionMetadata.ExtraEphys.BadChannels;
+    rejectchannels = SessionMetadata.ExtracellEphys.BadChannels;
 else
     rejectchannels = [];
 end
@@ -301,31 +295,7 @@ else
     display('SW and TH Channels Already Extracted, Loading...')
     load(scorelfppath,'swLFP','SWchannum','thLFP','THchannum','sf_LFP','SWfreqlist','SWweights')
 
-    
-%     %For updating state score LFP storage... DEPRECIATED - delete all
-%     %your score files and rescore.... or maybe try uncommenting this
-%     if ~exist(scorelfppath,'file')%... if old-fashioned scoring was done, open and convert to newer style
-%         load(swlfppath,'swLFP','SWchannum','sf_LFP')
-%         load(thetalfppath,'thLFP','THchannum','sf_LFP')
-% 
-%         load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
-%         
-%         if sf_LFP==1250
-%             display('LFP saved as 1250 - downsampling to 250 for save')
-%             swLFP = downsample(swLFP,5);
-%             thLFP = downsample(thLFP,5);
-%             sf_LFP = sf_LFP./5;
-% 
-%             delete(swlfppath,thetalfppath)
-%         else
-%             display('LFP was not saved at 1250... bug?')
-%             keyboard
-%         end
-%         
-%         %save in newer format for compatibility.
-%         save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','sf_LFP','SWfreqlist','SWweights');
-%     end
-    
+        
 end
 
 %CAN THIS BE REMOVED?
@@ -357,6 +327,8 @@ if savebool
         'SWchannum','THchannum','badtimes','reclength','histsandthreshs',...
         'SWfreqlist','SWweights','SWWeightsName','Notch60Hz',...
         'NotchUnder3Hz','NotchHVS','NotchTheta')
+    
+    
     
 end
 
