@@ -103,7 +103,7 @@ end
 %% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
 %Select from dataset folder - need to check if .xml/lfp exist
 if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']))
-        foldercontents = dir(datasetfolder);
+        foldercontents = dir(basePath);
         possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
         [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
                         'ListString',possiblerecordingnames);
@@ -115,7 +115,8 @@ numrecs = length(recordingname);
 if numrecs > 1 & iscell(recordingname)
     display(['Multiple Recordings (',num2str(numrecs),')'])
     for rr = 1:numrecs
-        SleepScoreMaster(datasetfolder,recordingname{rr},varargin{:})
+        multibasepath = fullfile(basePath,recordingname{rr});
+        SleepScoreMaster(multibasepath,varargin{:})
         close all
     end
     return
