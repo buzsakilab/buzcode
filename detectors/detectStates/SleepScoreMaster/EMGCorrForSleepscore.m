@@ -111,8 +111,12 @@ spkgrpstouse = 1:length(SpkGrps);
 % get list of channels (1 from each good spike group)
 xcorr_chs = [];
 for i=1:length(spkgrpstouse)
-   xcorr_chs = [xcorr_chs, SpkGrps(spkgrpstouse(i)).Channels(1)... % add first channel from shank (superficial)
-                SpkGrps(spkgrpstouse(i)).Channels(end)]; % add last channel from shank (deepest)
+    
+    %Remove rejectchannels
+    usableshankchannels = setdiff(SpkGrps(spkgrpstouse(i)).Channels,rejectchannels);
+    
+   %add first channel from shank (superficial) and last channel from shank (deepest)
+   xcorr_chs = [xcorr_chs, usableshankchannels(1),usableshankchannels(end)]; 
 end
 xcorr_chs = unique([xcorr_chs,specialchannels]);
 
