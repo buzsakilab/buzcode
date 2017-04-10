@@ -115,6 +115,13 @@ for i=1:length(spkgrpstouse)
     %Remove rejectchannels
     usableshankchannels = setdiff(SpkGrps(spkgrpstouse(i)).Channels,rejectchannels);
     
+    % Only adds one channel if there are less than 3 usable channels in the
+    % spike group (to avoid adjacent channels)
+    if length(usableshankchannels)<3
+        xcorr_chs = [xcorr_chs, usableshankchannels(1)];
+        continue 
+    end
+    
    %add first channel from shank (superficial) and last channel from shank (deepest)
    xcorr_chs = [xcorr_chs, usableshankchannels(1),usableshankchannels(end)]; 
 end
@@ -201,10 +208,20 @@ EMGCorr = cat(2,timestamps'/Fs,EMGCorr);
 ChannelsCompared = xcorr_chs;
 % EMGCorrData = v2struct_ss(EMGCorr,ChannelsCompared,AnatShankSite);
 EMGCorrData = v2struct(EMGCorr,ChannelsCompared);
+
+
 if savebool
     % save...
     save(saveloc,'EMGCorrData','EMGCorr','sf_EMG');
 end
+
+
+
+
+
+
+
+
 
 function [filt_sig, Filt] = filtsig_in(sig, Fs, filtband_or_Filt)
 % [filt_sig, Filt] = filtsig(sig, dt_ms, filtband_or_Filt)
