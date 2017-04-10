@@ -204,7 +204,7 @@ scoremetricspath = fullfile(savefolder,[recordingname,'_StateScoreMetrics.mat'])
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
 bz_scorelfppath = fullfile(savefolder,[recordingname,'.SleepScoreLFP.LFP.mat']);
 bz_EMGpath = fullfile(savefolder,[recordingname '.EMGCorr.LFP.mat']);
-bz_scoremetricspath = fullfile(savefolder,[recordingname,'.StateScoreMetrics.mat']);
+bz_scoremetricspath = fullfile(savefolder,[recordingname,'.SleepScoreMetrics.mat']);
 
 
 %Filename for .lfp file
@@ -295,13 +295,15 @@ end
 
 display('Quantifying metrics for state scoring')
 [broadbandSlowWave,thratio,EMG,t_EMG,t_clus,badtimes,reclength,histsandthreshs,...
-    FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(SleepScoreLFP,CorrEMG);
+    swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(SleepScoreLFP,CorrEMG);
 
 display('Clustering States Based on EMG, SW, and TH LFP channels')
 [stateintervals,stateIDX,~] = ClusterStates_DetermineStates(...
-    broadbandSlowWave,thratio,t_clus,EMG,histsandthreshs,MinWinParams,reclength,figloc);
+    SleepScoreMetrics
+    broadbandSlowWave,thratio,t_clus,EMG,histsandthreshs,MinWinParams,reclength,
+    figloc);
 
-ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,FFTfreqs,FFTspec,...
+ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,swFFTfreqs,swFFTspec,...
     thFFTfreqs,thFFTspec,t_clus,recordingname,broadbandSlowWave,thratio,EMG,t_EMG);
 
 if savebool

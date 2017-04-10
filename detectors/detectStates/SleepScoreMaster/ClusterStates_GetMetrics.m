@@ -1,5 +1,5 @@
 function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes,reclength,...
-    histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(...
+    histsandthreshs,swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(...
     SleepScoreLFP,CorrEMG)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
@@ -37,9 +37,9 @@ window = 10;   %s
 noverlap = 9;  %s
 window = window*sf_LFP;
 noverlap = noverlap*sf_LFP;
-[FFTspec,FFTfreqs,t_FFT] = spectrogram(swLFP,window,noverlap,freqlist,sf_LFP);
-FFTspec = abs(FFTspec);
-[zFFTspec,mu,sig] = zscore(log10(FFTspec)');
+[swFFTspec,swFFTfreqs,t_FFT] = spectrogram(swLFP,window,noverlap,freqlist,sf_LFP);
+swFFTspec = abs(swFFTspec);
+[zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
 
 %% Remove transients before calculating SW histogram
 %this should be it's own whole section - removing/detecting transients
