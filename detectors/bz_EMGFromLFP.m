@@ -190,14 +190,16 @@ end
 EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
 
 
-EMG.timestamps = timestamps';
-EMG.data = EMGCorr;
-EMG.channels = xcorr_chs;
-EMG.detectorName = 'bz_EMGFromLFP';
-EMG.samplingFreq = samplingFrequency; 
+EMGCorr.timestamps = timestamps';
+EMGCorr.data = EMGCorr;
+EMGCorr.channels = xcorr_chs;
+EMGCorr.detectorName = 'bz_EMGFromLFP';
+EMGCorr.samplingFreq = samplingFrequency; 
 
-save(saveLocation,'EMG');
-
+%Save in buzcodeformat
+[datasetfolder,recordingname] = fileparts(basenamepath);
+filename = [recordingname,'.EMGCorr.LFP.mat'];
+save(saveLocation,'EMGCorr');
 
 
 function [filt_sig, Filt] = filtsig_in(sig, Fs, filtband_or_Filt)

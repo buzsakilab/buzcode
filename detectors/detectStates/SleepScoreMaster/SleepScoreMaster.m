@@ -248,8 +248,8 @@ if ~exist(EMGpath,'file') || overwrite;
 %     end % this should be replaced by a search of the meta data file instead of a separate bad_chans file
 
     display('Calculating EMG')
-%     [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);
-    [EMG] = bz_EMGFromLFP(rawlfppath,'restrict',scoretime,[]...
+    %Run the EMG Extraction 
+    bz_EMGFromLFP(rawlfppath,'restrict',scoretime,[]...
                                      ,'rejectChannels',rejectchannels);
 %     if savebool
 %         %Old Format - update to buzcode
@@ -264,8 +264,10 @@ if ~exist(EMGpath,'file') || overwrite;
 
 else
     display('EMG aleady calculated: Loading...')
-    load(EMGpath,'EMG')
+
 end
+
+    load(EMGpath,'EMGCorr')
 % EMG = EMGCorr(:,2);
 % clear EMGCorr
 
@@ -294,7 +296,7 @@ end
 
 display('Quantifying metrics for state scoring')
 [broadbandSlowWave,thratio,EMG_env,t_EMG,t_clus,badtimes,reclength,histsandthreshs,...
-    swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(SleepScoreLFP,EMG);
+    swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(SleepScoreLFP,EMGCorr);
 
 display('Clustering States Based on EMG, SW, and TH LFP channels')
 [stateintervals,stateIDX,~] = ClusterStates_DetermineStates(...
