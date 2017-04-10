@@ -34,7 +34,7 @@ if AnimalNotes.Modules.AnimalAndSurgery
     AnimalNotes.Animal.DateOfBirth = '20161221';%YYYYMMDD format
     AnimalNotes.Animal.WeightGramsAtSurgery = 405;%grams
 
-    AnimalNotes.Surgery.Date = '20140317';
+    AnimalNotes.Surgery.Date = '20170317';
     AnimalNotes.Surgery.Anesthesia.Name = 'Isoflurane';
     AnimalNotes.Surgery.Anesthesia.ConcentrationPercent = '1';
     AnimalNotes.Surgery.Analgesic.Name = 'Buprenex';

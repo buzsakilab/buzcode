@@ -1,4 +1,4 @@
-function SleepScoreMaster(datasetfolder,recordingname,varargin)
+function SleepScoreMaster(basePath,varargin)
 %SleepScoreMaster(datasetfolder,recordingname)
 %This is the master function for sleep state scoring.
 %
@@ -83,19 +83,26 @@ MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE)
 %if no input arguements... select uigetfile
 
 %Select from no input
-if ~exist('datasetfolder','var')
+if ~exist('basePath','var')
     DIRECTORYNAME = uigetdir(cd,...
         'Which recording(s) would you like to state score?');
     if isequal(DIRECTORYNAME,0);return;end  
     [datasetfolder,recordingname] = fileparts(DIRECTORYNAME); 
+else
+    %Separate datasetfolder and recordingname
+    [datasetfolder,recordingname] = fileparts(basePath);
 end
+
+
 if ~exist('SWWeightsName','var')
     SWWeightsName = 'SWweights.mat';
 end
 
-%Select from dataset folder
-switch recordingname
-    case 'select'
+
+
+%% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
+%Select from dataset folder - need to check if .xml/lfp exist
+if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp'])
         foldercontents = dir(datasetfolder);
         possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
         [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
