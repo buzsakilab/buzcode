@@ -78,15 +78,13 @@ MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE)
 
 %Select from no input
 if ~exist('basePath','var')
-    DIRECTORYNAME = uigetdir(cd,...
+    basePath = uigetdir(cd,...
         'Which recording(s) would you like to state score?');
-    if isequal(DIRECTORYNAME,0);return;end  
-    [datasetfolder,recordingname] = fileparts(DIRECTORYNAME); 
-else
-    %Separate datasetfolder and recordingname
-    [datasetfolder,recordingname] = fileparts(basePath);
+    if isequal(basePath,0);return;end  
 end
 
+%Separate datasetfolder and recordingname
+[datasetfolder,recordingname] = fileparts(basePath);
 
 if ~exist('SWWeightsName','var')
     SWWeightsName = 'SWweights.mat';
@@ -193,34 +191,14 @@ end
 %ALL OF THESE NEED TO BE CLEANED INTO BUZCODE FORMAT
 %Theta/SWLFP are depreciated - replaced with scorelfppath
 sessionmetadatapath = fullfile(savefolder,[recordingname,'_SessionMetadata.mat']);
-scorelfppath = fullfile(savefolder,[recordingname,'_SleepScoreLFP.mat']);
-EMGpath = fullfile(savefolder,[recordingname '_EMGCorr.mat']);
 %Filenames for State and Event .mat files.
 sleepstatepath = fullfile(savefolder,[recordingname,'_SleepScore.mat']);
-%Filenames for StateCluster Metrics (broadband/theta)
-scoremetricspath = fullfile(savefolder,[recordingname,'_StateScoreMetrics.mat']);
 
 %Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
-bz_scorelfppath = fullfile(savefolder,[recordingname,'.SleepScoreLFP.LFP.mat']);
-bz_EMGpath = fullfile(savefolder,[recordingname '.EMGCorr.LFP.mat']);
 bz_scoremetricspath = fullfile(savefolder,[recordingname,'.SleepScoreMetrics.mat']);
 
 
-%Filename for .lfp file
-if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.eeg']);
-    
-elseif ~overwrite
-    display('No .lfp file... but using saved files so maybe it''s ok!')
-else
-    display('No .lfp file')
-    return
-end
 
 %% Get channels not to use
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
@@ -238,32 +216,18 @@ end
 % Do this before lfp load because finding proper lfps will depend on this.
 % If EMG is already calculated and in it's own .mat, then load, otherwise
 % calculate this
-
-
-    display('Calculating EMG')
-EMGCorr = bz_EMGFromLFP(basePath,'restrict',scoretime,[]...
-                                     ,'rejectChannels',rejectchannels);
-
+EMGCorr = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
+                                     'rejectChannels',rejectchannels);
 
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
-if ~exist(scorelfppath,'file') || overwrite; % if no lfp file already, load lfp and make lfp file?
-
-    display('Picking SW and TH Channels')
-    [SleepScoreLFP] = PickSWTHChannel(datasetfolder,recordingname,figloc,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels);
-    if savebool
-        save(bz_scorelfppath,'SleepScoreLFP');  
-    end
-else
-    display('SlowWave and Theta LFP Channels Already Extracted, Loading...')
-    load(bz_scorelfppath)
-        
-end
-
-% %CAN THIS BE REMOVED?
-% if ~exist('SWfreqlist','var')
-%         load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
-% end
+%Determine the best channels for Slow Wave and Theta separation.
+%Described in Watson et al 2016, with modifications
+SleepScoreLFP = PickSWTHChannel(basePath,...
+                            figloc,scoretime,SWWeightsName,...
+                            Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
+                            SWChannels,ThetaChannels,rejectchannels,...
+                            overwrite);
 
 
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG

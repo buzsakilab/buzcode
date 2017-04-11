@@ -1,23 +1,27 @@
 function [EMGCorr] = bz_EMGFromLFP(basePath,varargin)
 % USAGE
 %
-% [EMG] = bz_EMGFromLFP(basenamepath,restrict,specialChannels,rejectChannels,saveFiles)
+% [EMG] = bz_EMGFromLFP(basePath,restrict,specialChannels,rejectChannels,saveFiles)
 %
 % INPUTS
-%
-%       basenamepath      - string combination of base'path and basename of recording
+%       basePath      - string combination of basepath and basename of recording
 %                           example: '/animal/recording/recording01'
-%       restrict         - interval of time (relative to recording) to sleep score
+%
+%   (Optional)
+%       'restrict'         - interval of time (relative to recording) to sleep score
 %                            default = [0 inf]
-%       specialChannels   - vector of 'special' channels that you DO want to use for EMG calc
-%       rejectChannels    - vector of 'bad' channels that you DO NOT want to use for EMG calc
-%       saveFiles
-%       saveLocationation
+%       'specialChannels'   - vector of 'special' channels that you DO want to use for EMG calc
+%       'rejectChannels'    - vector of 'bad' channels that you DO NOT want to use for EMG calc
+%       'saveFiles'         true/false - default:true
+%       'saveLocation'      default: basePath
+%       'overwrite'         true/false - Overwrite saved EMGCorr.LFP.mat
+%                           default: false
 %       
 %
 % OUTPUTS
 % 
-%       EMG                     - struct of the LFP datatype 
+%       EMGCorr                 - struct of the LFP datatype. saved at
+%                               basePath/baseName.EMGCorr.LFP.mat
 %          .timestamps          - timestamps (in seconds) that match .data samples
 %          .data                - correlation data
 %          .channels            - channels #'s used for analysis
@@ -40,42 +44,48 @@ function [EMGCorr] = bz_EMGFromLFP(basePath,varargin)
 % 
 % Brendon Watson, Dan Levenstein, David Tingley, 2017
 %% Buzcode name of the EMGCorr.LFP.mat file
-
-
+[datasetfolder,recordingname] = fileparts(basePath);
+matfilename = fullfile([recordingname,'.EMGCorr.LFP.mat']);
 %% xmlameters
 p = inputParser;
-addRequired(p,'basenamepath',@isstr)
 addParameter(p,'restrict',[0 inf],@isnumeric)
 addParameter(p,'specialChannels',[],@isnumeric)
 addParameter(p,'rejectChannels',[],@isnumeric)
-addParameter(p,'saveFiles',1,@isbool)
-addParameter(p,'saveLocation',[],@isstr)
+addParameter(p,'saveFiles',1,@isnumeric)
+addParameter(p,'saveLocation','',@isstr)
+addParameter(p,'overwrite',true,@islogical)
 parse(p,varargin{:})
     
-basenamepath = p.Results.basenamepath;
 restrict = p.Results.restrict;
-specialChannels = p.Results.basenamepath;
-rejectChannels = p.Results.basenamepath;
-saveFiles = p.Results.basenamepath;    
+specialChannels = p.Results.specialChannels;
+rejectChannels = p.Results.rejectChannels;
+saveFiles = p.Results.saveFiles;
+OVERWRITE = p.Results.overwrite;
 
 if ~isempty(p.Results.saveLocation)
-    saveLocation = p.Results.saveLocation;
-else 
-    saveLocation = basenamepath;
+    matfilename = fullfile([p.Results.saveLocation,'.EMGCorr.LFP.mat']);
 end
 
-
-%% check if EMG file already exists for this reocrding....
-
+%% Check if EMGCorr has already been claculated for this recording
+%If the EMGCorr file already exists, load and return with EMGCorr in hand
+if exist(matfilename,'file') && ~OVERWRITE
+    display('EMGCorr already calculated - loading from EMGCorr.LFP.mat')
+    load(matfilename)
+    if ~exist('EMGCorr','var')
+        display([matfilename,' does not contain a variable called EMGCorr'])
+    end
+    return
+end
+display('Calculating EMG')
 
 
 %% get basics about.lfp/lfp file
 
-xml = LoadParameters(basenamepath); % now using the updated version
-if exist([basenamepath '/' xml.FileName '.lfp'])
-    lfpFile = [basenamepath '/' xml.FileName '.lfp'];
-elseif exist([basenamepath '/' xml.FileName '.eeg'])
-    lfpFile = [basenamepath '/' xml.FileName '.eeg'];
+xml = LoadParameters(basePath); % now using the updated version
+if exist([basePath '/' xml.FileName '.lfp'])
+    lfpFile = [basePath '/' xml.FileName '.lfp'];
+elseif exist([basePath '/' xml.FileName '.eeg'])
+    lfpFile = [basePath '/' xml.FileName '.eeg'];
 else
     error('could not find an LFP or EEG file...')    
 end
@@ -198,10 +208,10 @@ EMGCorr.channels = xcorr_chs;
 EMGCorr.detectorName = 'bz_EMGFromLFP';
 EMGCorr.samplingFreq = samplingFrequency; 
 
-%Save in buzcodeformat
-[datasetfolder,recordingname] = fileparts(basenamepath);
-filename = [recordingname,'.EMGCorr.LFP.mat'];
-save(saveLocation,'EMGCorr');
+if saveFiles
+    %Save in buzcodeformat
+    save(matfilename,'EMGCorr');
+end
 
 
 function [filt_sig, Filt] = filtsig_in(sig, Fs, filtband_or_Filt)

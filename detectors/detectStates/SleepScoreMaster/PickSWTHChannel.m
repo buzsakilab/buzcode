@@ -1,9 +1,24 @@
-function [SleepScoreLFP] = PickSWTHChannel(datasetfolder,recordingname,figfolder,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels);
+function [SleepScoreLFP] = PickSWTHChannel(basePath,figfolder,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels,OVERWRITE);
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %
-%%
+%% Buzcode name of the SleepScoreLFP.LFP.mat file
+[datasetfolder,recordingname] = fileparts(basePath);
+matfilename = fullfile([recordingname,'.SleepScoreLFP.LFP.mat']);
 
+%% Check if SleepScoreLFP has already been claculated for this recording
+%If the SleepScoreLFP file already exists, load and return with SleepScoreLFP in hand
+if exist(matfilename,'file') && ~OVERWRITE
+    display('SleepScoreLFP already calculated - loading from SleepScoreLFP.LFP.mat')
+    load(matfilename)
+    if ~exist('SleepScoreLFP','var')
+        display([matfilename,' does not contain a variable called SleepScoreLFP'])
+    end
+    return
+end
+display('Picking SW and TH Channels for SleepScoreLFP.LFP.mat')
+
+%%
 if ~exist('SWWeightsName','var')
     SWWeightsName = 'SWweights.mat';
 end
@@ -20,8 +35,6 @@ else
 end
 
 %% FMA
-
-
 Par = LoadPar_SleepScore(xmlfilename);
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
