@@ -1,6 +1,5 @@
-function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes,reclength,...
-    histsandthreshs,swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetMetrics(...
-    SleepScoreLFP,CorrEMG)
+function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
+    basePath,SleepScoreLFP,CorrEMG)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
@@ -11,7 +10,9 @@ function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes,reclength,...
 %Last Updated: 1/31/16
 %DLevenstein
 
-
+%% Buzcode name of the SleepScoreMetrics.LFP.mat file
+[datasetfolder,recordingname] = fileparts(basePath);
+matfilename = fullfile([recordingname,'.SleepScoreMetrics.LFP.mat']);
 %% Downsample and filter
 %Make Downsample to niquest frequency
 
@@ -37,7 +38,7 @@ window = 10;   %s
 noverlap = 9;  %s
 window = window*sf_LFP;
 noverlap = noverlap*sf_LFP;
-[swFFTspec,swFFTfreqs,t_FFT] = spectrogram(swLFP,window,noverlap,freqlist,sf_LFP);
+[swFFTspec,swFFTfreqs,t_clus] = spectrogram(swLFP,window,noverlap,freqlist,sf_LFP);
 swFFTspec = abs(swFFTspec);
 [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
 
@@ -97,7 +98,7 @@ EMG = (EMG-min(EMG))./max(EMG-min(EMG));
 reclength = round(t_EMG(end));
 
 %downsample to FFT time points;
-[~,t_intersect] = intersect(t_EMG,t_FFT);
+[~,t_intersect] = intersect(t_EMG,t_clus);
 EMG = EMG(t_intersect);
 t_EMG = t_EMG(t_intersect);
 
@@ -194,4 +195,12 @@ end
 
 histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
 
+%% Ouput Structure: StateScoreMetrics
+LFPparms = SleepScoreLFP.params;
+THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
+SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
+    t_clus,badtimes,reclength,histsandthreshs,LFPparms,THchanID,SWchanID);
+save(matfilename,'SleepScoreMetrics');
+
+StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);

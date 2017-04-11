@@ -1,4 +1,7 @@
-function ClusterStates_MakeFigure(INT,IDX,figloc,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec,t_FFT,recordingname,broadbandSlowWave,thratio,EMG,t_EMG) 
+function ClusterStates_MakeFigure(SleepScoreMetrics,MinWinParams) 
+
+v2struct(SleepScoreMetrics)
+v2struct(StatePlotMaterials)
 
 %% Figure
 [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
@@ -7,7 +10,7 @@ function ClusterStates_MakeFigure(INT,IDX,figloc,FFTfreqs,FFTspec,thFFTfreqs,thF
  viewwin  =[t_FFT(1) t_FFT(end)];
  %viewwin  =[32000 34000];
 %viewwin=[9000 11000];
-clusterfig = figure;
+clusterfig = figure('visible','off');
 	subplot(8,1,[1:2])
         imagesc(t_FFT,log2(FFTfreqs),log10(FFTspec))
         axis xy

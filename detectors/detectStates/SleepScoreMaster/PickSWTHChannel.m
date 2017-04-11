@@ -237,8 +237,12 @@ t = [1:length(swLFP)]./sf;
 
 %% SleepScoreLFP output
 
-SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,SWfreqlist,SWweights);
+params = v2struct(SWfreqlist,SWweights,SWWeightsName,Notch60Hz,...
+    NotchUnder3Hz,NotchHVS,NotchTheta);
+    
+SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,params);
 
+matfilename
 %% Find Inverted PC1s and flip them for plot
 % invpc1 = mean(pc1coeff(freqlist<4,:))<0 & mean(pc1coeff(freqlist>50,:))>0;
 % pc1coeff(:,invpc1) = -pc1coeff(:,invpc1);
@@ -335,7 +339,7 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
      broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
      broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
-chanfig =figure;
+chanfig =figure('visible','off');
 	subplot(5,1,1:2)
         imagesc(t_FFT,log2(FFTfreqs),log10(FFTspec))
         axis xy
