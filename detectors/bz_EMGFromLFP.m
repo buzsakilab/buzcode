@@ -205,7 +205,7 @@ EMGCorr.timestamps = timestamps'./Fs;
 EMGCorr.data = EMG;
 EMGCorr.channels = xcorr_chs;
 EMGCorr.detectorName = 'bz_EMGFromLFP';
-EMGCorr.samplingFreq = samplingFrequency; 
+EMGCorr.samplingFrequency = samplingFrequency; 
 
 if saveFiles
     %Save in buzcodeformat

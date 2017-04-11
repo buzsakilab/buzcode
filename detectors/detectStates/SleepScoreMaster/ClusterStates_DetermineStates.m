@@ -149,7 +149,7 @@ INT = IDXtoINT_ss(IDX,3);
 
 
 %% Pad time to match recording time
-offset = t_FFT(1)-1;
+offset = SleepScoreMetrics.t_clus(1)-1; %t_FFT(1)-1;
 
 INT = cellfun(@(x) x+offset,INT,'UniformOutput',false);
 
