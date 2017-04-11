@@ -38,7 +38,7 @@ window = 10;   %s
 noverlap = 9;  %s
 window = window*sf_LFP;
 noverlap = noverlap*sf_LFP;
-[swFFTspec,swFFTfreqs,t_clus] = spectrogram(swLFP,window,noverlap,freqlist,sf_LFP);
+[swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window,noverlap,freqlist,sf_LFP);
 swFFTspec = abs(swFFTspec);
 [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
 
@@ -77,7 +77,7 @@ f_theta = [5 10];
 freqlist = logspace(log10(f_all(1)),log10(f_all(2)),100);
 
 
-[thFFTspec,thFFTfreqs] = spectrogram(thLFP,window,noverlap,freqlist,sf_LFP);
+[thFFTspec,thFFTfreqs] = spectrogram(single(thLFP),window,noverlap,freqlist,sf_LFP);
 thFFTspec = (abs(thFFTspec));
 [~,mu_th,sig_th] = zscore(log10(thFFTspec)');
 
