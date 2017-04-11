@@ -5,7 +5,7 @@ function [EMGCorr] = bz_EMGFromLFP(varargin)
 %
 % INPUTS
 %
-%       basenamepath      - string combination of base'path and basename of recording
+%       basenamepath      - string combination of basepath and basename of recording
 %                           example: '/animal/recording/recording01'
 %       restrict         - interval of time (relative to recording) to sleep score
 %                            default = [0 inf]
@@ -46,15 +46,15 @@ addRequired(p,'basenamepath',@isstr)
 addParameter(p,'restrict',[0 inf],@isnumeric)
 addParameter(p,'specialChannels',[],@isnumeric)
 addParameter(p,'rejectChannels',[],@isnumeric)
-addParameter(p,'saveFiles',1,@isbool)
-addParameter(p,'saveLocation',[],@isstr)
+addParameter(p,'saveFiles',1,@isnumeric)
+addParameter(p,'saveLocation','',@isstr)
 parse(p,varargin{:})
     
 basenamepath = p.Results.basenamepath;
 restrict = p.Results.restrict;
-specialChannels = p.Results.basenamepath;
-rejectChannels = p.Results.basenamepath;
-saveFiles = p.Results.basenamepath;    
+specialChannels = p.Results.specialChannels;
+rejectChannels = p.Results.rejectChannels;
+saveFiles = p.Results.saveFiles;    
 
 if ~isempty(p.Results.saveLocation)
     saveLocation = p.Results.saveLocation;
@@ -196,10 +196,12 @@ EMGCorr.channels = xcorr_chs;
 EMGCorr.detectorName = 'bz_EMGFromLFP';
 EMGCorr.samplingFreq = samplingFrequency; 
 
-%Save in buzcodeformat
-[datasetfolder,recordingname] = fileparts(basenamepath);
-filename = [recordingname,'.EMGCorr.LFP.mat'];
-save(saveLocation,'EMGCorr');
+if saveFiles
+    %Save in buzcodeformat
+    [datasetfolder,recordingname] = fileparts(basenamepath);
+    filename = [recordingname,'.EMGCorr.LFP.mat'];
+    save(saveLocation,'EMGCorr');
+end
 
 
 function [filt_sig, Filt] = filtsig_in(sig, Fs, filtband_or_Filt)

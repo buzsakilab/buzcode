@@ -249,7 +249,7 @@ if ~exist(EMGpath,'file') || overwrite;
 
     display('Calculating EMG')
     %Run the EMG Extraction 
-    bz_EMGFromLFP(rawlfppath,'restrict',scoretime,[]...
+    bz_EMGFromLFP(basePath,'restrict',scoretime,'specialChannels',[]...
                                      ,'rejectChannels',rejectchannels);
 %     if savebool
 %         %Old Format - update to buzcode
