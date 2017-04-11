@@ -1,4 +1,4 @@
-function [EMGCorr] = bz_EMGFromLFP(varargin)
+function [EMGCorr] = bz_EMGFromLFP(basePath,varargin)
 % USAGE
 %
 % [EMG] = bz_EMGFromLFP(basenamepath,restrict,specialChannels,rejectChannels,saveFiles)
@@ -39,6 +39,8 @@ function [EMGCorr] = bz_EMGFromLFP(varargin)
 % Mean pairwise correlations are calculated for each time point.
 % 
 % Brendon Watson, Dan Levenstein, David Tingley, 2017
+%% Buzcode name of the EMGCorr.LFP.mat file
+
 
 %% xmlameters
 p = inputParser;

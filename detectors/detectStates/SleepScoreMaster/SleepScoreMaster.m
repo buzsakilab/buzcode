@@ -239,37 +239,11 @@ end
 % If EMG is already calculated and in it's own .mat, then load, otherwise
 % calculate this
 
-% sf_EMG = 2;
-if ~exist(EMGpath,'file') || overwrite;
-%     [PATHSTR] = fileparts([datasetfolder '/' recordingname]);
-%     if exist(fullfile(PATHSTR,'bad_channels.txt'),'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
-%         t = ReadBadChannels_ss(PATHSTR);
-%         rejectchannels = cat(1,rejectchannels(:),t(:));
-%     end % this should be replaced by a search of the meta data file instead of a separate bad_chans file
 
     display('Calculating EMG')
-    %Run the EMG Extraction 
-    bz_EMGFromLFP(rawlfppath,'restrict',scoretime,[]...
+EMGCorr = bz_EMGFromLFP(basePath,'restrict',scoretime,[]...
                                      ,'rejectChannels',rejectchannels);
-%     if savebool
-%         %Old Format - update to buzcode
-%         save(EMGpath,'EMGCorr','sf_EMG')
-%         
-%         %Buzcode format - wrap this into EMGCorrForSleepScore - make a
-%         %standalone buzcode detector
-%         CorrEMG.data = EMGCorr;
-%         CorrEMG.sf = sf_EMG;
-%         save(bz_EMGpath,'CorrEMG')
-%     end
 
-else
-    display('EMG aleady calculated: Loading...')
-
-end
-
-    load(EMGpath,'EMGCorr')
-% EMG = EMGCorr(:,2);
-% clear EMGCorr
 
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
