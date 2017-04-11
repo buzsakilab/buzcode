@@ -45,7 +45,7 @@ function [EMGCorr] = bz_EMGFromLFP(basePath,varargin)
 % Brendon Watson, Dan Levenstein, David Tingley, 2017
 %% Buzcode name of the EMGCorr.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
-matfilename = fullfile([recordingname,'.EMGCorr.LFP.mat']);
+matfilename = fullfile(basePath,[recordingname,'.EMGCorr.LFP.mat']);
 %% xmlameters
 p = inputParser;
 addParameter(p,'restrict',[0 inf],@isnumeric)
@@ -63,7 +63,7 @@ saveFiles = p.Results.saveFiles;
 OVERWRITE = p.Results.overwrite;
 
 if ~isempty(p.Results.saveLocation)
-    matfilename = fullfile([p.Results.saveLocation,'.EMGCorr.LFP.mat']);
+    matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMGCorr.LFP.mat']);
 end
 
 %% Check if EMGCorr has already been claculated for this recording
@@ -168,7 +168,7 @@ xcorr_window_inds = -xcorr_window_samps:xcorr_window_samps;%+- that number of ms
 % new version... batches of correlation calculated at once
 timestamps = (1+xcorr_window_inds(end)):binScootSamps:(size(lfp,1)-xcorr_window_inds(end));
 numbins = length(timestamps);
-EMGCorr = zeros(numbins, 1);
+EMG = zeros(numbins, 1);
 % tic
 counter = 1;
 for j=1:(length(xcorr_chs)-1)
@@ -188,7 +188,7 @@ for j=1:(length(xcorr_chs)-1)
                 binindend = binind;
                 tmp = corr(c1,c2);
                 tmp = diag(tmp);
-                EMGCorr(binindstart:binindend) = EMGCorr(binindstart:binindend) + tmp;
+                EMG(binindstart:binindend) = EMG(binindstart:binindend) + tmp;
                 c1 = [];
                 c2 = [];
                 binindstart = binind+1;
@@ -199,11 +199,10 @@ for j=1:(length(xcorr_chs)-1)
 end
 % toc
 
-EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
+EMG = EMG/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
 
-
-EMGCorr.timestamps = timestamps';
-EMGCorr.data = EMGCorr;
+EMGCorr.timestamps = timestamps'./Fs;
+EMGCorr.data = EMG;
 EMGCorr.channels = xcorr_chs;
 EMGCorr.detectorName = 'bz_EMGFromLFP';
 EMGCorr.samplingFreq = samplingFrequency; 
