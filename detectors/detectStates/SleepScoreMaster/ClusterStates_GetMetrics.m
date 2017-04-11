@@ -1,5 +1,5 @@
 function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-    basePath,SleepScoreLFP,CorrEMG)
+    basePath,SleepScoreLFP,EMG)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
@@ -90,9 +90,9 @@ thratio = smooth(thratio,thsmoothfact);
 thratio = (thratio-min(thratio))./max(thratio-min(thratio));
  
 %% EMG
-dtEMG = 1/CorrEMG.sf;
-t_EMG = (1:length(CorrEMG.data))*dtEMG;
-EMG = smooth(CorrEMG.data,smoothfact/dtEMG);
+dtEMG = 1/EMG.samplingFrequency;
+t_EMG = (1:length(EMG.data))*dtEMG;
+EMG = smooth(EMG.data,smoothfact/dtEMG);
 EMG = (EMG-min(EMG))./max(EMG-min(EMG));
 
 reclength = round(t_EMG(end));
@@ -200,7 +200,7 @@ LFPparms = SleepScoreLFP.params;
 THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
 SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
-    t_clus,badtimes,reclength,histsandthreshs,LFPparms,THchanID,SWchanID);
+    t_clus,badtimes,reclength,histsandthreshs,LFPparms,THchanID,SWchanID,recordingname);
 save(matfilename,'SleepScoreMetrics');
 
 StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);

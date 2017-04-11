@@ -193,7 +193,7 @@ end
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
-EMGCorr = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
+EMG = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
                                      'rejectChannels',rejectchannels);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
@@ -210,7 +210,7 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 %Calculate the scoring metrics: broadbandLFP, theta, EMG in 
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,SleepScoreLFP,EMGCorr);
+                                           basePath,SleepScoreLFP,EMG);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
@@ -218,8 +218,7 @@ display('Clustering States Based on EMG, SW, and TH LFP channels')
                                            SleepScoreMetrics,MinWinParams);
 
 %% MAKE THE STATE SCORE OUTPUT FIGURE
-ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,...
-                                    SleepScoreMetrics,StatePlotMaterials);
+ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
                                 
 %% JOIN STATES INTO EPISODES
 
@@ -229,14 +228,9 @@ WAKEints = stateintervals{1};
 
 [StateIntervals,SleepState,durationprams] = StatesToFinalScoring(NREMints,WAKEints,REMints);
 
-%Old Style - remove once bzCompadible with StateEditor
-StateIntervals.metadata.SWchannum = SWchannum;
-StateIntervals.metadata.THchannum = THchannum;
-save(sleepstatepath,'StateIntervals');
-
 %bzStyle
-SleepState.detectorparms.SWchannum = SWchannum;
-SleepState.detectorparms.THchannum = THchannum;
+SleepState.detectorparms.SWchannum = SleepScoreLFP.SWchanID;
+SleepState.detectorparms.THchannum = SleepScoreLFP.THchanID;
 SleepState.detectorparms.durationprams = durationprams;
 SleepState.detectorname = 'SleepScoreMaster';
 SleepState.detectiondate = today;
