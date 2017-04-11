@@ -4,8 +4,9 @@ function [SleepScoreLFP] = PickSWTHChannel(basePath,figfolder,scoretime,SWWeight
 %
 %% Buzcode name of the SleepScoreLFP.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
-matfilename = fullfile([recordingname,'.SleepScoreLFP.LFP.mat']);
+matfilename = fullfile(basePath,[recordingname,'.SleepScoreLFP.LFP.mat']);
 
+saveFiles = true;
 %% Check if SleepScoreLFP has already been claculated for this recording
 %If the SleepScoreLFP file already exists, load and return with SleepScoreLFP in hand
 if exist(matfilename,'file') && ~OVERWRITE
@@ -242,7 +243,11 @@ params = v2struct(SWfreqlist,SWweights,SWWeightsName,Notch60Hz,...
     
 SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,params);
 
-matfilename
+
+if saveFiles
+    %Save in buzcodeformat
+    save(matfilename,'SleepScoreLFP');
+end
 %% Find Inverted PC1s and flip them for plot
 % invpc1 = mean(pc1coeff(freqlist<4,:))<0 & mean(pc1coeff(freqlist>50,:))>0;
 % pc1coeff(:,invpc1) = -pc1coeff(:,invpc1);
