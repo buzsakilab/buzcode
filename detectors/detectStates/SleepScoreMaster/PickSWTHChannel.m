@@ -98,7 +98,7 @@ downsamplefactor = 10;
 allLFP = LoadBinary(rawlfppath,'frequency',Fs,...
     'nchannels',nChannels,'channels',usechannels+1,'downsample',downsamplefactor,...
     'start',scoretime(1),'duration',diff(scoretime));
-allLFP = double(allLFP); % hack fix
+%allLFP = double(allLFP); % hack fix
 Fs = Fs./downsamplefactor;
 %+1 to channel number here to account for 0-indexing vs 1-indexing
 
@@ -123,7 +123,7 @@ for idx = 1:numSWChannels;
 
     %% Get spectrogram
     %Calcualte Z-scored Spectrogram
-    [FFTspec,FFTfreqs,t_FFT] = spectrogram(allLFP(:,chanidx),window,noverlap,freqlist,Fs);
+    [FFTspec,FFTfreqs,t_FFT] = spectrogram(single(allLFP(:,chanidx)),window,noverlap,freqlist,Fs);
     FFTspec = abs(FFTspec);
     [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
     % Remove transients before calculating SW histogram
@@ -192,7 +192,7 @@ for idx = 1:numThetaChannels;
     f_theta = [5 10];
     thfreqlist = logspace(log10(f_all(1)),log10(f_all(2)),numfreqs);
 
-    [thFFTspec,thFFTfreqs] = spectrogram(allLFP(:,chanidx),window,noverlap,thfreqlist,Fs);
+    [thFFTspec,thFFTfreqs] = spectrogram(single(allLFP(:,chanidx)),window,noverlap,thfreqlist,Fs);
     thFFTspec = (abs(thFFTspec));
 
     thfreqs = find(thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
@@ -231,8 +231,8 @@ swthLFP = LoadBinary(rawlfppath,'frequency',Fs,...
     'nchannels',nChannels,'channels',[SWchanID+1,THchanID+1],...
     'start',scoretime(1),'duration',diff(scoretime));
 
-swLFP = double(swthLFP(:,1));
-thLFP = double(swthLFP(:,2));
+swLFP = (swthLFP(:,1));
+thLFP = (swthLFP(:,2));
 t = [1:length(swLFP)]./sf;
 
 
