@@ -12,7 +12,7 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 
 %% Buzcode name of the SleepScoreMetrics.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
-matfilename = fullfile([recordingname,'.SleepScoreMetrics.LFP.mat']);
+matfilename = fullfile(basePath,[recordingname,'.SleepScoreMetrics.LFP.mat']);
 %% Downsample and filter
 %Make Downsample to niquest frequency
 
