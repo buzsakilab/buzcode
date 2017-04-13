@@ -1,5 +1,5 @@
 function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-    basePath,SleepScoreLFP,EMG)
+    basePath,SleepScoreLFP,EMG,overwrite)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
@@ -13,6 +13,12 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 %% Buzcode name of the SleepScoreMetrics.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreMetrics.LFP.mat']);
+
+if exist(matfilename)
+    load('matfilename')
+    return
+end
+
 %% Downsample and filter
 %Make Downsample to niquest frequency
 

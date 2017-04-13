@@ -13,7 +13,9 @@ function SleepScoreMaster(basePath,varargin)
 %                          
 %   OPTIONS
 %   'savedir'       Default: datasetfolder
-%   'overwrite'     Default: false
+%   'overwrite'     Default: false, overwrite all processing steps
+%   'rescore'       Default: false, do not overwrite channel selection or
+%                   EMG, but recluster and score
 %   'savebool'      Default: true
 %   'scoretime'     Default: [0 Inf]
 %   'badchannels'   file datasetfolder/recordingname/'bad_channels.txt'
@@ -210,7 +212,7 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 %Calculate the scoring metrics: broadbandLFP, theta, EMG in 
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,SleepScoreLFP,EMG);
+                                           basePath,SleepScoreLFP,EMG,overwrite);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
