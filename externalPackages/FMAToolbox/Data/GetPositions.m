@@ -139,11 +139,11 @@ good = ~undetected;
 % Clip if necessary (but issue warning)
 m = min(positions(good,2:end));
 M = max(positions(good,2:end));
-if any(m<0)||any(M(1:2:end)>DATA.maxX|M(2:2:end)>DATA.maxY),
-	warning(['Position data should stay within [0,' num2str(DATA.maxX) ']x[0,' num2str(DATA.maxY) ']. The data will now be clipped accordingly.']);
-	positions(good,2) = Clip(positions(good,2),0,DATA.maxX);
-	positions(good,3) = Clip(positions(good,3),0,DATA.maxY);
-end
+%  if any(m<0)||any(M(1:2:end)>DATA.maxX|M(2:2:end)>DATA.maxY),
+%  	warning(['Position data should stay within [0,' num2str(DATA.maxX) ']x[0,' num2str(DATA.maxY) ']. The data will now be clipped accordingly.']);
+%  	positions(good,2) = Clip(positions(good,2),0,DATA.maxX);
+%  	positions(good,3) = Clip(positions(good,3),0,DATA.maxY);
+%  end
 
 if strcmp(coordinates,'normalized'),
 	% Normalize coordinates
