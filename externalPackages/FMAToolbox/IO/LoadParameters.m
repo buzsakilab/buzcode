@@ -22,7 +22,8 @@ if nargin < 1 % if we're especially lazy, we assume there is one XML in the curr
    filename = xml.name;
 end
 
-if ~exist(filename),
+
+if ~exist('filename'),
 	error(['File ''' filename ''' not found.']);
 end
 [pathname,basename] = fileparts(filename);
