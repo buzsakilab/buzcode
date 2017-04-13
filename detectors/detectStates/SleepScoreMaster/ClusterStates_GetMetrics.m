@@ -13,9 +13,11 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 %% Buzcode name of the SleepScoreMetrics.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreMetrics.LFP.mat']);
+plotmaterialsfilename = fullfile(basePath,[recordingname,'.StatePlotMaterials.mat']);
 
-if exist(matfilename)
-    load('matfilename')
+if exist(matfilename) & exist(plotmaterialsfilename) & overwrite == false
+    load(matfilename,'StateScoreMetrics')
+    load(plotmaterialsfilename,'StatePlotMaterials')
     return
 end
 
@@ -210,3 +212,4 @@ SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
 save(matfilename,'SleepScoreMetrics');
 
 StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);
+save(plotmaterialsfilename,'StatePlotMaterials');

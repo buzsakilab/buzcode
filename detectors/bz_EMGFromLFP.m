@@ -1,7 +1,7 @@
-function [EMG] = bz_EMGFromLFP(basePath,varargin)
+function [EMG] = bz_EMGCorrFromLFP(basePath,varargin)
 % USAGE
 %
-% [EMG] = bz_EMGFromLFP(basePath,restrict,specialChannels,rejectChannels,saveFiles)
+% [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveFiles)
 %
 % INPUTS
 %       basePath      - string combination of basepath and basename of recording
@@ -10,23 +10,23 @@ function [EMG] = bz_EMGFromLFP(basePath,varargin)
 %   (Optional)
 %       'restrict'         - interval of time (relative to recording) to sleep score
 %                            default = [0 inf]
-%       'specialChannels'   - vector of 'special' channels that you DO want to use for EMG calc
-%       'rejectChannels'    - vector of 'bad' channels that you DO NOT want to use for EMG calc
+%       'specialChannels'   - vector of 'special' channels that you DO want to use for EMGCorr calc
+%       'rejectChannels'    - vector of 'bad' channels that you DO NOT want to use for EMGCorr calc
 %       'saveFiles'         true/false - default:true
 %       'saveLocation'      default: basePath
-%       'overwrite'         true/false - overwrite saved EMG.LFP.mat
+%       'overwrite'         true/false - overwrite saved EMGCorr.LFP.mat
 %                           default: false
 %       
 %
 % OUTPUTS
 % 
-%       EMG                 - struct of the LFP datatype. saved at
-%                               basePath/baseName.EMG.LFP.mat
+%       EMGCorr                 - struct of the LFP datatype. saved at
+%                               basePath/baseName.EMGCorr.LFP.mat
 %          .timestamps          - timestamps (in seconds) that match .data samples
 %          .data                - correlation data
 %          .channels            - channels #'s used for analysis
 %          .detectorName        - string name of function used
-%          .samplingFrequency   - 1 / sampling rate of EMG data
+%          .samplingFrequency   - 1 / sampling rate of EMGCorr data
 %
 % DESCRIPTION
 %
@@ -43,9 +43,9 @@ function [EMG] = bz_EMGFromLFP(basePath,varargin)
 % Mean pairwise correlations are calculated for each time point.
 % 
 % Brendon Watson, Dan Levenstein, David Tingley, 2017
-%% Buzcode name of the EMG.LFP.mat file
+%% Buzcode name of the EMGCorr.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
-matfilename = fullfile(basePath,[recordingname,'.EMG.LFP.mat']);
+matfilename = fullfile(basePath,[recordingname,'.EMGCorr.LFP.mat']);
 %% xmlameters
 p = inputParser;
 addParameter(p,'restrict',[0 inf],@isnumeric)
@@ -63,20 +63,20 @@ saveFiles = p.Results.saveFiles;
 overwrite = p.Results.overwrite;
 
 if ~isempty(p.Results.saveLocation)
-    matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMG.LFP.mat']);
+    matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMGCorr.LFP.mat']);
 end
 
-%% Check if EMG has already been claculated for this recording
-%If the EMG file already exists, load and return with EMG in hand
+%% Check if EMGCorr has already been claculated for this recording
+%If the EMGCorr file already exists, load and return with EMGCorr in hand
 if exist(matfilename,'file') && ~overwrite
-    display('EMG already calculated - loading from EMG.LFP.mat')
+    display('EMGCorr already calculated - loading from EMGCorr.LFP.mat')
     load(matfilename)
-    if ~exist('EMG','var')
-        display([matfilename,' does not contain a variable called EMG'])
+    if ~exist('EMGCorr','var')
+        display([matfilename,' does not contain a variable called EMGCorr'])
     end
     return
 end
-display('Calculating EMG')
+display('Calculating EMGCorr')
 
 
 %% get basics about.lfp/lfp file
@@ -164,7 +164,7 @@ xcorr_window_inds = -xcorr_window_samps:xcorr_window_samps;%+- that number of ms
 % new version... batches of correlation calculated at once
 timestamps = (1+xcorr_window_inds(end)):binScootSamps:(size(lfp,1)-xcorr_window_inds(end));
 numbins = length(timestamps);
-EMG = zeros(numbins, 1);
+EMGCorr = zeros(numbins, 1);
 % tic
 counter = 1;
 for j=1:(length(xcorr_chs)-1)
@@ -184,7 +184,7 @@ for j=1:(length(xcorr_chs)-1)
                 binindend = binind;
                 tmp = corr(c1,c2);
                 tmp = diag(tmp);
-                EMG(binindstart:binindend) = EMG(binindstart:binindend) + tmp;
+                EMGCorr(binindstart:binindend) = EMGCorr(binindstart:binindend) + tmp;
                 c1 = [];
                 c2 = [];
                 binindstart = binind+1;
@@ -195,12 +195,12 @@ for j=1:(length(xcorr_chs)-1)
 end
 % toc
 
-EMG = EMG/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
+EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
 
 EMG.timestamps = timestamps'./Fs;
-EMG.data = EMG;
+EMG.data = EMGCorr;
 EMG.channels = xcorr_chs;
-EMG.detectorName = 'bz_EMGFromLFP';
+EMG.detectorName = 'bz_EMGCorrFromLFP';
 EMG.samplingFrequency = samplingFrequency; 
 
 if saveFiles

@@ -41,42 +41,42 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
 % Brendon Watson 2016 
 % edited by David Tingley 1/2017
 
-p = inputParser;
-addRequired(p,'shank',@isnumeric)
-addRequired(p,'basepath',@isstr)
-addRequired(p,'basename',@isstr)
-
-addParameter(p,'saveFiles',[],@isnumeric)
-addParameter(p,'numCores',[1],@isnumeric)
-p.parse(varargin{:})
-
-shank = p.Results.shank;
-basepath = p.Results.basepath;
-saveFiles = p.Results.saveFiles;
-numCores = p.Results.numCores;
-basename = p.Results.basename;
+% p = inputParser;
+% addRequired(p,'shank',@isnumeric)
+% addRequired(p,'basepath',@isstr)
+% addRequired(p,'basename',@isstr)
+% 
+% addParameter(p,'saveFiles',[],@isnumeric)
+% addParameter(p,'numCores',[1],@isnumeric)
+% p.parse(varargin{:})
+% 
+% shank = p.Results.shank;
+% basepath = p.Results.basepath;
+% saveFiles = p.Results.saveFiles;
+% numCores = p.Results.numCores;
+% basename = p.Results.basename;
 
 
 % 
-% % Handle inputs
-% if ~exist('shank','var')
-%     shank = 1;
-% end
-% if ~exist('basepath','var');
-%     basepath = cd;
-% end
-% if ~exist('saveFiles','var');
-%     saveFiles = 0;
-% end
-% if ~exist('numCores','var');
-%     numCores = 1;
-% end
-% if ~exist('basename','var');
-%     [~,basename] = fileparts(pwd);
-% elseif strcmp(basename, 'lfpfile') 
-%     d = dir('*lfp');
-%     basename = d.name(1:end-4);
-% end
+% Handle inputs
+if ~exist('shank','var')
+    shank = 1;
+end
+if ~exist('basepath','var');
+    basepath = cd;
+end
+if ~exist('saveFiles','var');
+    saveFiles = 0;
+end
+if ~exist('numCores','var');
+    numCores = 1;
+end
+if ~exist('basename','var');
+    [~,basename] = fileparts(pwd);
+elseif strcmp(basename, 'lfpfile') 
+    d = dir('*lfp');
+    basename = d.name(1:end-4);
+end
 
 % Start grabbing data
 datpath = fullfile(basepath,[basename '.dat']);

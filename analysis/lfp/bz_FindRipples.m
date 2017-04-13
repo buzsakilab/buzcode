@@ -17,7 +17,7 @@ function [ripples] = bz_FindRipples(varargin)
 %    from a previous call.
 %
 % INPUTS
-%    filtered       ripple-band filtered LFP (one channel).
+%    lfp            unfiltered LFP (one channel) to use
 %	 timestamps	    timestamps to match filtered variable
 %    <options>      optional list of property-value pairs (see table below)
 %
@@ -38,7 +38,7 @@ function [ripples] = bz_FindRipples(varargin)
 %     'frequency'   sampling rate (in Hz) (default = 1250Hz)
 %     'stdev'       reuse previously computed stdev
 %     'show'        plot results (default = 'off')
-%     'noise'       noisy ripple-band filtered channel used to exclude ripple-
+%     'noise'       noisy unfiltered channel used to exclude ripple-
 %                   like noise (events also present on this channel are
 %                   discarded)
 %    =========================================================================
@@ -105,6 +105,9 @@ lowThresholdFactor = p.Results.thresholds(1);
 highThresholdFactor = p.Results.thresholds(2);
 minInterRippleInterval = p.Results.durations(1);
 maxRippleDuration = p.Results.durations(2);
+
+%% filter and calculate noise
+
 
 % Parameters
 windowLength = frequency/1250*11;
