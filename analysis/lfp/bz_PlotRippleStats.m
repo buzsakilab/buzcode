@@ -118,6 +118,7 @@ for electrode = 1:nElectrodes
 	subplot(2,3,5);a = gca;
 	PlotDistribution2(data{electrode}.duration,data{electrode}.peakFrequency,'nbins',1000); %,'smooth',5
 	axes(a);xlabel(['r=' num2str(stats{electrode}.durationFrequency.rho(1,2)) ' p=' num2str(stats{electrode}.durationFrequency.p(1,2))]);ylabel('Frequency vs Duration');
+    line([prctile(data{electrode}.duration,99.5) prctile(data{electrode}.duration,99.5)],[100 200],'color','k')
 
 	subplot(2,3,6);a = gca;
 	PlotDistribution2(data{electrode}.duration,data{electrode}.peakAmplitude,'nbins',1000); %,'smooth',5

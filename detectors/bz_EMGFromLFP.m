@@ -134,16 +134,11 @@ for i=1:length(spkgrpstouse)
     
     %Remove rejectChannels
     usableshankchannels = setdiff(SpkGrps(spkgrpstouse(i)).Channels,rejectChannels);
-    
-    % Only adds one channel if there are less than 3 usable channels in the
-    % spike group (to avoid adjacent channels)
-    if length(usableshankchannels)<3
-        xcorr_chs = [xcorr_chs, usableshankchannels(1)];
-        continue 
-    end
-    
+        
    %add first channel from shank (superficial) and last channel from shank (deepest)
-   xcorr_chs = [xcorr_chs, usableshankchannels(1),usableshankchannels(end)]; 
+   if ~isempty(usableshankchannels)
+      xcorr_chs = [xcorr_chs, usableshankchannels(1),usableshankchannels(end)]; 
+   end
 end
 xcorr_chs = unique([xcorr_chs,specialChannels]);
 
