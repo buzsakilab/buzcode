@@ -36,13 +36,16 @@ filename = '';
 
 if nargin == 0
     xml = dir('*xml');
+    if size(xml,1)>1
+        error('you have more than one XML file in this directory')
+    end
     if size(xml,1) == 1
         filename = xml.name;
     end
 end
 
 % Filename?
-if nargin ~= 0 || ~isempty(filename)
+if nargin ~= 0 %|| ~isempty(filename)
 	if ~isstring_FMAT(varargin{1},'spikes'),
 		filename = varargin{1};
 		varargin = {varargin{2:end}};
@@ -65,8 +68,6 @@ for i = 1:2:length(varargin),
 			if ~isstring_FMAT(spikes,'on','off'),
 				error('Incorrect value for property ''spikes'' (type ''help <a href="matlab:help SetCurrentSession">SetCurrentSession</a>'' for details).');
 			end
-		case 'filename'
-			filename = varargin{i+1};
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help SetCurrentSession">SetCurrentSession</a>'' for details).']);
 
@@ -138,7 +139,7 @@ if strcmp(basename,DATA.session.basename) & strcmp(path,DATA.session.path) & ~st
 end
 
 % Parameter file
-DATA = LoadParameters([path separator basename '.xml']);
+DATA = LoadParameters(filename);
 disp(['... loaded parameter file ''' basename '.xml''']);
 
 % Event file(s)

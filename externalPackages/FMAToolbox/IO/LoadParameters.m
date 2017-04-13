@@ -22,8 +22,12 @@ if nargin < 1 % if we're especially lazy, we assume there is one XML in the curr
    filename = xml.name;
 end
 
+if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the folder location instead of an actual xml file
+    d = dir([filename '/*xml']);
+    filename = [filename '/' d.name];
+end
 
-if ~exist('filename'),
+if ~exist(filename),
 	error(['File ''' filename ''' not found.']);
 end
 [pathname,basename] = fileparts(filename);
@@ -75,7 +79,7 @@ if ~isempty(p.spikeDetection),
 else
 	parameters.spikeGroups.nSamples = [];
 	parameters.spikeGroups.groups = {};
-	parameters.spikeGroups.nGroups = 0;
+	parameters.spikeGroups.nGroups = length(p.anatomicalDescription.channelGroups);
 end
 
 parameters.nChannels = str2num(p.acquisitionSystem.nChannels);
@@ -90,33 +94,61 @@ catch
 	parameters.rates.video = 0;
 % 	parameters.maxX = 0;  % Deprecated with new tracking systems
 % 	parameters.maxY = 0;  % Deprecated with new tracking systems 
-	disp('... warning: missing video parameters (set to zero)');
+% 	disp('... warning: missing video parameters (set to zero)');
 end
 
 % for backwards compatibility with LoadPar.m
+
 parameters.FileName = parameters.session.name;  % killing me slowly with redundancy 
 parameters.SampleTime = (1/str2num(p.acquisitionSystem.samplingRate)) * 1e+6; % duration of a sample in microseconds
-parameters.nElecGps = length(p.spikeDetection.channelGroups.group);
-parameters.ElecGp = p.spikeDetection.channelGroups.group;
+parameters.nElecGps = length(p.anatomicalDescription.channelGroups.group);
+parameters.ElecGp = p.anatomicalDescription.channelGroups.group;
 parameters.HiPassFreq = 500; % default hi-pass for klusta-3.0 w/ intan data
 
 % for backwards compatibility with loadXml_old.m and variants
+% the below code fails with certain XMl files people in the lab use
+% so we'll wrap this in a try/catch for now..
+try
 parameters.Date = p.generalInfo.date;
 parameters.VoltageRange = str2num(p.acquisitionSystem.voltageRange);
 parameters.Amplification = str2num(p.acquisitionSystem.amplification);
 parameters.Offset = str2num(p.acquisitionSystem.offset);
 parameters.lfpSampleRate = str2num(p.fieldPotentials.lfpSamplingRate);
-
-% fixing AnatGrps and SpkGrps
-for a = 1:length(p.anatomicalDescription.channelGroups.group)
-    for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
-        parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
-    end        
+catch
+   warning('could not load .Date, something may be wrong with your xml...') 
+   parameters.lfpSampleRate = parameters.rates.lfp;
 end
-for a = 1:parameters.spikeGroups.nGroups
-    parameters.SpkGrps(a).Channels = parameters.spikeGroups.groups{a};
-    parameters.SpkGrps(a).nSamples =  str2num(p.spikeDetection.channelGroups.group{a}.nSamples);
-    parameters.SpkGrps(a).PeakSample = str2num(p.spikeDetection.channelGroups.group{a}.peakSampleIndex); 
-    parameters.SpkGrps(a).nFeatures =  str2num(p.spikeDetection.channelGroups.group{a}.nFeatures); 
+% fixing AnatGrps and SpkGrps
+% the below code fails with certain XMl files people in the lab use
+% so we'll wrap this in a try/catch for now..
+try
+    for a = 1:length(p.anatomicalDescription.channelGroups.group)
+        if isstruct(p.anatomicalDescription.channelGroups.group)
+            for b = 1:length(p.anatomicalDescription.channelGroups.group(a).channel)
+                parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group(a).channel{b});
+            end 
+        elseif iscell(p.anatomicalDescription.channelGroups.group)
+            for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
+                parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
+            end 
+        end
+    end
+    for a = 1:parameters.spikeGroups.nGroups
+        if ~isempty(parameters.spikeGroups.nSamples)
+        parameters.SpkGrps(a).Channels = parameters.spikeGroups.groups{a};
+        parameters.SpkGrps(a).nSamples =  str2num(p.spikeDetection.channelGroups.group{a}.nSamples);
+        parameters.SpkGrps(a).PeakSample = str2num(p.spikeDetection.channelGroups.group{a}.peakSampleIndex); 
+        parameters.SpkGrps(a).nFeatures =  str2num(p.spikeDetection.channelGroups.group{a}.nFeatures); 
+        else
+            for b = 1:length(p.anatomicalDescription.channelGroups.group.channel)
+                parameters.SpkGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group.channel{b});
+                parameters.SpkGrps(a).nSamples =  [];
+                parameters.SpkGrps(a).PeakSample = [];
+                parameters.SpkGrps(a).nFeatures =  [];  
+            end
+        end
+    end
+catch
+   warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
 end
 

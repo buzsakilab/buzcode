@@ -1,8 +1,8 @@
-% ConvertBasler2Whl - Convert Basler data to pos file format
+% ConvertBasler2pos - Convert Basler data to pos file format
 %
 %  USAGE
 %
-%    ConvertBasler2Whl(filebasename,<options>)
+%    ConvertBasler2pos(filebasename,<options>)
 %
 %    filebasename   basename of the video file (should be filebasenmae.avi)
 %    <options>      optional list of property-value pairs (see table below)
@@ -26,6 +26,7 @@
 
 
 % Copyright (C) 2015 Adrien Peyrache
+% edited by David Tingley, 2017
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by

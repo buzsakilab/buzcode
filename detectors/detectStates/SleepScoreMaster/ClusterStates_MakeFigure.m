@@ -1,15 +1,18 @@
-function ClusterStates_MakeFigure(INT,IDX,figloc,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec,t_FFT,recordingname,broadbandSlowWave,thratio,EMG,t_EMG) 
+function ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials) 
+
+v2struct(SleepScoreMetrics)
+v2struct(StatePlotMaterials)
 
 %% Figure
-[zFFTspec,mu,sig] = zscore(log10(FFTspec)');
+[zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
 [~,mu_th,sig_th] = zscore(log10(thFFTspec)');
 
- viewwin  =[t_FFT(1) t_FFT(end)];
+ viewwin  =[t_clus(1) t_clus(end)];
  %viewwin  =[32000 34000];
 %viewwin=[9000 11000];
-figure
+clusterfig = figure('visible','off');
 	subplot(8,1,[1:2])
-        imagesc(t_FFT,log2(FFTfreqs),log10(FFTspec))
+        imagesc(t_clus,log2(swFFTfreqs),log10(swFFTspec))
         axis xy
         set(gca,'YTick',(log2([1 2 4 8 16 32 64 128])))
         set(gca,'YTickLabel',{'1','2','4','8','16','32','64','128'})
@@ -17,12 +20,12 @@ figure
         caxis([min(mu)-2.5*max(sig) max(mu)+2.5*max(sig)])
         xlim(viewwin)
         colorbar('east')
-        ylim([log2(FFTfreqs(1)) log2(FFTfreqs(end))+0.2])
+        ylim([log2(swFFTfreqs(1)) log2(swFFTfreqs(end))+0.2])
         set(gca,'XTickLabel',{})
         ylabel({'swLFP','f (Hz)'})
         title([recordingname,': State Scoring Results']);
 	subplot(8,1,3)
-        imagesc(t_FFT,log2(thFFTfreqs),log10(thFFTspec))
+        imagesc(t_clus,log2(thFFTfreqs),log10(thFFTspec))
         axis xy
         set(gca,'YTick',(log2([1 2 4 8 16 32 64 128])))
         set(gca,'YTickLabel',{'1','2','4','8','16','32','64','128'})
@@ -35,11 +38,11 @@ figure
         set(gca,'XTickLabel',{})
         
     subplot(8,1,4)
-        %plot(t_FFT,-IDX,'LineWidth',2)
+        %plot(t_clus,-IDX,'LineWidth',2)
         hold on
-        plot(INT{1}',-1*ones(size(INT{1}))','k','LineWidth',8)
-        plot(INT{2}',-2*ones(size(INT{2}))','b','LineWidth',8)
-        plot(INT{3}',-3*ones(size(INT{3}))','r','LineWidth',8)
+        plot(stateintervals{1}',-1*ones(size(stateintervals{1}))','k','LineWidth',8)
+        plot(stateintervals{2}',-2*ones(size(stateintervals{2}))','b','LineWidth',8)
+        plot(stateintervals{3}',-3*ones(size(stateintervals{3}))','r','LineWidth',8)
         xlim(viewwin)
         ylim([-4 0])
         set(gca,'YTick',[-3:-1])
@@ -48,19 +51,19 @@ figure
         
    	subplot(6,1,4)
         hold on
-        plot(t_FFT,broadbandSlowWave,'k')
+        plot(t_clus,broadbandSlowWave,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('SW')
-        xlim([t_FFT(1) t_FFT(end)])
+        xlim([t_clus(1) t_clus(end)])
         xlim(viewwin)
         set(gca,'XTickLabel',{})
         
    	subplot(6,1,5)
         hold on
-        plot(t_FFT,thratio,'k')
+        plot(t_clus,thratio,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('Theta')
-        xlim([t_FFT(1) t_FFT(end)])
+        xlim([t_clus(1) t_clus(end)])
         xlim(viewwin)
         set(gca,'XTickLabel',{})
         
@@ -69,11 +72,11 @@ figure
         plot(t_EMG,EMG,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('EMG')
-        xlim([t_FFT(1) t_FFT(end)])
+        xlim([t_clus(1) t_clus(end)])
         xlim(viewwin)
         xlabel('t (s)')
         
-	saveas(gcf,[figloc,recordingname,'_ClusterResults'],'jpeg')
+	saveas(clusterfig,[figloc,recordingname,'_ClusterResults'],'jpeg')
         
 
         
@@ -186,12 +189,12 @@ figure
 % 	saveas(gcf,[figloc,recordingname,'_clust'],'jpeg')
 % %saveas(gcf,['/Users/dlevenstein/Code Library/SleepScoreDevelopment/StateScoreFigures/','clust'],'jpeg')    
 %   %% Figure: Duration Distributions
-% %   Wints = INT{1};
-% %   Wlengths = Wints(:,2)-Wints(:,1);
-% %   Sints = INT{2};
-% %   Slengths = Sints(:,2)-Sints(:,1);
-% %   Rints = INT{3};
-% %   Rlengths = Rints(:,2)-Rints(:,1);
+% %   Wstateintervalss = stateintervals{1};
+% %   Wlengths = Wstateintervalss(:,2)-Wstateintervalss(:,1);
+% %   Sstateintervalss = stateintervals{2};
+% %   Slengths = Sstateintervalss(:,2)-Sstateintervalss(:,1);
+% %   Rstateintervalss = stateintervals{3};
+% %   Rlengths = Rstateintervalss(:,2)-Rstateintervalss(:,1);
 % %   
 % %   figure
 % %     subplot(2,3,1)
@@ -199,48 +202,48 @@ figure
 % %         set(gca,'XTick',0:3)
 % %         set(gca,'XTickLabel',10.^[0:3])
 % %         xlabel('Duration (s)')
-% %         title('Wake Interval Durations')
+% %         title('Wake stateintervalserval Durations')
 % %     subplot(2,3,2)
 % %         hist(log10(Slengths),10)
 % %         set(gca,'XTick',0:3)
 % %         set(gca,'XTickLabel',10.^[0:3])
 % %         xlabel('Duration (s)')
-% %         title('SWS Interval Durations')
+% %         title('SWS stateintervalserval Durations')
 % %     subplot(2,3,3)
 % %         hist(log10(Rlengths),10)
 % %         set(gca,'XTick',0:3)
 % %         set(gca,'XTickLabel',10.^[0:3])
 % %         xlabel('Duration (s)')
-% %         title('REM Interval Durations')
+% %         title('REM stateintervalserval Durations')
 % %     subplot(2,3,4)
 % %         plot(log10(Wlengths(1:end-1)),log10(Wlengths(2:end)),'.')
 % %         set(gca,'YTick',0:3)
 % %         set(gca,'YTickLabel',10.^[0:3])
 % %         set(gca,'XTick',0:3)
 % %         set(gca,'XTickLabel',10.^[0:3])
-% %         xlabel('Interval n Duration')
-% %         ylabel('Interval n+1 Duration')
-% %         title('Wake Interval Durations')
+% %         xlabel('stateintervalserval n Duration')
+% %         ylabel('stateintervalserval n+1 Duration')
+% %         title('Wake stateintervalserval Durations')
 % %     subplot(2,3,5)
 % %         plot(log10(Slengths(1:end-1)),log10(Slengths(2:end)),'.')
 % %         set(gca,'YTick',0:3)
 % %         set(gca,'YTickLabel',10.^[0:3])
 % %         set(gca,'XTick',0:3)
 % %         set(gca,'XTickLabel',10.^[0:3])
-% %         xlabel('Interval n Duration')
-% %         ylabel('Interval n+1 Duration')
-% %         title('SWS Interval Durations')
+% %         xlabel('stateintervalserval n Duration')
+% %         ylabel('stateintervalserval n+1 Duration')
+% %         title('SWS stateintervalserval Durations')
 % %     subplot(2,3,6)
 % %         plot(log10(Rlengths(1:end-1)),log10(Rlengths(2:end)),'.')
 % %         set(gca,'YTick',0:3)
 % %         set(gca,'YTickLabel',10.^[0:3])
 % %         set(gca,'XTick',0:3)
 % %         set(gca,'XTickLabel',10.^[0:3])
-% %         xlabel('Interval n Duration')
-% %         ylabel('Interval n+1 Duration')
-% %         title('REM Interval Durations')
+% %         xlabel('stateintervalserval n Duration')
+% %         ylabel('stateintervalserval n+1 Duration')
+% %         title('REM stateintervalserval Durations')
 % %         
-% %         saveas(gcf,[figloc,recordingname,'_intdur'],'jpeg')
+% %         saveas(gcf,[figloc,recordingname,'_stateintervalsdur'],'jpeg')
 % %         
 %     
 

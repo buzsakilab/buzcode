@@ -51,7 +51,7 @@ addRequired(p,'passband',@isnumeric)
 addParameter(p,'intervals',[0 inf],@isnumeric)
 addParameter(p,'samplingRate',1250,@isnumeric)
 addParameter(p,'method','hilbert',@isstr)
-addParameter(p,'plotting',0,@isnumeric)
+addParameter(p,'plotting',1,@isnumeric)
 addParameter(p,'numBins',[180],@isnumeric)
 % addParameter(p,'threshold',0,@isnumeric)
 
@@ -79,12 +79,22 @@ switch lower(method)
         lfpphase = mod(angle(hilb),2*pi);
         clear fil
     case ('wavelet')% Use Wavelet transform to calulate the signal phases
-        [wave,f,t,coh,wphases,raw,coi,scale,priod,scalef]=getWavelet(lfp(:,2),samplingRate,passband(1),passband(2),8,0);
-        [~,mIdx]=max(wave);%get index max power for each timepiont
-        pIdx=mIdx'+[0;size(f,2).*cumsum(ones(size(t,1)-1,1))];%converting to indices that will pick off single maxamp index from each of the freq-based phases at eacht timepoint
-        lfpphase=wphases(pIdx);%get phase of max amplitude wave at each timepoint
-        lfpphases = mod(lfpphases,2*pi);%covert to 0-2pi rather than -pi:pi
-%     case ('peaks')
+        nvoice = 12;
+        freqlist= 2.^(log2(passband(1)):1/nvoice:log2(passband(2)));
+        [wt,freqlist] = awt_freqlist(lfp, samplingRate, freqlist);
+        amp = (real(wt).^2 + imag(wt).^2).^.5;
+        phase = atan2(imag(wt),real(wt));
+        [~,mIdx] = max(amp'); %get index with max power for each timepiont
+        for i = 1:size(wt,1)
+            lfpphase(i) = phase(i,mIdx(i));
+        end
+        lfpphase = mod(lfpphase,2*pi);
+%         [wave,f,t,coh,wphases,raw,coi,scale,priod,scalef]=getWavelet(lfp(:,2),samplingRate,passband(1),passband(2),8,0);
+%         [~,mIdx]=max(wave);%get index max power for each timepiont
+%         pIdx=mIdx'+[0;size(f,2).*cumsum(ones(size(t,1)-1,1))];%converting to indices that will pick off single maxamp index from each of the freq-based phases at eacht timepoint
+%         lfpphase=wphases(pIdx);%get phase of max amplitude wave at each timepoint
+%         lfpphases = mod(lfpphases,2*pi);%covert to 0-2pi rather than -pi:pi
+% %     case ('peaks')
         % not yet coded
         % filter, smooth, diff = 0, diffdiff = negative
 end
@@ -134,6 +144,7 @@ for a = 1:length(spikes)
             hold on;
             plot([0:360],cos(pi/180*[0:360])*0.05*max(phasedistros(:,a))+0.95*max(phasedistros(:,a)),'color',[.7 .7 .7])
             set(h(end),'name',['PhaseModPlotsForCell' num2str(a)]);
+%             print(fullfile(['PhaseModPlotsForCell' num2str(a)]),'-dpng','-r0');
         end
     end
 end
@@ -160,3 +171,4 @@ end
 %     end
 % end
 
+end

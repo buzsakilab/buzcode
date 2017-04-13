@@ -1,4 +1,4 @@
-function StateIntervals = StatesToFinalScoring(NREMints,WAKEints,REMints)
+function [StateIntervals,SleepState,durationprams] = StatesToFinalScoring(NREMints,WAKEints,REMints)
 
 minPacketDuration = 30;
 maxMicroarousalDuration = 100;
@@ -7,6 +7,13 @@ maxEpisodeDuration = 40;
 minSWSEpisodeDuration = 20;
 minWAKEEpisodeDuration = 20;
 minREMEpisodeDuration = 20;
+
+durationprams.minPacketDuration = minPacketDuration;
+durationprams.maxMicroarousalDuration = maxMicroarousalDuration;
+durationprams.maxEpisodeDuration = maxEpisodeDuration;
+durationprams.minSWSEpisodeDuration = minSWSEpisodeDuration;
+durationprams.minWAKEEpisodeDuration = minWAKEEpisodeDuration;
+durationprams.minREMEpisodeDuration = minREMEpisodeDuration;
 
 
 SWSlengths = NREMints(:,2)-NREMints(:,1);
@@ -21,21 +28,40 @@ WAKEIntervals = WAKEints(WAKElengths>maxMicroarousalDuration,:);
 [episodeintervals{3}] = IDStateEpisode(REMints,maxEpisodeDuration,minREMEpisodeDuration);
 
 
-%% Save
+%% Identify MAs preceeding REM and separate them into MA_REM
+%Find the MA states that are before (or between two) REM states
+[ ~,~,MA_REM,~ ] = FindIntsNextToInts(MAIntervals,REMints);
+%"Real" MAs are those that are not before REM state
+realMA = setdiff(1:length(MAIntervals),MA_REM);
+
+MA_REM = MAIntervals(MA_REM,:);
+MAIntervals = MAIntervals(realMA,:);
+
+
+
+%% Save: old format - remove once compadible with StateEditor
 StateIntervals.NREMstate = NREMints;
 StateIntervals.REMstate = REMints;
 StateIntervals.WAKEstate = WAKEIntervals;
 StateIntervals.NREMepisode = episodeintervals{2};
 StateIntervals.REMepisode = episodeintervals{3};
-StateIntervals.WAKEeposode = episodeintervals{1};
+StateIntervals.WAKEepisode = episodeintervals{1};
 StateIntervals.NREMpacket = packetintervals;
 StateIntervals.MAstate = MAIntervals;
+StateIntervals.MA_REM = MA_REM;
+
+%% Save: buzcode format
+SleepState.ints.NREMstate = NREMints;
+SleepState.ints.REMstate = REMints;
+SleepState.ints.WAKEstate = WAKEIntervals;
+SleepState.ints.NREMepisode = episodeintervals{2};
+SleepState.ints.REMepisode = episodeintervals{3};
+SleepState.ints.WAKEepisode = episodeintervals{1};
+SleepState.ints.NREMpacket = packetintervals;
+SleepState.ints.MAstate = MAIntervals;
+SleepState.ints.MA_REM = MA_REM;
 
 
 
-%% Identify MAs preceeding REM
-% [ ~,~,MA_REM,~ ] = FindIntsNextToInts(StateIntervals.MAstate,StateIntervals.REMstate);
-% realMA = setdiff(1:length(StateIntervals.MAstate(:,1)),MA_REM);
-% StateIntervals.MA_REM = StateIntervals.MAstate(MA_REM,:);
-% StateIntervals.MAstate = StateIntervals.MAstate(realMA,:);
+
 

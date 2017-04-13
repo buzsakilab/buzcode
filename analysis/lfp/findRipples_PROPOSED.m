@@ -1,10 +1,13 @@
-function [ripples,sd,bad] = FindRipples_PROPOSED(varargin)
-
+function [ripples,sd,bad] = bz_FindRipples(varargin)
 %FindRipples - Find hippocampal ripples (100~200Hz oscillations).
 %
 %  USAGE
 %
-%    [ripples,stdev,noise] = FindRipples(filtered,<options>)
+%    [ripples,stdev,noise] = bz_FindRipples(filtered,timestamps,<options>)
+%
+%    OR
+%
+%   [ripples,stdev,noise] = bz_FindRipples(baspath,channel,<options>)
 %
 %    Ripples are detected using the normalized squared signal (NSS) by
 %    thresholding the baseline, merging neighboring events, thresholding

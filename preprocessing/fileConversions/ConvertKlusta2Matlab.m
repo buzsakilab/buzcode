@@ -69,8 +69,14 @@ clu = h5read(tkwik,['/channel_groups/' num2str(shank) '/spikes/clusters/main']);
 cluster_names = unique(clu);
 
 totalch = h5readatt(tkwik,'/application_data/spikedetekt','nchannels');
-sbefore = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_before');
-safter = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_after');
+try % some files don't have these variables saved in them?
+    sbefore = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_before');
+    safter = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_after');
+catch
+    wvform_nsamples = h5readatt(tkwik,'/application_data/spikedetekt','waveforms_nsamples');
+    sbefore = wvform_nsamples/2;
+    safter = wvform_nsamples/2;
+end
 channellist = h5readatt(tkwik,['/channel_groups/' num2str(shank)],'channel_order')+1;
 
 %% Getting spiketimes
@@ -141,8 +147,10 @@ if saveFiles
     cluster_names = unique(clu);
     for i=1:length(cluster_names)
         group(i) = h5readatt(tkwik,kwikinfo.Groups(i).Name,'cluster_group');
+        temp = strsplit(kwikinfo.Groups(i).Name,'/');
+        clusterID(i) = str2num(temp{length(temp)}); % fix for if channel ordering is mixed up (we don't know that the first clusters are noise/MUA)
         if group(i)~=2
-        clu(clu == cluster_names(i)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
+        clu(clu == clusterID(i)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
         end
     end
     
