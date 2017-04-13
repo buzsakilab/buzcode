@@ -36,7 +36,7 @@ function AnimalMetadata = bz_SetAnimalMetadata(basepath,basename)
 %                       shank group specified two to the left.
 %
 %  OUTPUT
-%
+%    baseName.AnimalMetadata.mat written to basepath
 %    (.xml file written to disk at basepath)
 %
 %  SEE
@@ -148,7 +148,14 @@ end
 pfiles = AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames;
 plugord = AnimalMetadata.ExtracellEphys.Probes.PluggingOrder;
 dfs = AnimalMetadata.ExtracellEphys.Parameters;
-bz_MakeXMLFromProbeMaps(basepath,basename,pfiles,plugord,dfs);
+
+xmlfilename = fullfile(basepath,[basename,'.xml']);
+if ~exist(xmlfilename,'file')
+    bz_MakeXMLFromProbeMaps(basepath,basename,pfiles,plugord,dfs);
+else
+    display([basename,'.xml is already in existence, please rename or ',...
+        'delete if you would like to overwrite an existing .xml'])
+end
 
 
 %% Save
