@@ -53,10 +53,11 @@ if nargin ~= 0 %|| ~isempty(filename)
     elseif ~strcmp(varargin{1}(end-3:end),'.xml') % if you didn't give an xml, then maybe it is a file path?
         if strcmp(varargin{1}(end),'/')
             xml = dir([varargin{1} '*xml']);
+            filename = [varargin{1} xml.name];
         else
             xml = dir([varargin{1} '/*xml']); 
+            filename = [varargin{1} '/' xml.name];
         end 
-        filename = [xml.folder '/' xml.name];
         varargin = {varargin{2:end}};
 	end
 end
