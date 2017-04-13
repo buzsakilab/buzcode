@@ -45,7 +45,11 @@ if nargin == 0
 end
 
 % Filename?
-if nargin ~= 0 %|| ~isempty(filename)
+<<<<<<< HEAD
+if nargin ~= 0 || ~isempty(filename)
+=======
+if nargin ~= 0 
+>>>>>>> upstream/master
 	if ~isstring_FMAT(varargin{1},'spikes'),
 		filename = varargin{1};
 		varargin = {varargin{2:end}};
@@ -68,6 +72,8 @@ for i = 1:2:length(varargin),
 			if ~isstring_FMAT(spikes,'on','off'),
 				error('Incorrect value for property ''spikes'' (type ''help <a href="matlab:help SetCurrentSession">SetCurrentSession</a>'' for details).');
 			end
+		case 'filename'
+			filename = varargin{i+1};
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help SetCurrentSession">SetCurrentSession</a>'' for details).']);
 
@@ -139,7 +145,7 @@ if strcmp(basename,DATA.session.basename) & strcmp(path,DATA.session.path) & ~st
 end
 
 % Parameter file
-DATA = LoadParameters(filename);
+DATA = LoadParameters([path separator basename '.xml']);
 disp(['... loaded parameter file ''' basename '.xml''']);
 
 % Event file(s)
@@ -168,7 +174,7 @@ if exist([path separator basename '.pos']),
 elseif exist([path separator basename '.whl']),
 	DATA.positions = LoadPositions([path separator basename '.whl'],DATA.rates.video);
 	disp(['... loaded position file ''' basename '.whl''']);
-elseif exist([path separator basename '.whl']),
+elseif exist([path separator basename '.whl']),  % this looks like a bug?
 	DATA.positions = LoadPositions([path separator basename '.mqa'],DATA.rates.video);
 	disp(['... loaded position file ''' basename '.mqa''']);
 else
