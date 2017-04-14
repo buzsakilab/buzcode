@@ -1,10 +1,16 @@
-function bz_SessionNotesTemplate(basepath,basename,AnimalMetadata)
+function bz_SessionNotesTemplate(basepath,AnimalMetadata)
 
-if ~exist('AnimalMetadata','var')
-    load(fullfile(basepath,[basename '_AnimalMetadata.mat']))
+if ~exist('basepath','var')
+    basepath = cd;
+elseif isempty(basepath)
+    basepath = cd;
 end
+basename = bz_BasenameFromBasepath(basepath);
 
 %%
+if ~exist('AnimalMetadata','var')
+    load(fullfile(basepath,[basename '.AnimalMetadata.mat']))
+end
 SessionNotes.basepath = basepath;
 SessionNotes.basename = basename;
 
@@ -18,10 +24,12 @@ end
 % Extracell Ephys metadata
 if AnimalMetadata.Modules.ExtracellEphys
     SessionNotes.ExtracellEphys.NumberOfTurnsSinceSurgery = [0 0];%vector, one entry per probe
-    SessionNotes.ExtracellEphys.BadShanks = [];
-    SessionNotes.ExtracellEphys.BadChannels = [];
+    SessionNotes.ExtracellEphys.Probes.PluggingOrder     = [];%vector, one entry per probe. blank defaults to animal plugging order
+    SessionNotes.ExtracellEphys.BadShanks = 'FromAnimalMetadata';%or [1 2 5] vector for this recording.  If value is "FromAnimalMetadata", field will be populated from AnimalMetadata.ExtracellEphys.CurrentBadChannels
+         % These bad shanks will be used to populate bad channels
+    SessionNotes.ExtracellEphys.BadChannels = 'FromAnimalMetadata';%or [1 2 5] vector for this recording.  If value is "FromAnimalMetadata", field will be populated from AnimalMetadata.ExtracellEphys.CurrentBadChannels
     SessionNotes.ExtracellEphys.ChannelNotes = {''};
-    
+
     SessionNotes.ExtracellEphys.Parameters.LfpSampleRate = 1250;%assumed default
     SessionNotes.ExtracellEphys.Parameters.PointsPerWaveform = 32;%default
     SessionNotes.ExtracellEphys.Parameters.PeakPointInWaveform = 16;%default
@@ -48,5 +56,5 @@ SessionNotes.Other = {''};
 
 
 %% Auto save
-save(fullfile(basepath,[basename '_SessionNotes.mat']),'SessionNotes')
+save(fullfile(basepath,[basename '.SessionNotes.mat']),'SessionNotes')
 

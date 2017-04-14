@@ -92,15 +92,15 @@ notes = struct( ...
 % If data file is from GUI v1.1 or later, see if temperature sensor data
 % was saved.
 num_temp_sensor_channels = 0;
-if ((data_file_main_version_number == 1 && data_file_secondary_version_number >= 1) ...
-    || (data_file_main_version_number > 1))
+if ((data_file_main_version_number == 1 & data_file_secondary_version_number >= 1) ...
+    | (data_file_main_version_number > 1))
     num_temp_sensor_channels = fread(fid, 1, 'int16');
 end
 
 % If data file is from GUI v1.3 or later, load eval board mode.
 eval_board_mode = 0;
-if ((data_file_main_version_number == 1 && data_file_secondary_version_number >= 3) ...
-    || (data_file_main_version_number > 1))
+if ((data_file_main_version_number == 1 & data_file_secondary_version_number >= 3) ...
+    | (data_file_main_version_number > 1))
     eval_board_mode = fread(fid, 1, 'int16');
 end
 

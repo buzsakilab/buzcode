@@ -1,4 +1,4 @@
-function bz_ConcatenateDats(basepath,basename,deletedats)
+function bz_ConcatenateDats(basepath,deletedats)
 %assumes you are in or pointed to a directory containing subdirectories for
 % various recording files from a single session
 
@@ -9,18 +9,14 @@ elseif isempty(basepath)
     basepath = cd;
 end
 
-if ~exist('basename','var')
-    [~,basename] = fileparts(basepath);
-elseif isempty(basename)
-    [~,basename] = fileparts(basepath);
-end
+basename = bz_BasenameFromBasepath(basepath);
 
 if ~exist('deletedats','var')
     deletedats = 0;
 end
     
 %%
-load(fullfile(basepath,[basename,'_SessionMetadata.mat']));
+load(fullfile(basepath,[basename,'.SessionMetadata.mat']));
 newdatpath = fullfile(basepath,[basename,'.dat']);
 switch SessionMetadata.ExtracellEphys.RecordingSystem
     case 'Intan'

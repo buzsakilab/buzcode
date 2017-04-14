@@ -144,7 +144,7 @@ for a = 1:length(spikes)
             hold on;
             plot([0:360],cos(pi/180*[0:360])*0.05*max(phasedistros(:,a))+0.95*max(phasedistros(:,a)),'color',[.7 .7 .7])
             set(h(end),'name',['PhaseModPlotsForCell' num2str(a)]);
-%             print(fullfile(['PhaseModPlotsForCell' num2str(a)]),'-dpng','-r0');
+            print(fullfile('BWRat19_032413_PhaseLockingFig/30-200Hz_lfpChannel55',['PhaseModPlotsForCell' num2str(a) '_30-200Hz_lfp55']),'-dpng','-r0');
         end
     end
 end

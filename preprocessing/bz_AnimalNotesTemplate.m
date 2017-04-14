@@ -61,11 +61,14 @@ if AnimalNotes.Modules.ExtracellEphys
     AnimalNotes.ExtracellEphys.Probes.ImplantCoordinates.DepthFromSurface = [1.5,2];
     AnimalNotes.ExtracellEphys.Probes.OrientationOfProbe.FirstGroupRelativeToLastGroupClockwiseDegreesAnteriorIsZero = [90,135];%assumes linear arrays
     AnimalNotes.ExtracellEphys.Probes.OrientationOfProbe.GroupOffsetsFromCenter_ApMlDv = [];%for non-linear arrangements: group x 3 coordinates for change from center
-    AnimalNotes.ExtracellEphys.Probes.PluggingOrder = [2,1];% order will be represented in .xml, ie if intan splitter dicates
+    AnimalNotes.ExtracellEphys.Probes.PluggingOrder = [1,2];% order will be represented in .xml, ie if intan splitter dicates
     AnimalNotes.ExtracellEphys.Probes.SiteSizesInUmSq = [160];%In square microns
     AnimalNotes.ExtracellEphys.Probes.ProbeLayoutFilenames = {'NRX_Buzsaki64_5X12';'NRX_Buzsaki64_8X8'};%filenames in /buzcode/GeneralComputation/geometries
     AnimalNotes.ExtracellEphys.Channels.ImpedanceFilenames = {'Ket1_Impedances_5Shank.csv','Ket1_Impedances_8Shank.csv'};%Filenames in basepath folder, or leave as {} if none
 
+    AnimalNotes.ExtracellEphys.CurrentBadChannels = [];
+    AnimalNotes.ExtracellEphys.CurrentBadShanks = [];%not used now
+    
     AnimalNotes.ExtracellEphys.Parameters.SampleRate = 20000;%Lab default
     AnimalNotes.ExtracellEphys.Parameters.Amplification = 1;%Intan digitized on chip, let's say 1
     AnimalNotes.ExtracellEphys.Parameters.VoltsPerUnit = 0.0000002;%Intan default                
@@ -102,5 +105,5 @@ AnimalNotes.Other = {''};
 
 
 %% Auto save
-save(fullfile(basepath,[basename '_AnimalNotes.mat']),'AnimalNotes')
+save(fullfile(basepath,[basename '.AnimalNotes.mat']),'AnimalNotes')
 

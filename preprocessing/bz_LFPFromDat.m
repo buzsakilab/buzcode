@@ -1,4 +1,4 @@
-function bz_LFPFromDat(basepath,basename)
+function bz_LFPFromDat(basepath)
 %assumes you are in or pointed to a directory containing subdirectories for
 % various recording files from a single session
 
@@ -9,15 +9,11 @@ if ~exist('basepath','var')
 elseif isempty(basepath)
     basepath = cd;
 end
+basename = bz_BasenameFromBasepath(basepath);
 
-if ~exist('basename','var')
-    [~,basename] = fileparts(basepath);
-elseif isempty(basename)
-    [~,basename] = fileparts(basepath);
-end
 
 %% Setup
-load(fullfile(basepath,[basename,'_SessionMetadata.mat']));
+load(fullfile(basepath,[basename,'.SessionMetadata.mat']));
 
 datname = fullfile(basepath,[basename '.dat']);
 lfpname = fullfile(basepath,[basename '.lfp']);

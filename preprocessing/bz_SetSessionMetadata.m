@@ -1,35 +1,31 @@
-function SessionMetadata = bz_SetSessionMetadata(basepath,basename)
+function SessionMetadata = bz_SetSessionMetadata(basepath)
 
 if ~exist('basepath','var')
     basepath = cd;
 elseif isempty(basepath)
     basepath = cd;
 end
-if ~exist('basename','var')
-    [~,basename] = fileparts(basepath);
-elseif isempty(basename)
-    [~,basename] = fileparts(basepath);
-end
-    
+basename = bz_BasenameFromBasepath(basepath);
+
 %% First step, for AnimalMetadata to open it.  Copy it to basepath if it's not already there. 
 % into this folder - this will give crucial info for subsequent work here
 % Make an initial version of output from this, overwrite with actual
 % metadata from recording system
 % 
 supradir = fileparts(basepath);
-d1 = dir(fullfile(basepath,'*_AnimalMetadata.mat'));
-d2 = dir(fullfile(supradir,'*_AnimalMetadata.mat'));
+d1 = dir(fullfile(basepath,'*.AnimalMetadata.mat'));
+d2 = dir(fullfile(supradir,'*.AnimalMetadata.mat'));
 if ~isempty(d1)%if already one in this path
     thisamdpath = fullfile(basepath,d1(1).name);
 elseif ~isempty(d2)%if one in directory above
     upperamdpath = fullfile(supradir,d2(1).name);
-    thisamdpath = fullfile(basepath,[basename,'_AnimalMetadata.mat']);
-    copyfile(upperamdpath,thisamdpath);
+    thisamdpath = fullfile(basepath,[basename,'.AnimalMetadata.mat']);
+    copyfile(upperamdpath,thisamdpath)
 else%if cannot be found, ask user 
     disp('Find the AnimalMetadata.mat file for this animal');
-    [FileName,PathName] = uigetfile('_AnimalMetadata.mat','Find AnimalMetaData.mat');
+    [FileName,PathName] = uigetfile('.AnimalMetadata.mat','Find AnimalMetaData.mat');
     thatamdpath = fullfile(FileName,PathName);
-    copyfile(thatamdpath,thisamdpath);
+    copyfile(thatamdpath,thisamdpath)
 end
 load(thisamdpath);
 clear d1 d2 supradir upperamdpath FileName PathName thatamdpath thisamdpath
@@ -37,7 +33,7 @@ clear d1 d2 supradir upperamdpath FileName PathName thatamdpath thisamdpath
 %% Value setting - humans must do this.  Will be asked to edit a _NoteText.m file
 notesname = [basename,'_SessionNotesText'];
 notesfullpath = fullfile(basepath,[basename,'_SessionNotesText.m']);
-if ~exist(fullfile(basepath,notesfullpath),'file')
+if ~exist(notesfullpath,'file')
     w = which('bz_SessionNotesTemplate.m');% copy an example header here to edit
     copyfile(w,notesfullpath);
 end
@@ -45,9 +41,9 @@ end
 edit(notesfullpath)
 prompt = 'Push any key in this window when done editing the NoteText file ';
 str = input(prompt,'s');
-eval([notesname '(basepath,basename,AnimalMetadata);']);%save _AnimalNotes.mat to disk
+eval([notesname '(basepath,AnimalMetadata);']);%save _AnimalNotes.mat to disk
 
-load(fullfile(basepath,[basename '_SessionNotes.mat']))%load AnimalNotes
+load(fullfile(basepath,[basename '.SessionNotes.mat']))%load AnimalNotes
 SessionMetadata = SessionNotes;
 SessionMetadata.AnimalMetadata = AnimalMetadata;%will now have the variable AnimalMetadata
 
@@ -60,7 +56,11 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
     SessionMetadata.ExtracellEphys.Probes.ProbeCenterCoordinates = [];%someone should do this
     SessionMetadata.ExtracellEphys.Probes.ChannelCenterCoordinates = [];%someone should do this
 
-    % Read recording system-based metadata from either .rhd or .meta (Intan or Amplirec) 
+    if isempty(SessionMetadata.ExtracellEphys.Probes.PluggingOrder)
+        SessionMetadata.ExtracellEphys.Probes.PluggingOrder = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.PluggingOrder;
+    end
+    
+    % Read recording system-based metadata from either .rhd or .meta (Intan or Amplirec)
     % Check for compatibility with AnimalMetadata, overwrite using this and
     % warn the user of the conflict.
 
@@ -126,62 +126,152 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
 
                    % read the info.rhd file for each individual recorded
                    % file/folder
-                   [amplifier_channels, notes, aux_input_channels, spike_triggers,...         
-                   board_dig_in_channels, supply_voltage_channels, frequency_parameters ] =...
-                   read_Intan_RHD2000_file(fullfile(basepath,d(didx).name),'info.rhd');%function from Intan
+                   try
+                      [amplifier_channels, notes, aux_input_channels, spike_triggers,...         
+                          board_dig_in_channels, supply_voltage_channels, frequency_parameters ] =...
+                          read_Intan_RHD2000_file(fullfile(basepath,d(didx).name),'info.rhd');%function from Intan
+                      NAmpChannels(end+1) = length(amplifier_channels);
+                      NAuxChannels(end+1) = length(aux_input_channels);
+                      NDigitalChannels(end+1) = length(board_dig_in_channels);
+                      SamplingRate(end+1) = frequency_parameters.amplifier_sample_rate;
 
-                   NAmpChannels(end+1) = length(amplifier_channels);
-                   NAuxChannels(end+1) = length(aux_input_channels);
-                   NDigitalChannels(end+1) = length(board_dig_in_channels);
-                   SamplingRate(end+1) = frequency_parameters.amplifier_sample_rate;
-
+                   catch%if read error, set values based on prior
+                       if ~isempty(NAmpChannels)
+%                            if ~isnan(NAmpChannels(1));
+                              NAmpChannels(end+1) = NAmpChannels(1);
+%                            else
+%                               NAmpChannels(end+1) = SessionMetadata.AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal;
+%                            end
+                       else
+                           NAmpChannels(end+1) = nan;
+                       end
+                       if ~isempty(NAuxChannels)
+                           NAuxChannels(end+1) = NAuxChannels(1);
+                       else
+                           NAuxChannels(end+1) = nan;
+                       end
+                       if ~isempty(NDigitalChannels)
+                           NDigitalChannels(end+1) = NDigitalChannels(1);
+                       else
+                           NDigitalChannels(end+1) = nan;
+                       end
+                       if ~isempty(SamplingRate)
+                           SamplingRate(end+1) = SamplingRate(1);
+                       else
+                           SamplingRate(end+1) = nan;
+                       end
+                   end
+                   
                    t = dir(fullfile(basepath,d(didx).name,'amplifier.dat'));
                    if ~isempty(t) %if original .dat still around
                        SessionMetadata.ExtracellEphys.Files.Bytes(end+1) = t.bytes;
                    else%if no .dat around
                        disp([SessionMetadata.ExtracellEphys.Files.Names{end} ' not found']);
                        timedat = dir(fullfile(basepath,d(didx).name,'time.dat'));
-                       SessionMetadata.ExtracellEphys.Files.Bytes(end+1) = timedat(1).bytes/2*NAmpChannels(end);
+                       if ~isnan(NAmpChannels(end));
+                          SessionMetadata.ExtracellEphys.Files.Bytes(end+1) = timedat(1).bytes/2*NAmpChannels(end);
+                       else
+                          SessionMetadata.ExtracellEphys.Files.Bytes(end+1) = timedat(1).bytes/2*SessionMetadata.AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal;
+                       end
                    end
 
                end
             end
         end
-        if ~isempty(NAmpChannels) %if some files were found
-            %channels
-            if sum(abs(diff(NAmpChannels)))%if different numbers of channels differed across recordings in session, error out
-                warning('Rercordings contain different numbers of channels - per info.rhd files.  Will use count from first recording.')
+        %handle errors created by improper read of rhd.info files
+        if isnan(sum(abs(diff(NAmpChannels))))
+            warning('At least one read error on rhd.info files.  Using values from other files to populate.')
+            ok = find(~isnan(NAmpChannels),1,'first');
+            if isempty(ok)
+                warning('No good reads on NumberofAmpChannels. Assuming based on probe maps')
+                NAmpChannels(isnan(NAmpChannels)) = SessionMetadata.AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal
+            else
+                NAmpChannels(isnan(NAmpChannels)) = NAmpChannels(ok);
             end
-            SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels = NAmpChannels(1);
-
-            if sum(abs(diff(NAuxChannels)))%if different numbers of channels differed across recordings in session, error out
-                warning('Rercordings contain different numbers auxiliary of channels - per info.rhd files.  Will use count from first recording.')
-            end
-            SessionData.ExtracellEphys.NumAuxiliaryChannels = NAuxChannels(1);
-            
-            if sum(abs(diff(NDigitalChannels)))%if different numbers of channels differed across recordings in session, error out
-                warning('Rercordings contain different numbers digital of channels - per info.rhd files.  Will use count from first recording.')
-            end
-            SessionData.ExtracellEphys.NumDigitalChannels = NAuxChannels(1);
-
-            %sampling rate
-            if sum(abs(diff(SamplingRate)))%if different numbers of channels differed across recordings in session, error out
-                warning('Rercordings contain different SamplingRates - per info.rhd files.  Will use number from first recording.')
-            end
-            SessionMetadata.ExtracellEphys.Parameters.SampleRate = SamplingRate(1);
-
-            % getting bytes and seconds per file
-            SessionMetadata.ExtracellEphys.Parameters.Amplification = 1;%digitized on chip, let's say 1
-            SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit = 0.0000002;%intan default                
-            SessionMetadata.ExtracellEphys.Parameters.BitsPerSample = 16;%intan default
-            SessionMetadata.ExtracellEphys.Parameters.VoltageRange = 10;%not used except to make xml
         end
+        if isnan(sum(abs(diff(NAuxChannels))))
+            warning('At least one read error on rhd.info files.  Using values from other files to populate.')
+            ok = find(~isnan(NAuxChannels),1,'first');
+            if isempty(ok)
+                error('No good reads on NAuxChannels, assuming 0')
+                NAuxChannels(isnan(NAuxChannels)) = 0;
+            else
+                NAuxChannels(isnan(NAuxChannels)) = NAuxChannels(ok);
+            end
+        end
+        if isnan(sum(abs(diff(NDigitalChannels))))
+            warning('At least one read error on rhd.info files.  Using values from other files to populate.')
+            ok = find(~isnan(NDigitalChannels),1,'first');
+            if isempty(ok)
+                error('No good reads on NDigitalChannels, assuming 0')
+                NDigitalChannels(isnan(NDigitalChannels)) = 0;
+            else
+                NDigitalChannels(isnan(NDigitalChannels)) = NDigitalChannels(ok);
+            end
+        end
+        if isnan(sum(abs(diff(SamplingRate))))
+            warning('At least one read error on rhd.info files.  Using values from other files to populate.')
+            ok = find(~isnan(SamplingRate),1,'first');
+            if isempty(ok)
+                error('No good reads on SamplingRate, taking from AnimalMetadata')
+                SamplingRate(isnan(SamplingRate)) = SessionMetadata.AnimalMetadata.ExtracellEphys.Parameters.SampleRate;
+            else
+                SamplingRate(isnan(SamplingRate)) = SamplingRate(ok);
+            end
+        end
+        
+        %handle errors where different parameters read for different files (rather than uniform)            
+        if sum(abs(diff(NAmpChannels)))%if different numbers of channels differed across recordings in session, error out
+            warning('Rercordings contain different numbers of channels - per info.rhd files.  Will use count from first recording.')
+        end
+        SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels = NAmpChannels(1);
+
+        if sum(abs(diff(NAuxChannels)))%if different numbers of channels differed across recordings in session, error out
+            warning('Rercordings contain different numbers auxiliary of channels - per info.rhd files.  Will use count from first recording.')
+        end
+        SessionData.ExtracellEphys.NumAuxiliaryChannels = NAuxChannels(1);
+
+        if sum(abs(diff(NDigitalChannels)))%if different numbers of channels differed across recordings in session, error out
+            warning('Rercordings contain different numbers digital of channels - per info.rhd files.  Will use count from first recording.')
+        end
+        SessionData.ExtracellEphys.NumDigitalChannels = NAuxChannels(1);
+
+        %sampling rate
+        if sum(abs(diff(SamplingRate)))%if different numbers of channels differed across recordings in session, error out
+            warning('Rercordings contain different SamplingRates - per info.rhd files.  Will use number from first recording.')
+        end
+        SessionMetadata.ExtracellEphys.Parameters.SampleRate = SamplingRate(1);
+
+        % Not gather-able from intan info.rhd files
+        SessionMetadata.ExtracellEphys.Parameters.Amplification = 1;%digitized on chip, let's say 1
+        SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit = 0.0000002;%intan default                
+        SessionMetadata.ExtracellEphys.Parameters.BitsPerSample = 16;%intan default
+        SessionMetadata.ExtracellEphys.Parameters.VoltageRange = 10;%not used except to make xml
+        
+        %things that should have been set above, but in case problems:
+%         if isempty(SessionMetadata.ExtracellEphys.Parameters.SampleRate)
+%             SessionMetadata.ExtracellEphys.Parameters.SampleRate = 20000;%Lab default
+%         end
+%         if isempty(SessionMetadata.ExtracellEphys.Parameters.Amplification)
+%             SessionMetadata.ExtracellEphys.Parameters.Amplification = 1;%Intan digitized on chip, let's say 1
+%         end
+%         if isempty(SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate)
+%             SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate = 1250;%Usual desired default
+%         end
+%         if isempty(SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform)
+%             SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform = 32;%default
+%         end
+%         if isempty(SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform)
+%             SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform = 16;%default
+%         end
+%         if isempty(SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave)
+%             SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave = 4;%default
+%         end
     end
 
     SessionMetadata.ExtracellEphys.Files.Seconds = SessionMetadata.ExtracellEphys.Files.Bytes/SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels/2/SessionMetadata.ExtracellEphys.Parameters.SampleRate;
 
-    %% Make XML for session?
-    %Check for conflicts between original animal-based ephys params and
+    %% Check for conflicts between original animal-based ephys params and
     %those based on files in this particular recording.
     aparams = SessionMetadata.AnimalMetadata.ExtracellEphys.Parameters;
     sparams = SessionMetadata.ExtracellEphys.Parameters;
@@ -193,27 +283,68 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
         end
     end
             
-    if isempty(divergentfields) % if no conflicts copy the animal-based xml
-        apath = SessionMetadata.AnimalMetadata.AnimalBasepath;
-        aname = SessionMetadata.AnimalMetadata.AnimalName;
-        axml = fullfile(apath,[aname '.xml']);
-        sxml = fullfile(basepath,[basename,'.xml']);
-        copyfile(axml,sxml);
-    else % if conflicts make a new xml, and warn
+    if ~isempty(divergentfields) % if conflicts, warn user
         warning('Conflicts between ephys parameters specified for Animal and those found in this recording')
         warning('Conflicts found in:')
         disp(divergentfields)
-        pfiles = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames;
-        plugord = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.PluggingOrder;
-        bz_MakeXMLFromProbeMaps(basepath,basename,pfiles,plugord,SessionMetadata.ExtracellEphys.Parameters);
     end
+    SessionMetadata.ExtracellEphys.ParametersDivergentFromAnimalMetadata = divergentfields;
+    
+    % Handle bad shanks, where the list comes from and goes to.
+    if ischar(SessionMetadata.ExtracellEphys.BadShanks)%if specified to copy from AnimalMetadata, do that
+        if strcmp(SessionMetadata.ExtracellEphys.BadShanks,'FromAnimalMetadata')
+            apath = fullfile(SessionMetadata.AnimalMetadata.AnimalBasepath,[SessionMetadata.AnimalMetadata.AnimalName, '.AnimalMetadata.mat']);
+            load(apath);
+            SessionMetadata.ExtracellEphys.BadShanks = AnimalMetadata.ExtracellEphys.CurrentBadShanks;
+        else
+            warning('Unsure what to do with BadShanks')
+        end
+    else%if user declared badchannels here, then save these new badchannels into AnimalMetadata here an in AnimalMetadata original folder
+        apath = fullfile(SessionMetadata.AnimalMetadata.AnimalBasepath,[SessionMetadata.AnimalMetadata.AnimalName, '.AnimalMetadata.mat']);
+        load(apath);
+        AnimalMetadata.ExtracellEphys.CurrentBadShanks = SessionMetadata.ExtracellEphys.BadShanks;
+        SessionMetadata.AnimalMetadata.ExtracellEphys.CurrentBadShanks = SessionMetadata.ExtracellEphys.BadShanks;
+        save(apath,'AnimalMetadata')
+    end
+    
+    %get badchannels from badshanks... ie all channels on bad shanks are
+    %bad
+    if isempty(SessionMetadata.ExtracellEphys.BadChannels)
+        if ~isempty(SessionMetadata.ExtracellEphys.BadShanks)
+            chanpergp = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep;
+            badchans = [];
+            for sidx = 1:length(SessionMetadata.ExtracellEphys.BadShanks)
+                tshank = SessionMetadata.ExtracellEphys.BadShanks;
+                badchans = cat(1,badchans,chanpergp{tshank});
+            end
+            SessionMetadata.ExtracellEphys.BadChannels = badchans;
+        end
+    end
+    
+    % Handle bad channels, where the list comes from and goes to.
+    if ischar(SessionMetadata.ExtracellEphys.BadChannels)%if specified to copy from AnimalMetadata, do that
+        if strcmp(SessionMetadata.ExtracellEphys.BadChannels,'FromAnimalMetadata')
+            SessionMetadata.ExtracellEphys.BadChannels = AnimalMetadata.ExtracellEphys.CurrentBadChannels;
+        end
+    else%if user declared badchannels here, then save these new badchannels into AnimalMetadata here an in AnimalMetadata original folder
+        apath = fullfile(SessionMetadata.AnimalMetadata.AnimalBasepath,[SessionMetadata.AnimalMetadata.AnimalName, '.AnimalMetadata.mat']);
+        load(apath);
+        AnimalMetadata.ExtracellEphys.CurrentBadChannels = SessionMetadata.ExtracellEphys.BadChannels;
+        SessionMetadata.AnimalMetadata.ExtracellEphys.CurrentBadChannels = SessionMetadata.ExtracellEphys.BadChannels;
+        save(apath,'AnimalMetadata')
+    end
+                
+    %Set these badchannels as the current badchannels for the animal in
+    % the animalmetadata
+    SessionMetadata.AnimalMetadata.ExtracellEphys.CurrentBadShanks = SessionMetadata.ExtracellEphys.BadShanks;
 end
 
 %% Re-present data to the user to allow them to add new bad channels and bad shanks, after seeing the 
 
 
 %% Save all metadata
-save(fullfile(basepath,[basename '_SessionMetadata.mat']),'SessionMetadata')
+save(fullfile(basepath,[basename '.SessionMetadata.mat']),'SessionMetadata')
+delete(fullfile(basepath,[basename '.SessionNotes.mat']))%delete redundant data
 
 1;
 

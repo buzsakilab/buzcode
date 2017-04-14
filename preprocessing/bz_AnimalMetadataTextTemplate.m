@@ -1,77 +1,118 @@
-function AnimalMetadata = bz_SetAnimalMetadata(basepath)
-%MakeXMLFromProbeMaps - Generate a .xml file to accompany .dat files for a
-%recording in the neuroscope/klusters/ndmanager system.  Uses a library of
-%probe map layouts.
-%
-%  USAGE
-%
-%    MakeXMLFromProbeMaps(basepath,basename,ProbeFileName1,ProbeFileName2...)
-%       Example:
-%    MakeXMLFromProbeMaps(cd,'','NRX_Buzsaki64_8X8','NRX_Buzsaki64_6X10');
-%
-%    Writes a standardized .xml file based on a user-selection of probe
-%    maps and in a sequence specified by the user (ie 64site probe first
-%    then 32site probe second).  Probe maps can be found at:
-%    /buzcode/tree/master/generalComputation/geometries
-%
-%  INPUT
-%
-%    basepath       Path to directory to which to write output xml file and
-%                   where to potentially find .rhd file. Default is path to
-%                   the current directory.
-%
-%    basename       Shared name for this file and all others for this
-%                   recording.  Default will the name of the current
-%                   folder.
-%
-%    ProbeFileNames Names of .xlsx files specifying probe geometries, must 
-%                   be on the path, ie from
-%                   buzcode/GeneralComputation/Geometries).
-%                   Must have the following format features:
-%                       - A column with row 1 having text "BY VERTICAL POSITION/SHANK (IE FOR DISPLAY)".
-%                       In this row must be cells specifying SHANK 1, 
-%                       SHANK 2, etc.  
-%                       - Two rows right of that a column with channel
-%                       numbers listed from superficial to deep in the
-%                       shank group specified two to the left.
-%
-%  OUTPUT
-%
-%    (.xml file written to disk at basepath)
-%
-%  SEE
-%
-%    See also 
-% Copyright (C) 2017 Brendon Watson
-%
-% This program is free software; you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation; either version 3 of the License, or
-% (at your option) any later version.
+function AnimalMetadata = bz_AnimalMetadataTextTemplate(basepath)
+% This .m file is a generic template and will be copied to animal
+% folders/session folders.  Edits here will change what is automatically
+% copied to animal folders when bz_EditAnimalMetadta.m is called.
+% 
+% Developers should edit bz_AnimalMetadataTextTemplate.m to change how
+% AnimalMetadata is created.
+% 
+% Brendon Watson 2017
+
 
 %% Initial variable parsing
-if ~exist('basepath','var')
+if ~exist('bedasepath','var')
     basepath = cd;
 elseif isempty(basepath)
     basepath = cd;
 end
 basename = bz_BasenameFromBasepath(basepath);
 
-%% Value setting - humans must do this.  Will be asked to edit a _NoteText.m file
-notesname = [basename,'_AnimalNotesText.m'];
-if ~exist(fullfile(basepath,notesname),'file')
-    w = which('bz_AnimalNotesTemplate.m');% copy an example header here to edit
-    copyfile(w,notesname);
+%% HUMAN INPUT SECTION %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Name and path info
+AnimalMetadata.AnimalName = 'Ket1';
+AnimalMetadata.AnimalBasepath = '/balrog_zpool/Ket1';%this can be changed for each computer and can then act as a handle for all subsequent analyses
+
+% Determine which modules to use for this animal... 1 for use, 0 for not use 
+AnimalMetadata.Modules.AnimalAndSurgery = 1;
+AnimalMetadata.Modules.ExtracellEphys = 1;
+AnimalMetadata.Modules.Optogenetics = 0;
+AnimalMetadata.Modules.Virus = 0;
+AnimalMetadata.Modules.IntracellEphys = 0;
+AnimalMetadata.Modules.Imaging = 0;
+
+% Surgery and Animal metadata
+if AnimalMetadata.Modules.AnimalAndSurgery
+    AnimalMetadata.Animal.Species = 'Rat';
+    AnimalMetadata.Animal.Strain = 'SpragueDawley';
+    AnimalMetadata.Animal.GeneticLine = 'WildType';
+    AnimalMetadata.Animal.Sex = 'Male';
+    AnimalMetadata.Animal.DateOfBirth = '20161221';%YYYYMMDD format
+    AnimalMetadata.Animal.WeightGramsAtSurgery = 405;%grams
+
+    AnimalMetadata.Surgery.Date = '20170317';
+    AnimalMetadata.Surgery.Anesthesia.Name = 'Isoflurane';
+    AnimalMetadata.Surgery.Anesthesia.ConcentrationPercent = '1';
+    AnimalMetadata.Surgery.Analgesic.Name = 'Buprenex';
+    AnimalMetadata.Surgery.Analgesic.Milligrams = 0.06;%usually given at 0.15mg/ml
+    AnimalMetadata.Surgery.Antibiotics.Topical = 'Neopredef';
+    AnimalMetadata.Surgery.Antibiotics.Intraperitoneal = '';
+    AnimalMetadata.Surgery.Complications = '';
+    AnimalMetadata.Surgery.DamageSites = '';
+    AnimalMetadata.Surgery.Notes = 'Good';
 end
 
-edit(notesname)
-prompt = 'Push any key in this window when done editing the NoteText file ';
-str = input(prompt,'s');
-run(notesname);%save _AnimalNotes.mat to disk
+% Extracell Ephys metadata
+if AnimalMetadata.Modules.ExtracellEphys
+    %On probe subfields below: if multiple probes, put in one entry in each field
+    %per probe, make sure they align with each other properly and all
+    %subsequent assumptions will work.
+    AnimalMetadata.ExtracellEphys.Probes.UmPerScrewTurn = [288 288];
+    AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes = 2;
+    AnimalMetadata.ExtracellEphys.Probes.TargetRegions = {'dCA1','mPFC'};
+    AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.Anteroposterior = [-3.5,2.7];%one for each probe
+    AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.Mediolateral = [2.5,0.3];
+    AnimalMetadata.ExtracellEphys.Probes.ImplantAngle.Anteroposterior = [0,0];%degrees of top anterior as sitting behind animal
+    AnimalMetadata.ExtracellEphys.Probes.ImplantAngle.Mediolateral = [0,10];%degrees clockwise as sitting behind animal
+    AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.DepthFromSurface = [1.5,2];
+    AnimalMetadata.ExtracellEphys.Probes.OrientationOfProbe.FirstGroupRelativeToLastGroupClockwiseDegreesAnteriorIsZero = [90,135];%assumes linear arrays
+    AnimalMetadata.ExtracellEphys.Probes.OrientationOfProbe.GroupOffsetsFromCenter_ApMlDv = [];%for non-linear arrangements: group x 3 coordinates for change from center
+    AnimalMetadata.ExtracellEphys.Probes.PluggingOrder = [1,2];% order will be represented in .xml, ie if intan splitter dicates
+    AnimalMetadata.ExtracellEphys.Probes.SiteSizesInUmSq = [160];%In square microns
+    AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames = {'NRX_Buzsaki64_5X12';'NRX_Buzsaki64_8X8'};%filenames in /buzcode/GeneralComputation/geometries
+    AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames = {'Ket1_Impedances_5Shank.csv','Ket1_Impedances_8Shank.csv'};%Filenames in basepath folder, or leave as {} if none
 
-load(fullfile(basepath,[basename '.AnimalNotes.mat']))%load AnimalNotes
-AnimalMetadata = AnimalNotes;
-clear AnimalNotes
+%     AnimalMetadata.ExtracellEphys.CurrentBadChannels = [];
+%     AnimalMetadata.ExtracellEphys.CurrentBadShanks = [];%not used now
+    
+    AnimalMetadata.ExtracellEphys.Parameters.SampleRate = 20000;%Lab default
+    AnimalMetadata.ExtracellEphys.Parameters.Amplification = 1;%Intan digitized on chip, let's say 1
+    AnimalMetadata.ExtracellEphys.Parameters.VoltsPerUnit = 0.0000002;%Intan default                
+    AnimalMetadata.ExtracellEphys.Parameters.BitsPerSample = 16;%Intan default
+    AnimalMetadata.ExtracellEphys.Parameters.VoltageRange = 10;%not used except to make xml
+    AnimalMetadata.ExtracellEphys.Parameters.LfpSampleRate = 1250;%Usual desired default
+    AnimalMetadata.ExtracellEphys.Parameters.PointsPerWaveform = 32;%default
+    AnimalMetadata.ExtracellEphys.Parameters.PeakPointInWaveform = 16;%default
+    AnimalMetadata.ExtracellEphys.Parameters.FeaturesPerWave = 4;%default
+
+    % SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels = 64;
+    % This is actually set later in bz_SetSessionMetadata, based on ProbeLayoutFilenames
+end
+
+% Optogenetics metadata
+if AnimalMetadata.Modules.Optogenetics
+    %need to fill this in
+end
+
+% Virus metadata
+if AnimalMetadata.Modules.Virus
+    AnimalMetadata.Virus.Strain = '';
+    AnimalMetadata.Virus.Coordinates.Anteroposterior = [];%one for each injection
+    AnimalMetadata.Virus.InjectionDate = '';
+end
+
+% Intracell ephys metadata
+if AnimalMetadata.Modules.IntracellEphys
+    %need to fill this in
+end
+
+% Imaging metadata
+if AnimalMetadata.Modules.Imaging
+    %need to fill this in
+end
+
+% Other for ?
+AnimalMetadata.Other = {''};
 
 %% Automated after this point, depending on modules used
 if AnimalMetadata.Modules.ExtracellEphys
@@ -142,7 +183,6 @@ end
 
 %% Save
 save(fullfile(basepath,[basename '.AnimalMetadata.mat']),'AnimalMetadata')
-delete(fullfile(basepath,[basename '.AnimalNotes.mat']));%delete redundant data
 
 
 function lineArray = read_mixed_csv(fileName,delimiter)
