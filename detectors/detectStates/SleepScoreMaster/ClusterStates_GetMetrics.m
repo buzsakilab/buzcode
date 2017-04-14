@@ -142,6 +142,10 @@ NREMtimes = (broadbandSlowWave >swthresh);
 %% Then Divide EMG
 numpeaks = 1;
 numbins = 12;
+if sum(isnan(EMG))>0
+   error('EMG seems to have NaN values...') 
+end
+
 while numpeaks ~=2
     [EMGhist,EMGhistbins]= hist(EMG(NREMtimes==0),numbins);
     %[EMGhist,EMGhistbins]= hist(EMG,numbins);
