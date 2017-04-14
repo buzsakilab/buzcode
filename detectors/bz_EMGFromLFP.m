@@ -1,4 +1,4 @@
-function [EMG] = bz_EMGCorrFromLFP(basePath,varargin)
+function [EMG] = bz_EMGFromLFP(basePath,varargin)
 % USAGE
 %
 % [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveFiles)
@@ -45,7 +45,7 @@ function [EMG] = bz_EMGCorrFromLFP(basePath,varargin)
 % Brendon Watson, Dan Levenstein, David Tingley, 2017
 %% Buzcode name of the EMGCorr.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
-matfilename = fullfile(basePath,[recordingname,'.EMGCorr.LFP.mat']);
+matfilename = fullfile(basePath,[recordingname,'.EMG.LFP.mat']);
 %% xmlameters
 p = inputParser;
 addParameter(p,'restrict',[0 inf],@isnumeric)
@@ -63,20 +63,20 @@ saveFiles = p.Results.saveFiles;
 overwrite = p.Results.overwrite;
 
 if ~isempty(p.Results.saveLocation)
-    matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMGCorr.LFP.mat']);
+    matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMG.LFP.mat']);
 end
 
 %% Check if EMGCorr has already been claculated for this recording
 %If the EMGCorr file already exists, load and return with EMGCorr in hand
 if exist(matfilename,'file') && ~overwrite
-    display('EMGCorr already calculated - loading from EMGCorr.LFP.mat')
+    display('EMG Correlation already calculated - loading from EMG.LFP.mat')
     load(matfilename)
-    if ~exist('EMGCorr','var')
-        display([matfilename,' does not contain a variable called EMGCorr'])
+    if ~exist('EMG','var')
+        display([matfilename,' does not contain a variable called EMG'])
     end
     return
 end
-display('Calculating EMGCorr')
+display('Calculating EMG from High Frequency LFP Correlation')
 
 
 %% get basics about.lfp/lfp file
@@ -200,7 +200,7 @@ EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
 EMG.timestamps = timestamps'./Fs;
 EMG.data = EMGCorr;
 EMG.channels = xcorr_chs;
-EMG.detectorName = 'bz_EMGCorrFromLFP';
+EMG.detectorName = 'bz_EMGFromLFP';
 EMG.samplingFrequency = samplingFrequency; 
 
 if saveFiles

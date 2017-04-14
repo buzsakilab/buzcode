@@ -177,7 +177,7 @@ if ~exist(figloc,'dir')
 end
 
 %Filenames of metadata and SleepState.states.mat file to save
-sessionmetadatapath = fullfile(savefolder,[recordingname,'_SessionMetadata.mat']);
+sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
 %Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
 

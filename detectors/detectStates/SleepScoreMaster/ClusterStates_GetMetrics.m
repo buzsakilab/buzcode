@@ -16,7 +16,7 @@ matfilename = fullfile(basePath,[recordingname,'.SleepScoreMetrics.LFP.mat']);
 plotmaterialsfilename = fullfile(basePath,[recordingname,'.StatePlotMaterials.mat']);
 
 if exist(matfilename) & exist(plotmaterialsfilename) & overwrite == false
-    load(matfilename,'StateScoreMetrics')
+    load(matfilename,'SleepScoreMetrics')
     load(plotmaterialsfilename,'StatePlotMaterials')
     return
 end

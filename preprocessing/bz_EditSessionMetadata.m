@@ -10,7 +10,7 @@ basename = bz_BasenameFromBasepath(basepath);
 
 %% Value setting - humans must do this.  Will be asked to edit a _NoteText.m file
 notesname = [basename,'_SessionMetadataText.m'];
-notesfullpath = fullfile(basepath,[basename,'_SessionNotesText.m']);
+notesfullpath = fullfile(basepath,notesname);
 if ~exist(notesfullpath,'file')
     w = which('bz_SessionMetadataTextTemplate.m');% copy an example header here to edit
     copyfile(w,notesname);

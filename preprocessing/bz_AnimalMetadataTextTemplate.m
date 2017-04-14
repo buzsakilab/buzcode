@@ -60,6 +60,7 @@ if AnimalMetadata.Modules.ExtracellEphys
     AnimalMetadata.ExtracellEphys.Probes.UmPerScrewTurn = [288 288];
     AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes = 2;
     AnimalMetadata.ExtracellEphys.Probes.TargetRegions = {'dCA1','mPFC'};
+    AnimalMetadata.ExtracellEphys.Probes.TargetHemisphere = {'left','right'};
     AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.Anteroposterior = [-3.5,2.7];%one for each probe
     AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.Mediolateral = [2.5,0.3];
     AnimalMetadata.ExtracellEphys.Probes.ImplantAngle.Anteroposterior = [0,0];%degrees of top anterior as sitting behind animal
