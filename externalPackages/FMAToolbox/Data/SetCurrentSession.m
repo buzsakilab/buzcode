@@ -46,11 +46,14 @@ if nargin == 0
 end
 
 % Filename?
-if nargin ~= 0 || ~isempty(filename)
+if nargin ~= 0 
 	if ~isstring_FMAT(varargin{1},'spikes') & strcmp(varargin{1}(end-3:end),'.xml')
 		filename = varargin{1};
 		varargin = {varargin{2:end}};
-    elseif ~strcmp(varargin{1}(end-3:end),'.xml') % if you didn't give an xml, then maybe it is a file path?
+    end
+end
+if isempty(filename) & nargin ~=0 
+    if ~strcmp(varargin{1}(end-3:end),'.xml') % if you didn't give an xml, then maybe it is a file path?
         if strcmp(varargin{1}(end),'/')
             xml = dir([varargin{1} '*xml']);
             filename = [varargin{1} xml.name];
@@ -58,7 +61,8 @@ if nargin ~= 0 || ~isempty(filename)
             xml = dir([varargin{1} '/*xml']); 
             if ~isempty(xml)
                 filename = [varargin{1} '/' xml.name];
-                varargin = varargin{2:end};
+                varargin{1} = [];
+                varargin = removeEmptyCells(varargin);
             else
                 filename = '';
             end
