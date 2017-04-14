@@ -1,11 +1,24 @@
 function AnimalMetadata = bz_AnimalMetadataTextTemplate(basepath)
 % This .m file is a generic template and will be copied to animal
-% folders/session folders.  Edits here will change what is automatically
-% copied to animal folders when bz_EditAnimalMetadta.m is called.
+% folders/session folders and will be called basename_AnimalMetadataText.m.
+% It is represents code that will be used to
+% create a basename.AnimalMetadata.mat file.  Edits here will be reflected
+% in the .AnimalMetadata.mat created after this file is run.  
 % 
-% Developers should edit bz_AnimalMetadataTextTemplate.m to change how
-% AnimalMetadata is created.
-% 
+% Developers interested in changing how AnimalMetadata is made generally 
+% should edit bz_AnimalMetadataTextTemplate.m 
+%
+% INPUTS
+%   basepath - computer path to folder where animal metadata is to go.
+%   Often this is a path to an folder full of sessions all from one animal.
+%
+% OUTPUTS
+%    AnimalMetadata and saved basename.AnimalMetadata.mat
+%       - Struct array containing fields including surgical info, animal
+%       name, viruses injected, probes used etc.
+%
+% See also: bz_EditAnimalMetadata, bz_RunAnimalMetadata, bz_SessionMetadataTextTemplate
+%
 % Brendon Watson 2017
 
 
