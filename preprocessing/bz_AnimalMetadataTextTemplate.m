@@ -91,6 +91,31 @@ end
 
 % Optogenetics metadata
 if AnimalMetadata.Modules.Optogenetics
+    AnimalMetadata.Optogenetics.Opsin = [];    
+    FiberNum = 1;%copy more of these blocks - one per probe
+    AnimalMetadata.Optogenetics.Fibers(ProbeNum).FiberRadiusMicrons = [];
+    AnimalMetadata.Optogenetics.Fibers(ProbeNum).LightSourceWavelengthNm = [];
+    AnimalMetadata.Optogenetics.Fibers(ProbeNum).LightSourceDevice = [];
+    AnimalMetadata.Optogenetics.Fibers(FiberNum).AffiliatedProbeNumber = [];%Probe if proximal to a probe
+    AnimalMetadata.Optogenetics.Fibers(FiberNum).AffiliatedShankSpikeGroupIndex = [];%If proximal to a shank 
+    AnimalMetadata.Optogenetics.Fibers(FiberNum).DistanceProixmalToShankTipInUm = [];
+    AnimalMetadata.Optogenetics.Fibers(FiberNum).APCoordinates = [];%if if not with a probe
+    AnimalMetadata.Optogenetics.Fibers(FiberNum).MLCoordinates = [];
+    AnimalMetadata.Optogenetics.Fibers(FiberNum).DVCoordinates = [];
+%     AnimalMetadata.Optogenetics.FibersOnProbes(ProbeNum).NumFibersPerProbe = [];
+%     AnimalMetadata.Optogenetics.FibersOnProbes(ProbeNum).FiberRadiusMicrons = [];
+%     AnimalMetadata.Optogenetics.FibersOnProbes(ProbeNum).LightSourceWavelengthNm = [];
+%     AnimalMetadata.Optogenetics.FibersOnProbes(ProbeNum).LightSourceDevice = [];
+%     AnimalMetadata.Optogenetics.FibersOnProbes(ProbeNum).ShankNumbers = [];
+%     AnimalMetadata.Optogenetics.FibersOnProbes(ProbeNum).DistanceProixmalToShankTip = [];
+% 
+%     AnimalMetadata.Optogenetics.FibersAwayFromProbes.FiberRadiusMicrons = [];
+%     AnimalMetadata.Optogenetics.FibersAwayFromProbes.LightSourceWavelengthNm = [];
+%     AnimalMetadata.Optogenetics.FibersAwayFromProbes.LightSourceDevice = [];
+%     AnimalMetadata.Optogenetics.FibersAwayFromProbes.APCoordinates = [];
+%     AnimalMetadata.Optogenetics.FibersAwayFromProbes.MLCoordinates = [];
+%     AnimalMetadata.Optogenetics.FibersAwayFromProbes.DVCoordinates = [];
+    
     %need to fill this in
 end
 
