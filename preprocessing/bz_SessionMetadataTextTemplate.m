@@ -25,7 +25,7 @@ SessionMetadata.ExtracellEphys.NumberOfTurnsSinceSurgery = [0];%vector, one entr
 SessionMetadata.ExtracellEphys.Probes.PluggingOrder = [];%vector, one entry per probe. blank defaults to animal plugging order
 SessionMetadata.ExtracellEphys.BadShanks = [];% vector for this recording. base 1
      % These bad shanks will be used to populate bad channels
-SessionMetadata.ExtracellEphys.BadChannels = 'FromAnimalMetadata';% vector for this recording. base 0
+SessionMetadata.ExtracellEphys.BadChannels = [];% vector for this recording. base 0
 SessionMetadata.ExtracellEphys.ChannelNotes = {''};
 
 SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate = 1250;%assumed default
