@@ -71,6 +71,7 @@ end
 if exist(matfilename,'file') && ~overwrite
     display('EMGCorr already calculated - loading from EMGCorr.LFP.mat')
     load(matfilename)
+    EMG = EMGCorr;
     if ~exist('EMGCorr','var')
         display([matfilename,' does not contain a variable called EMGCorr'])
     end
