@@ -71,6 +71,7 @@ end
 if exist(matfilename,'file') && ~overwrite
     display('EMG Correlation already calculated - loading from EMG.LFP.mat')
     load(matfilename)
+    if exist('EMGCorr','var'); EMG = EMGCorr; end %for backcompadibility
     if ~exist('EMG','var')
         display([matfilename,' does not contain a variable called EMG'])
     end
