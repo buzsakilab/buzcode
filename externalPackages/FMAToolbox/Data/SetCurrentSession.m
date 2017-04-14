@@ -46,7 +46,7 @@ if nargin == 0
 end
 
 % Filename?
-if nargin ~= 0 %|| ~isempty(filename)
+if nargin ~= 0 || ~isempty(filename)
 	if ~isstring_FMAT(varargin{1},'spikes') & strcmp(varargin{1}(end-3:end),'.xml')
 		filename = varargin{1};
 		varargin = {varargin{2:end}};
@@ -56,9 +56,13 @@ if nargin ~= 0 %|| ~isempty(filename)
             filename = [varargin{1} xml.name];
         else
             xml = dir([varargin{1} '/*xml']); 
-            filename = [varargin{1} '/' xml.name];
+            if ~isempty(xml)
+                filename = [varargin{1} '/' xml.name];
+                varargin = varargin{2:end};
+            else
+                filename = '';
+            end
         end 
-        varargin = {varargin{2:end}};
 	end
 end
 
