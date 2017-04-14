@@ -25,7 +25,7 @@ SessionMetadata.ExtracellEphys.NumberOfTurnsSinceSurgery = [0];%vector, one entr
 SessionMetadata.ExtracellEphys.Probes.PluggingOrder = [];%vector, one entry per probe. blank defaults to animal plugging order
 SessionMetadata.ExtracellEphys.BadShanks = [];% vector for this recording. base 1
      % These bad shanks will be used to populate bad channels
-SessionMetadata.ExtracellEphys.BadChannels = 'FromAnimalMetadata';% vector for this recording. base 0
+SessionMetadata.ExtracellEphys.BadChannels = [];% vector for this recording. base 0
 SessionMetadata.ExtracellEphys.ChannelNotes = {''};
 
 SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate = 1250;%assumed default
@@ -34,8 +34,31 @@ SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform = 16;%default
 SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave = 4;%default
 
 % Optogenetics metadata
-    %need to fill this in
-    
+FiberNum = 1;%copy more of these blocks - one per probe
+SessionMetadata.Optogenetics.Fibers(FiberNum).StimulusRecordingChannelDatType = 'AnalogIn';%'AnalogIn' for Intan, 'Main' if fused with other dat
+SessionMetadata.Optogenetics.Fibers(FiberNum).StimulusRecordingChannelNumber = [];%
+%?else
+
+% Behavior metadata
+BehaviorSessionNumber = 1;
+SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).StartStopSeconds = [];%startstop pair, in seconds
+SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).DatFileIndex = [];%which dat files are included in this Episode
+SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).BehaviorType = '';%verbal description of behavior type, ie "LinearTrack"
+SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).BehaviorNotes = '';
+SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).Motion.MotionTrackerType = '';%Optitrack or Basler etc
+SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).Motion.CameraFrameChannelType = 'DigitalIn';%'DigitalIn' for Intan, 'Main' if fused with other dat
+SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).Motion.CameraFrameChannelNumber = [];%channel number where frame times are recorded
+SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).Location = '';
+
+SleepSessionNumber = 1;
+SessionMetadata.SleepEpisodes.(SleepSessionNumber).StartStopSeconds = [];%startstop pair, in seconds
+SessionMetadata.SleepEpisodes(SleepSessionNumber).DatFileIndex = [];%which dat files are included in this Episode
+SessionMetadata.SleepEpisodes(SleepSessionNumber).BehaviorNotes = '';
+SessionMetadata.SleepEpisodes.(SleepSessionNumber).Motion.MotionTrackerType = '';%Optitrack or Basler etc
+SessionMetadata.SleepEpisodes.(SleepSessionNumber).Motion.CameraFrameChannelType = 'DigitalIn';%'DigitalIn' for Intan, 'Main' if fused with other dat
+SessionMetadata.SleepEpisodes.(SleepSessionNumber).Motion.CameraFrameChannelNumber = [];%channel number where frame times are recorded
+SessionMetadata.SleepEpisodes(SleepSessionNumber).Location = '';
+
 % Virus metadata
     %need to fill this in
 
@@ -47,6 +70,7 @@ SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave = 4;%default
 
 % Other for ?
 % SessionMetadata.Other = {''};
+
 
 %% Automated after this point, depending on modules used
 %% Find AnimalMetadata in order to open it.  

@@ -138,7 +138,9 @@ for i=1:length(spkgrpstouse)
    %add first channel from shank (superficial) and last channel from shank (deepest)
    if ~isempty(usableshankchannels)
       xcorr_chs = [xcorr_chs, usableshankchannels(1)]; % fast mode? 
-%       xcorr_chs = [xcorr_chs, usableshankchannels(1),usableshankchannels(end)]; 
+      if spkgrpstouse == 1 % if only one shank, then use top and bottom channels
+          xcorr_chs = [xcorr_chs, usableshankchannels(end)]; 
+      end
    end
 end
 xcorr_chs = unique([xcorr_chs,specialChannels]);
