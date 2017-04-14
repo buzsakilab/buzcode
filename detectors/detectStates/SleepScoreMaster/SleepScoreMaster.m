@@ -5,7 +5,7 @@ function SleepScoreMaster(basePath,varargin)
 %INPUT 
 %   basePath        folder containing .xml and .lfp files.
 %                   basePath and files should be of the form:
-%                   datasetFolder/recordingName/recordingName.lfp
+%                   whateverfolder/recordingName/recordingName.lfp
 %   (optional)      If no inputs included, select folder(s) containing .lfp
 %                   and .xml file in prompt.
 %   (optional)      if no .lfp in basePath, option to select multiple 
@@ -13,7 +13,9 @@ function SleepScoreMaster(basePath,varargin)
 %                          
 %   OPTIONS
 %   'savedir'       Default: datasetfolder
-%   'overwrite'     Default: false
+%   'overwrite'     Default: false, overwrite all processing steps
+%   'rescore'       Default: false, do not overwrite channel selection or
+%                   EMG, but recluster and score
 %   'savebool'      Default: true
 %   'scoretime'     Default: [0 Inf]
 %   'badchannels'   file datasetfolder/recordingname/'bad_channels.txt'
@@ -78,15 +80,13 @@ MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE)
 
 %Select from no input
 if ~exist('basePath','var')
-    DIRECTORYNAME = uigetdir(cd,...
+    basePath = uigetdir(cd,...
         'Which recording(s) would you like to state score?');
-    if isequal(DIRECTORYNAME,0);return;end  
-    [datasetfolder,recordingname] = fileparts(DIRECTORYNAME); 
-else
-    %Separate datasetfolder and recordingname
-    [datasetfolder,recordingname] = fileparts(basePath);
+    if isequal(basePath,0);return;end  
 end
 
+%Separate datasetfolder and recordingname
+[datasetfolder,recordingname] = fileparts(basePath);
 
 if ~exist('SWWeightsName','var')
     SWWeightsName = 'SWweights.mat';
@@ -97,6 +97,8 @@ end
 %% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
 %Select from dataset folder - need to check if .xml/lfp exist
 if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
+    display(['no .lfp file in basePath, pick a selection of session folders',...
+             'containing .lfp files'])
         foldercontents = dir(basePath);
         possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
         [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
@@ -119,18 +121,6 @@ elseif numrecs == 1 & iscell(recordingname)
 end
 
 display(['Scoring Recording: ',recordingname]);
-
-%% Deal with input options from varargin
-%none yet, but will do this with inputParser when we have input options
-
-%possible variable input options
-%'timewin' - only state score a subset of the recording
-%'HPCsites' - site indices for HPC probes - will only check these for theta
-%           if applicable
-%'figloc' - secondardy folder to save figures to
-%'spikegroups' - if not in the .xml file
-%'SWChannel', 'ThetaChannel' - can enter manually instead of determining
-%                               algorithmically
 
 %% inputParse for Optional Inputs and Defaults
 p = inputParser;
@@ -177,161 +167,61 @@ ThetaChannels = p.Results.ThetaChannels;
 
 %% Database File Management 
 savefolder = fullfile(savedir,recordingname);
-
 if ~exist(savefolder,'dir')
     mkdir(savefolder)
 end
-
 %Figure locations
 figloc = [fullfile(savefolder,'StateScoreFigures'),'/'];
 if ~exist(figloc,'dir')
     mkdir(figloc)
 end
 
-
-%Filenames for EMG, thLFP, and swLFP .mat files in the database.
-%ALL OF THESE NEED TO BE CLEANED INTO BUZCODE FORMAT
-%Theta/SWLFP are depreciated - replaced with scorelfppath
+%Filenames of metadata and SleepState.states.mat file to save
 sessionmetadatapath = fullfile(savefolder,[recordingname,'_SessionMetadata.mat']);
-thetalfppath = fullfile(savefolder,[recordingname,'_ThetaLFP.mat']);
-swlfppath = fullfile(savefolder,[recordingname,'_SWLFP.mat']);
-scorelfppath = fullfile(savefolder,[recordingname,'_SleepScoreLFP.mat']);
-EMGpath = fullfile(savefolder,[recordingname '_EMGCorr.mat']);
-%Filenames for State and Event .mat files.
-sleepstatepath = fullfile(savefolder,[recordingname,'_SleepScore.mat']);
-%Filenames for StateCluster Metrics (broadband/theta)
-scoremetricspath = fullfile(savefolder,[recordingname,'_StateScoreMetrics.mat']);
-
 %Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
-bz_scorelfppath = fullfile(savefolder,[recordingname,'.SleepScoreLFP.LFP.mat']);
-bz_EMGpath = fullfile(savefolder,[recordingname '.EMGCorr.LFP.mat']);
 
-
-%Filename for .lfp file
-if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.eeg']);
-    
-elseif ~overwrite
-    display('No .lfp file... but using saved files so maybe it''s ok!')
-else
-    display('No .lfp file')
-    return
-end
 
 %% Get channels not to use
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
     rejectchannels = SessionMetadata.ExtracellEphys.BadChannels;
 else
+    display('No baseName.SessionMetadata.mat - so no rejected channels')
     rejectchannels = [];
 end
-
 
 %% CALCULATE EMG FROM HIGH-FREQUENCY COHERENCE
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
-% Do this before lfp load because finding proper lfps will depend on this.
-% If EMG is already calculated and in it's own .mat, then load, otherwise
-% calculate this
-
-% sf_EMG = 2;
-if ~exist(EMGpath,'file') || overwrite;
-%     [PATHSTR] = fileparts([datasetfolder '/' recordingname]);
-%     if exist(fullfile(PATHSTR,'bad_channels.txt'),'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
-%         t = ReadBadChannels_ss(PATHSTR);
-%         rejectchannels = cat(1,rejectchannels(:),t(:));
-%     end % this should be replaced by a search of the meta data file instead of a separate bad_chans file
-
-    display('Calculating EMG')
-    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime,[],rejectchannels);
-    if savebool
-        %Old Format - update to buzcode
-        save(EMGpath,'EMGCorr','sf_EMG')
-        
-        %Buzcode format - wrap this into EMGCorrForSleepScore - make a
-        %standalone buzcode detector
-        CorrEMG.data = EMGCorr;
-        CorrEMG.sf = sf_EMG;
-        save(bz_EMGpath,'CorrEMG')
-    end
-
-else
-    display('EMG aleady calculated: Loading...')
-    load(EMGpath,'EMGCorr')
-    load(EMGpath,'sf_EMG')
-end
-EMG = EMGCorr(:,2);
-clear EMGCorr
-
+EMG = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
+                                     'rejectChannels',rejectchannels);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
-if ((~exist(thetalfppath,'file') && ~exist(swlfppath,'file')) && ~exist(scorelfppath,'file')) || overwrite; % if no lfp file already, load lfp and make lfp file?
-
-    display('Picking SW and TH Channels')
-    [SWchannum,THchannum,swLFP,thLFP,t_LFP,sf_LFP,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figloc,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels);
-    if savebool
-        %Transfer this into scoremetricspath? predownsampled to what it
-        %needs to be for ClusterStates. 
-        %old format - delete and update everything
-        save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','t_LFP','sf_LFP','SWfreqlist','SWweights');
-        
-        %buzcode format - make everything in this function compadible
-        SleepScoreLFP.thLFP = thLFP;
-        SleepScoreLFP.swLFP = swLFP;
-        SleepScoreLFP.THchanID = THchannum;
-        SleepScoreLFP.SWchanID = SWchannum;
-        SleepScoreLFP.sf = sf_LFP;
-        SleepScoreLFP.SWfreqlist = SWfreqlist;
-        SleepScoreLFP.SWweights = SWweights;
-        save(bz_scorelfppath,'SleepScoreLFP');  
-    end
-else
-    display('SW and TH Channels Already Extracted, Loading...')
-    load(scorelfppath,'swLFP','SWchannum','thLFP','THchannum','sf_LFP','SWfreqlist','SWweights')
-
-        
-end
-
-%CAN THIS BE REMOVED?
-if ~exist('SWfreqlist','var')
-        load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
-end
-
+%Determine the best channels for Slow Wave and Theta separation.
+%Described in Watson et al 2016, with modifications
+SleepScoreLFP = PickSWTHChannel(basePath,...
+                            figloc,scoretime,SWWeightsName,...
+                            Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
+                            SWChannels,ThetaChannels,rejectchannels,...
+                            overwrite);
 
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG
 
+%Calculate the scoring metrics: broadbandLFP, theta, EMG in 
 display('Quantifying metrics for state scoring')
-% [stateintervals,~,~,~,~,broadbandSlowWave,thratio,EMG,t_clus,badtimes,reclength] = ClusterStates(swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname);
-[broadbandSlowWave,thratio,EMG,t_EMG,t_clus,badtimes,reclength,histsandthreshs,...
-    FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(swLFP,... 
-    thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams);
-
+[SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
+                                           basePath,SleepScoreLFP,EMG,overwrite);
+                                       
+%Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
 [stateintervals,stateIDX,~] = ClusterStates_DetermineStates(...
-    broadbandSlowWave,thratio,t_clus,EMG,histsandthreshs,MinWinParams,reclength,figloc);
+                                           SleepScoreMetrics,MinWinParams);
 
-ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,FFTfreqs,FFTspec,...
-    thFFTfreqs,thFFTspec,t_clus,recordingname,broadbandSlowWave,thratio,EMG,t_EMG);
-
-if savebool
-    %Should save (downsampled to what's used in clusterstates...)
-    %sw/thLFP in scoremetricspath here!
-    save(scoremetricspath,...
-        'broadbandSlowWave','thratio','EMG','t_clus',...
-        'SWchannum','THchannum','badtimes','reclength','histsandthreshs',...
-        'SWfreqlist','SWweights','SWWeightsName','Notch60Hz',...
-        'NotchUnder3Hz','NotchHVS','NotchTheta')
-    
-    
-    
-end
-
+%% MAKE THE STATE SCORE OUTPUT FIGURE
+ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
+                                
 %% JOIN STATES INTO EPISODES
 
 NREMints = stateintervals{2};
@@ -340,14 +230,9 @@ WAKEints = stateintervals{1};
 
 [StateIntervals,SleepState,durationprams] = StatesToFinalScoring(NREMints,WAKEints,REMints);
 
-%Old Style - remove once bzCompadible with StateEditor
-StateIntervals.metadata.SWchannum = SWchannum;
-StateIntervals.metadata.THchannum = THchannum;
-save(sleepstatepath,'StateIntervals');
-
 %bzStyle
-SleepState.detectorparms.SWchannum = SWchannum;
-SleepState.detectorparms.THchannum = THchannum;
+SleepState.detectorparms.SWchannum = SleepScoreLFP.SWchanID;
+SleepState.detectorparms.THchannum = SleepScoreLFP.THchanID;
 SleepState.detectorparms.durationprams = durationprams;
 SleepState.detectorname = 'SleepScoreMaster';
 SleepState.detectiondate = today;

@@ -24,10 +24,15 @@ end
 % Extracell Ephys metadata
 if AnimalMetadata.Modules.ExtracellEphys
     SessionNotes.ExtracellEphys.NumberOfTurnsSinceSurgery = [0 0];%vector, one entry per probe
+<<<<<<< HEAD
     SessionNotes.ExtracellEphys.Probes.PluggingOrder     = [];%vector, one entry per probe. blank defaults to animal plugging order
     SessionNotes.ExtracellEphys.BadShanks = 'FromAnimalMetadata';%or [1 2 5] vector for this recording.  If value is "FromAnimalMetadata", field will be populated from AnimalMetadata.ExtracellEphys.CurrentBadChannels
          % These bad shanks will be used to populate bad channels
     SessionNotes.ExtracellEphys.BadChannels = 'FromAnimalMetadata';%or [1 2 5] vector for this recording.  If value is "FromAnimalMetadata", field will be populated from AnimalMetadata.ExtracellEphys.CurrentBadChannels
+=======
+    SessionNotes.ExtracellEphys.BadShanks = [];
+    SessionNotes.ExtracellEphys.BadChannels = []; %0-indexed as in neuroscope
+>>>>>>> origin/master
     SessionNotes.ExtracellEphys.ChannelNotes = {''};
 
     SessionNotes.ExtracellEphys.Parameters.LfpSampleRate = 1250;%assumed default

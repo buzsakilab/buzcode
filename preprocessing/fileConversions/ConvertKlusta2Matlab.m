@@ -1,4 +1,5 @@
-function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wvformExtract,saveFiles,numCores)
+function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
+    basename,wvformExtract,saveFiles,numCores)
 % USAGE
 %
 % [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wvformExtract,saveFiles,numCores)
@@ -40,6 +41,23 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wv
 % Brendon Watson 2016 
 % edited by David Tingley 1/2017
 
+% p = inputParser;
+% addRequired(p,'shank',@isnumeric)
+% addRequired(p,'basepath',@isstr)
+% addRequired(p,'basename',@isstr)
+% 
+% addParameter(p,'saveFiles',[],@isnumeric)
+% addParameter(p,'numCores',[1],@isnumeric)
+% p.parse(varargin{:})
+% 
+% shank = p.Results.shank;
+% basepath = p.Results.basepath;
+% saveFiles = p.Results.saveFiles;
+% numCores = p.Results.numCores;
+% basename = p.Results.basename;
+
+
+% 
 % Handle inputs
 if ~exist('shank','var')
     shank = 1;

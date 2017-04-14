@@ -1,11 +1,20 @@
-function	[dip,xl,xu, ifault, gcm, lcm, mn, mj] = hartigansdiptest_ss(xpdf)
-
-% function	[dip,xl,xu, ifault, gcm, lcm, mn, mj]=HartigansDipTest(xpdf)
+function	[dip,xl,xu, ifault, gcm, lcm, mn, mj] = bz_hartigansdiptest(xpdf)
+% USAGE
+% [dip,xl,xu, ifault, gcm, lcm, mn, mj]=HartigansDipTest(xpdf)
+%
+% INPUTS
+%
+%
+%
+%
+% OUTPUTS
+%
+%
+% DESCRIPTION
 %
 % This is a direct translation by F. Mechler (August 27 2002)
 % into MATLAB from the original FORTRAN code of Hartigan's Subroutine DIPTST algorithm 
-% Ref: Algorithm AS 217 APPL. STATIST. (1985) Vol. 34. No.3 pg 322-325
-%
+% Ref: Algorithm AS 217 APPL. STATIST. (1985) Vol. 34. No.3 pg 322-32
 % Appended by F. Mechler (September 2 2002) to deal with a perfectly unimodal input
 % This check the original Hartigan algorithm omitted, which leads to an infinite cycle
 %

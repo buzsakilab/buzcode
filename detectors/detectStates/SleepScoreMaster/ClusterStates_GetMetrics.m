@@ -1,6 +1,5 @@
-function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes, reclength,...
-    histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(...
-    swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams)
+function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
+    basePath,SleepScoreLFP,EMG,overwrite)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
@@ -11,44 +10,48 @@ function [broadbandSlowWave,thratio,EMG,t_EMG,t_FFT,badtimes, reclength,...
 %Last Updated: 1/31/16
 %DLevenstein
 
+%% Buzcode name of the SleepScoreMetrics.LFP.mat file
+[datasetfolder,recordingname] = fileparts(basePath);
+matfilename = fullfile(basePath,[recordingname,'.SleepScoreMetrics.LFP.mat']);
+plotmaterialsfilename = fullfile(basePath,[recordingname,'.StatePlotMaterials.mat']);
+
+if exist(matfilename) & exist(plotmaterialsfilename) & overwrite == false
+    load(matfilename,'StateScoreMetrics')
+    load(plotmaterialsfilename,'StatePlotMaterials')
+    return
+end
 
 %% Downsample and filter
 %Make Downsample to niquest frequency
 
-if sf_LFP == 1250
+if SleepScoreLFP.sf == 1250
     downsamplefactor = 5;
-elseif sf_LFP == 250
+elseif SleepScoreLFP.sf == 250
     downsamplefactor = 1;
-elseif sf_LFP == 1000
+elseif SleepScoreLFP.sf == 1000
     downsamplefactor = 4;
 else
     display('sf not recognized... if only you made this able to set its own downsample...')
 end
-swLFP = downsample(swLFP,downsamplefactor);
-thLFP = downsample(thLFP,downsamplefactor);
-sf_LFP = sf_LFP/downsamplefactor;
-
-
-%filtbounds = [0.5 120];
-%display(['Filtering ',num2str(filtbounds(1)),'-',num2str(filtbounds(2)),' Hz...']);
-%LFP = FiltNPhase(LFP, filtbounds, sf_LFP );
+swLFP = downsample(SleepScoreLFP.swLFP,downsamplefactor);
+thLFP = downsample(SleepScoreLFP.thLFP,downsamplefactor);
+sf_LFP = SleepScoreLFP.sf/downsamplefactor;
 
 
 %% Calculate Spectrogram
 %display('FFT Spectrum for Broadband LFP')
 
 freqlist = logspace(0,2,100);
-%freqlist = linspace(0.5,55.5,111);
 window = 10;   %s
 noverlap = 9;  %s
 window = window*sf_LFP;
 noverlap = noverlap*sf_LFP;
-[FFTspec,FFTfreqs,t_FFT] = spectrogram(swLFP,window,noverlap,freqlist,sf_LFP);
-FFTspec = abs(FFTspec);
-[zFFTspec,mu,sig] = zscore(log10(FFTspec)');
+[swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window,noverlap,freqlist,sf_LFP);
+swFFTspec = abs(swFFTspec);
+[zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
 
-    %% Remove transients before calculating SW histogram
-    %this should be it's own whole section - removing/detecting transients
+%% Remove transients before calculating SW histogram
+%this should be it's own whole section - removing/detecting transients
 totz = zscore(abs(sum(zFFTspec')));
 badtimes = find(totz>5);
 zFFTspec(badtimes,:) = 0;
@@ -82,7 +85,7 @@ f_theta = [5 10];
 freqlist = logspace(log10(f_all(1)),log10(f_all(2)),100);
 
 
-[thFFTspec,thFFTfreqs] = spectrogram(thLFP,window,noverlap,freqlist,sf_LFP);
+[thFFTspec,thFFTfreqs] = spectrogram(single(thLFP),window,noverlap,freqlist,sf_LFP);
 thFFTspec = (abs(thFFTspec));
 [~,mu_th,sig_th] = zscore(log10(thFFTspec)');
 
@@ -95,15 +98,15 @@ thratio = smooth(thratio,thsmoothfact);
 thratio = (thratio-min(thratio))./max(thratio-min(thratio));
  
 %% EMG
-dtEMG = 1/sf_EMG;
-t_EMG = (1:length(EMG))*dtEMG;
-EMG = smooth(EMG,smoothfact/dtEMG);
+dtEMG = 1/EMG.samplingFrequency;
+t_EMG = (1:length(EMG.data))*dtEMG;
+EMG = smooth(EMG.data,smoothfact/dtEMG);
 EMG = (EMG-min(EMG))./max(EMG-min(EMG));
 
 reclength = round(t_EMG(end));
 
 %downsample to FFT time points;
-[~,t_intersect] = intersect(t_EMG,t_FFT);
+[~,t_intersect] = intersect(t_EMG,t_clus);
 EMG = EMG(t_intersect);
 t_EMG = t_EMG(t_intersect);
 
@@ -200,4 +203,13 @@ end
 
 histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
 
+%% Ouput Structure: StateScoreMetrics
+LFPparms = SleepScoreLFP.params;
+THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
+SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
+    t_clus,badtimes,reclength,histsandthreshs,LFPparms,THchanID,SWchanID,recordingname);
+save(matfilename,'SleepScoreMetrics');
+
+StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);
+save(plotmaterialsfilename,'StatePlotMaterials');

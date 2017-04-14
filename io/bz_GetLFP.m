@@ -123,9 +123,7 @@ else  % backwards compatible with FMAT setcurrentsession
    end
 end
 
-% we assume 0-indexing like neuroscope, but LoadBinary using 1-indexing to
-% load....
-channels = channels + 1;
+
 
 
 nIntervals = size(intervals,1);
@@ -135,9 +133,11 @@ for i = 1:nIntervals
     lfp(i).interval = [intervals(i,1) intervals(i,2)];
     
 	% Load data and put into struct
+    % we assume 0-indexing like neuroscope, but LoadBinary using 1-indexing to
+% load....
 	lfp(i).data = LoadBinary(lfp.Filename,'duration',lfp(i).duration,...
                   'frequency',samplingRate,'nchannels',nChannels,...
-                  'start',lfp(i).interval(1),'channels',channels);
+                  'start',lfp(i).interval(1),'channels',channels+1);
 	lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRate):...
                         (lfp(i).interval(1)+(length(lfp(i).data)-1)/...
                         samplingRate)]';
