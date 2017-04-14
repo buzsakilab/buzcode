@@ -19,7 +19,7 @@ end
 if AnimalMetadata.Modules.ExtracellEphys
     SessionNotes.ExtracellEphys.NumberOfTurnsSinceSurgery = [0 0];%vector, one entry per probe
     SessionNotes.ExtracellEphys.BadShanks = [];
-    SessionNotes.ExtracellEphys.BadChannels = [];
+    SessionNotes.ExtracellEphys.BadChannels = []; %0-indexed as in neuroscope
     SessionNotes.ExtracellEphys.ChannelNotes = {''};
     
     SessionNotes.ExtracellEphys.Parameters.LfpSampleRate = 1250;%assumed default
