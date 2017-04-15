@@ -96,7 +96,8 @@ end
 
 %% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
 %Select from dataset folder - need to check if .xml/lfp exist
-if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
+if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file') && ...
+    ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
     display(['no .lfp file in basePath, pick a selection of session folders',...
              'containing .lfp files'])
         foldercontents = dir(basePath);
