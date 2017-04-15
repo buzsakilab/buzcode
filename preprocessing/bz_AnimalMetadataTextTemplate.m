@@ -89,12 +89,15 @@ if AnimalMetadata.Modules.ExtracellEphys
     %ONLY ENTER THIS MANUALLY IF YOU WOULD LIKE TO USE THE EXISTING .xml 
     %SPIKE GROUPS INSTEAD OF CALCULATING FROM A PROBE GEOMETRY FILE
     %Enter a list of spike group numbers (from neuroscope) for each probe
-    AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups = {['spkgrps on probe1'],['spkgrps on probe 2']}
+    AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups = {['spkgrps on probe1'],['spkgrps on probe 2']};
     
     
 %     AnimalMetadata.ExtracellEphys.CurrentBadChannels = [];
 %     AnimalMetadata.ExtracellEphys.CurrentBadShanks = [];%not used now
     
+    % Default ephys parameters for this anaimal.  These will be checked
+    % against what was used on a per-session basis and warnings will be
+    % issued if differences found.
     AnimalMetadata.ExtracellEphys.Parameters.SampleRate = 20000;%Lab default
     AnimalMetadata.ExtracellEphys.Parameters.Amplification = 1;%Intan digitized on chip, let's say 1
     AnimalMetadata.ExtracellEphys.Parameters.VoltsPerUnit = 0.0000002;%Intan default                
