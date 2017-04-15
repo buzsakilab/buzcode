@@ -9,7 +9,7 @@ function SetCurrentSession(varargin)
 %
 %    SetCurrentSession(filename,varargin)
 %
-%    filename       optional parameter file name; use 'same' to force reload
+%    filename       optional parameter file name ('basename.xml'); use 'same' to force reload
 %    <options>      optional list of property-value pairs (see table below)
 %
 %    =========================================================================
@@ -37,7 +37,10 @@ filename = '';
 if nargin == 0
     xml = dir('*xml');
     if size(xml,1)>1
-        error('you have more than one XML file in this directory')
+        warning('you have more than one XML file in this directory, assuming folder/xml names match...')
+        path = pwd;
+        temp = strsplit(path,'/');
+        filename = [temp{length(temp)} '.xml'];
     end
     if size(xml,1) == 1
         filename = xml.name;
@@ -46,21 +49,43 @@ if nargin == 0
 end
 
 % Filename?
-if nargin ~= 0 %|| ~isempty(filename)
+if nargin ~= 0 
 	if ~isstring_FMAT(varargin{1},'spikes') & strcmp(varargin{1}(end-3:end),'.xml')
 		filename = varargin{1};
 		varargin = {varargin{2:end}};
-    elseif ~strcmp(varargin{1}(end-3:end),'.xml') % if you didn't give an xml, then maybe it is a file path?
+    end
+end
+if isempty(filename) & nargin ~=0 
+    if ~strcmp(varargin{1}(end-3:end),'.xml') % if you didn't give an xml, then maybe it is a file path?
         if strcmp(varargin{1}(end),'/')
             xml = dir([varargin{1} '*xml']);
-            filename = [varargin{1} xml.name];
+            if ~isempty(xml) & length(xml) == 1
+                filename = [varargin{1} xml.name];
+            elseif length(xml)>1
+                path = varargin{1};
+                temp = removeEmptyCells(strsplit(path,'/'));
+                filename = [temp{length(temp)} '.xml'];
+                varargin{1} = [];
+                varargin = removeEmptyCells(varargin);
+            end
         else
             xml = dir([varargin{1} '/*xml']); 
-            filename = [varargin{1} '/' xml.name];
+            if ~isempty(xml) & length(xml) == 1
+                filename = [varargin{1} '/' xml.name];
+                varargin{1} = [];
+                varargin = removeEmptyCells(varargin);
+            elseif length(xml) > 1 % multiple XMLs but we assume common naming...
+                path = varargin{1};
+                temp = strsplit(path,'/');
+                filename = [temp{length(temp)} '.xml'];
+                varargin{1} = [];
+                varargin = removeEmptyCells(varargin); % this may lead to problems....
+            end
         end 
-        varargin = {varargin{2:end}};
 	end
-end
+end  % this is a hideous piece of code I wish I could forget existed...
+
+
 
 % Check number of parameters
 if mod(length(varargin),2) ~= 0,

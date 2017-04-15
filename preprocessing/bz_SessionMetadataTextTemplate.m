@@ -1,12 +1,25 @@
 function SessionMetadata = bz_SessionMetadataTextTemplate(basepath)
-% This .m file is a generic template and will be copied to animal
-% folders/session folders.  Edits here will change what is automatically
-% copied to animal folders when bz_EditAnimalMetadata.m is called.
+% This .m file is a generic template and will be copied to session
+% folders/session folders and will be called basename_SessionMetadataText.m.
+% It is represents code that will be used to
+% create a basename.SessionMetadata.mat file.  Edits here will be reflected
+% in the .SessionMetadata.mat created after this file is run.  
 % 
-% Developers should edit bz_SessionMetadataTextTemplate.m to change how
-% SessionMetadata is created.
+% Developers interested in changing how SessionMetadata is made generally 
+% should edit bz_SessionMetadataTextTemplate.m 
+%
+% INPUTS
+%   basepath - computer path to the session folder of interest
 % 
+% OUTPUTS
+%    SessionMetadata and saved basename.SessionMetadata.mat
+%       - Struct array containing fields including number of drive turns
+%       since surgery, bad channels, behavioral info etc.
+%
+% See also: bz_EditSessionMetadata, bz_RunSessionMetadata, bz_AnimalMetadataTextTemplate
+%
 % Brendon Watson 2017
+
 
 
 if ~exist('basepath','var')
