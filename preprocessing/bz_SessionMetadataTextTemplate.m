@@ -93,8 +93,8 @@ end
 [FileName,PathName] = uigetfile('.AnimalMetadata.mat','Find AnimalMetaData.mat',guessamdpath);
 inputamdpath = fullfile(PathName,FileName);
 
-if ~strcmp(guessamdpath,finalamdpath)
-    copyfile(guessamdpath,finalamdpath)
+if ~strcmp(inputamdpath,finalamdpath)
+    copyfile(inputamdpath,finalamdpath)
 end
 
 load(finalamdpath);

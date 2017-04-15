@@ -3,11 +3,11 @@ function [INT, IDX, t_IDX] = ClusterStates_DetermineStates(SleepScoreMetrics,Min
 %% Basic parameters
 % Min Win Parameters (s)
 if exist('MinWinParams','var')
-%     v2struct(MinWinParams)
-	fn = fieldnames(MinWinParams);
-    for a = 1:length(fn);
-        eval([fn{a} '=MinWinParams.' fn{a} ';']);
-    end
+     v2struct(MinWinParams)
+% 	fn = fieldnames(MinWinParams);
+%     for a = 1:length(fn);
+%         eval([fn{a} '=MinWinParams.' fn{a} ';']);
+%     end
 else%defaults as follows:
     minSWS = 6;
     minWnexttoREM = 6;

@@ -73,6 +73,12 @@ if AnimalMetadata.Modules.ExtracellEphys
     AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames = {'NRX_Buzsaki64_5X12';'NRX_Buzsaki64_8X8'};%filenames in /buzcode/GeneralComputation/geometries
     AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames = {'Ket1_Impedances_5Shank.csv','Ket1_Impedances_8Shank.csv'};%Filenames in basepath folder, or leave as {} if none
 
+    %ONLY ENTER THIS MANUALLY IF YOU WOULD LIKE TO USE THE EXISTING .xml 
+    %SPIKE GROUPS INSTEAD OF CALCULATING FROM A PROBE GEOMETRY FILE
+    %Enter a list of spike group numbers (from neuroscope) for each probe
+    AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups = {['spkgrps on probe1'],['spkgrps on probe 2']}
+    
+    
 %     AnimalMetadata.ExtracellEphys.CurrentBadChannels = [];
 %     AnimalMetadata.ExtracellEphys.CurrentBadShanks = [];%not used now
     
@@ -142,9 +148,36 @@ AnimalMetadata.Other = {''};
 
 %% Automated after this point, depending on modules used
 if AnimalMetadata.Modules.ExtracellEphys
-    [PerGroupSuperficialToDeep,SpatialXY,NumChansPerProbe,GroupsPerChannel] = bz_ReadProbeMapFiles(AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames);
+    %If you want to use .xml for spikegroups
+    if isnumeric(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{1})
+        display('Getting spikegroups from the .xml...')
+        %Load the XML for spike groups
+        xmlname = fullfile(basepath,[basename,'.xml']);
+        if ~exist(xmlname,'file')
+            [FileName,PathName] = uigetfile('.xml','Find the .xml to load SpikeGroups from',basepath);
+            xmlname = fullfile(PathName,FileName);
+        end
+        xmlparms = LoadParameters(xmlname);
+        %Put Channels from each group into the PerGroupSuperficialToDeep matrix
+        for pp = 1:length(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups)
+            for gg = 1:length(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{pp})
+                thisgroup = AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{pp}(gg);
+                PerGroupSuperficialToDeep{pp,gg} = xmlparms.SpkGrps(thisgroup).Channels;
+                GroupsPerChannel{pp}(PerGroupSuperficialToDeep{pp,gg}+1,1) = gg;
+                GroupsPerChannel{pp}(GroupsPerChannel{pp}==0)=[];
+            end
+            NumChansPerProbe(pp) = length(cat(2,PerGroupSuperficialToDeep{pp,:}));
+        end
+        
+    %If you want to build the spikegroups from the geometry
+    elseif strcmp(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{1},'spkgrps on probe1')
+        display('Reading probe layout info from the probe map file...')
+        [PerGroupSuperficialToDeep,SpatialXY,NumChansPerProbe,GroupsPerChannel] = bz_ReadProbeMapFiles(AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames);
+        AnimalMetadata.ExtracellEphys.Probes.WithinProbeXYLocations = SpatialXY;
+    else display('Spikegroup error')
+    end
+    
     AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe = sum(~cellfun(@isempty,PerGroupSuperficialToDeep),2);
-    AnimalMetadata.ExtracellEphys.Probes.WithinProbeXYLocations = SpatialXY;
     AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe = NumChansPerProbe;%to do
     AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep = PerGroupSuperficialToDeep;
     AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal = sum(NumChansPerProbe);
