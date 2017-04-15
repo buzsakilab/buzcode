@@ -163,6 +163,7 @@ end
 AnimalMetadata.Other = {''};
 
 %% Automated after this point, depending on modules used
+AnimalMetadata.ExtracellEphys.Probes.WithinProbeXYLocations = [];%declaring default since may not be declared below
 if AnimalMetadata.Modules.ExtracellEphys
     %If you want to use .xml for spikegroups
     if isnumeric(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{1})
@@ -184,7 +185,7 @@ if AnimalMetadata.Modules.ExtracellEphys
             end
             NumChansPerProbe(pp) = length(cat(2,PerGroupSuperficialToDeep{pp,:}));
         end
-        
+
     %If you want to build the spikegroups from the geometry
     elseif strcmp(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{1},'spkgrps on probe1')
         display('Reading probe layout info from the probe map file...')
