@@ -3,11 +3,11 @@ function [ripples] = bz_FindRipples(varargin)
 %
 %  USAGE
 %
-%    [ripples] = bz_FindRipples(filtered,timestamps,<options>)
+%    [ripples] = bz_FindRipples(lfp,timestamps,<options>)
 %
 %    OR
 %
-%   [ripples] = bz_FindRipples(baspath,channel,<options>)
+%   [ripples] = bz_FindRipples(basepath,channel,<options>)
 %
 %    Ripples are detected using the normalized squared signal (NSS) by
 %    thresholding the baseline, merging neighboring events, thresholding
@@ -52,7 +52,7 @@ function [ripples] = bz_FindRipples(varargin)
 %
 %  SEE
 %
-%    See also FilterLFP, RippleStats, SaveRippleEvents, PlotRippleStats.
+%    See also bz_FilterLFP, RippleStats, SaveRippleEvents, PlotRippleStats.
 
 % Copyright (C) 2004-2011 by Michaël Zugaro, initial algorithm by Hajime Hirase
 % edited by David Tingley, 2017
@@ -85,13 +85,12 @@ if isstr(varargin{1})  % if first arg is basepath
     xmlfile = dir([p.Results.basepath '/*xml']);
     SetCurrentSession([p.Results.basepath '/' xmlfile.name]);
     lfp = GetLFP(p.Results.channel);
-    
-    signal = FilterLFP(double(lfp),'passband',[120 220]);
+    signal = bz_FilterLFP(double(lfp.data),'passband',[130 200]);
 elseif isnumeric(varargin{1}) % if first arg is filtered LFP
-    addRequired(p,'filtered',@isnumeric)
+    addRequired(p,'lfp',@isnumeric)
     addRequired(p,'timestamps',@isnumeric)
     parse(p,varargin{:})
-    signal = p.Results.filtered;
+    signal = bz_FilterLFP(double(p.Results.lfp),'passband',[130 200]);
     timestamps = p.Results.timestamps;
 end
 
@@ -207,8 +206,8 @@ disp(['After duration test: ' num2str(size(ripples,1)) ' events.']);
 % If a noisy channel was provided, find ripple-like events and exclude them
 bad = [];
 if ~isempty(noise)
-	% Square and pseudo-normalize (divide by signal stdev) noise
-	squaredNoise = noise.^2;
+	% Filter, square, and pseudo-normalize (divide by signal stdev) noise
+	squaredNoise = bz_FilterLFP(double(noise),'passband',[130 200]).^2;
 	window = ones(windowLength,1)/windowLength;
 	normalizedSquaredNoise = unity(Filter0(window,sum(squaredNoise,2)),sd,[]);
 	excluded = logical(zeros(size(ripples,1),1));
@@ -223,7 +222,11 @@ if ~isempty(noise)
 	end
 	bad = ripples(excluded,:);
 	ripples = ripples(~excluded,:);
-	disp(['After noise removal: ' num2str(size(ripples,1)) ' events.']);
+	disp(['After ripple-band noise removal: ' num2str(size(ripples,1)) ' events.']);
+    
+    %% lets try to also remove EMG artifact?
+    
+    
 end
 
 % Optionally, plot results
@@ -231,7 +234,7 @@ if strcmp(show,'on')
 	figure;
 	if ~isempty(noise)
 		MultiPlotXY([timestamps signal],[timestamps squaredSignal],...
-            [timestamps normalizedSquaredSignal],[timestamps noise(:,2)],...
+            [timestamps normalizedSquaredSignal],[timestamps noise],...
             [timestamps squaredNoise],[timestamps normalizedSquaredNoise]);
 		nPlots = 6;
 		subplot(nPlots,1,3);
@@ -285,7 +288,7 @@ ripples.noise.peakNormedPower = bad(:,[4]);
 
 
 ripples.detectorParams = p.Results;
-ripples.detectorParams = rmfield(ripples.detectorParams,{'noise','filtered','timestamps'});
+ripples.detectorParams = rmfield(ripples.detectorParams,{'noise','timestamps'});
 
 function y = Filter0(b,x)
 

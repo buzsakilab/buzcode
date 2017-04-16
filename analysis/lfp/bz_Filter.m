@@ -1,10 +1,10 @@
-function filtered = Filter(samples,varargin)
+function filtered = bz_Filter(samples,varargin)
 
 %Filter - Filter samples.
 %
 %  USAGE
 %
-%    filtered = Filter(samples,<options>)
+%    filtered = bz_Filter(samples,<options>)
 %
 %    samples        samples given as a list of (t,v1,v2,v3...) tuples
 %    <options>      optional list of property-value pairs (see table below)
@@ -127,6 +127,6 @@ switch(type),
 		end
 end
 filtered(:,1) = samples(:,1);
-for i = 2:size(samples,2),
+for i = 1:size(samples,2),
 	filtered(:,i) = FiltFiltM(b,a,samples(:,i));
 end

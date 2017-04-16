@@ -115,6 +115,9 @@ elseif ~isempty(dir('Session*')) % Looks for a /Session*/ folder that Motive/Opt
              d = [d;dat(i).data]; 
         end
         clear dat; dat.data = d;
+    else
+        d.data = dat;
+        dat = d;
     end
     dat = scrubTracking(dat);
     cd ..

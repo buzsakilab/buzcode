@@ -84,6 +84,8 @@ for i=1:length(x)
     end
 end
 [a a locsmat] = spikes2sorted(locs);
+f = find(locsmat(:,1)<120);
+locsmat(f,:)=[];
 
 centerx = mean(x);
 centery = mean(y);
