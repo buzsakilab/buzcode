@@ -165,7 +165,7 @@ end
     
 
         %%
-        set(pupfig,'visible','off')   
+       % set(pupfig,'visible','off')   
     end
      
     %Get the pupil - all pixels below intensity threshold (black)
