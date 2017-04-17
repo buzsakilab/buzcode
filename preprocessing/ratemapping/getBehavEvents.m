@@ -237,6 +237,7 @@ numConditions = str2num(input('How many conditions were there: ','s'));
 exitC=0;
 while exitC == 0
     clust = kmeans(cc,numConditions);
+%     clust = GMM(cc,numConditions);
     clear trials
     for i=1:numConditions
         f = find(clust==i);
