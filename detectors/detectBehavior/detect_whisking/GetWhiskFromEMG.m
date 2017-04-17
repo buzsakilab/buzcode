@@ -67,7 +67,7 @@ sf_down = sf_abf./downsamplefactor;
 %%
 
 EMGparms.gausswidth = 0.05;  %Gaussian width for smoothing (s)
-EMGparms.Whthreshold = 3;    %EMG Threshold for Whisking (modSTDs)
+EMGparms.Whthreshold = 4;    %EMG Threshold for Whisking (modSTDs)
 EMGparms.NWhthreshold = 0.8;    %EMG Threshold for Whisking (modSTDs)
 %EMGparms.threshold = 1;    %EMG Threshold for Whisking (modSTDs)
 EMGparms.minwhisk = 0.1;     %Minimum whisking duration (s)
@@ -81,6 +81,45 @@ EMGsm = RMSEnvelope(EMGz,EMGparms.gausswidth,1/sf_down);
 EMGsm = EMGsm-min(EMGsm);
 
 whisk.EMGenvelope = EMGsm;
+
+%% Set the thresholds by whisking troughs - 
+%find by "gradient descent"(ish) from initial guess
+EMGbins = linspace(-1.5,2,100);
+EMGhist = hist(log10(EMGsm),EMGbins);
+EMGgrad = smooth(gradient(EMGhist),4);
+
+%Find troughs (gradient crossing from - to +)
+troughidx = find(diff(EMGgrad>0)==1);
+troughs = 10.^EMGbins(troughidx);
+
+%Get sign of gradient at each of the thresholds and use that to pick trough
+Whsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.Whthreshold),'nearest'));
+if Whsign==-1; 
+    EMGparms.Whthreshold = troughs(find(troughs>EMGparms.Whthreshold,1,'first'));
+elseif Whsign==1
+    EMGparms.Whthreshold = troughs(find(troughs<EMGparms.Whthreshold,1,'last'));
+end
+
+NWhsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.NWhthreshold),'nearest'));
+if NWhsign==-1; 
+    EMGparms.NWhthreshold = troughs(find(troughs>EMGparms.NWhthreshold,1,'first'));
+elseif NWhsign==1
+    EMGparms.NWhthreshold = troughs(find(troughs<EMGparms.NWhthreshold,1,'last'));
+end
+%%
+figure
+bar(EMGbins,EMGhist)
+hold on
+plot(EMGbins,EMGgrad)
+plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g','LineWidth',2)
+plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r','LineWidth',2)
+
+axis tight
+xlabel('EMG Envelope (modZ)');
+LogScale('x',10)
+xlim([-1.5 max(log10(EMGsm))])
+
+
 
 %% Identify Whisking on/offsets: EMG envelope crosses threshold
 wh_thresh = EMGsm > EMGparms.Whthreshold;
@@ -109,23 +148,25 @@ if nwh_off(end) < nwh_on(end)
 end
 
 %% Merge and Duration Thresholds
-
-%Merge brief interruptions
-[ NWhints ] = MergeSeparatedInts( [nwh_on,nwh_off],EMGparms.NWhmerge );
-[ Whints ] = MergeSeparatedInts( [wh_on,wh_off],EMGparms.NWhmerge );
-
-
-%Drop nonwhisk epochs smaller than a minimum
-[nwh_on,nwh_off] = MinEpochLength(NWhints(:,1),NWhints(:,2),EMGparms.minNWh,1/sf_down);
-%Drop whisking epochs smaller than a minimum
-[wh_on,wh_off] = MinEpochLength(Whints(:,1),Whints(:,2),EMGparms.minwhisk,1/sf_down);
-
-
 %Convert to seconds
 wh_on = wh_on./sf_down;
 wh_off = wh_off./sf_down;
 nwh_on = nwh_on./sf_down;
 nwh_off = nwh_off./sf_down;
+
+
+
+%Merge brief interruptions
+[ NWhints ] = MergeSeparatedInts( [nwh_on,nwh_off],EMGparms.NWhmerge );
+[ Whints ] = MergeSeparatedInts( [wh_on,wh_off],EMGparms.whiskmerge );
+
+
+%Drop nonwhisk epochs smaller than a minimum
+[nwh_on,nwh_off] = MinEpochLength(NWhints(:,1),NWhints(:,2),EMGparms.minNWh,1);
+%Drop whisking epochs smaller than a minimum
+[wh_on,wh_off] = MinEpochLength(Whints(:,1),Whints(:,2),EMGparms.minwhisk,1);
+
+
 
 %% Durations
 Whdur = wh_off-wh_on;
