@@ -1,17 +1,23 @@
-function [ EMGwhisk ] = GetWhiskFromEMG( baseName,basePath )
+function [ EMGwhisk ] = GetWhiskFromEMG( basePath,varargin )
 %[ EMGwhisk ] = GetWhiskFromEMG( baseName,basePath ) 
 %This is a detector that extracts whisking/nonwhisking epochs from 
 %implanted EMG in the whisker pad. Extracts also the EMG and EMG envelope.
 %
 %INPUT
-%Assumes presence of the following files:
-%	basePath/baseName/baseName.abf    (whisking/camera pulses from clampex)
-%   basePath/baseName/analogin.dat    (camera pulses to intan)
-%If baseName,basePath are not specified as inputs, tries the current path.
+%   Assumes presence of the following files:
+%       basePath/baseName.abf    (whisking/camera pulses from clampex)
+%       basePath/analogin.dat    (camera pulses to intan)
+%   where basePath is a folder of the form: 
+%       whateverPath/baseName/
+%If basePath not specified, tries the current path.
+%
+%   (options)
+%       'PulseChannel'
+%       'EMGChannel'
 %
 %OUTPUT
 %Creates file:
-%   basePath/baseName/baseName.EMGwhisk.states.mat
+%   basePath/baseName.EMGwhisk.states.mat
 %
 %
 %
@@ -24,14 +30,15 @@ function [ EMGwhisk ] = GetWhiskFromEMG( baseName,basePath )
 % baseName = 'Layers_LFP_Test02_170323_151411';
 %%
 
-if nargin==0
-    [basePath,baseName] = fileparts(pwd);
+if ~exist('basePath','var')
+    basePath = pwd;
 end
+[baseFolder,baseName] = fileparts(basePath);
 %%
-abfname = fullfile(basePath,baseName,[baseName,'.abf']);
-analogName = fullfile(basePath,baseName,['analogin.dat']);
-savefile = fullfile(basePath,baseName,[baseName,'.EMGwhisk.states.mat']);
-figfolder = fullfile(basePath,baseName,'DetectionFigures');
+abfname = fullfile(basePath,[baseName,'.abf']);
+analogName = fullfile(basePath,['analogin.dat']);
+savefile = fullfile(basePath,[baseName,'.EMGwhisk.states.mat']);
+figfolder = fullfile(basePath,'DetectionFigures');
 
 if ~exist(abfname,'file')
     display('No .abf file named basePath/baseName/baseName.abf')
@@ -48,8 +55,8 @@ sf_abf = 20000; %Sampling Frequency of the .abf file
 
 
 abffile = abfload(abfname);
-pulse_abf = abffile(:,1);
-EMG = abffile(:,2);
+pulse_abf = abffile(:,timechan);
+EMG = abffile(:,emgchan);
 
 t_abf = [1:length(EMG)]'./sf_abf;
 
@@ -107,17 +114,18 @@ elseif NWhsign==1
     EMGparms.NWhthreshold = troughs(find(troughs<EMGparms.NWhthreshold,1,'last'));
 end
 %%
-figure
-bar(EMGbins,EMGhist)
-hold on
-plot(EMGbins,EMGgrad)
-plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g','LineWidth',2)
-plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r','LineWidth',2)
 
-axis tight
-xlabel('EMG Envelope (modZ)');
-LogScale('x',10)
-xlim([-1.5 max(log10(EMGsm))])
+% figure
+% bar(EMGbins,EMGhist)
+% hold on
+% plot(EMGbins,EMGgrad)
+% plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g','LineWidth',2)
+% plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r','LineWidth',2)
+% 
+% axis tight
+% xlabel('EMG Envelope (modZ)');
+% LogScale('x',10)
+% xlim([-1.5 max(log10(EMGsm))])
 
 
 

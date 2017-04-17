@@ -12,6 +12,7 @@ function [ pupildilation ] = GetPupilDilation(basePath)
 %INPUT
 %   basePath    (optional) folder in which the recording files live.
 %               of the form whateverPath/baseName/
+%               Default: current working directory
 %
 %OUTPUT: saved as basePath/baseName.pupildiameter.behavior.mat
 %   pupildilation
@@ -27,11 +28,10 @@ function [ pupildilation ] = GetPupilDilation(basePath)
 %DLevenstein 2017
 %%
 
-if nargin==0
-    [baseFolder,baseName] = fileparts(pwd);
-elseif nargin==1
-    [baseFolder,baseName] = fileparts(basePath);
+if ~exist('basePath','var')
+    basePath = pwd;
 end
+[baseFolder,baseName] = fileparts(basePath);
 %%
 
 
@@ -41,11 +41,15 @@ vidName = fullfile(basePath,[baseName,'.avi']);
 analogName = fullfile(basePath,['analogin.dat']);
 
 savefile = fullfile(basePath,[baseName,'.pupildiameter.behavior.mat']);
-savevid = fullfile(basePath,'DetectionFigures',[baseName,'.pupilvid.avi']);
+figfolder = fullfile(basePath,'DetectionFigures');
+savevid = fullfile(figfolder,[baseName,'.pupilvid.avi']);
 
 SAVEVID = true;
 savevidfr = 10;
 if SAVEVID
+    if ~exist(figfolder,'dir')
+        mkdir(figfolder)
+    end
     pupdiamVid = VideoWriter(savevid);
     pupdiamVid.FrameRate = 1./(0.015.*savevidfr);
     open(pupdiamVid);
