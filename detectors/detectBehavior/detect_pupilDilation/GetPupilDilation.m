@@ -1,28 +1,47 @@
-function [ pupildilation ] = GetPupilDilation( baseName,basePath )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+function [ pupildilation ] = GetPupilDilation(basePath)
+%This is a detector for extracting pupil diameter from an IR video of the
+%eye.
+%
+%FILE REQUIREMENTS
+%   This detector assumes the presence of a few files:
+%       basePath/baseName.avi   pupil video
+%       basePath/analogin.dat   analog signal of frame pulses from intan 
+%   where basePath is a folder of the form: 
+%       whateverPath/baseName/
+%
+%INPUT
+%   basePath    (optional) folder in which the recording files live.
+%               of the form whateverPath/baseName/
+%
+%OUTPUT: saved as basePath/baseName.pupildiameter.behavior.mat
+%   pupildilation
+%       .t_pulse        time of the pulses recieved by intan
+%       .t_interp       frame times interpolated between 1st/last intan pulse
+%       .puparea        [0-1] normalized size of the pupil
+%       .puparea_pxl    pupil size in pixels
+%       .pupcoords      [x y] coordinates of the pupil center
+%       .detectorparms  structure of detection paramters
+%
+%
 %Note: you may need gstreamer: https://gstreamer.freedesktop.org/download/
-
-%baseName = 'VideoFrame_Test_50Hz_20000_170328_173154';
-%recordingsfolder = 'C:\Users\rudylabadmin\Desktop\layers\Recordings';
-%recordingsfolder = '/mnt/proraidDL/Database/WMProbeData';
-
+%DLevenstein 2017
 %%
 
 if nargin==0
-    [basePath,baseName] = fileparts(pwd);
+    [baseFolder,baseName] = fileparts(pwd);
+elseif nargin==1
+    [baseFolder,baseName] = fileparts(basePath);
 end
 %%
 
 
-addpath(fullfile(basePath,baseName));
+%addpath(fullfile(baseFolder,baseName));
 
-vidName = fullfile(basePath,baseName,[baseName,'.avi']);
-abfname = fullfile(basePath,baseName,[baseName,'.abf']);
-analogName = fullfile(basePath,baseName,['analogin.dat']);
+vidName = fullfile(basePath,[baseName,'.avi']);
+analogName = fullfile(basePath,['analogin.dat']);
 
-savefile = fullfile(basePath,baseName,[baseName,'.pupildiameter.behavior.mat']);
-savevid = fullfile(basePath,baseName,'DetectionFigures',[baseName,'.pupilvid.avi']);
+savefile = fullfile(basePath,[baseName,'.pupildiameter.behavior.mat']);
+savevid = fullfile(basePath,'DetectionFigures',[baseName,'.pupilvid.avi']);
 
 SAVEVID = true;
 savevidfr = 10;
