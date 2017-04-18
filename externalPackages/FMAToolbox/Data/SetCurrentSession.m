@@ -27,6 +27,7 @@ function SetCurrentSession(varargin)
 %
 %   Can also be used without basepath but you MUST BE IN THE RECORDING DIRECTORY
 %
+%   SetCurrentSession
 %   SetCurrentSession('basename','20170313_0um_0um_170313_122027')  
 %   SetCurrentSession('xmlFile','20170313_0um_0um_170313_122027.xml')
 %   SetCurrentSession('basename','20170313_0um_0um_170313_122027','xmlFile','20170313_0um_0um_170313_122027.xml') 
