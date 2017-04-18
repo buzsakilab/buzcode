@@ -15,7 +15,7 @@ function SetCurrentSession(varargin)
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
-%     'spikes'      load or skip spike files (default = 'on')
+%     'spikes'      logical to load spikes (default = true)
 %    =========================================================================
 %
 %  NOTE
@@ -172,7 +172,7 @@ else
 end
 
 % Spike files
-if strcmp(spikes,'on'),
+if spikes == 1
 	DATA.spikes = [];
 	for i = 1:DATA.spikeGroups.nGroups,
 		basename = [basepath filesep basename '.' int2str(i) '.clu'];
