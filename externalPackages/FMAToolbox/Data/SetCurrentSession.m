@@ -35,8 +35,10 @@ function SetCurrentSession(varargin)
 %
 %  NOTE
 %
-%    If no parameter file name is specified, an interactive file selection
+%    If no xmlFile is givien, it is first assumed to be the same naming as 'basename'
+%    If if that xmlFile can't be found, an interactive file selection
 %    dialog is displayed.
+%    If an xmlFile is given that does not exist, an error will be thrown
 
 % Copyright (C) 2004-2014 by Michaël Zugaro, 2014 by Gabrielle Girardeau
 %
@@ -45,11 +47,8 @@ function SetCurrentSession(varargin)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
-% Default values
-
 
 p = inputParser;
-
 addParameter(p,'basepath','',@isstr)
 addParameter(p,'basename','',@isstr)
 addParameter(p,'xmlFile','',@isstr)
@@ -62,7 +61,7 @@ basepath = p.Results.basepath;
 xmlFile = p.Results.xmlFile;
 spikes = p.Results.spikes;
 
-% did you give one of the correct input sets?
+% did you give one of the correct input sets? let's find out...
 
 % if you gave nothing, you better be in the right directory....
 if isempty(basepath) & isempty(basename) & isempty(xmlFile)
@@ -86,7 +85,7 @@ if ~isempty(basepath) & isempty(basename) & isempty(xmlFile)
    end
 end
 
-% if you gave only basepath, there better be an xml there...
+% if you gave basepath and xmlFile, let's check if that xml exists...
 if ~isempty(basepath) & isempty(basename) & ~isempty(xmlFile)
    temp = strsplit(basepath,filesep);
    basename = temp{length(temp)};
