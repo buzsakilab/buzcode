@@ -7,9 +7,11 @@ function SetCurrentSession(varargin)
 %
 %  USAGE
 %
-%    SetCurrentSession(basename,varargin)
+%    SetCurrentSession(varargin)
 %
-%    basename       optional parameter file name ('basename.xml'); use 'same' to force reload
+%    basepath       optional path to recording you'd like to load
+%    basename       optional recording name to load
+%    xmlFile        optional xml filename to load
 %    <options>      optional list of property-value pairs (see table below)
 %
 %    =========================================================================
@@ -17,6 +19,18 @@ function SetCurrentSession(varargin)
 %    -------------------------------------------------------------------------
 %     'spikes'      logical to load spikes (default = true)
 %    =========================================================================
+%
+%  EXAMPLES
+%   
+%   SetCurrentSession('basepath',pwd)
+%   SetCurrentSession('basepath',pwd,'basename','20170313_0um_0um_170313_122027','xmlFile','20170313_0um_0um_170313_122027.xml')
+%
+%   Can also be used without basepath but you MUST BE IN THE RECORDING DIRECTORY
+%
+%   SetCurrentSession('basename','20170313_0um_0um_170313_122027')  
+%   SetCurrentSession('xmlFile','20170313_0um_0um_170313_122027.xml')
+%   SetCurrentSession('basename','20170313_0um_0um_170313_122027','xmlFile','20170313_0um_0um_170313_122027.xml') 
+%
 %
 %  NOTE
 %
