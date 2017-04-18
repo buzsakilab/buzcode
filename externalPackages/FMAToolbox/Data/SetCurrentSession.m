@@ -56,13 +56,13 @@ if nargin ~= 0
     end
 end
 if isempty(filename) & nargin ~=0 
-    if ~strcmp(varargin{1}(end-3:end),'.xml') % if you didn't give an xml, then maybe it is a file path?
+    if ~strcmp(varargin{1}(end-3:end),'.xml') % if you didn't give an xml, then maybe it is a file path?       
         if strcmp(varargin{1}(end),'/')
             xml = dir([varargin{1} '*xml']);
+            path = varargin{1};
             if ~isempty(xml) & length(xml) == 1
                 filename = [varargin{1} xml.name];
-            elseif length(xml)>1
-                path = varargin{1};
+            elseif length(xml)>1       
                 temp = removeEmptyCells(strsplit(path,'/'));
                 filename = [temp{length(temp)} '.xml'];
                 varargin{1} = [];
@@ -115,8 +115,8 @@ separator = filesep;
 % Initialization
 if isempty(DATA) || ~isfield(DATA,'session') || ~isfield(DATA.session,'path') || ~isfield(DATA.session,'basename'),
 	format long g;
-	DATA.session.basename = '';
-	DATA.session.path = '';
+	DATA.session.basename = filename;
+	DATA.session.path = path;
 	DATA.spikeGroups.nGroups = 0;
 	DATA.spikeGroups.nSamples = [];
 	DATA.spikeGroups.peakSamples = [];
@@ -143,26 +143,26 @@ if isempty(filename) || (strcmp(filename,'same') && isempty(DATA.session.basenam
 	filename = [path filename];
 end
 
-if strcmp(filename,'same'),
+% if strcmp(filename,'same'),
 	% Force reload
 	path = DATA.session.path;
 	basename = DATA.session.basename;
-else
+% else
 	% Parse file name
-	[path,basename] = fileparts(filename);
-	if isempty(path),
-        path = pwd;
-	else
-		if ~exist(path),
-			error(['Directory ''' path ''' does not exist.']);
-		end
-		% Clean path (e.g. simplify ../ or ./ substrings) and make it absolute
-		here = pwd;
-		cd(path);
-		path = pwd;
-		cd(here);
-	end
-end
+%	[path,basename] = fileparts(filename);
+% 	if isempty(path),
+%         path = pwd;
+% 	else
+% 		if ~exist(path),
+% 			error(['Directory ''' path ''' does not exist.']);
+% 		end
+% 		% Clean path (e.g. simplify ../ or ./ substrings) and make it absolute
+% 		here = pwd;
+% 		cd(path);
+% 		path = pwd;
+% 		cd(here);
+% 	end
+% end
 
 disp(['Loading session files for ' basename]);
 
@@ -174,7 +174,7 @@ if strcmp(basename,DATA.session.basename) & strcmp(path,DATA.session.path) & ~st
 end
 
 % Parameter file
-DATA = LoadParameters(filename);
+DATA = LoadParameters([path separator filename]);
 disp(['... loaded parameter file ''' basename '.xml''']);
 
 % Event file(s)
