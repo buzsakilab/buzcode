@@ -54,6 +54,9 @@ addParameter(p,'basename','',@isstr)
 addParameter(p,'xmlFile','',@isstr)
 addParameter(p,'spikes',true,@islogical)
 
+% addParameter(p,'position',true,@islogical)  to be added some day
+% addParameter(p,'events',true,@islogical)
+
 parse(p,varargin{:})
 
 basename = p.Results.basename;
@@ -189,22 +192,22 @@ end
 if spikes == 1
 	DATA.spikes = [];
 	for i = 1:DATA.spikeGroups.nGroups,
-		basename = [basepath filesep basename '.' int2str(i) '.clu'];
-		if exist(basename,'file'),
+		fullpath = [basepath filesep basename '.' int2str(i) '.clu'];
+		if exist(fullpath,'file'),
 			try
-				DATA.spikes = [DATA.spikes;LoadSpikeTimes(basename,DATA.rates.wideband)];
-				disp(['... loaded spike files ''' basename '.' int2str(i) '.clu''']);
+				DATA.spikes = [DATA.spikes;LoadSpikeTimes(fullpath,DATA.rates.wideband)];
+				disp(['... loaded spike files ''' fullpath '.' int2str(i) '.clu''']);
 			catch
-				disp(['... (could not load spike files ''' basename '.' int2str(i) '.clu'')']);
+				disp(['... (could not load spike files ''' fullpath '.' int2str(i) '.clu'')']);
 			end
 		else
-			basename = [basepath filesep basename '.clu.' int2str(i)];
-			if exist(basename,'file'),
+			fullpath = [basepath filesep basename '.clu.' int2str(i)];
+			if exist(fullpath,'file'),
 				try
-					DATA.spikes = [DATA.spikes;LoadSpikeTimes(basename,DATA.rates.wideband)];
-					disp(['... loaded spike files ''' basename '.clu.' int2str(i) '''']);
+					DATA.spikes = [DATA.spikes;LoadSpikeTimes(fullpath,DATA.rates.wideband)];
+					disp(['... loaded spike files ''' fullpath '.clu.' int2str(i) '''']);
 				catch
-					disp(['... (could not load spike files ''' basename '.clu.' int2str(i) ''')']);
+					disp(['... (could not load spike files ''' fullpath '.clu.' int2str(i) ''')']);
 				end
 			end
 		end
