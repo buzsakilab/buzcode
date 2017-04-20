@@ -40,6 +40,7 @@ SessionMetadata.ExtracellEphys.BadShanks = [];% vector for this recording. base 
      % These bad shanks will be used to populate bad channels
 SessionMetadata.ExtracellEphys.BadChannels = [];% vector for this recording. base 0
 SessionMetadata.ExtracellEphys.ChannelNotes = {''};
+SessionMetadata.ExtracellEphys.SpikeGroups = {'FromAnimalMetaData','FromXML'}; %Pick one, delete the other.
 
 SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate = 1250;%assumed default
 SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform = 32;%default
@@ -52,25 +53,25 @@ SessionMetadata.Optogenetics.Fibers(FiberNum).StimulusRecordingChannelDatType = 
 SessionMetadata.Optogenetics.Fibers(FiberNum).StimulusRecordingChannelNumber = [];%
 %?else
 
-% Behavior metadata
-BehaviorSessionNumber = 1;
-SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).StartStopSeconds = [];%startstop pair, in seconds
-SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).DatFileIndex = [];%which dat files are included in this Episode
-SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).BehaviorType = '';%verbal description of behavior type, ie "LinearTrack"
-SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).BehaviorNotes = '';
-SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).Motion.MotionTrackerType = '';%Optitrack or Basler etc
-SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).Motion.CameraFrameChannelType = 'DigitalIn';%'DigitalIn' for Intan, 'Main' if fused with other dat
-SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).Motion.CameraFrameChannelNumber = [];%channel number where frame times are recorded
-SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).Location = '';
-
-SleepSessionNumber = 1;
-SessionMetadata.SleepEpisodes.(SleepSessionNumber).StartStopSeconds = [];%startstop pair, in seconds
-SessionMetadata.SleepEpisodes(SleepSessionNumber).DatFileIndex = [];%which dat files are included in this Episode
-SessionMetadata.SleepEpisodes(SleepSessionNumber).BehaviorNotes = '';
-SessionMetadata.SleepEpisodes.(SleepSessionNumber).Motion.MotionTrackerType = '';%Optitrack or Basler etc
-SessionMetadata.SleepEpisodes.(SleepSessionNumber).Motion.CameraFrameChannelType = 'DigitalIn';%'DigitalIn' for Intan, 'Main' if fused with other dat
-SessionMetadata.SleepEpisodes.(SleepSessionNumber).Motion.CameraFrameChannelNumber = [];%channel number where frame times are recorded
-SessionMetadata.SleepEpisodes(SleepSessionNumber).Location = '';
+% Behavior metadata - this section makes an error
+% BehaviorSessionNumber = 1;
+% SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).StartStopSeconds = [];%startstop pair, in seconds
+% SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).DatFileIndex = [];%which dat files are included in this Episode
+% SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).BehaviorType = '';%verbal description of behavior type, ie "LinearTrack"
+% SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).BehaviorNotes = '';
+% SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).Motion.MotionTrackerType = '';%Optitrack or Basler etc
+% SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).Motion.CameraFrameChannelType = 'DigitalIn';%'DigitalIn' for Intan, 'Main' if fused with other dat
+% SessionMetadata.BehaviorEpisodes.(BehaviorSessionNumber).Motion.CameraFrameChannelNumber = [];%channel number where frame times are recorded
+% SessionMetadata.BehaviorEpisodes(BehaviorSessionNumber).Location = '';
+% 
+% SleepSessionNumber = 1;
+% SessionMetadata.SleepEpisodes.(SleepSessionNumber).StartStopSeconds = [];%startstop pair, in seconds
+% SessionMetadata.SleepEpisodes(SleepSessionNumber).DatFileIndex = [];%which dat files are included in this Episode
+% SessionMetadata.SleepEpisodes(SleepSessionNumber).BehaviorNotes = '';
+% SessionMetadata.SleepEpisodes.(SleepSessionNumber).Motion.MotionTrackerType = '';%Optitrack or Basler etc
+% SessionMetadata.SleepEpisodes.(SleepSessionNumber).Motion.CameraFrameChannelType = 'DigitalIn';%'DigitalIn' for Intan, 'Main' if fused with other dat
+% SessionMetadata.SleepEpisodes.(SleepSessionNumber).Motion.CameraFrameChannelNumber = [];%channel number where frame times are recorded
+% SessionMetadata.SleepEpisodes(SleepSessionNumber).Location = '';
 
 % Virus metadata
     %need to fill this in
@@ -387,6 +388,19 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
             SessionMetadata.ExtracellEphys.BadChannels = badchans;
         end
     end 
+    
+    %Get Spikegroups
+    if strcmp(SessionMetadata.ExtracellEphys.SpikeGroups,'FromXML'); 
+        display('Getting spikegroups from the .xml...')
+        %Load the XML for spike groups
+        xmlname = fullfile(basepath,[basename,'.xml']);
+        if ~exist(xmlname,'file')
+            [FileName,PathName] = uigetfile('.xml','Find the .xml to load SpikeGroups from',basepath);
+            xmlname = fullfile(PathName,FileName);
+        end
+        xmlparms = LoadParameters(xmlname);
+        SessionMetadata.ExtracellEphys.SpikeGroups = xmlparms.SpkGrps;
+    end
 end
 
 %% Other modules like Virus, opto processing can happen here
