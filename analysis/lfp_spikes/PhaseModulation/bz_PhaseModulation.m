@@ -144,11 +144,16 @@ for a = 1:length(spikes)
             hold on;
             plot([0:360],cos(pi/180*[0:360])*0.05*max(phasedistros(:,a))+0.95*max(phasedistros(:,a)),'color',[.7 .7 .7])
             set(h(end),'name',['PhaseModPlotsForCell' num2str(a)]);
-            print(fullfile('BWRat19_032413_PhaseLockingFig/30-200Hz_lfpChannel55',['PhaseModPlotsForCell' num2str(a) '_30-200Hz_lfp55']),'-dpng','-r0');
+            print(fullfile('BWRat19_032413_PhaseLockingFig/30-200Hz_lfpChannel27',['PhaseModPlotsForCell' num2str(a) '_30-200Hz_lfp27']),'-dpng','-r0');
         end
     end
 end
-
+PhaseLockingData = v2struct(phasedistros,phasebins,phasestats,spkphases);
+save('BWRat19_032413_lfp57PhaseLockingData30-200Hz.mat','PhaseLockingData');
+% lfpPhaseRawData = v2struct(mIdx,freqlist,lfpphase);
+% save('BWRat19_032413_lfp54PhaseRawData30-200Hz.mat','lfpPhaseRawData');
+% save('BWRat19_032413_lfp54PhaseRawData30-200Hz_amp.mat','amp');
+% save('BWRat19_032413_lfp54PhaseRawData30-200Hz_phase.mat','phase');
 %% Cumulative effect across all spikes from all cells... not saving these stats for now
 % phasebins=[];
 % if length(cum_spkphases) > 10
