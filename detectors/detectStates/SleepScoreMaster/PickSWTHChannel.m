@@ -220,7 +220,7 @@ parfor idx = 1:numThetaChannels;
     peakTH(idx) = meanthratio;
 end
 parfor_progress(0);
-%% Sort by dip and pick channels
+%% Sort by dip (bimodality) and pick channels
 [~,dipsortSW] = sort(dipSW);
 [~,dipsortTH] = sort(peakTH);
 
@@ -233,9 +233,9 @@ THchanID = ThetaChannels(goodTHidx);   %best SW and theta channels
 %% Load the best channels at sampling frequency needed for clustering later
 downsample_save = 5;  %Not checked for bugs after adding...
 sf = Par.lfpSampleRate./downsample_save;
-swthLFP = LoadBinary(rawlfppath,'frequency',Fs,...
+swthLFP = LoadBinary(rawlfppath,'frequency',Par.lfpSampleRate,...
     'downsample',downsample_save,...
-    'nchannels',nChannels,'channels',[SWchanID+1,THchanID+1],...
+    'nchannels',nChannels,'channels',[SWchanID,THchanID]+1,...
     'start',scoretime(1),'duration',diff(scoretime));
 
 swLFP = (swthLFP(:,1));

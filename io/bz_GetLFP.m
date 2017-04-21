@@ -88,6 +88,8 @@ if isempty(DATA)
        lfp.Filename = d.name;
        fbasename = strsplit(lfp.Filename,'.');
        fbasename = fbasename{1};
+   else
+       lfp.Filename = [fbasename '.lfp'];
    end
    xml = LoadParameters([fbasename '.xml']);
    path = pwd;

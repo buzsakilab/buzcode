@@ -131,7 +131,7 @@ end
         eyehist = hist(eyepixels,intensitybins);
         
        % keyboard
-        pupilsizethresh = 40; %Pupil must be larger than this many pixels.
+        pupilsizethresh = 30; %Pupil must be larger than this many pixels.
         %Pupil must be darker than this intensity: 2.5std above mean pupil
         intensitythresh = mean(pupilpixels)+1.*std(pupilpixels); 
         %%
@@ -246,7 +246,7 @@ puparea = (puparea-min(puparea))./(max(puparea)-min(puparea));
 
 %% Load the analogin for the timestamps
 
-timepulses = readmulti(analogName,1);
+timepulses = LoadBinary(analogName,'nChannels',1,'precision','uint16');
 %LoadBinary('uint16')
 
 sf_pulse = 1./20000; %Sampling Frequency of the .abf file

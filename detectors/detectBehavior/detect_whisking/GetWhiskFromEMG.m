@@ -74,8 +74,8 @@ sf_down = sf_abf./downsamplefactor;
 %%
 
 EMGparms.gausswidth = 0.05;  %Gaussian width for smoothing (s)
-EMGparms.Whthreshold = 4;    %EMG Threshold for Whisking (modSTDs)
-EMGparms.NWhthreshold = 0.8;    %EMG Threshold for Whisking (modSTDs)
+EMGparms.Whthreshold = 3;    %EMG Threshold for Whisking (modSTDs)
+EMGparms.NWhthreshold = 0.5;    %EMG Threshold for Whisking (modSTDs)
 %EMGparms.threshold = 1;    %EMG Threshold for Whisking (modSTDs)
 EMGparms.minwhisk = 0.1;     %Minimum whisking duration (s)
 EMGparms.minNWh = 0.1;       %Minimum nonwhisking duration (s)
@@ -201,7 +201,7 @@ firstpulstime_abf = pulset(1);
 
 %% Load the analogin for the timestamps (pulses in intan)
 
-timepulses = readmulti(analogName,1);
+timepulses = LoadBinary(analogName,'nChannels',1,'precision','uint16');
 
 sf_pulse = 1./20000; %Sampling Frequency of the .abf file
 t_pulse = [1:length(timepulses)]'.*sf_pulse;

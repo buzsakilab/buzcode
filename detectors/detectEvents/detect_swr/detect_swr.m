@@ -1,4 +1,4 @@
-function [detected_swr] = detect_swr(Filebase, Channels, Epochs, varargin)
+function [SWR] = detect_swr(Filebase, Channels, Epochs, varargin)
 % DETECT_SWR    Detect Sharp Wave Ripple in epochs of continuous data. This
 %               code is designed for linear probes, with at least one shank
 %               that simultaneously records across the pyramidal cell layer
@@ -153,7 +153,7 @@ Defaults.EVENTFILE      = true;
 Defaults.FIGS           = false;
 Defaults.TRAINING       = false;
 Defaults.DEBUG          = false;
-Defaults.MAXGIGS        = 12;        % GigaBytes
+Defaults.MAXGIGS        = 16;        % GigaBytes
 %%%%%%%%%%%%%%%%%%%%
 %%% INPUT CHECKS %%%
 %%%%%%%%%%%%%%%%%%%%
@@ -391,8 +391,11 @@ hSw2       = makegausslpfir( swBP(2), SR, 6 );
 
 lfpLow     = firfilt( lfp, hSw2 );      % lowpass filter
 eegLo      = firfilt( lfpLow, hSw1 );   % highpass filter
-lfpLow     = lfpLow -.lfpLo;            % difference of Gaussians
-clear.lfpLo
+% lfpLow     = lfpLow -.lfpLo;            % difference of Gaussians
+% clear .lfpLo                          %DL: not sure what this '.' was doing here...
+lfpLow     = lfpLow - eegLo;            % difference of Gaussians
+clear eegLo
+
 
 swDiff     = lfpLow(:,1) - lfpLow(:,end);
 
@@ -440,8 +443,10 @@ clear lfp
 rip        = firfilt( lfpM, hRip2 );    % highpass filter
 clear lfpM
 eegLo      = firfilt( rip, hRip1 );     % lowpass filter
-rip        = rip -.lfpLo;               % difference of gaussians
-clear.lfpLo
+% rip        = rip -.lfpLo;               % difference of gaussians
+% clear.lfpLo
+rip        = rip - eegLo;               % difference of gaussians
+clear eegLo
 
 ripWindow  = pi / mean( ripBP );
 powerWin   = makegausslpfir( 1 / ripWindow, SR, 6 );
@@ -1115,9 +1120,10 @@ end
 %%% GENERATE OUTPUT %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 % 1) swr detections
-detected_swr.Ts     = SWR_valid.Ts/SR;
-detected_swr.SwMax  = SWR_valid.SwMax;
-detected_swr.RipMax = SWR_valid.RipMax;
+SWR.times     = SWR_valid.Ts(:,[2 3])/SR;
+SWR.peaktimes     = SWR_valid.Ts(:,1)/SR;
+SWR.SwMax  = SWR_valid.SwMax;
+SWR.RipMax = SWR_valid.RipMax;
 
 %Write event file: Generate Output and Write out Event file
 if EVENTFILE
@@ -1169,10 +1175,15 @@ params.EVENTFILE    = EVENTFILE;
 params.TRAINING     = TRAINING;
 params.DEBUG        = DEBUG;
 
-detected_swr.params = params;
+SWR.detectorparams = params;
+SWR.detectorname = 'detect_swr';
+SWR.detectiondate = today('datetime');
 
 % save output to Filebase directory
-save(sprintf('%s_detected_swr%d.mat',Filebase,fileN),'detected_swr')
+%save(sprintf('%s_detected_swr%d.mat',Filebase,fileN),'SWR')
+%DL: removed multiple detection version option... should we put this back
+%in as optional user input?
+save(sprintf('%s.SWR.event.mat',Filebase),'SWR') 
 
 % write out log file
 logAnalysisFile(mfilename('fullpath'),pathname);
