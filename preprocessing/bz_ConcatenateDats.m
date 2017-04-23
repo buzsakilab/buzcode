@@ -2,6 +2,8 @@ function bz_ConcatenateDats(basepath,deletedats)
 %assumes you are in or pointed to a directory containing subdirectories for
 % various recording files from a single session
 
+%TESTEST
+
 %% Input and directory handling 
 if ~exist('basepath','var')
     basepath = cd;
