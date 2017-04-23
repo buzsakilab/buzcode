@@ -47,11 +47,11 @@ if size(pos,2)>6
     vel(vel>100) = 0;
     vel = fastrms(fastrms(vel,40),100);
     subplot(2,1,1)
-    hist(vel(~isnan(p(:,1))),1000);
-    axis([ 0 mean(vel)+8*std(vel) 0 max(hist(vel(~isnan(p(:,1))),1000))])
+    hist(vel(~isnan(p(2:end,1))),1000);
+    axis([ 0 mean(vel)+8*std(vel) 0 max(hist(vel(~isnan(p(2:end,1))),1000))])
     subplot(2,1,2)
-    plot(vel(~isnan(p(:,1)))',1:sum(~isnan(p(:,1)))')
-    axis([ 0 mean(vel)+8*std(vel) 0 sum(~isnan(p(:,1)))])
+    plot(vel(~isnan(p(2:end,1)))',1:sum(~isnan(p(2:end,1)))')
+    axis([ 0 mean(vel)+8*std(vel) 0 sum(~isnan(p(2:end,1)))])
 %     thresh = min(-vel);
 %     while max(diff((lo))) > 500
 %         [pl lo]=findpeaks(-vel,'MINPEAKHEIGHT',thresh);
@@ -69,6 +69,8 @@ dbstop if error
 
 disp('pick start/stop locations')
 [x,y] = ginput();
+x = x(2:end);
+y = y(2:end); % laptop hack....
 ff = find(isnan(p(:,2)));
 % p=pos(:,1:2);
 
@@ -82,6 +84,8 @@ for i=1:length(x)
     end
 end
 [a a locsmat] = spikes2sorted(locs);
+f = find(locsmat(:,1)<120);
+locsmat(f,:)=[];
 
 centerx = mean(x);
 centery = mean(y);
@@ -233,6 +237,7 @@ numConditions = str2num(input('How many conditions were there: ','s'));
 exitC=0;
 while exitC == 0
     clust = kmeans(cc,numConditions);
+%     clust = GMM(cc,numConditions);
     clear trials
     for i=1:numConditions
         f = find(clust==i);

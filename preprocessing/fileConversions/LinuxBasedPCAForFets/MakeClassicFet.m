@@ -25,11 +25,11 @@ end
 %end
 
 if ~exist([basename '.fil'])
-    xml =  LoadXml([basename '.xml']);
+    xml =  LoadParameters([basename '.xml']);
     inname = [basename '.dat'];
     outname = [basename '.fil'];
     numch = num2str(xml.nChannels);
-    sampl = num2str(xml.SampleRate);
+    sampl = num2str(xml.rates.wideband);
     lowband = '800';
     highband = '9500';
     forder = '50';
@@ -41,7 +41,9 @@ end
 
 
 %get xml
-[xml, rxml] = LoadXml([basename '.xml']);
+if ~exist('xml','var')
+    xml = LoadParameters([basename '.xml']);
+end
 nGrps = length(xml.SpkGrps);
 for g = 1:nGrps
     cmd = ['process_pca_multi ' basename ' ' num2str(g)];

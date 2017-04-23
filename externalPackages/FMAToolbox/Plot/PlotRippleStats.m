@@ -79,7 +79,7 @@ end
 nElectrodes = length(maps);
 
 %  nBins = floor(samplingRate*diff(durations)/2)*2+1; % must be odd
-nBins = 	length(maps{1}.ripples);
+nBins = 	size(maps{1}.ripples,2);
 nHalfCenterBins = 3;
 %  centerBin = durations(1)/sum(durations)*(nBins-1)+1;
 centerBin = ceil(nBins/2);
@@ -111,7 +111,7 @@ for electrode = 1:nElectrodes,
 	f = figure;set(f,'name',['Ripple Stats - ' int2str(electrode)]);
 
 	subplot(2,2,1);a = gca;hold on;
-	plot(((1:nBins)'-ceil(nBins/2))/nBins*diff(durations),maps{electrode}.ripples,'b');
+	plot(((1:nBins)'-ceil(nBins/2))/nBins*diff(durations),maps{electrode}.ripples','b');
 
 	subplot(2,2,2);
 	b = bar(stats{electrode}.acg.t,stats{electrode}.acg.data);set(b,'FaceColor',[0 0 0]);xlabel('Autocorrelogram');

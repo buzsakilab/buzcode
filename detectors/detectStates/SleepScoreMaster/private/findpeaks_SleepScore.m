@@ -1,4 +1,4 @@
-function [Ypk,Xpk,Wpk,Ppk] = findpeaks(Yin,varargin)
+function [Ypk,Xpk,Wpk,Ppk] = findpeaks_SleepScore(Yin,varargin)
 %FINDPEAKS Find local peaks in data
 %   PKS = FINDPEAKS(Y) finds local peaks in the data vector Y. A local peak
 %   is defined as a data sample which is either larger than the two

@@ -1,4 +1,5 @@
-function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wvformExtract,saveFiles,numCores)
+function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
+    basename,wvformExtract,saveFiles,numCores)
 % USAGE
 %
 % [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wvformExtract,saveFiles,numCores)
@@ -40,6 +41,23 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wv
 % Brendon Watson 2016 
 % edited by David Tingley 1/2017
 
+% p = inputParser;
+% addRequired(p,'shank',@isnumeric)
+% addRequired(p,'basepath',@isstr)
+% addRequired(p,'basename',@isstr)
+% 
+% addParameter(p,'saveFiles',[],@isnumeric)
+% addParameter(p,'numCores',[1],@isnumeric)
+% p.parse(varargin{:})
+% 
+% shank = p.Results.shank;
+% basepath = p.Results.basepath;
+% saveFiles = p.Results.saveFiles;
+% numCores = p.Results.numCores;
+% basename = p.Results.basename;
+
+
+% 
 % Handle inputs
 if ~exist('shank','var')
     shank = 1;
@@ -54,7 +72,7 @@ if ~exist('numCores','var');
     numCores = 1;
 end
 if ~exist('basename','var');
-    [~,basename] = fileparts(cd);
+    [~,basename] = fileparts(pwd);
 elseif strcmp(basename, 'lfpfile') 
     d = dir('*lfp');
     basename = d.name(1:end-4);
@@ -69,8 +87,14 @@ clu = h5read(tkwik,['/channel_groups/' num2str(shank) '/spikes/clusters/main']);
 cluster_names = unique(clu);
 
 totalch = h5readatt(tkwik,'/application_data/spikedetekt','nchannels');
-sbefore = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_before');
-safter = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_after');
+try % some files don't have these variables saved in them?
+    sbefore = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_before');
+    safter = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_after');
+catch
+    wvform_nsamples = h5readatt(tkwik,'/application_data/spikedetekt','waveforms_nsamples');
+    sbefore = wvform_nsamples/2;
+    safter = wvform_nsamples/2;
+end
 channellist = h5readatt(tkwik,['/channel_groups/' num2str(shank)],'channel_order')+1;
 
 %% Getting spiketimes
@@ -141,8 +165,10 @@ if saveFiles
     cluster_names = unique(clu);
     for i=1:length(cluster_names)
         group(i) = h5readatt(tkwik,kwikinfo.Groups(i).Name,'cluster_group');
+        temp = strsplit(kwikinfo.Groups(i).Name,'/');
+        clusterID(i) = str2num(temp{length(temp)}); % fix for if channel ordering is mixed up (we don't know that the first clusters are noise/MUA)
         if group(i)~=2
-        clu(clu == cluster_names(i)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
+        clu(clu == clusterID(i)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
         end
     end
     

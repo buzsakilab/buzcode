@@ -41,11 +41,6 @@ if nargin < 1 | mod(length(varargin),2) ~= 0,
 	error('Incorrect number of parameters (type ''help <a href="matlab:help Filter">Filter</a>'' for details).');
 end
 
-% Check parameter sizes
-if size(samples,2) < 2,
-	error('Parameter ''samples'' is not a matrix (type ''help <a href="matlab:help Filter">Filter</a>'' for details).');
-end
-
 if isempty(samples),
 	filtered = samples;
 	return;
@@ -133,5 +128,5 @@ switch(type),
 end
 filtered(:,1) = samples(:,1);
 for i = 2:size(samples,2),
-	filtered(:,i) = filtfilt(b,a,samples(:,i));
+	filtered(:,i) = FiltFiltM(b,a,samples(:,i));
 end

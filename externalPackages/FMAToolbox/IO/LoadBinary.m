@@ -199,7 +199,9 @@ if isinf(nSamplesPerChannel) || nSamplesPerChannel > maxNSamplesPerChannel,
 end
 
 if downsamplefactor>1
-    precision = [num2str(nChannels),'*',precision];
+%     precision = [num2str(nChannels),'*',precision]; % this line is
+%     incorrect, the precision variable is a string that does not depend on
+%     the number of channels
     skip = nChannels*(downsamplefactor-1)*sampleSize;
     nSamplesPerChannel = floor(nSamplesPerChannel./downsamplefactor);
 end
@@ -215,7 +217,7 @@ else
 	nSamplesPerChunk = floor(maxSamplesPerChunk/nChannels)*nChannels;
 	nChunks = floor(nSamples/nSamplesPerChunk);
 	% Preallocate memory
-	data = zeros(nSamplesPerChannel,length(channels));
+	data = zeros(nSamplesPerChannel,length(channels),precision);
 	% Read all chunks
 	i = 1;
 	for j = 1:nChunks,
@@ -243,10 +245,10 @@ fclose(f);
 function data = LoadChunk(fid,nChannels,channels,nSamples,precision,skip)
 
 if skip ~= 0,
-	data = fread(fid,[nChannels nSamples],precision,skip);
+	data = fread(fid,[nChannels nSamples],[num2str(nChannels),'*',precision '=>' precision],skip);
     %data = fread(fid,[nChannels nSamples],[num2str(nChannels),'*',precision],nChannels*skip);
 else
-	data = fread(fid,[nChannels nSamples],precision);
+	data = fread(fid,[nChannels nSamples],[precision '=>' precision]);
 end
 data=data';
 

@@ -1,27 +1,22 @@
-function SleepScoreMaster(datasetfolder,recordingname,varargin)
+function SleepScoreMaster(basePath,varargin)
 %SleepScoreMaster(datasetfolder,recordingname)
 %This is the master function for sleep state scoring.
 %
-%INPUT (optional)   If no inputs included, select folder containing .lfp
+%INPUT 
+%   basePath        folder containing .xml and .lfp files.
+%                   basePath and files should be of the form:
+%                   whateverfolder/recordingName/recordingName.lfp
+%   (optional)      If no inputs included, select folder(s) containing .lfp
 %                   and .xml file in prompt.
-%                   
-%   datasetfolder   Top level folder in which the dataset resides. 
-%                   For example:
-%                   '/Users/dlevenstein/Dropbox/Research/Datasets/BWData/'
-%                   -if not included, prompt comes up to
-%                   navigate to the folder holding your recording.
-%   recordingname   (optional)
-%                   Name of the recording, this will be the name of the
-%                   folder in which the .lfp file and other files reside.
-%                   For example, the .lfp file should be:
-%                   'datasetfolder/recordingname/recordingname.lfp'
-%                   ... it is also assumed that this serves as the basename
-%                   for the files for instance data will be at
-%                   /datasetfolder/recordingname/recordingname.lfp
+%   (optional)      if no .lfp in basePath, option to select multiple 
+%                   lfp-containing subfolders
+%                          
+%   OPTIONS
 %   'savedir'       Default: datasetfolder
-%   'overwrite'     Default: false
+%   'overwrite'     Default: false, overwrite all processing steps
+%   'rescore'       Default: false, do not overwrite channel selection or
+%                   EMG, but recluster and score
 %   'savebool'      Default: true
-%   'spindledelta'  Default: false (spindle detector not ready yet...)
 %   'scoretime'     Default: [0 Inf]
 %   'badchannels'   file datasetfolder/recordingname/'bad_channels.txt'
 %                   that lists channels will omit certain channels from EMG
@@ -74,7 +69,7 @@ minWinREM = 6;
 minREMinW = 6;
 minREM = 6;
 minWAKE = 6;
-MinWinParams = v2struct_ss(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE);
+MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE);
 
 %% Recording Selection
 %if recname is 'select' or something
@@ -84,20 +79,28 @@ MinWinParams = v2struct_ss(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWA
 %if no input arguements... select uigetfile
 
 %Select from no input
-if ~exist('datasetfolder','var')
-    DIRECTORYNAME = uigetdir(cd,...
+if ~exist('basePath','var')
+    basePath = uigetdir(cd,...
         'Which recording(s) would you like to state score?');
-    if isequal(DIRECTORYNAME,0);return;end  
-    [datasetfolder,recordingname] = fileparts(DIRECTORYNAME); 
+    if isequal(basePath,0);return;end  
 end
+
+%Separate datasetfolder and recordingname
+[datasetfolder,recordingname] = fileparts(basePath);
+
 if ~exist('SWWeightsName','var')
     SWWeightsName = 'SWweights.mat';
 end
 
-%Select from dataset folder
-switch recordingname
-    case 'select'
-        foldercontents = dir(datasetfolder);
+
+
+%% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
+%Select from dataset folder - need to check if .xml/lfp exist
+if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file') && ...
+    ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
+    display(['no .lfp file in basePath, pick a selection of session folders',...
+             'containing .lfp files'])
+        foldercontents = dir(basePath);
         possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
         [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
                         'ListString',possiblerecordingnames);
@@ -109,7 +112,8 @@ numrecs = length(recordingname);
 if numrecs > 1 & iscell(recordingname)
     display(['Multiple Recordings (',num2str(numrecs),')'])
     for rr = 1:numrecs
-        SleepScoreMaster(datasetfolder,recordingname{rr},varargin{:})
+        multibasepath = fullfile(basePath,recordingname{rr});
+        SleepScoreMaster(multibasepath,varargin{:})
         close all
     end
     return
@@ -119,24 +123,11 @@ end
 
 display(['Scoring Recording: ',recordingname]);
 
-%% Deal with input options from varargin
-%none yet, but will do this with inputParser when we have input options
-
-%possible variable input options
-%'timewin' - only state score a subset of the recording
-%'HPCsites' - site indices for HPC probes - will only check these for theta
-%           if applicable
-%'figloc' - secondardy folder to save figures to
-%'spikegroups' - if not in the .xml file
-%'SWChannel', 'ThetaChannel' - can enter manually instead of determining
-%                               algorithmically
-
 %% inputParse for Optional Inputs and Defaults
 p = inputParser;
 
 defaultOverwrite = false;    %Pick new and Overwrite existing ThLFP, SWLFP?
 defaultSavebool = true;    %Save Stuff (EMG, LFP)
-defaultSpindledelta = false; %Detect spindles/delta?
 
 defaultSavedir = datasetfolder;
 
@@ -151,7 +142,6 @@ defaultThetaChannels = 0;
 
 addParameter(p,'overwrite',defaultOverwrite)
 addParameter(p,'savebool',defaultSavebool,@islogical)
-addParameter(p,'spindledelta',defaultSpindledelta,@islogical)
 addParameter(p,'savedir',defaultSavedir)
 addParameter(p,'scoretime',defaultScoretime)
 addParameter(p,'SWWeightsName',defaultSWWeightsName)
@@ -166,7 +156,6 @@ parse(p,varargin{:})
 %Clean up this junk...
 overwrite = p.Results.overwrite; 
 savebool = p.Results.savebool;
-spindledelta = p.Results.spindledelta;
 savedir = p.Results.savedir;
 scoretime = p.Results.scoretime;
 SWWeightsName = p.Results.SWWeightsName;
@@ -179,158 +168,78 @@ ThetaChannels = p.Results.ThetaChannels;
 
 %% Database File Management 
 savefolder = fullfile(savedir,recordingname);
-
 if ~exist(savefolder,'dir')
     mkdir(savefolder)
 end
-
 %Figure locations
 figloc = [fullfile(savefolder,'StateScoreFigures'),'/'];
 if ~exist(figloc,'dir')
     mkdir(figloc)
 end
 
-%Filenames for EMG, thLFP, and swLFP .mat files in the database.
-EMGpath = fullfile(savefolder,[recordingname '_EMGCorr.mat']);
-thetalfppath = fullfile(savefolder,[recordingname,'_ThetaLFP.mat']);
-swlfppath = fullfile(savefolder,[recordingname,'_SWLFP.mat']);
-scorelfppath = fullfile(savefolder,[recordingname,'_SleepScoreLFP.mat']);
-%Filenames for State and Event .mat files.
-sleepstatepath = fullfile(savefolder,[recordingname,'_SleepScore.mat']);
-sleepeventpath = fullfile(savefolder,[recordingname,'_SleepEvents.mat']);
-spindlestatspath = fullfile(savefolder,[recordingname,'_SpindleStats.mat']);
-%Filenames for StateCluster Metrics (broadband/theta)
-scoremetricspath = fullfile(savefolder,[recordingname,'_SleepScoreMetrics.mat']);
+%Filenames of metadata and SleepState.states.mat file to save
+sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
+%Buzcode outputs
+bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
 
-%Filename for .lfp file
-if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
-elseif ~overwrite
-    display('No .lfp file... but using saved files so maybe it''s ok!')
+
+%% Get channels not to use
+if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
+    load(sessionmetadatapath)
+    rejectchannels = SessionMetadata.ExtracellEphys.BadChannels;
 else
-    display('No .lfp file')
-    return
+    display('No baseName.SessionMetadata.mat - so no rejected channels')
+    rejectchannels = [];
 end
 
 %% CALCULATE EMG FROM HIGH-FREQUENCY COHERENCE
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
-% Do this before lfp load because finding proper lfps will depend on this.
-% If EMG is already calculated and in it's own .mat, then load, otherwise
-% calculate this
-
-% sf_EMG = 2;
-if ~exist(EMGpath,'file') || overwrite;
-    display('Calculating EMG')
-    [EMGCorr,sf_EMG] = EMGCorrForSleepscore(rawlfppath,scoretime);%BW modify this to have different dependencies, currently assumes presence of: 
-    %.lfp filename - ok
-    % .xml filename - ok
-    %     Save ..._EMGCorr file
-    if savebool
-        save(EMGpath,'EMGCorr','sf_EMG')
-    end
-
-else
-    display('EMG aleady calculated: Loading...')
-    load(EMGpath,'EMGCorr')
-    load(EMGpath,'sf_EMG')
-end
-EMG = EMGCorr(:,2);
-clear EMGCorr
-
+EMG = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
+                                     'rejectChannels',rejectchannels);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
-if ((~exist(thetalfppath,'file') && ~exist(swlfppath,'file')) && ~exist(scorelfppath,'file')) || overwrite; % if no lfp file already, load lfp and make lfp file?
-
-    display('Picking SW and TH Channels')
-    [SWchannum,THchannum,swLFP,thLFP,t_LFP,sf_LFP,SWfreqlist,SWweights] = PickSWTHChannel(datasetfolder,recordingname,figloc,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels);
-    if savebool
-        %Transfer this into scoremetricspath? predownsampled to what it
-        %needs to be for ClusterStates.
-        save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','t_LFP','sf_LFP','SWfreqlist','SWweights');
-    end
-else
-    display('SW and TH Channels Already Extracted, Loading...')
-    
-    %For updating state score LFP storage...
-    if ~exist(scorelfppath,'file')%... if old-fashioned scoring was done, open and convert to newer style
-        load(swlfppath,'swLFP','SWchannum','sf_LFP')
-        load(thetalfppath,'thLFP','THchannum','sf_LFP')
-
-        load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
-        
-        if sf_LFP==1250
-            display('LFP saved as 1250 - downsampling to 250 for save')
-            swLFP = downsample(swLFP,5);
-            thLFP = downsample(thLFP,5);
-            sf_LFP = sf_LFP./5;
-
-            delete(swlfppath,thetalfppath)
-        else
-            display('LFP was not saved at 1250... bug?')
-            keyboard
-        end
-        
-        %save in newer format for compatibility.
-        save(scorelfppath,'thLFP','swLFP','THchannum','SWchannum','sf_LFP','SWfreqlist','SWweights');
-    end
-    
-    load(scorelfppath,'swLFP','SWchannum','thLFP','THchannum','sf_LFP','SWfreqlist','SWweights')
-end
-if ~exist('SWfreqlist','var')
-        load(SWWeightsName)%load default weights which would have been used for these older scorings... so they can be saved
-end
-
+%Determine the best channels for Slow Wave and Theta separation.
+%Described in Watson et al 2016, with modifications
+SleepScoreLFP = PickSWTHChannel(basePath,...
+                            figloc,scoretime,SWWeightsName,...
+                            Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
+                            SWChannels,ThetaChannels,rejectchannels,...
+                            overwrite);
 
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG
 
+%Calculate the scoring metrics: broadbandLFP, theta, EMG in 
 display('Quantifying metrics for state scoring')
-% [stateintervals,~,~,~,~,broadbandSlowWave,thratio,EMG,t_clus,badtimes,reclength] = ClusterStates(swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname);
-[broadbandSlowWave,thratio,EMG,t_EMG,t_clus,badtimes,reclength,histsandthreshs,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec] = ClusterStates_GetParams(swLFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,recordingname,MinWinParams);
+[SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
+                                           basePath,SleepScoreLFP,EMG,overwrite);
+                                       
+%Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
-[stateintervals,stateIDX,~] = ClusterStates_DetermineStates(broadbandSlowWave,thratio,t_clus,EMG,histsandthreshs,MinWinParams,reclength,figloc);
-ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,FFTfreqs,FFTspec,thFFTfreqs,thFFTspec,t_clus,recordingname,broadbandSlowWave,thratio,EMG,t_EMG);
+[stateintervals,stateIDX,~] = ClusterStates_DetermineStates(...
+                                           SleepScoreMetrics,MinWinParams);
 
-if savebool
-    %Should save (downsampled to what's used in clusterstates...)
-    %sw/thLFP in scoremetricspath here!
-    save(scoremetricspath,...
-        'broadbandSlowWave','thratio','EMG','t_clus',...
-        'SWchannum','THchannum','badtimes','reclength','histsandthreshs',...
-        'SWfreqlist','SWweights','SWWeightsName','Notch60Hz',...
-        'NotchUnder3Hz','NotchHVS','NotchTheta')
-    
-end
-
+%% MAKE THE STATE SCORE OUTPUT FIGURE
+ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
+                                
 %% JOIN STATES INTO EPISODES
 
 NREMints = stateintervals{2};
 REMints = stateintervals{3};
 WAKEints = stateintervals{1};
 
-StateIntervals = StatesToFinalScoring(NREMints,WAKEints,REMints);
-StateIntervals.metadata.SWchannum = SWchannum;
-StateIntervals.metadata.THchannum = THchannum;
+[StateIntervals,SleepState,durationprams] = StatesToFinalScoring(NREMints,WAKEints,REMints);
 
-save(sleepstatepath,'StateIntervals');
+%bzStyle
+SleepState.detectorparms.SWchannum = SleepScoreLFP.SWchanID;
+SleepState.detectorparms.THchannum = SleepScoreLFP.THchanID;
+SleepState.detectorparms.durationprams = durationprams;
+SleepState.detectorname = 'SleepScoreMaster';
+SleepState.detectiondate = today;
+save(bz_sleepstatepath,'SleepState');
 
 display(['Sleep Score ',recordingname,': Complete!']);
 
-%% Find Slow Waves and Spindle Times
-if spindledelta
-
-    [ pSpindleInts,cycletimemap,deltapeaks,SpindleStats ] = FindSpindlesAndSWs(datasetfolder,recordingname,figloc,StateIntervals);
-
-    SleepEvents.Spindles = pSpindleInts;
-    SleepEvents.DeltaPeaks = deltapeaks;
-    SleepEvents.SpindleCycleTime = cycletimemap;
-
-
-    save(sleepeventpath,'SleepEvents');
-    save(spindlestatspath,'SpindleStats')
-end
 end
 

@@ -58,13 +58,13 @@ function [spectrogram,t,f] = MTSpectrogram(lfp,varargin)
 % (at your option) any later version.
 
 % Make sure chronux is installed and functional
-CheckChronux('mtspecgramc');
+CheckChronux();
 
 % Defaults
 f = 1250;
 frequency = [];
 window = 5;
-range = [];
+range = [];s
 overlap = [];
 step = [];
 show = 'off';

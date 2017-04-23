@@ -50,7 +50,7 @@ durations = [-50 50]/1000;
 nCorrBins = 50;
 %  corrBinSize = 400;
 corrDuration = 20;
-corrBinSize = 0.1;
+corrBinSize = 0.01;
 
 % Check number of parameters
 if nargin < 2,

@@ -1,4 +1,4 @@
-function whl = ApproxMedianFilter_RB_LED(file)
+function pos = ApproxMedianFilter_RB_LED(file)
 
 % This code tests an approximate median filter for separating out the red
 % and blue leds mounted on top of the subjects head
@@ -10,7 +10,7 @@ function whl = ApproxMedianFilter_RB_LED(file)
 %file       = 'Mouse12-120808-01.mpg';
 %[~,name,~] = fileparts(file);
 % Create Text file for writing out LED locations and sync trigger
-%fid        = fopen(sprintf('%s.whl',name),'w+');
+%fid        = fopen(sprintf('%s.pos',name),'w+');
 % Creater readerobj of file
 readerobj  = VideoReader(file);
 width      = readerobj.Width;
@@ -24,7 +24,7 @@ Fint       = 1;
 
 % Initialize background as a grayscale image of the first frame
 bg_bw     = rgb2gray(read(readerobj,Fint));
-
+pos
 % Initialize foreground image and difference image
 fg          = zeros(size(bg_bw));
 fr_diff     = zeros(size(bg_bw));
@@ -35,8 +35,8 @@ mask  = zeros(height,width,3,'uint8');
 % Initialize fr in case first frame reading returns error
 fr  = zeros(height,width,3,'uint8');
 
-% Initialize whl matrix
-whl = zeros(readerobj.NumberOfFrames,4);
+% Initialize pos matrix
+pos = zeros(readerobj.NumberOfFrames,4);
 
 for i = Fint:readerobj.NumberOfFrames
     %fprintf('%i',i);
@@ -92,23 +92,23 @@ for i = Fint:readerobj.NumberOfFrames
         end
     end
     
-    whl(i,:) = [Rr(1),Rr(2),Br(1),Br(2)];
+    pos(i,:) = [Rr(1),Rr(2),Br(1),Br(2)];
   
     % End processing time
     if mod(i,100)==0 & i<1000
         h = waitbar(i/readerobj.NumberOfFrames);
         if 1
-            ixr = whl(i-99:i,1);
+            ixr = pos(i-99:i,1);
             ixr = ixr>-1;
-            ixb = whl(i-99:i,3);
+            ixb = pos(i-99:i,3);
             ixb = ixb>-1;
             figure(1),clf,
             subplot(3,1,1);imshow(uint8(fr));title('If looks wrong, Ctrl+C and change threshold \!!')
             subplot(3,1,2),imshow(uint8(bw_mask));title('Mask')
             subplot(3,1,3)
-                plot(whl(ixr,1),whl(ixr,2),'r')
+                plot(pos(ixr,1),pos(ixr,2),'r')
                 hold on
-                plot(whl(ixb,3),whl(ixb,4),'b')
+                plot(pos(ixb,3),pos(ixb,4),'b')
             fprintf('Detection of Red LED failed %i times (%i times for the blue LED) in the last 100 frames\n',sum(~ixr),sum(~ixb));   
         end
     elseif mod(i,1000)==0

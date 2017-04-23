@@ -1,8 +1,10 @@
 function [x y pos trials map mapping] = getBehavEvents_linearTrack(pos,bins)
 dbstop if error
-scatter(pos(:,10),pos(:,8),'.')
+scatter(pos(:,8),pos(:,10),'.')
 axis([-1 1 -1 1])
-[y x]=ginput();
+[x y]=ginput();
+x =  x(end-1:end);
+y = y(end-1:end);
 dist(:,1)=fastrms(abs(pos(:,8)-x(1))+abs(pos(:,10)-y(1)),120);
 dist(:,2)=fastrms(abs(pos(:,8)-x(2))+abs(pos(:,10)-y(2)),120);
 
@@ -37,7 +39,7 @@ for i=1:length(locs_one)
     two = locs_two(locs_two-locs_one(i)>0);
     if ~isempty(two)
     [a b]=min(abs(two-locs_one(i)));  
-    if two(b)-locs_one(i) < 24000 && two(b)-locs_one(i) > 60 && locs_one(i) > lastTrial
+    if two(b)-locs_one(i) < 24000 && two(b)-locs_one(i) > 120 && locs_one(i) > lastTrial-60
         trials{c} = pos(locs_one(i):two(b),:);
         c=1+c;
         lastTrial = two(b);
@@ -46,7 +48,7 @@ for i=1:length(locs_one)
     two = locs_two(locs_one(i)-locs_two>0);
     if ~isempty(two)
     [a b]=min(abs(two-locs_one(i)));  
-    if locs_one(i)-two(b) < 24000 && locs_one(i)-two(b) > 60 && two(b) > lastTrial
+    if locs_one(i)-two(b) < 24000 && locs_one(i)-two(b) > 120 && two(b) > lastTrial-60
         trials{c} = pos(two(b):locs_one(i),:);
         c=1+c;
         lastTrial = locs_one(i);
@@ -90,32 +92,37 @@ end
 %% merge trials to the same length
 trials_unsorted = trials;
 for i=1:length(trials_unsorted)
-       d = pdist(trials_unsorted{i}(:,[8 10 9]),'euclidean');
+       d = pdist(trials_unsorted{i}(:,[8 9 10]),'euclidean');
        dd = squareform(d);
        dd(dd==0)=nan;
-   while length(trials_unsorted{i})>bins
-
-       [minVal]=min(dd(:));
-       [row col] = find(minVal == dd);
-       row = row(end);
-       col = col(end);
+       [mins ind] = min(dd(:));
+           [row col] = ind2sub(size(dd),ind);
+%            f = find(abs(row-col)==1);  % this worked but it was sloowww,
+%            row = row(f);               % removed and replaced w ind2sub
+%            col = col(f);
+    while length(trials_unsorted{i})>bins
+         [mins ind] = min(dd(:));
+         [row col] = ind2sub(size(dd),ind);
        % check that row and col are adjacent 
-       if abs((row-col))<=1
-           trials_unsorted{i} = [trials_unsorted{i}(1:row-1,:);...
-                                nanmean(trials_unsorted{i}(row:col,:));...
-                                trials_unsorted{i}(col+1:end,:)];
-%            d = pdist([trials_unsorted{i}(:,[9]),'euclidean');
-           d = pdist([trials_unsorted{i}(:,[8 9 10])],'euclidean');
-
-           dd = squareform(d);
-           dd(dd==0)=nan;
-       elseif abs((row-col))>1
+       if ((row(1)-col(1)))== -1
+           trials_unsorted{i} = [trials_unsorted{i}(1:row(1)-1,:);...
+                                nanmean(trials_unsorted{i}(row(1):col(1),:));...
+                                trials_unsorted{i}(col(1)+1:end,:)];          
+           dd(row,:)=[];
+           dd(:,col)=[];
+       elseif ((row(1)-col(1)))== 1
+           trials_unsorted{i} = [trials_unsorted{i}(1:col(1)-1,:);...
+                                nanmean(trials_unsorted{i}(col(1):row(1),:));...
+                                trials_unsorted{i}(row(1)+1:end,:)];
+           dd(row,:)=[];
+           dd(:,col)=[];
+       elseif abs((row(1)-col(1)))>1 | abs((row(1)-col(1)))<1
            dd(row,col)=nan;
        end
-   end
+    end
 end
 
-% cluster similarityimage
+% cluster similarity
 for i=1:length(trials_unsorted)
     for j =1:length(trials_unsorted)
         for ax = 8:10
@@ -203,6 +210,7 @@ for tt = 1:length(trials)
         s = squareform(di);
         s(find(eye(size(s))))=nan;
         [a b] = min(s(:));
+        
         [coords blah] = find(s==a);
         t_conc(coords(1),:) = (t_conc(coords(1),:)+t_conc(coords(2),:))./2;
         t_conc(coords(2),:) = [];

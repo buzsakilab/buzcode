@@ -1,6 +1,6 @@
 function [amplifier_channels, notes, aux_input_channels, spike_triggers,...         
 board_dig_in_channels, supply_voltage_channels, frequency_parameters ] =...
-read_Intan_RHD2000_file
+read_Intan_RHD2000_file(path,file)
 
 % read_Intan_RHD2000_file
 %
@@ -12,6 +12,9 @@ read_Intan_RHD2000_file
 % command before running this program to clear all other variables from the
 % base workspace.
 %
+% INPUTS 
+%   path and file are the path and filename for the rhd to be read.
+%
 % Example:
 % >> clear
 % >> read_Intan_RHD200_file
@@ -19,8 +22,14 @@ read_Intan_RHD2000_file
 % >> amplifier_channels(1)
 % >> plot(t_amplifier, amplifier_data(1,:))
 
-[file, path, filterindex] = ...
-    uigetfile('*.rhd', 'Select an RHD2000 Data File', 'MultiSelect', 'off');
+if ~exist('path','var')
+    [file, path, filterindex] = ...
+        uigetfile('*.rhd', 'Select an RHD2000 Data File', 'MultiSelect', 'off');
+else
+    if ~strcmp('.rhd',file(end-3:end))
+        file = strcat(file,'.rhd');
+    end
+end
 
 % Read most recent file automatically.
 %path = 'C:\Users\Reid\Documents\RHD2132\testing\';
@@ -28,7 +37,7 @@ read_Intan_RHD2000_file
 %file = d(end).name;
 
 tic;
-filename = [path,file];
+filename = fullfile(path,file);
 fid = fopen(filename, 'r');
 
 s = dir(filename);
@@ -45,10 +54,10 @@ end
 data_file_main_version_number = fread(fid, 1, 'int16');
 data_file_secondary_version_number = fread(fid, 1, 'int16');
 
-fprintf(1, '\n');
-fprintf(1, 'Reading Intan Technologies RHD2000 Data File, Version %d.%d\n', ...
-    data_file_main_version_number, data_file_secondary_version_number);
-fprintf(1, '\n');
+% fprintf(1, '\n');
+% fprintf(1, 'Reading Intan Technologies RHD2000 Data File, Version %d.%d\n', ...
+%     data_file_main_version_number, data_file_secondary_version_number);
+% fprintf(1, '\n');
 
 % Read information of sampling rate and amplifier frequency settings.
 sample_rate = fread(fid, 1, 'single');
@@ -83,15 +92,15 @@ notes = struct( ...
 % If data file is from GUI v1.1 or later, see if temperature sensor data
 % was saved.
 num_temp_sensor_channels = 0;
-if ((data_file_main_version_number == 1 && data_file_secondary_version_number >= 1) ...
-    || (data_file_main_version_number > 1))
+if ((data_file_main_version_number == 1 & data_file_secondary_version_number >= 1) ...
+    | (data_file_main_version_number > 1))
     num_temp_sensor_channels = fread(fid, 1, 'int16');
 end
 
 % If data file is from GUI v1.3 or later, load eval board mode.
 eval_board_mode = 0;
-if ((data_file_main_version_number == 1 && data_file_secondary_version_number >= 3) ...
-    || (data_file_main_version_number > 1))
+if ((data_file_main_version_number == 1 & data_file_secondary_version_number >= 3) ...
+    | (data_file_main_version_number > 1))
     eval_board_mode = fread(fid, 1, 'int16');
 end
 
@@ -223,21 +232,21 @@ num_board_adc_channels = board_adc_index - 1;
 num_board_dig_in_channels = board_dig_in_index - 1;
 num_board_dig_out_channels = board_dig_out_index - 1;
 
-fprintf(1, 'Found %d amplifier channel%s.\n', ...
-    num_amplifier_channels, plural(num_amplifier_channels));
-fprintf(1, 'Found %d auxiliary input channel%s.\n', ...
-    num_aux_input_channels, plural(num_aux_input_channels));
-fprintf(1, 'Found %d supply voltage channel%s.\n', ...
-    num_supply_voltage_channels, plural(num_supply_voltage_channels));
-fprintf(1, 'Found %d board ADC channel%s.\n', ...
-    num_board_adc_channels, plural(num_board_adc_channels));
-fprintf(1, 'Found %d board digital input channel%s.\n', ...
-    num_board_dig_in_channels, plural(num_board_dig_in_channels));
-fprintf(1, 'Found %d board digital output channel%s.\n', ...
-    num_board_dig_out_channels, plural(num_board_dig_out_channels));
-fprintf(1, 'Found %d temperature sensors channel%s.\n', ...
-    num_temp_sensor_channels, plural(num_temp_sensor_channels));
-fprintf(1, '\n');
+% fprintf(1, 'Found %d amplifier channel%s.\n', ...
+%     num_amplifier_channels, plural(num_amplifier_channels));
+% fprintf(1, 'Found %d auxiliary input channel%s.\n', ...
+%     num_aux_input_channels, plural(num_aux_input_channels));
+% fprintf(1, 'Found %d supply voltage channel%s.\n', ...
+%     num_supply_voltage_channels, plural(num_supply_voltage_channels));
+% fprintf(1, 'Found %d board ADC channel%s.\n', ...
+%     num_board_adc_channels, plural(num_board_adc_channels));
+% fprintf(1, 'Found %d board digital input channel%s.\n', ...
+%     num_board_dig_in_channels, plural(num_board_dig_in_channels));
+% fprintf(1, 'Found %d board digital output channel%s.\n', ...
+%     num_board_dig_out_channels, plural(num_board_dig_out_channels));
+% fprintf(1, 'Found %d temperature sensors channel%s.\n', ...
+%     num_temp_sensor_channels, plural(num_temp_sensor_channels));
+% fprintf(1, '\n');
 
 % Determine how many samples the data file contains.
 
@@ -281,15 +290,15 @@ num_board_dig_out_samples = 60 * num_data_blocks;
 
 record_time = num_amplifier_samples / sample_rate;
 
-if (data_present)
-    fprintf(1, 'File contains %0.3f seconds of data.  Amplifiers were sampled at %0.2f kS/s.\n', ...
-        record_time, sample_rate / 1000);
-    fprintf(1, '\n');
-else
-    fprintf(1, 'Header file contains no data.  Amplifiers were sampled at %0.2f kS/s.\n', ...
-        sample_rate / 1000);
-    fprintf(1, '\n');
-end
+% if (data_present)
+%     fprintf(1, 'File contains %0.3f seconds of data.  Amplifiers were sampled at %0.2f kS/s.\n', ...
+%         record_time, sample_rate / 1000);
+%     fprintf(1, '\n');
+% else
+%     fprintf(1, 'Header file contains no data.  Amplifiers were sampled at %0.2f kS/s.\n', ...
+%         sample_rate / 1000);
+%     fprintf(1, '\n');
+% end
 
 if (data_present)
     
@@ -496,14 +505,14 @@ if (num_temp_sensor_channels > 0)
     end
 end
 
-fprintf(1, 'Done!  Elapsed time: %0.1f seconds\n', toc);
-if (data_present)
-    fprintf(1, 'Extracted data are now available in the MATLAB workspace.\n');
-else
-    fprintf(1, 'Extracted waveform information is now available in the MATLAB workspace.\n');
-end
-fprintf(1, 'Type ''whos'' to see variables.\n');
-fprintf(1, '\n');
+% fprintf(1, 'Done!  Elapsed time: %0.1f seconds\n', toc);
+% if (data_present)
+%     fprintf(1, 'Extracted data are now available in the MATLAB workspace.\n');
+% else
+%     fprintf(1, 'Extracted waveform information is now available in the MATLAB workspace.\n');
+% end
+% fprintf(1, 'Type ''whos'' to see variables.\n');
+% fprintf(1, '\n');
 
 return
 

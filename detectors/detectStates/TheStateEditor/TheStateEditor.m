@@ -1,21 +1,21 @@
 %function StateEditorProBeta(baseName, inputData, supressGUI, makePortable)
-% SIMPLE USAGE (NO INPUT VARIABLES, if run from dir with .xml and .lfp/eeg):
+% SIMPLE USAGE (NO INPUT VARIABLES, if run from dir with .xml and .eeg/lfp):
 % Add StateEditor to your Matlab path. Within Matlab navigate to a folder
-% containing '.xml' and '.lfp' (or '.eeg') files. Type in the name of this 
+% containing '.xml' and '.eeg' (or '.lfp') files. Type in the name of this 
 % .m file and press enter (StateEditor will get the relevant baseName from 
 % the name of the first available '.xml' file in the folder). The StateEditor
 % loading GUI will guide you through channel selection and processing. Once 
 % the TheStateEditor GUI loads, press 'H' for further information on using 
 % StateEditor.
 % 
-% THE 'eegstates.mat' FILE: When it first runs on a new folder
+% THE '.eegstates.mat' FILE: When it first runs on a new folder
 % StateEditor creates a 'baseName.eegstates.mat' file. This file contains
 % your channel selection as well as the (whitened) spectrograms. Subsequent
 % runs on this folder will automatically load and use the selections found
-% in the 'eegstates.mat' file, substantially speeding up the loading
+% in the '.eegstates.mat' file, substantially speeding up the loading
 % process. In order to view different channels you must first delete or
 % rename this file. Note that in order to save space StateEditor does not
-% save the lfp channels selected in the lfpstates.mat' file unless the
+% save the lfp channels selected in the 'eegstates.mat' file unless the
 % 'makePortable' input variable is set to 1.
 % 
 % SAVING AND LOADING STATE EDITOR WORK: Pressing 'S' allows you to save
@@ -24,7 +24,7 @@
 % fields: 
 %    'states' - the state vector is of length N, where N is the number
 %               of seconds	bins in your spectrogram 
-%               (N = round((lengtheeg)eegFS) - 1). It has a value between
+%               (N = round((length(eeg)/eegFS) - 1). It has a value between
 %               0 and 5 for each bin (0 = 'no state', 1 = 'awake', 2 = 
 %               'Light/Drowzy', 3 = 'NREM', 4 = 'Intermediate', 5 = 'REM').
 %   'events' -  a N by 2 matrix where the first column are event type ID's 
@@ -41,18 +41,18 @@
 % 
 % LOADING VARIABLES DIRECTLY FROM MATLAB: The structure 'inputData' allows
 % for loading directly from existing matlab variables (NOTE: the details
-% below are only relevant to those that do not have access to .lfp/.lfp
+% below are only relevant to those that do not have access to .lfp/.eeg
 % files or wish to bypass the StateEditor loading GUI) It must contain the
 % following (case-sensitive) fields: 
 %       'rawEeg': this is a cell array of size N where N is the number of 
-%              .lfp channels to load (maximum of 3). Each cell of 'rawEeg' 
-%               must be a vector 1.lfp channel of length n where n is the
+%               eeg channels to load (maximum of 3). Each cell of 'rawEeg' 
+%               must be a vector 1 eeg channel of length n where n is the
 %               number of samples 'Chs': 1xN matrix of channel numbers 
 %               where N is the number of lfp channels to load 
 %               (for instance inputData.Chs = [20, 39])
-%       .lfpFS': lfp sampling frequency (default: 1250 Hz)
+%       'eegFS': lfp sampling frequency (default: 1250 Hz)
 %       'Chs': List of channel numbers corresponding to rawEeg
-%       'nChs': number of input channels in raw.lfp
+%       'nChs': number of input channels in rawEeeg
 %       'MotionType':
 %           Must be one of the following (case-sensitive) strings:
 %           -'none'
@@ -63,14 +63,14 @@
 %       'motion': a 1xN vector of movement data to be displayed in the 
 %           motion panel. N is the number of second bins in the spectrogram
 %           of the lfp channels and has the value: 
-%               round((length(rawEeg{1}.lfpFS) - 1). 
+%               round((length(rawEeg{1}/eegFS) - 1). 
 %   NOTE: to use a pre-processed motion signal, set the 'MotionType' to 'none' and
 % pass the actual motion signal in the field 'motion' as described above.
 % Conversely, if you wish to pass a motion signal to be processed (for
 % instance, accelerometer or MEG channel(s), pass these channels in through
 % the field 'MotionSignal' (which must be yxn vector or matrix (where y is
 % the number of motionsignal channels, and n is the number of samples in
-%.lfpFS samples/second)) and set the 'MotionType' to the desired processing
+% eegFS samples/second)) and set the 'MotionType' to the desired processing
 % type.
 % 
 % 
@@ -79,9 +79,9 @@
 % structure to pass StateEditor the variables: 'Chs' and 'MotionType'. If 
 % applicable also  select the motion signal channels through the variable 
 % 'mChs'. Note that StateEditor must still be called from the folder in 
-% which the relevant '.xml' and '.lfp/.lfp' files are stored. In order to 
+% which the relevant '.xml' and '.eeg/.lfp' files are stored. In order to 
 % suppress the StateEditor GUI, set the supressGUI variable to 1. This can 
-% be useful for those wishing to pre-create the '.lfpstates.mat' file as 
+% be useful for those wishing to pre-create the '.eegstates.mat' file as 
 % part of their data pre-processing.
 %
 % Dependency: Does require LoadXml.m from XmlTree
@@ -113,8 +113,8 @@ if exist('Chs', 'var') & exist('rawEeg', 'var') & exist('MotionType', 'var') & ~
     nCh = max(Chs);
 end
 
-if ~exist('lfpFS', 'var')
-       .lfpFS = 1250;%this is dangerous, creates some problems I'll try to fix below, BW
+if ~exist('eegFS', 'var')
+        eegFS = 1250;%this is dangerous, creates some problems I'll try to fix below, BW
 end
 LoadFromPortable = 0;
 if ~exist('baseName','var')
@@ -123,18 +123,18 @@ end
 if isempty(baseName)
     xmlBase = dir('*xml');
     if length(xmlBase) == 0
-        if FileExistsIn('*.lfpstates.mat')
-            d = dir('*.lfpstates.mat');
+        if FileExistsIn('*.eegstates.mat')
+            d = dir('*.eegstates.mat');
             StateInfo = load(d(1).name);
             StateInfo = StateInfo.StateInfo;
             
             if ~isfield(StateInfo, 'rawEeg')
-                warndlg({['Only ''.lfpstates.mat'' file containing '],
-                    ['the.lfp/lfp signals can be loaded without'],
+                warndlg({['Only ''.eegstates.mat'' file containing '],
+                    ['the eeg/lfp signals can be loaded without'],
                     ['an ''.xml'' file present.']});
                 return;
             else
-                d = dir('.lfpstates.mat');
+                d = dir('*eegstates.mat');
                 baseName = d(1).name(1:(end - 14));
                 LoadFromPortable = 1;
             end
@@ -154,9 +154,9 @@ if isempty(baseName)
         end
     end
 else
-    if FileExistsIn([baseName, '.lfpstates.mat']);
+    if FileExistsIn([baseName, '.eegstates.mat']);
         
-        StateInfo = load([baseName, '.lfpstates.mat']);
+        StateInfo = load([baseName, '.eegstates.mat']);
         StateInfo = StateInfo.StateInfo;
         if isfield(StateInfo, 'rawEeg')
             LoadFromPortable = 1;
@@ -187,7 +187,7 @@ end
 
 FO.downsampleGoal = 312.5;% display Hz goal, to save memory... will calculate downsample factor to match (ie 4 if 1250hz lfp file)
 FO.baseName = baseName;
-FO.lfpShow = 2; %show 2 seconds of.lfp
+FO.eegShow = 2; %show 2 seconds of eeg
 FO.maxFreq = 40; %default starting frequency extent
 FO.hanningW = 10; %default hanning smoothing window
 
@@ -197,27 +197,27 @@ FO.hanningW = 10; %default hanning smoothing window
 %FO.iSpec{1:nCh} - handles for the spectrogram objects
 %FO.max - handle for motion axes
 %FO.Mplot - handle for motion plot
-%FO.eax{1:nCh} - handles for.lfp axes
-%FO.Eplot{1:nCh} - handles for.lfp plots
+%FO.eax{1:nCh} - handles for eeg axes
+%FO.Eplot{1:nCh} - handles for eeg plots
 %FO.sMiddline{1:nCh} - handles for spectrogram center of view line objects
 %FO.mMidline - handle for motion center of view line object
-%FO.eMidline{1:nCh} - handle for.lfp center of view line objects
+%FO.eMidline{1:nCh} - handle for eeg center of view line objects
 
 
-%% account for possibility that some lft files are .lfp and some are .lft
+%% account for possibility that some lft files are .eeg and some are .lft
 if ~(exist('rawEeg', 'var') & exist('Chs', 'var') & exist('nCh', 'var') & exist('MotionType', 'var'))
     if LoadFromPortable == 0
-        if FileExistsIn([baseName,'.lfp'])
-            suffix = '.lfp';
+        if FileExistsIn([baseName,'.eeg'])
+            suffix = '.eeg';
         else
             if FileExistsIn([baseName,'.lfp'])
                 suffix = '.lfp';
             else
 %                 try 
 %                     basepath = cd;
-%                    .lfplfppath = findsessio.lfplfpfile(baseName,basepath);
+%                     eeglfppath = findsessioneeglfpfile(baseName,basepath);
 %                 catch
-                    disp(['Error: ', baseName, '.lfp or .lfp not found.'])
+                    disp(['Error: ', baseName, '.eeg or .lfp not found.'])
                     disp(['Quitting now. Bye bye.']);
                     return
 %                 end
@@ -235,9 +235,9 @@ end
 
 %% check for prior processing
 states = [];
-if FileExistsIn([baseName,'.lfpstates.mat'])
+if FileExistsIn([baseName,'.eegstates.mat'])
     if ~exist('StateInfo','var')
-        StateInfo = load([baseName,'.lfpstates.mat']);
+        StateInfo = load([baseName,'.eegstates.mat']);
         StateInfo = StateInfo.StateInfo;
     end
     if isfield(StateInfo, 'rawEeg')
@@ -245,40 +245,40 @@ if FileExistsIn([baseName,'.lfpstates.mat'])
     else
         if ~exist('rawEeg', 'var')
             rawEeg = {};
-            if isfield(StateInfo,.lfpFS')
-               .lfpFS = StateInfo.lfpFS;%this was missing and caused probs with default 1250Hz assumption if data not at 1250hz
+            if isfield(StateInfo,'eegFS')
+                eegFS = StateInfo.eegFS;%this was missing and caused probs with default 1250Hz assumption if data not at 1250hz
             else %allows compatibility with old files...
-               .lfpFS = 1250;
-                StateInfo.lfpFS =.lfpFS;%...should fix them too
+                eegFS = 1250;
+                StateInfo.eegFS = eegFS;%...should fix them too
             end
             Chs = StateInfo.Chs;
             nCh = StateInfo.nCh;
-            disp([baseName, '.lfpstates.mat loaded']);
+            disp([baseName, '.eegstates.mat loaded']);
             disp(['Using channel(s): ', int2str(Chs)]);
             
-            disp('Retrieving.lfp channel(s)...');
+            disp('Retrieving eeg channel(s)...');
             rawEeg = {};
-           .lfp = [];
+            eeg = [];
             try
                 for i = 1:length(Chs)
                     e = LoadChanArch(baseName, Chs(i));
-                   .lfp = .lfp; e];
+                    eeg = [eeg; e];
                     e = [];
                 end
             catch
                 try
                     %First try Anton's LoadBinary
-                   .lfp = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+                    eeg = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
                 catch
                     %Otherwise try to use Micheal Zugaro
-                   .lfp = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
-                   .lfp = double.lfp);
+                    eeg = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
+                    eeg = double(eeg);
                 end
                 
             end
             
             for i = 1:length(Chs)
-                rawEeg{i} =.lfp(i, :);
+                rawEeg{i} = eeg(i, :);
             end
             disp('Done.');
         end
@@ -298,7 +298,7 @@ if FileExistsIn([baseName,'.lfpstates.mat'])
 else
     StateInfo = [];
     info1 = LoadParIn([baseName, '.xml']);
-    .lfpFS = info1.lfpSampleRate;
+    eegFS = info1.lfpSampleRate;
 
     if ~exist('nCh', 'var')
 %             info1 = LoadXmlIn([baseName, '.xml']);
@@ -319,16 +319,16 @@ else
         
         inputFig = figure('Position', [280   453   550   250], 'MenuBar', 'none', 'numbertitle', 'off', 'name', [baseName, ' channel selection']);
         warning('off', 'MATLAB:hg:default_child_strategy:IllegalPermutation')
-        annotation('textbox',  'Position', [0.02, 0.87, 0.9, 0.07], 'string', ['\bf\fontsize{10}Please choose up to 3.lfp channels (base 1, nCh = ', int2str(nCh), '):'], 'EdgeColor', 'none');
+        annotation('textbox',  'Position', [0.02, 0.87, 0.9, 0.07], 'string', ['\bf\fontsize{10}Please choose up to 3 eeg channels (base 1, nCh = ', int2str(nCh), '):'], 'EdgeColor', 'none');
         Channels1 = uicontrol('style', 'edit', 'FontSize', 10, 'Units', 'Normalized', 'Position', [0.37, 0.75, 0.45, 0.08],'String',defaultchans);
         set(Channels1, 'HorizontalAlignment', 'left');
         
         
         annotation('textbox',  'Position', [0.02, 0.65, 0.9, 0.07], 'string', ['\bf\fontsize{10}Choose a motion signal to use:'], 'EdgeColor', 'none');
         if exist([baseName '_EMGCorr.mat'],'file');
-            mOptions = {'Load from TimeValue Pair .mat (_EMGCorr.mat)';'None';'Load From .whl file (head tracking)';'Load from.lfp ch(s) (accelerometer/motion pad)';'Load from.lfp ch(s) (MEG)';'Load from .mat file'};
+            mOptions = {'Load from TimeValue Pair .mat (_EMGCorr.mat)';'None';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from .mat file'};
         else
-            mOptions = {'None';'Load From .whl file (head tracking)';'Load from.lfp ch(s) (accelerometer/motion pad)';'Load from.lfp ch(s) (MEG)';'Load from TimeValue Pair .mat (_EMGCorr.mat)';'Load from .mat file'};
+            mOptions = {'None';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from TimeValue Pair .mat (_EMGCorr.mat)';'Load from .mat file'};
         end
         mInput = uicontrol('style', 'popupmenu', 'string', mOptions );
         set(mInput, 'Units', 'normalized', 'Position', [0.37, 0.5, 0.62, 0.1]);
@@ -386,23 +386,23 @@ else
     
     
     if ~exist('rawEeg', 'var')
-        lfp = {};
+        weeg = {};
         fspec = {};
         
-        disp(['Loading.lfp channels: ', int2str(Chs)]);
+        disp(['Loading eeg channels: ', int2str(Chs)]);
         
 %         try
 %             %First try Anton's LoadBinary
-%            .lfp1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+%             eeg1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
 %         catch
             %Otherwise try to use Micheal Zugaro
-           lfp1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
-           lfp1 = single.lfp1);
+            eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
+            eeg1 = single(eeg1);
 %         end
         disp('Done.');
         for i = 1:length(Chs)
             
-            rawEeg{i} .lfp1(i, :);
+            rawEeg{i} =eeg1(i, :);
             if iscell(Chs)
                 disp(['Whitening and computing spectrogram for channel ', Chs{i},'. This will all be over in a minute.']);
             else
@@ -413,8 +413,8 @@ else
             catch
                 fspec{i} =[];
                 
-                .lfp{i} =  WhitenSignalIn(rawEeg{i}.lfpFS*2000,1);
-                [fspec{i}.spec, fspec{i}.fo, fspec{i}.to] = mtchglongIn(.lfp{i}, 3072,.lfpFS,.lfpFS, 0, [], [], [], [0 200]);
+                weeg{i} =  WhitenSignalIn(rawEeg{i},eegFS*2000,1);
+                [fspec{i}.spec, fspec{i}.fo, fspec{i}.to] = mtchglongIn(weeg{i}, 3072, eegFS, eegFS, 0, [], [], [], [0 200]);
                 fspec{i}.spec = single(fspec{i}.spec);
                 fspec{i}.info.Ch = Chs(i);
                 fspec{i}.info.FileInfo.name = [baseName, suffix];
@@ -435,8 +435,8 @@ else
                 fspec{i} = LoadSpecArch(baseName, [], Chs(i), 1, 0, 3072, [0 200], 1, []);
             catch
                 fspec{i} =[];
-                .lfp{i} =  WhitenSignalIn(rawEeg{i},.lfpFS*2000,1);
-                [fspec{i}.spec, fspec{i}.fo, fspec{i}.to] = mtchglongIn(.lfp{i}, 3072,.lfpFS,.lfpFS, 0, [], [], [], [0 200]);
+                weeg{i} =  WhitenSignalIn(rawEeg{i}, eegFS*2000,1);
+                [fspec{i}.spec, fspec{i}.fo, fspec{i}.to] = mtchglongIn(weeg{i}, 3072, eegFS, eegFS, 0, [], [], [], [0 200]);
                 fspec{i}.spec = single(fspec{i}.spec);
                 fspec{i}.info.Ch = Chs(i);
                 fspec{i}.info.FileInfo.name = [baseName, suffix];
@@ -458,7 +458,7 @@ else
         end
         
         
-        if strcmp(mIn,'Load from.lfp ch(s) (accelerometer/motion pad)')
+        if strcmp(mIn,'Load from eeg ch(s) (accelerometer/motion pad)')
         %         if mIn == 3
             if ischar(mChs)
                 mChs  = str2num(mChs);
@@ -486,64 +486,64 @@ else
                 MotionType = 'Whl';
                 mChs = [];
                 disp('Done.');
-            case 'Load from.lfp ch(s) (accelerometer/motion pad)'
+            case 'Load from eeg ch(s) (accelerometer/motion pad)'
                 disp(['Loading and preprocessing motion data from channel(s) ', int2str(mChs), '...']);
                 if exist('motionSignal', 'var')
-                    .lfp = motionSignal;
+                    meeg = motionSignal;
                 else
 %                     try
 %                         %First try Anton's LoadBinary
-%                         .lfp = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+%                         meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
 %                     catch
                         %Otherwise try to use Micheal Zugaro
-                        .lfp = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
-                        .lfp = single(.lfp);
+                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
+                        meeg = single(meeg);
 %                     end
                 end
-                .lfp = abs(zscore(.lfp')');
-                .lfp = sum(.lfp, 1);
+                meeg = abs(zscore(meeg')');
+                meeg = sum(meeg, 1);
                 forder = 500;
                 forder = ceil(forder/2)*2;
-                EEGSR =.lfpFS;
+                EEGSR = eegFS;
                 lowband = 0.1;
                 highband = 1;
                 firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
-                .lfp = filter2(firfiltb,  .lfp);
-                motion = mean(reshape(.lfp(1:(length(.lfp) - mod(length(.lfp),.lfpFS))),.lfpFS, []), 1);
+                meeg = filter2(firfiltb,  meeg);
+                motion = mean(reshape(meeg(1:(length(meeg) - mod(length(meeg), eegFS))), eegFS, []), 1);
                 if length(motion) == (length(fspec{1}.to) + 1)
                     motion = motion(1:(end - 1));
                 end
                 MotionType = 'Channels (accelerometer)';
                 disp('Done.');
-            case 'Load from.lfp ch(s) (MEG)'
+            case 'Load from eeg ch(s) (MEG)'
                 disp(['Loading and preprocessing meg data from channel(s) ', int2str(mChs), '...']);
                 if exist('motionSignal', 'var')
-                    .lfp = motionSignal;
+                    meeg = motionSignal;
                 else
                     try
                         %First try Anton's LoadBinary
-                        .lfp = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+                        meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
                     catch
                         %Otherwise try to use Micheal Zugaro
-                        .lfp = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
-                        .lfp = single(.lfp);
+                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
+                        meeg = single(meeg);
                     end
                 end
-                .lfp = zscore(.lfp')';
-                .lfp = sum(.lfp, 1);
+                meeg = zscore(meeg')';
+                meeg = sum(meeg, 1);
                 forder = 500;
                 forder = ceil(forder/2)*2;
-                EEGSR =.lfpFS;
+                EEGSR = eegFS;
                 lowband = 100;
                 highband = 600;
                 firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
-                .lfp = filter2(firfiltb,  .lfp);
-                .lfp = zscore(.lfp).^2;
+                meeg = filter2(firfiltb,  meeg);
+                meeg = zscore(meeg).^2;
                 lowband = 0.1;
                 higband = 1;
                 firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
-                .lfp = filter2(firfiltb,  .lfp);
-                motion = mean(reshape(.lfp(1:(length(.lfp) - mod(length(.lfp),.lfpFS))),.lfpFS, []), 1);
+                meeg = filter2(firfiltb,  meeg);
+                motion = mean(reshape(meeg(1:(length(meeg) - mod(length(meeg), eegFS))), eegFS, []), 1);
                 if length(motion) == (length(fspec{1}.to) + 1)
                     motion = motion(1:(end - 1));
                 end
@@ -601,7 +601,7 @@ else
     StateInfo.MotionType = MotionType;
     StateInfo.fspec = fspec;
     StateInfo.motion = motion;
-    StateInfo.lfpFS =.lfpFS;
+    StateInfo.eegFS = eegFS;
     if makePortable == 1
         StateInfo.rawEeg = rawEeg;
     end
@@ -618,16 +618,16 @@ else
        states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
     end
     
-    disp(['Saving ', baseName, '.lfpstates.mat...']);
+    disp(['Saving ', baseName, '.eegstates.mat...']);
     try
-        save([baseName, '.lfpstates.mat'], 'StateInfo');
+        save([baseName, '.eegstates.mat'], 'StateInfo');
     catch
-        warndlg(['Failed to save ' , baseName, '.lfpstates.mat']);
+        warndlg(['Failed to save ' , baseName, '.eegstates.mat']);
     end
 end
 
-if.lfpFS>FO.downsampleGoal;
-    FO.downsample = round.lfpFS/FO.downsampleGoal);
+if eegFS>FO.downsampleGoal;
+    FO.downsample = round(eegFS/FO.downsampleGoal);
 else
     FO.downsample = 1;
 end
@@ -637,7 +637,7 @@ disp('So far so good. Now, loading StateEditor GUI. This is going to be great!')
 if supressGUI == 1
     return;
 else
-    StateEditorSetup(StateInfo.fspec, StateInfo.motion, states, rawEeg, baseName, FO,.lfpFS);
+    StateEditorSetup(StateInfo.fspec, StateInfo.motion, states, rawEeg, baseName, FO, eegFS);
 end
 
 if exist([baseName,'-states.mat'],'file')
@@ -648,12 +648,12 @@ end
 end%function end
 
 
-function StateEditorSetup(f, MP, States,.lfp, baseName, FO,.lfpFS)
+function StateEditorSetup(f, MP, States, eeg, baseName, FO, eegFS)
 
 if ~iscell(f)
-    a = f; e =.lfp;
-    f = {};.lfp = {};
-    f{1} = a;.lfp{1} = e;
+    a = f; e = eeg;
+    f = {}; eeg = {};
+    f{1} = a; eeg{1} = e;
     a = []; e =[];
 end
 nCh = length(f);
@@ -671,8 +671,8 @@ end
 
 
 for i = 1:nCh
-    FO.lfp{i} =.lfp{i}(1:FO.downsample:end);
-%     FO.lfp{i} = .lfp{i}(1:FO.downsample:end)/2150)/1000;%why was this division?? To convert to volts in some old system?  
+    FO.eeg{i} = eeg{i}(1:FO.downsample:end);
+%     FO.eeg{i} = (eeg{i}(1:FO.downsample:end)/2150)/1000;%why was this division?? To convert to volts in some old system?  
 end
 
 FO.clickPoint = [];
@@ -682,7 +682,7 @@ FO.stateHistory = {};
 FO.stateHistoryNum = 0;
 FO.newStates = {};
 FO.currAction = 'Browse';
-FO.lfpFS =.lfpFS;
+FO.eegFS = eegFS;
 
 FO.overlayLines = {};
 
@@ -708,7 +708,7 @@ switch nCh
         position.sax{1} = [0.0500    0.3100    0.8000    0.6200];
         position.MP = [0.0500    0.170    0.8000    0.1000];
         position.eax{1} = [0.0500    0.04    0.8000    0.1000];
-        position.lfpCh{1} =   [0.8100    0.0350    0.1000    0.1000];
+        position.eegCh{1} =   [0.8100    0.0350    0.1000    0.1000];
         
         a = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
         if iscell(FO.Chs)
@@ -719,7 +719,7 @@ switch nCh
         annotation('textarrow',[0.02 0.02],[0.14 0.14],'string','\fontsize{10} EEG (m.V.)', ...
             'HeadStyle','none','LineStyle', 'none', 'TextRotation',90);
         
-        position.lfpWidth = [0.05, 0.0350, 0.1, 0.1];
+        position.eegWidth = [0.05, 0.0350, 0.1, 0.1];
     case 2
         position.lax = [0.0500    0.940    0.8000    0.0500];
         position.sax{1} = [0.05         0.62          0.8         0.31];
@@ -727,9 +727,9 @@ switch nCh
         position.MP = [0.05         0.195          0.8          0.07];
         position.eax{1} =  [0.05         0.105         0.8          0.06];
         position.eax{2} =  [0.05         0.04          0.8          0.06];
-        position.lfpCh{1} =    [0.81, 0.069, 0.1, 0.1];
-        position.lfpCh{2} = [0.81, 0.004, 0.1, 0.1];
-        position.lfpWidth = [0.05, 0.069, 0.1, 0.1];
+        position.eegCh{1} =    [0.81, 0.069, 0.1, 0.1];
+        position.eegCh{2} = [0.81, 0.004, 0.1, 0.1];
+        position.eegWidth = [0.05, 0.069, 0.1, 0.1];
         a = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
         if iscell(FO.Chs)
             set(a, 'String', ['\bf\color{black}\fontsize{11}Ch ', FO.Chs{1}], 'Position', [-0.005, 0.79, 0.1, 0.1]);
@@ -755,11 +755,11 @@ switch nCh
         position.eax{1} = [0.05         0.15          0.8          0.05];
         position.eax{2} = [0.05         0.095          0.8          0.05];
         position.eax{3} = [0.05         0.04          0.8          0.05];
-        position.lfpWidth = [0.05, 0.105, 0.1, 0.1];
+        position.eegWidth = [0.05, 0.105, 0.1, 0.1];
         
-        position.lfpCh{1} =   [0.8100    0.095    0.1000    0.1000];
-        position.lfpCh{2} = [0.8100    0.0400    0.100    0.1000];
-        position.lfpCh{3} = [0.8100    -0.015    0.1000    0.1000];
+        position.eegCh{1} =   [0.8100    0.095    0.1000    0.1000];
+        position.eegCh{2} = [0.8100    0.0400    0.100    0.1000];
+        position.eegCh{3} = [0.8100    -0.015    0.1000    0.1000];
         a1 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
         a2 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
         a3 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
@@ -782,7 +782,7 @@ yplotLims = [];
 yplotLFPLims = [];
 for i = 1:FO.nCh
     yplotLims = [yplotLims; position.sax{i}(2), position.sax{i}(2) + position.sax{i}(4)];
-    yplotLFPLims = [yplotLFPLims; position.eax{i}(2), position.eax{i}(2) + position.lfpCh{i}(4)];
+    yplotLFPLims = [yplotLFPLims; position.eax{i}(2), position.eax{i}(2) + position.eegCh{i}(4)];
     
 end
 yplotLims = [yplotLims; position.lax(2), position.lax(2) + position.lax(4)];
@@ -941,12 +941,12 @@ FO.mMidline = annotation('line', [p(1) + p(3)/2, p(1) + p(3)/2], [p(2), p(2) + p
 
 
 for i = 1:nCh
-   .lfpX = (1:length(FO.lfp{i}))/(FO.lfpFS/FO.downsample);
+    eegX = (1:length(FO.eeg{i}))/(FO.eegFS/FO.downsample);
     FO.eax{i} = axes('Position', position.eax{i});
     
-    FO.Eplot{i} = plot.lfpX.lfpX >= 0 &.lfpX <= 120), FO.lfp{i}.lfpX >= 0 &.lfpX <= 120), 'y');
+    FO.Eplot{i} = plot(eegX(eegX >= 0 & eegX <= 120), FO.eeg{i}(eegX >= 0 & eegX <= 120), 'y');
     set(FO.eax{i}, 'Color', [0 0 0], 'XColor', 'b');
-    %   FO.Eplot{i} = plot.lfpX, FO.lfp{i});
+    %   FO.Eplot{i} = plot(eegX, FO.eeg{i});
     ylabel('Eeg');
     l1 = [min(get(FO.Eplot{i}, 'YData')), max(get(FO.Eplot{i}, 'YData'))];
     ylim(l1);
@@ -980,13 +980,13 @@ end
 for i = 1:length(FO.Chs)
     a = annotation('textbox', 'Units', 'Normalized');
     if iscell(FO.Chs)
-        set(a, 'String', ['\bf\color{red}\fontsize{10}C', FO.Chs{i}], 'Position', position.lfpCh{i}, 'EdgeColor', 'none');        
+        set(a, 'String', ['\bf\color{red}\fontsize{10}C', FO.Chs{i}], 'Position', position.eegCh{i}, 'EdgeColor', 'none');        
     else
-    set(a, 'String', ['\bf\color{red}\fontsize{10}C', int2str(FO.Chs(i))], 'Position', position.lfpCh{i}, 'EdgeColor', 'none');
+    set(a, 'String', ['\bf\color{red}\fontsize{10}C', int2str(FO.Chs(i))], 'Position', position.eegCh{i}, 'EdgeColor', 'none');
     end
 end
-FO.lfpWidthDisp = annotation('textbox', 'Units', 'Normalized');
-set(FO.lfpWidthDisp, 'String', ['\bf\color{red}\fontsize{11}', num2str(FO.lfpShow), ' sec'], 'Position', position.lfpWidth, 'EdgeColor', 'none');
+FO.eegWidthDisp = annotation('textbox', 'Units', 'Normalized');
+set(FO.eegWidthDisp, 'String', ['\bf\color{red}\fontsize{11}', num2str(FO.eegShow), ' sec'], 'Position', position.eegWidth, 'EdgeColor', 'none');
 
 
 a = annotation('textbox', 'Units', 'normalized', 'Position', [0.855, 0.65, 0.135, 0.03], 'EdgeColor', 'none');
@@ -1063,20 +1063,20 @@ FO.saxYLim = [min(FO.fo), max(FO.fo)];
 FO.mpYLim = get(FO.max, 'YLim');
 a = [];
 for i = 1:length(nCh)
-    a = [a; min(FO.lfp{i}), max(FO.lfp{i})];
+    a = [a; min(FO.eeg{i}), max(FO.eeg{i})];
 end
-FO.lfpYLim = [min(a(:, 1)), max(a(:, 2))];
+FO.eegYLim = [min(a(:, 1)), max(a(:, 2))];
 
 
 %% BW speeding things up... didn't change anything above to be safe
 setappdata(gcf,'unsmoothedSpec',FO.unsmoothedSpec)
 setappdata(gcf,'spec',FO.spec)
-setappdata(gcf,.lfp',FO.lfp)
+setappdata(gcf,'eeg',FO.eeg)
 
 FO = rmfield(FO,'spec');
 FO = rmfield(FO,'unsmoothedSpec');%access only when needed using appdata now
-FO = rmfield(FO,.lfp');%access only when needed using appdata now
-% FO = rmfield(FO,.lfpX');%recalculate on the fly using:  .lfpX = (1:length(FO.lfp{i}))/(FO.lfpFS/FO.downsample);
+FO = rmfield(FO,'eeg');%access only when needed using appdata now
+% FO = rmfield(FO,'eegX');%recalculate on the fly using:   eegX = (1:length(FO.eeg{i}))/(FO.eegFS/FO.downsample);
 %%
             guidata(FO.fig, FO); 
 
@@ -1252,7 +1252,7 @@ switch e.Key
         end
         set(gcf, 'Name', ['States: ', FO.baseName, ' - Default']);
     case 'a'
-        FO = ViewAutoScoreThresholds(gcf)
+        FO = ViewAutoScoreThresholds(gcf);
     case 'f'
         if strcmpi(FO.currAction, 'FreqResize')
             FO.currAction = 'Browse';
@@ -1275,7 +1275,7 @@ switch e.Key
     case 'p'
         previousEvent;
     case 'hyphen'
-        f = find(histc(FO.lfpShow, [0, 0.26, 2.1, 5.1, 15.1, 30.1,  60.1]) == 1);
+        f = find(histc(FO.eegShow, [0, 0.26, 2.1, 5.1, 15.1, 30.1,  60.1]) == 1);
         switch f
             case 1
                 delta = 0;
@@ -1292,7 +1292,7 @@ switch e.Key
         end
         
         
-        FO.lfpShow = FO.lfpShow - delta;
+        FO.eegShow = FO.eegShow - delta;
         guidata(FO.fig, FO); 
         updateEEG(mean(get(FO.eax{1}, 'XLim')));
         UpdateText;
@@ -1300,7 +1300,7 @@ switch e.Key
         
     case 'equal'
         
-        f = find(histc(FO.lfpShow, [0, 0.24, 1.99, 4.99, 14.99, 29.9,  60]) == 1);
+        f = find(histc(FO.eegShow, [0, 0.24, 1.99, 4.99, 14.99, 29.9,  60]) == 1);
         switch f
             case 2
                 delta = 0.25;
@@ -1318,7 +1318,7 @@ switch e.Key
         
         
         
-        FO.lfpShow = FO.lfpShow + delta;
+        FO.eegShow = FO.eegShow + delta;
         guidata(FO.fig, FO); 
         
         updateEEG(mean(get(FO.eax{1}, 'XLim')));
@@ -1390,11 +1390,11 @@ end
 function updateEEG(varargin)
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); 
 % try
-   .lfp = getappdata(gcf,.lfp');
-   .lfpX = (1:length.lfp{1}))/(FO.lfpFS/FO.downsample);
+    eeg = getappdata(gcf,'eeg');
+    eegX = (1:length(eeg{1}))/(FO.eegFS/FO.downsample);
 % catch
-%    .lfp = F0.lfp;
-%    .lfpX = F0
+%     eeg = F0.eeg;
+%     eegX = F0
 % end
 
 if isempty(varargin)
@@ -1402,8 +1402,8 @@ if isempty(varargin)
 else
     pos = varargin{1};
 end
-low = pos - FO.lfpShow/2;
-high = pos + FO.lfpShow/2;
+low = pos - FO.eegShow/2;
+high = pos + FO.eegShow/2;
 if low < FO.lims(1);
     high = high + (FO.lims(1) + low);
     low = FO.lims(1);
@@ -1417,10 +1417,10 @@ end
 lowMargin = low - 60;
 highMargin = high + 60;
 for i = 1:FO.nCh
-    set(FO.Eplot{i}, 'XData',.lfpX.lfpX >= lowMargin &.lfpX <= highMargin), 'YData',.lfp{i}.lfpX >= lowMargin &.lfpX <= highMargin));
-    l1 = [min.lfp{i}.lfpX >= low &.lfpX <= high)), max.lfp{i}.lfpX >= low &.lfpX <= high))];
+    set(FO.Eplot{i}, 'XData', eegX(eegX >= lowMargin & eegX <= highMargin), 'YData', eeg{i}(eegX >= lowMargin & eegX <= highMargin));
+    l1 = [min(eeg{i}(eegX >= low & eegX <= high)), max(eeg{i}(eegX >= low & eegX <= high))];
     set(FO.eax{i}, 'YLim', l1);
-    set(FO.eax{i}, 'XLim', [pos - FO.lfpShow/2, pos + FO.lfpShow/2]);
+    set(FO.eax{i}, 'XLim', [pos - FO.eegShow/2, pos + FO.eegShow/2]);
 end
 
 set(FO.max,'xticklabel',num2str(get(FO.max,'xtick')'));
@@ -1446,11 +1446,11 @@ catch
 end
 
 % for i = 1:FO.nCh
-%     set(FO.Eplot{i}, 'XData',.lfpX.lfpX >= low &.lfpX <= high));
-%     set(FO.Eplot{i}, 'YData',.lfp{i}.lfpX >= low &.lfpX <= high));
-%     l1 = [min.lfp{i}.lfpX >= low &.lfpX <= high)), max.lfp{i}.lfpX >= low &.lfpX <= high))];
+%     set(FO.Eplot{i}, 'XData', eegX(eegX >= low & eegX <= high));
+%     set(FO.Eplot{i}, 'YData', eeg{i}(eegX >= low & eegX <= high));
+%     l1 = [min(eeg{i}(eegX >= low & eegX <= high)), max(eeg{i}(eegX >= low & eegX <= high))];
 %     set(FO.eax{i}, 'YLim', l1);
-%     set(FO.eax{i}, 'XLim', [pos - FO.lfpShow/2, pos + FO.lfpShow/2]);
+%     set(FO.eax{i}, 'XLim', [pos - FO.eegShow/2, pos + FO.eegShow/2]);
 % end
 
 guidata(FO.fig, FO); 
@@ -1933,7 +1933,7 @@ switch lfpClick
         end
     case 1
         if src.VerticalScrollCount > 0
-            f = find(histc(FO.lfpShow, [0, 0.24, 1.99, 4.99, 14.99, 29.9,  60]) == 1);
+            f = find(histc(FO.eegShow, [0, 0.24, 1.99, 4.99, 14.99, 29.9,  60]) == 1);
             switch f
                 case 2
                     delta = 0.25;
@@ -1948,14 +1948,14 @@ switch lfpClick
                 case 7
                     delta = 0;
             end
-            FO.lfpShow = FO.lfpShow + delta;
+            FO.eegShow = FO.eegShow + delta;
             guidata(FO.fig, FO);
             
             updateEEG(mean(get(FO.eax{1}, 'XLim')));
             UpdateText;
             return;
         else
-            f = find(histc(FO.lfpShow, [0, 0.26, 2.1, 5.1, 15.1, 30.1,  60.1]) == 1);
+            f = find(histc(FO.eegShow, [0, 0.26, 2.1, 5.1, 15.1, 30.1,  60.1]) == 1);
             switch f
                 case 1
                     delta = 0;
@@ -1972,7 +1972,7 @@ switch lfpClick
             end
             
             
-            FO.lfpShow = FO.lfpShow - delta;
+            FO.eegShow = FO.eegShow - delta;
             guidata(FO.fig, FO); 
             updateEEG(mean(get(FO.eax{1}, 'XLim')));
             UpdateText;
@@ -2550,7 +2550,7 @@ end
 end
 
 function UpdateText
-obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+obj = findobj('tag','StateEditorMaster');  FO = guidata(obj);
 
 action = FO.currAction;
 
@@ -2584,8 +2584,9 @@ switch action
         
 end
 
+drawnow
 set(FO.lastClickDisp, 'String', {'Last Click at sec:', num2str(FO.clickPoint, 7), ['(of ', num2str(FO.lims(2), 7), ')']});
-set(FO.lfpWidthDisp, 'String', ['\bf\color{red}\fontsize{11}', num2str(FO.lfpShow), ' sec']);
+set(FO.eegWidthDisp, 'String', ['\bf\color{red}\fontsize{11}', num2str(FO.eegShow), ' sec']);
 if isempty(FO.startLocation)
     set(FO.startLocDisp, 'Visible', 'off');
 else
@@ -2598,7 +2599,7 @@ guidata(FO.fig, FO);
 end
 
 function ResizeFreqY(direction)
-obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+obj = findobj('tag','StateEditorMaster');  FO = guidata(obj);
 spec = getappdata(gcf,'spec');
 
 if direction == 1
@@ -3053,7 +3054,7 @@ end
 
 
 if FileExistsIn([FileBase '.xml']) %& ~isempty(strfind(FileName,'.xml'))
-    Par = LoadXml(FileBase);
+    Par = LoadParameters([FileBase '.xml']);
 elseif FileExistsIn([FileBase '.par'])
 
 
@@ -3095,7 +3096,7 @@ else
 end
 
 if SpecInfo
-    if FileExistsIn([FileBase '.lfp.par'])
+    if FileExistsIn([FileBase '.eeg.par'])
         if ~isfield(Par,'nElecGps')
             ParTmp = LoadPar([FileBase '.par']);
         else
@@ -3104,9 +3105,9 @@ if SpecInfo
 
         EegPar=LoadEegPar(FileBase);
         for el=1:ParTmp.nElecGps
-            for.lfpel=1:EegPar.nElec
-                if ~isempty(intersect(ParTmp.ElecGp{el},EegPar.ElecChannels.lfpel}))
-                    Par.ElecLoc{el} = EegPar.ElecLoc.lfpel};
+            for eegel=1:EegPar.nElec
+                if ~isempty(intersect(ParTmp.ElecGp{el},EegPar.ElecChannels{eegel}))
+                    Par.ElecLoc{el} = EegPar.ElecLoc{eegel};
                 end
             end
         end
@@ -3354,8 +3355,8 @@ else
         axes(FO.eax{i});
         hold on;
         yl = y;
-        yl(yl == 0) = FO.lfpYLim(1) - 10;
-        yl(yl == 1) = FO.lfpYLim(2) + 10;
+        yl(yl == 0) = FO.eegYLim(1) - 10;
+        yl(yl == 1) = FO.eegYLim(2) + 10;
         if linesExist == 0
             FO.CurrEventLines{panelN} = plot(z, yl , ':m', 'LineWidth', 2);
         else
@@ -3684,7 +3685,7 @@ end
 %                   (default = 0)
 %    =========================================================================
 
-% Copyright (C) 2004-2006 by Micha�l Zugaro
+% Copyright (C) 2004-2006 by Micha?l Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -3937,7 +3938,7 @@ end
 %     'precision'   sample precision (default = 'int16')
 %    =========================================================================
 
-% Copyright (C) 2004-2006 by Micha�l Zugaro
+% Copyright (C) 2004-2006 by Micha?l Zugaro
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -4642,9 +4643,7 @@ end
 function histsandthreshs = SSHistogramsAndThresholds_In(baseName)
 % Get initial histograms and thresholds as calculated by Dan's code
 
-load([baseName '_StateScoreMetrics.mat'])
-% badtimes = GetBadTimes_In(baseName);
-
+load([baseName '_StateScoreMetrics.mat']);
 
 %% SWBand power
 numpeaks = 1;
@@ -4653,13 +4652,13 @@ numbins = 12;
 while numpeaks ~=2
     [swhist,swhistbins]= hist(broadbandSlowWave,numbins);
     
-    [PKS,LOCS] = findpeaks_SleepScore(swhist,'NPeaks',2,'SortStr','descend');
+    [PKS,LOCS] = findpeaks_In(swhist,'NPeaks',2,'SortStr','descend');
     LOCS = sort(LOCS);
     numbins = numbins+1;
     numpeaks = length(LOCS);
 end
 betweenpeaks = swhistbins(LOCS(1):LOCS(2));
-[dip,diploc] = findpeaks_SleepScore(-swhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
+[dip,diploc] = findpeaks_In(-swhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
 swthresh = betweenpeaks(diploc);
 broadbandSlowWave(badtimes,1)=swhistbins(LOCS(1));
 NREMtimes = (broadbandSlowWave >swthresh); %SWS time points
@@ -4672,7 +4671,7 @@ while numpeaks ~=2
     [EMGhist,EMGhistbins]= hist(EMG(NREMtimes==0),numbins);
     %[EMGhist,EMGhistbins]= hist(EMG,numbins);
 
-    [PKS,LOCS] = findpeaks_SleepScore([0 EMGhist],'NPeaks',2);
+    [PKS,LOCS] = findpeaks_In([0 EMGhist],'NPeaks',2);
     LOCS = sort(LOCS)-1;
     numbins = numbins+1;
     numpeaks = length(LOCS);
@@ -4684,7 +4683,7 @@ while numpeaks ~=2
 end
 
 betweenpeaks = EMGhistbins(LOCS(1):LOCS(2));
-[dip,diploc] = findpeaks_SleepScore(-EMGhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
+[dip,diploc] = findpeaks_In(-EMGhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
 
 EMGthresh = betweenpeaks(diploc);
 
@@ -4698,7 +4697,7 @@ while numpeaks ~=2 && numbins <=25
     %[THhist,THhistbins]= hist(thratio(SWStimes==0 & MOVtimes==0),numbins);
     [THhist,THhistbins]= hist(thratio(MOVtimes==0),numbins);
 
-    [PKS,LOCS] = findpeaks_SleepScore(THhist,'NPeaks',2,'SortStr','descend');
+    [PKS,LOCS] = findpeaks_In(THhist,'NPeaks',2,'SortStr','descend');
     LOCS = sort(LOCS);
     numbins = numbins+1;
     numpeaks = length(LOCS);
@@ -4709,7 +4708,7 @@ numbins = 12;
 while numpeaks ~=2 && numbins <=25
     [THhist,THhistbins]= hist(thratio(NREMtimes==0 & MOVtimes==0),numbins);
 
-    [PKS,LOCS] = findpeaks_SleepScore(THhist,'NPeaks',2,'SortStr','descend');
+    [PKS,LOCS] = findpeaks_In(THhist,'NPeaks',2,'SortStr','descend');
     LOCS = sort(LOCS);
     numbins = numbins+1;
     numpeaks = length(LOCS);
@@ -4717,7 +4716,7 @@ end
 
 if length(PKS)==2
     betweenpeaks = THhistbins(LOCS(1):LOCS(2));
-    [dip,diploc] = findpeaks_SleepScore(-THhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
+    [dip,diploc] = findpeaks_In(-THhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
 
     THthresh = betweenpeaks(diploc);
 
@@ -4938,7 +4937,7 @@ StateIntervals.REMstate = REMints;
 StateIntervals.WAKEstate = WAKEntervals;
 StateIntervals.NREMepisode = episodeintervals{2};
 StateIntervals.REMepisode = episodeintervals{3};
-StateIntervals.WAKEeposode = episodeintervals{1};
+StateIntervals.WAKEepisode = episodeintervals{1};
 StateIntervals.NREMpacket = packetintervals;
 StateIntervals.MAstate = MAntervals;
 load([baseName '_SleepScoreLFP.mat'],'SWchannum')
@@ -5129,3 +5128,965 @@ end
 end
 
 
+function [Ypk,Xpk,Wpk,Ppk] = findpeaks_In(Yin,varargin)
+%FINDPEAKS Find local peaks in data
+%   PKS = FINDPEAKS(Y) finds local peaks in the data vector Y. A local peak
+%   is defined as a data sample which is either larger than the two
+%   neighboring samples or is equal to Inf.
+%
+%   [PKS,LOCS]= FINDPEAKS(Y) also returns the indices LOCS at which the
+%   peaks occur.
+%
+%   [PKS,LOCS] = FINDPEAKS(Y,X) specifies X as the location vector of data
+%   vector Y. X must be a strictly increasing vector of the same length as
+%   Y. LOCS returns the corresponding value of X for each peak detected.
+%   If X is omitted, then X will correspond to the indices of Y.
+%
+%   [PKS,LOCS] = FINDPEAKS(Y,Fs) specifies the sample rate, Fs, as a
+%   positive scalar, where the first sample instant of Y corresponds to a
+%   time of zero.
+%
+%   [...] = FINDPEAKS(...,'MinPeakHeight',MPH) finds only those peaks that
+%   are greater than the minimum peak height, MPH. MPH is a real valued
+%   scalar. The default value of MPH is -Inf.
+%
+%   [...] = FINDPEAKS(...,'MinPeakProminence',MPP) finds peaks guaranteed
+%   to have a vertical drop of more than MPP from the peak on both sides
+%   without encountering either the end of the signal or a larger
+%   intervening peak. The default value of MPP is zero.
+%
+%   [...] = FINDPEAKS(...,'Threshold',TH) finds peaks that are at least
+%   greater than both adjacent samples by the threshold, TH. TH is real
+%   valued scalar greater than or equal to zero. The default value of TH is
+%   zero.
+%
+%   FINDPEAKS(...,'WidthReference',WR) estimates the width of the peak as
+%   the distance between the points where the signal intercepts a
+%   horizontal reference line. The points are found by linear
+%   interpolation. The height of the line is selected using the criterion
+%   specified in WR:
+% 
+%    'halfprom' - the reference line is positioned beneath the peak at a
+%       vertical distance equal to half the peak prominence.
+% 
+%    'halfheight' - the reference line is positioned at one-half the peak 
+%       height. The line is truncated if any of its intercept points lie
+%       beyond the borders of the peaks selected by the 'MinPeakHeight',
+%       'MinPeakProminence' and 'Threshold' parameters. The border between
+%       peaks is defined by the horizontal position of the lowest valley
+%       between them. Peaks with heights less than zero are discarded.
+% 
+%    The default value of WR is 'halfprom'.
+%
+%   [...] = FINDPEAKS(...,'MinPeakWidth',MINW) finds peaks whose width is
+%   at least MINW. The default value of MINW is zero.
+%
+%   [...] = FINDPEAKS(...,'MaxPeakWidth',MAXW) finds peaks whose width is
+%   at most MAXW. The default value of MAXW is Inf.
+%
+%   [...] = FINDPEAKS(...,'MinPeakDistance',MPD) finds peaks separated by
+%   more than the minimum peak distance, MPD. This parameter may be
+%   specified to ignore smaller peaks that may occur in close proximity to
+%   a large local peak. For example, if a large local peak occurs at LOC,
+%   then all smaller peaks in the range [N-MPD, N+MPD] are ignored. If not
+%   specified, MPD is assigned a value of zero.
+%
+%   [...] = FINDPEAKS(...,'SortStr',DIR) specifies the direction of sorting
+%   of peaks. DIR can take values of 'ascend', 'descend' or 'none'. If not
+%   specified, DIR takes the value of 'none' and the peaks are returned in
+%   the order of their occurrence.
+%
+%   [...] = FINDPEAKS(...,'NPeaks',NP) specifies the maximum number of peaks
+%   to be found. NP is an integer greater than zero. If not specified, all
+%   peaks are returned. Use this parameter in conjunction with setting the
+%   sort direction to 'descend' to return the NP largest peaks. (see
+%   'SortStr')
+%
+%   [PKS,LOCS,W] = FINDPEAKS(...) returns the width, W, of each peak by
+%   linear interpolation of the left- and right- intercept points to the
+%   reference defined by 'WidthReference'.
+%
+%   [PKS,LOCS,W,P] = FINDPEAKS(...) returns the prominence, P, of each
+%   peak.
+%
+%   FINDPEAKS(...) without output arguments plots the signal and the peak
+%   values it finds
+%
+%   FINDPEAKS(...,'Annotate',PLOTSTYLE) will annotate a plot of the
+%   signal with PLOTSTYLE. If PLOTSTYLE is 'peaks' the peaks will be
+%   plotted. If PLOTSTYLE is 'extents' the signal, peak values, widths,
+%   prominences of each peak will be annotated. 'Annotate' will be ignored
+%   if called with output arguments. The default value of PLOTSTYLE is
+%   'peaks'.
+%
+%   % Example 1:
+%   %   Plot the Zurich numbers of sunspot activity from years 1700-1987
+%   %   and identify all local maxima at least six years apart
+%   load sunspot.dat
+%   findpeaks(sunspot(:,2),sunspot(:,1),'MinPeakDistance',6)
+%   xlabel('Year');
+%   ylabel('Zurich number');
+%
+%   % Example 2: 
+%   %   Plot peak values of an audio signal that drop at least 1V on either
+%   %   side without encountering values larger than the peak.
+%   load mtlb
+%   findpeaks(mtlb,Fs,'MinPeakProminence',1)
+%
+%   % Example 3:
+%   %   Plot all peaks of a chirp signal whose widths are between .5 and 1 
+%   %   milliseconds.
+%   Fs = 44.1e3; N = 1000;
+%   x = sin(2*pi*(1:N)/N + (10*(1:N)/N).^2);
+%   findpeaks(x,Fs,'MinPeakWidth',.5e-3,'MaxPeakWidth',1e-3, ...
+%             'Annotate','extents')
+
+%   Copyright 2007-2014 The MathWorks, Inc.
+
+%#ok<*EMCLS>
+%#ok<*EMCA>
+%#codegen
+
+cond = nargin >= 1;
+if ~cond
+    coder.internal.assert(cond,'MATLAB:narginchk:notEnoughInputs');
+end
+
+cond = nargin <= 22;
+if ~cond
+    coder.internal.assert(cond,'MATLAB:narginchk:tooManyInputs');
+end
+
+% extract the parameters from the input argument list
+[y,yIsRow,x,xIsRow,minH,minP,minW,maxW,minD,minT,maxN,sortDir,annotate,refW] ...
+  = parse_inputs(Yin,varargin{:});
+
+% find indices of all finite and infinite peaks and the inflection points
+[iFinite,iInfite,iInflect] = getAllPeaks(y);
+
+% keep only the indices of finite peaks that meet the required 
+% minimum height and threshold
+iPk = removePeaksBelowMinPeakHeight(y,iFinite,minH,refW);
+iPk = removePeaksBelowThreshold(y,iPk,minT);
+
+% indicate if we need to compute the extent of a peak
+needWidth = minW>0 || maxW<inf || minP>0 || nargout>2 || strcmp(annotate,'extents');
+
+if needWidth
+  % obtain the indices of each peak (iPk), the prominence base (bPk), and
+  % the x- and y- coordinates of the peak base (bxPk, byPk) and the width
+  % (wxPk)
+  [iPk,bPk,bxPk,byPk,wxPk] = findExtents(y,x,iPk,iFinite,iInfite,iInflect,minP,minW,maxW,refW);
+else
+  % combine finite and infinite peaks into one list
+  [iPk,bPk,bxPk,byPk,wxPk] = combinePeaks(iPk,iInfite);
+end
+
+% find the indices of the largest peaks within the specified distance
+idx = findPeaksSeparatedByMoreThanMinPeakDistance(y,x,iPk,minD);
+
+% re-order and bound the number of peaks based upon the index vector
+idx = orderPeaks(y,iPk,idx,sortDir);
+idx = keepAtMostNpPeaks(idx,maxN);
+
+% use the index vector to fetch the correct peaks.
+iPk = iPk(idx);
+if needWidth
+  [bPk, bxPk, byPk, wxPk] = fetchPeakExtents(idx,bPk,bxPk,byPk,wxPk);
+end
+
+if nargout > 0
+  % assign output variables
+  if needWidth
+    [Ypk,Xpk,Wpk,Ppk] = assignFullOutputs(y,x,iPk,wxPk,bPk,yIsRow,xIsRow);
+  else
+    [Ypk,Xpk] = assignOutputs(y,x,iPk,yIsRow,xIsRow);
+  end    
+else
+  % no output arguments specified. plot and optionally annotate
+  hAxes = plotSignalWithPeaks(x,y,iPk);
+  if strcmp(annotate,'extents')
+    plotExtents(hAxes,x,y,iPk,bPk,bxPk,byPk,wxPk,refW);
+  end
+  
+  scalePlot(hAxes);
+end
+
+end
+%--------------------------------------------------------------------------
+function [y,yIsRow,x,xIsRow,Ph,Pp,Wmin,Wmax,Pd,Th,NpOut,Str,Ann,Ref] = parse_inputs(Yin,varargin)
+
+% Validate input signal
+validateattributes(Yin,{'numeric'},{'nonempty','real','vector'},...
+    'findpeaks','Y');
+yIsRow = isrow(Yin);
+y = Yin(:);
+
+% copy over orientation of y to x.
+xIsRow = yIsRow;
+
+% indicate if the user specified an Fs or X
+hasX = ~isempty(varargin) && isnumeric(varargin{1});
+
+if hasX
+  startArg = 2;
+  if isscalar(varargin{1})
+    % Fs
+    Fs = varargin{1};
+    validateattributes(Fs,{'double'},{'real','finite','positive'},'findpeaks','Fs');
+    x = (0:numel(y)-1).'/Fs;
+  else
+    % X
+    Xin = varargin{1};
+    validateattributes(Xin,{'double'},{'real','finite','vector','increasing'},'findpeaks','X');
+    if numel(Xin) ~= numel(Yin)
+      if coder.target('MATLAB')
+        throwAsCaller(MException(message('signal:findpeaks:mismatchYX')));
+      else
+        coder.internal.errorIf(true,'signal:findpeaks:mismatchYX');
+      end
+    end
+    xIsRow = isrow(Xin);
+    x = Xin(:);
+  end
+else
+  startArg = 1;
+  % unspecified, use index vector
+  x = (1:numel(y)).';
+end
+
+if coder.target('MATLAB')
+    try %#ok<EMTC>
+        % Check the input data type. Single precision is not supported.
+        chkinputdatatype_In(y);
+        chkinputdatatype_In(x);
+    catch ME
+        throwAsCaller(ME);
+    end
+else
+    chkinputdatatype_In(y);
+    chkinputdatatype_In(x);
+end
+
+M = numel(y);
+cond = (M < 3);
+if cond
+    coder.internal.errorIf(cond,'signal:findpeaks:emptyDataSet');
+end
+
+%#function dspopts.findpeaks
+defaultMinPeakHeight = -inf;
+defaultMinPeakProminence = 0;
+defaultMinPeakWidth = 0;
+defaultMaxPeakWidth = Inf;
+defaultMinPeakDistance = 0;
+defaultThreshold = 0;
+defaultNPeaks = [];
+defaultSortStr = 'none';
+defaultAnnotate = 'peaks';
+defaultWidthReference = 'halfprom';
+
+if coder.target('MATLAB')
+    p = inputParser;
+    addParameter(p,'MinPeakHeight',defaultMinPeakHeight);
+    addParameter(p,'MinPeakProminence',defaultMinPeakProminence);
+    addParameter(p,'MinPeakWidth',defaultMinPeakWidth);
+    addParameter(p,'MaxPeakWidth',defaultMaxPeakWidth);
+    addParameter(p,'MinPeakDistance',defaultMinPeakDistance);
+    addParameter(p,'Threshold',defaultThreshold);
+    addParameter(p,'NPeaks',defaultNPeaks);
+    addParameter(p,'SortStr',defaultSortStr);
+    addParameter(p,'Annotate',defaultAnnotate);
+    addParameter(p,'WidthReference',defaultWidthReference);
+    parse(p,varargin{startArg:end});
+    Ph = p.Results.MinPeakHeight;
+    Pp = p.Results.MinPeakProminence;
+    Wmin = p.Results.MinPeakWidth;
+    Wmax = p.Results.MaxPeakWidth;
+    Pd = p.Results.MinPeakDistance;
+    Th = p.Results.Threshold;
+    Np = p.Results.NPeaks;
+    Str = p.Results.SortStr;
+    Ann = p.Results.Annotate;
+    Ref = p.Results.WidthReference;
+else
+    parms = struct('MinPeakHeight',uint32(0), ...
+                'MinPeakProminence',uint32(0), ...
+                'MinPeakWidth',uint32(0), ...
+                'MaxPeakWidth',uint32(0), ...
+                'MinPeakDistance',uint32(0), ...
+                'Threshold',uint32(0), ...
+                'NPeaks',uint32(0), ...
+                'SortStr',uint32(0), ...
+                'Annotate',uint32(0), ...
+                'WidthReference',uint32(0));
+    pstruct = eml_parse_parameter_inputs(parms,[],varargin{startArg:end});
+    Ph = eml_get_parameter_value(pstruct.MinPeakHeight,defaultMinPeakHeight,varargin{startArg:end});
+    Pp = eml_get_parameter_value(pstruct.MinPeakProminence,defaultMinPeakProminence,varargin{startArg:end});
+    Wmin = eml_get_parameter_value(pstruct.MinPeakWidth,defaultMinPeakWidth,varargin{startArg:end});
+    Wmax = eml_get_parameter_value(pstruct.MaxPeakWidth,defaultMaxPeakWidth,varargin{startArg:end});
+    Pd = eml_get_parameter_value(pstruct.MinPeakDistance,defaultMinPeakDistance,varargin{startArg:end});
+    Th = eml_get_parameter_value(pstruct.Threshold,defaultThreshold,varargin{startArg:end});
+    Np = eml_get_parameter_value(pstruct.NPeaks,defaultNPeaks,varargin{startArg:end});
+    Str = eml_get_parameter_value(pstruct.SortStr,defaultSortStr,varargin{startArg:end});
+    Ann = eml_get_parameter_value(pstruct.Annotate,defaultAnnotate,varargin{startArg:end});
+    Ref = eml_get_parameter_value(pstruct.WidthReference,defaultWidthReference,varargin{startArg:end});
+end
+
+% limit the number of peaks to the number of input samples
+if isempty(Np)
+    NpOut = M;
+else
+    NpOut = Np;
+end
+
+% ignore peaks below zero when using halfheight width reference
+if strcmp(Ref,'halfheight')
+  Ph = max(Ph,0);
+end
+
+validateattributes(Ph,{'numeric'},{'real','scalar','nonempty'},'findpeaks','MinPeakHeight');
+validateattributes(Pd,{'numeric'},{'real','scalar','nonempty','nonnegative','<',x(M)-x(1)},'findpeaks','MinPeakDistance');
+validateattributes(Pp,{'numeric'},{'real','scalar','nonempty','nonnegative'},'findpeaks','MinPeakProminence');
+validateattributes(Wmin,{'numeric'},{'real','scalar','finite','nonempty','nonnegative'},'findpeaks','MinPeakWidth');
+validateattributes(Wmax,{'numeric'},{'real','scalar','nonnan','nonempty','nonnegative'},'findpeaks','MaxPeakWidth');
+validateattributes(Pd,{'numeric'},{'real','scalar','nonempty','nonnegative'},'findpeaks','MinPeakDistance');
+validateattributes(Th,{'numeric'},{'real','scalar','nonempty','nonnegative'},'findpeaks','Threshold');
+validateattributes(NpOut,{'numeric'},{'real','scalar','nonempty','integer','positive'},'findpeaks','NPeaks');
+Str = validatestring(Str,{'ascend','none','descend'},'findpeaks','SortStr');
+Ann = validatestring(Ann,{'peaks','extents'},'findpeaks','SortStr');
+Ref = validatestring(Ref,{'halfprom','halfheight'},'findpeaks','WidthReference');
+
+end
+%--------------------------------------------------------------------------
+function [iPk,iInf,iInflect] = getAllPeaks(y)
+% fetch indices all infinite peaks
+iInf = find(isinf(y) & y>0);
+
+% temporarily remove all +Inf values
+yTemp = y;
+yTemp(iInf) = NaN;
+
+% determine the peaks and inflection points of the signal
+[iPk,iInflect] = findLocalMaxima(yTemp);
+
+
+end
+%--------------------------------------------------------------------------
+function [iPk, iInflect] = findLocalMaxima(yTemp)
+% bookend Y by NaN and make index vector
+yTemp = [NaN; yTemp; NaN];
+iTemp = (1:numel(yTemp)).';
+
+% keep only the first of any adjacent pairs of equal values (including NaN).
+yFinite = ~isnan(yTemp);
+iNeq = [1; 1 + find((yTemp(1:end-1) ~= yTemp(2:end)) & ...
+                    (yFinite(1:end-1) | yFinite(2:end)))];
+iTemp = iTemp(iNeq);
+
+% take the sign of the first sample derivative
+s = sign(diff(yTemp(iTemp)));
+
+% find local maxima
+iMax = 1 + find(diff(s)<0);
+
+% find all transitions from rising to falling or to NaN
+iAny = 1 + find(s(1:end-1)~=s(2:end));
+
+% index into the original index vector without the NaN bookend.
+iInflect = iTemp(iAny)-1;
+iPk = iTemp(iMax)-1;
+
+end
+%--------------------------------------------------------------------------
+function iPk = removePeaksBelowMinPeakHeight(Y,iPk,Ph,widthRef)
+if ~isempty(iPk) 
+  iPk = iPk(Y(iPk) > Ph);
+  if isempty(iPk) && ~strcmp(widthRef,'halfheight')
+    if coder.target('MATLAB')
+        warning(message('signal:findpeaks:largeMinPeakHeight', 'MinPeakHeight', 'MinPeakHeight'));
+    end
+  end
+end
+
+end
+%--------------------------------------------------------------------------
+function iPk = removePeaksBelowThreshold(Y,iPk,Th)
+
+base = max(Y(iPk-1),Y(iPk+1));
+iPk = iPk(Y(iPk)-base >= Th);
+
+end
+%--------------------------------------------------------------------------
+function [iPk,bPk,bxPk,byPk,wxPk] = findExtents(y,x,iPk,iFin,iInf,iInflect,minP,minW,maxW,refW)
+% temporarily filter out +Inf from the input
+yFinite = y;
+yFinite(iInf) = NaN;
+
+% get the base and left and right indices of each prominence base
+[bPk,iLB,iRB] = getPeakBase(yFinite,iPk,iFin,iInflect);
+
+% keep only those indices with at least the specified prominence
+[iPk,bPk,iLB,iRB] = removePeaksBelowMinPeakProminence(yFinite,iPk,bPk,iLB,iRB,minP);
+
+% get the x-coordinates of the half-height width borders of each peak
+[wxPk,iLBh,iRBh] = getPeakWidth(yFinite,x,iPk,bPk,iLB,iRB,refW);
+
+% merge finite and infinite peaks together into one list
+[iPk,bPk,bxPk,byPk,wxPk] = combineFullPeaks(y,x,iPk,bPk,iLBh,iRBh,wxPk,iInf);
+
+% keep only those in the range minW < w < maxW
+[iPk,bPk,bxPk,byPk,wxPk] = removePeaksOutsideWidth(iPk,bPk,bxPk,byPk,wxPk,minW,maxW);
+
+end
+
+%--------------------------------------------------------------------------
+function [peakBase,iLeftSaddle,iRightSaddle] = getPeakBase(yTemp,iPk,iFin,iInflect)
+% determine the indices that border each finite peak
+[iLeftBase, iLeftSaddle] = getLeftBase(yTemp,iPk,iFin,iInflect);
+[iRightBase, iRightSaddle] = getLeftBase(yTemp,flipud(iPk),flipud(iFin),flipud(iInflect));
+iRightBase = flipud(iRightBase);
+iRightSaddle = flipud(iRightSaddle);
+peakBase = max(yTemp(iLeftBase),yTemp(iRightBase));
+
+end
+%--------------------------------------------------------------------------
+function [iBase, iSaddle] = getLeftBase(yTemp,iPeak,iFinite,iInflect)
+% pre-initialize output base and saddle indices
+iBase = zeros(size(iPeak));
+iSaddle = zeros(size(iPeak));
+
+% table stores the most recently encountered peaks in order of height
+peak = zeros(size(iFinite));
+valley = zeros(size(iFinite));
+iValley = zeros(size(iFinite));
+
+n = 0;
+i = 1;
+j = 1;
+k = 1;
+
+% pre-initialize v for code generation
+v = NaN; 
+iv = 1;
+
+while k<=numel(iPeak)
+  % walk through the inflections until you reach a peak
+  while iInflect(i) ~= iFinite(j) 
+    v = yTemp(iInflect(i));
+    iv = iInflect(i);
+    if isnan(v)
+      % border seen, start over.
+      n = 0;
+    else
+      % ignore previously stored peaks with a valley larger than this one
+      while n>0 && valley(n)>v;
+        n = n - 1;
+      end
+    end
+    i = i + 1;
+  end
+  % get the peak
+  p = yTemp(iInflect(i));
+  
+  % keep the smallest valley of all smaller peaks
+  while n>0 && peak(n) < p
+    if valley(n) < v
+      v = valley(n);
+      iv = iValley(n);
+    end
+    n = n - 1;
+  end
+
+  % record "saddle" valleys in between equal-height peaks
+  isv = iv;
+  
+  % keep seeking smaller valleys until you reach a larger peak
+  while n>0 && peak(n) <= p
+    if valley(n) < v
+      v = valley(n);
+      iv = iValley(n);
+    end
+    n = n - 1;      
+  end
+  
+  % record the new peak and save the index of the valley into the base
+  % and saddle
+  n = n + 1;
+  peak(n) = p;
+  valley(n) = v;
+  iValley(n) = iv;
+
+  if iInflect(i) == iPeak(k)
+    iBase(k) = iv;
+    iSaddle(k) = isv;
+    k = k + 1;
+  end
+  
+  i = i + 1;
+  j = j + 1;
+end
+
+end
+%--------------------------------------------------------------------------
+function [iPk,pbPk,iLB,iRB] = removePeaksBelowMinPeakProminence(y,iPk,pbPk,iLB,iRB,minP)
+% compute the prominence of each peak
+Ppk = y(iPk)-pbPk;
+
+% keep those that are above the specified prominence
+idx = find(Ppk >= minP);
+iPk = iPk(idx);
+pbPk = pbPk(idx);
+iLB = iLB(idx);
+iRB = iRB(idx);
+
+end
+%--------------------------------------------------------------------------
+function [wxPk,iLBh,iRBh] = getPeakWidth(y,x,iPk,pbPk,iLB,iRB,wRef)
+if isempty(iPk)
+  % no peaks.  define empty containers
+  base = zeros(size(iPk));
+  iLBh = zeros(size(iPk));
+  iRBh = zeros(size(iPk));  
+elseif strcmp(wRef,'halfheight')
+  % set the baseline to zero
+  base = zeros(size(iPk));
+
+  % border the width by no more than the lowest valley between this peak
+  % and the next peak
+  iLBh = [iLB(1); max(iLB(2:end),iRB(1:end-1))];
+  iRBh = [min(iRB(1:end-1),iLB(2:end)); iRB(end)];
+  iGuard = iLBh > iPk;
+  iLBh(iGuard) = iLB(iGuard);
+  iGuard = iRBh < iPk;
+  iRBh(iGuard) = iRB(iGuard);
+else
+  % use the prominence base
+  base = pbPk;
+  
+  % border the width by the saddle of the peak
+  iLBh = iLB;
+  iRBh = iRB;
+end
+
+% get the width boundaries of each peak
+wxPk = getHalfMaxBounds(y, x, iPk, base, iLBh, iRBh);
+
+end
+%--------------------------------------------------------------------------
+function bounds = getHalfMaxBounds(y, x, iPk, base, iLB, iRB)
+bounds = zeros(numel(iPk),2);
+
+% interpolate both the left and right bounds clamping at borders
+for i=1:numel(iPk)
+  
+  % compute the desired reference level at half-height or half-prominence
+  refHeight = (y(iPk(i))+base(i))/2;
+  
+  % compute the index of the left-intercept at half max
+  iLeft = findLeftIntercept(y, iPk(i), iLB(i), refHeight);
+  if iLeft < iLB(i)
+    xLeft = x(iLB(i));
+  else
+    xLeft = linterp(x(iLeft),x(iLeft+1),y(iLeft),y(iLeft+1),y(iPk(i)),base(i));
+  end
+  
+  % compute the index of the right-intercept
+  iRight = findRightIntercept(y, iPk(i), iRB(i), refHeight);
+  if iRight > iRB(i)
+    xRight = x(iRB(i));
+  else
+    xRight = linterp(x(iRight), x(iRight-1), y(iRight), y(iRight-1), y(iPk(i)),base(i));
+  end
+
+  % store result
+  bounds(i,:) = [xLeft xRight];
+end
+
+end
+%--------------------------------------------------------------------------
+function idx = findLeftIntercept(y, idx, borderIdx, refHeight)
+% decrement index until you pass under the reference height or pass the
+% index of the left border, whichever comes first
+while idx>=borderIdx && y(idx) > refHeight
+  idx = idx - 1;
+end
+
+end
+%--------------------------------------------------------------------------
+function idx = findRightIntercept(y, idx, borderIdx, refHeight)
+% increment index until you pass under the reference height or pass the
+% index of the right border, whichever comes first
+while idx<=borderIdx && y(idx) > refHeight
+  idx = idx + 1;
+end
+
+end
+%--------------------------------------------------------------------------
+function xc = linterp(xa,xb,ya,yb,yc,bc)
+% interpolate between points (xa,ya) and (xb,yb) to find (xc, 0.5*(yc-yc)).
+xc = xa + (xb-xa) .* (0.5*(yc+bc)-ya) ./ (yb-ya);
+
+% invoke L'Hospital's rule when -Inf is encountered. 
+if isnan(xc)
+  % yc and yb are guaranteed to be finite. 
+  if isinf(bc)
+    % both ya and bc are -Inf.
+    xc = 0.5*(xa+xb);
+  else
+    % only ya is -Inf.
+    xc = xb;
+  end
+end
+
+end
+%--------------------------------------------------------------------------
+function [iPk,bPk,bxPk,byPk,wxPk] = removePeaksOutsideWidth(iPk,bPk,bxPk,byPk,wxPk,minW,maxW)
+
+if isempty(iPk) || minW==0 && maxW == inf;
+  return
+end
+
+% compute the width of each peak and extract the matching indices
+w = diff(wxPk,1,2);
+idx = find(minW <= w & w <= maxW);
+
+% fetch the surviving peaks
+iPk = iPk(idx);
+bPk = bPk(idx);
+bxPk = bxPk(idx,:);
+byPk = byPk(idx,:);
+wxPk = wxPk(idx,:);
+
+end
+%--------------------------------------------------------------------------
+function [iPkOut,bPk,bxPk,byPk,wxPk] = combinePeaks(iPk,iInf)
+iPkOut = union(iPk,iInf);
+bPk = zeros(0,1);
+bxPk = zeros(0,2);
+byPk = zeros(0,2);
+wxPk = zeros(0,2);
+
+end
+%--------------------------------------------------------------------------
+function [iPkOut,bPkOut,bxPkOut,byPkOut,wxPkOut] = combineFullPeaks(y,x,iPk,bPk,iLBw,iRBw,wPk,iInf)
+iPkOut = union(iPk, iInf);
+
+% create map of new indices to old indices
+[~, iFinite] = intersect(iPkOut,iPk);
+[~, iInfinite] = intersect(iPkOut,iInf);
+
+% prevent row concatenation when iPk and iInf both have less than one
+% element
+iPkOut = iPkOut(:);
+
+% compute prominence base
+bPkOut = zeros(size(iPkOut));
+bPkOut(iFinite) = bPk;
+bPkOut(iInfinite) = 0;
+
+% compute indices of left and right infinite borders
+iInfL = max(1,iInf-1);
+iInfR = min(iInf+1,numel(x));
+
+% copy out x- values of the left and right prominence base
+% set each base border of an infinite peaks halfway between itself and
+% the next adjacent sample
+bxPkOut = zeros(size(iPkOut,1),2);
+bxPkOut(iFinite,1) = x(iLBw);
+bxPkOut(iFinite,2) = x(iRBw);
+bxPkOut(iInfinite,1) = 0.5*(x(iInf)+x(iInfL));
+bxPkOut(iInfinite,2) = 0.5*(x(iInf)+x(iInfR));
+
+% copy out y- values of the left and right prominence base
+byPkOut = zeros(size(iPkOut,1),2);
+byPkOut(iFinite,1) = y(iLBw);
+byPkOut(iFinite,2) = y(iRBw);
+byPkOut(iInfinite,1) = y(iInfL);
+byPkOut(iInfinite,2) = y(iInfR);
+
+% copy out x- values of the width borders
+% set each width borders of an infinite peaks halfway between itself and
+% the next adjacent sample
+wxPkOut = zeros(size(iPkOut,1),2);
+wxPkOut(iFinite,:) = wPk;
+wxPkOut(iInfinite,1) = 0.5*(x(iInf)+x(iInfL));
+wxPkOut(iInfinite,2) = 0.5*(x(iInf)+x(iInfR));
+
+end
+%--------------------------------------------------------------------------
+function idx = findPeaksSeparatedByMoreThanMinPeakDistance(y,x,iPk,Pd)
+% Start with the larger peaks to make sure we don't accidentally keep a
+% small peak and remove a large peak in its neighborhood. 
+
+if isempty(iPk) || Pd==0
+  idx = (1:numel(iPk)).';
+  return
+end
+
+% copy peak values and locations to a temporary place
+pks = y(iPk);
+locs = x(iPk);
+
+% Order peaks from large to small
+[~, sortIdx] = sort(pks,'descend');
+locs_temp = locs(sortIdx);
+
+idelete = ones(size(locs_temp))<0;
+for i = 1:length(locs_temp)
+  if ~idelete(i)
+    % If the peak is not in the neighborhood of a larger peak, find
+    % secondary peaks to eliminate.
+    idelete = idelete | (locs_temp>=locs_temp(i)-Pd)&(locs_temp<=locs_temp(i)+Pd); 
+    idelete(i) = 0; % Keep current peak
+  end
+end
+
+% report back indices in consecutive order
+idx = sort(sortIdx(~idelete));
+
+
+end
+
+%--------------------------------------------------------------------------
+function idx = orderPeaks(Y,iPk,idx,Str)
+
+if isempty(idx) || strcmp(Str,'none')
+  return
+end
+
+if strcmp(Str,'ascend')
+  [~,s]  = sort(Y(iPk(idx)),'ascend');
+else
+  [~,s]  = sort(Y(iPk(idx)),'descend');
+end
+
+idx = idx(s);
+
+
+end
+%--------------------------------------------------------------------------
+function idx = keepAtMostNpPeaks(idx,Np)
+
+if length(idx)>Np
+  idx = idx(1:Np);
+end
+
+end
+%--------------------------------------------------------------------------
+function [bPk,bxPk,byPk,wxPk] = fetchPeakExtents(idx,bPk,bxPk,byPk,wxPk)
+bPk = bPk(idx);
+bxPk = bxPk(idx,:);
+byPk = byPk(idx,:);
+wxPk = wxPk(idx,:);
+
+end
+%--------------------------------------------------------------------------
+function [YpkOut,XpkOut] = assignOutputs(y,x,iPk,yIsRow,xIsRow)
+
+% fetch the coordinates of the peak
+Ypk = y(iPk);
+Xpk = x(iPk);
+
+% preserve orientation of Y
+if yIsRow
+  YpkOut = Ypk.';
+else
+  YpkOut = Ypk;
+end
+
+% preserve orientation of X
+if xIsRow
+  XpkOut = Xpk.';
+else
+  XpkOut = Xpk;
+end
+
+end
+%--------------------------------------------------------------------------
+function [YpkOut,XpkOut,WpkOut,PpkOut] = assignFullOutputs(y,x,iPk,wxPk,bPk,yIsRow,xIsRow)
+
+% fetch the coordinates of the peak
+Ypk = y(iPk);
+Xpk = x(iPk);
+
+% compute the width and prominence
+Wpk = diff(wxPk,1,2);
+Ppk = Ypk-bPk;
+
+% preserve orientation of Y (and P)
+if yIsRow
+  YpkOut = Ypk.';
+  PpkOut = Ppk.';
+else
+  YpkOut = Ypk;
+  PpkOut = Ppk;  
+end
+
+% preserve orientation of X (and W)
+if xIsRow
+  XpkOut = Xpk.';
+  WpkOut = Wpk.';
+else
+  XpkOut = Xpk;
+  WpkOut = Wpk;  
+end
+
+end
+%--------------------------------------------------------------------------
+function hAxes = plotSignalWithPeaks(x,y,iPk)
+
+% plot signal
+hLine = plot(x,y,'Tag','Signal');
+hAxes = ancestor(hLine,'Axes');
+% turn on grid
+grid on;
+
+% use the color of the line
+color = get(hLine,'Color');
+hLine = line(x(iPk),y(iPk),'Parent',hAxes, ...
+     'Marker','o','LineStyle','none','Color',color,'tag','Peak');
+
+% if using MATLAB use offset inverted triangular marker
+if coder.target('MATLAB')
+  plotpkmarkers(hLine,y(iPk));
+end
+
+end
+
+%--------------------------------------------------------------------------
+function plotExtents(hAxes,x,y,iPk,bPk,bxPk,byPk,wxPk,refW)
+
+% compute level of half-maximum (height or prominence)
+if strcmp(refW,'halfheight')
+  hm = 0.5*y(iPk);
+else
+  hm = 0.5*(y(iPk)+bPk);
+end
+
+% get the default color order
+colors = get(0,'DefaultAxesColorOrder');
+
+% plot boundaries between adjacent peaks when using half-height
+if strcmp(refW,'halfheight')
+  % plot height
+  plotLines(hAxes,'Height',x(iPk),y(iPk),x(iPk),zeros(numel(iPk),1),colors(2,:));  
+
+  % plot width
+  plotLines(hAxes,'HalfHeightWidth',wxPk(:,1),hm,wxPk(:,2),hm,colors(3,:));
+      
+  % plot peak borders
+  idx = find(byPk(:,1)>0);
+  plotLines(hAxes,'Border',bxPk(idx,1),zeros(numel(idx),1),bxPk(idx,1),byPk(idx,1),colors(4,:));
+  idx = find(byPk(:,2)>0);
+  plotLines(hAxes,'Border',bxPk(idx,2),zeros(numel(idx),1),bxPk(idx,2),byPk(idx,2),colors(4,:));
+  
+else
+  % plot prominence
+  plotLines(hAxes,'Prominence',x(iPk), y(iPk), x(iPk), bPk, colors(2,:));  
+  
+  % plot width
+  plotLines(hAxes,'HalfProminenceWidth',wxPk(:,1), hm, wxPk(:,2), hm, colors(3,:));
+  
+  % plot peak borders
+  idx = find(bPk(:)<byPk(:,1));
+  plotLines(hAxes,'Border',bxPk(idx,1),bPk(idx),bxPk(idx,1),byPk(idx,1),colors(4,:));
+  idx = find(bPk(:)<byPk(:,2));
+  plotLines(hAxes,'Border',bxPk(idx,2),bPk(idx),bxPk(idx,2),byPk(idx,2),colors(4,:));
+end
+
+if coder.target('MATLAB')
+  hLine = get(hAxes,'Children');
+  tags = get(hLine,'tag');
+  
+  legendStrs = {};
+  searchTags = {'Signal','Peak','Prominence','Height','HalfProminenceWidth','HalfHeightWidth','Border'};
+  for i=1:numel(searchTags)
+    if any(strcmp(searchTags{i},tags))
+      legendStrs = [legendStrs, ...
+        {getString(message(['signal:findpeaks:Legend' searchTags{i}]))}]; %#ok<AGROW>
+    end
+  end
+  
+  if numel(hLine)==1
+    legend(getString(message('signal:findpeaks:LegendSignalNoPeaks')), ...
+      'Location','best');
+  else
+    legend(legendStrs,'Location','best');
+  end  
+end
+
+end
+%--------------------------------------------------------------------------
+function plotLines(hAxes,tag,x1,y1,x2,y2,c)
+% concatenate multiple lines into a single line and fencepost with NaN
+n = numel(x1);
+line(reshape([x1(:).'; x2(:).'; NaN(1,n)], 3*n, 1), ...
+     reshape([y1(:).'; y2(:).'; NaN(1,n)], 3*n, 1), ...
+     'Color',c,'Parent',hAxes,'tag',tag);
+
+end
+%--------------------------------------------------------------------------
+function scalePlot(hAxes)
+
+% In the event that the plot has integer valued y limits, 'axis auto' may
+% clip the YLimits directly to the data with no margin.  We search every
+% line for its max and minimum value and create a temporary annotation that
+% is 10% larger than the min and max values.  We then feed this to "axis
+% auto", save the y limits, set axis to "tight" then restore the y limits.
+% This obviates the need to check each line for its max and minimum x
+% values as well.
+
+minVal = Inf;
+maxVal = -Inf;
+
+if coder.target('MATLAB')
+  hLines = findall(hAxes,'Type','line');
+  for i=1:numel(hLines)
+    data = get(hLines(i),'YData');
+    data = data(isfinite(data));
+    if ~isempty(data)
+      minVal = min(minVal, min(data(:)));
+      maxVal = max(maxVal, max(data(:)));
+    end
+  end
+  
+  axis auto
+  xlimits = xlim;
+  
+  % grow upper and lower y extent by 5% (a total of 10%)
+  p = .05;    
+  y1 = (1+p)*maxVal - p*minVal;
+  y2 = (1+p)*minVal - p*maxVal;
+  
+  % artificially expand the data range by the specified amount
+  hTempLine = line(xlimits([1 1]),[y1 y2],'Parent',hAxes);  
+  
+  % save the limits
+  ylimits = ylim;
+  delete(hTempLine);  
+else
+  axis auto
+  ylimits = ylim;
+end
+
+% preserve expanded y limits but tighten x axis.
+axis tight
+ylim(ylimits);  
+
+% [EOF]
+
+end
+
+
+function chkinputdatatype_In(varargin)
+%CHKINPUTDATATYPE Check that all inputs are double
+
+%   Copyright 2009-2013 The MathWorks, Inc.
+for n = 1:nargin
+    if ~isa(varargin{n},'double')
+        error(message('signal:chkinputdatatype:NotSupported'));
+    end
+end
+
+end
