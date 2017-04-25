@@ -8,7 +8,7 @@ function spikes = bz_getSpikes(varargin)
 % INPUTS
 %
 %    spikeGroups     -vector subset of shank IDs to load
-%    region          -s+tring region ID to load neurons from specific region (requires metadata file)
+%    region          -string region ID to load neurons from specific region (requires metadata file)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
 %    getWaveforms    -logical (default=true) to load waveform data
@@ -55,6 +55,9 @@ function spikes = bz_getSpikes(varargin)
 %
 % written by David Tingley, 2017
 
+% TODO
+% - integrate session metadata in place of xml-LoadParameters
+% - get 'region' input working with session metadata
 p = inputParser;
 addParameter(p,'spikeGroups',[],@isvector);
 addParameter(p,'region','',@isstr); % won't work without metadata 
@@ -87,10 +90,12 @@ nChannels = meta.nChannels;
 
 
 %% if the cellinfo file exist and we don't want to re-load files
-if exist([basepath filesep 'spikes.cellinfo.mat']) & forceReload == false
-    load([basepath filesep 'spikes.cellinfo.mat'])
+if exist([basepath filesep meta.FileName '.spikes.cellinfo.mat']) & forceReload == false
+    disp('loading spikes from cellinfo file..')
+    load([basepath filesep meta.FileName '.spikes.cellinfo.mat'])
 else % do the below then filter by inputs...
-
+    
+disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
 cluFiles = dir([basepath filesep '*.clu*']);
 resFiles = dir([basepath filesep '*.res*']);
@@ -173,6 +178,7 @@ if ~isempty(spikeGroups)
 end
 %% filter by region input
 if ~isempty(region)
+    warning('region input is not working yet, get metadata loading working first!')
         [toRemove] = ~ismember(spikes.region,region);
     spikes.UID(toRemove) = [];
     for r = 1:length(toRemove)
@@ -214,7 +220,7 @@ end
 
 %% save to buzcode format
 if saveMat
-    save([meta.FileName '.spikes.cellinfo.mat'],'spikes')
+    save([basepath filesep meta.FileName '.spikes.cellinfo.mat'],'spikes')
 end
 
 
