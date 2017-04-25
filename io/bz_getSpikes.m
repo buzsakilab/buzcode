@@ -3,17 +3,18 @@ function spikes = bz_getSpikes(varargin)
 %
 % USAGE
 %
-%    spikes = bz_getSpikes(units,<options>)
+%    spikes = bz_getSpikes(varargin)
 % 
 % INPUTS
 %
 %    spikeGroups     -vector subset of shank IDs to load
-%    region          -string region ID to load neurons from specific region (requires metadata file)
+%    region          -s+tring region ID to load neurons from specific region (requires metadata file)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
 %    getWaveforms    -logical (default=true) to load waveform data
 %    forceReload     -logical (default=false) to force loading from
 %                     res/clu/spk files
+%    saveMat         -logical (default=false) to save in buzcode format
 %    
 % OUTPUTS
 %
@@ -22,12 +23,35 @@ function spikes = bz_getSpikes(varargin)
 %          .UID            -unique identifier for each neuron in a recording
 %          .times          -cell array of timestamps (seconds) for each neuron
 %          .region         -region ID for each neuron (especially important large scale, high density probes)
-%          .spikeGroup     -shank ID that each neuron was recorded on
+%          .shankID        -shank ID that each neuron was recorded on
 %          .maxWaveformCh  -channel # with largest amplitude spike for each neuron
 %          .meanWaveform   -average waveform on maxWaveformCh
 %          .cluID          -cluster ID, NOT UNIQUE ACROSS SHANKS
 %           
 % NOTES
+%
+% This function can be used in several ways to load spiking data.
+% Specifically, it loads spiketimes for individual neurons and other
+% metadata that describes each neuron.  Spiketimes can be loaded using the
+% UID(1-N), the shank the neuron was on, or the region it was recorded in.
+% The default behavior is to load all spikes in a recording. The .shankID
+% and .cluID fields can be used to reconstruct the 'units' variable often
+% used in FMAToolbox.
+% units = [spikes.shankID spikes.cluID];
+% 
+% 
+% first usage recommendation:
+% 
+%   spikes = bz_getSpikes('saveMat',true); Loads and saves all spiking data
+%                                          into buzcode format .cellinfo. struct
+% other examples:
+%
+%   spikes = bz_getSpikes('spikeGroups',1:5); first five shanks
+%
+%   spikes = bz_getSpikes('region','CA1'); cells tagged as recorded in CA1
+%
+%   spikes = bz_getSpikes('UID',[1:20]); first twenty neurons
+%
 %
 % written by David Tingley, 2017
 
@@ -38,7 +62,7 @@ addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'getWaveforms',true,@islogical)
 addParameter(p,'forceReload',false,@islogical);
-
+addParameter(p,'saveMat',false,@islogical);
 
 parse(p,varargin{:})
 
@@ -48,6 +72,7 @@ UID = p.Results.UID;
 basepath = p.Results.basepath;
 getWaveforms = p.Results.getWaveforms;
 forceReload = p.Results.forceReload;
+saveMat = p.Results.saveMat;
 
 % get meta info about recording, for now we'll use the xml.
 meta = LoadParameters(basepath);
@@ -88,7 +113,7 @@ for i=1:length(cluFiles)
     clu = clu(2:end); % toss the first sample to match res/spk files
     res = load(resFiles(i).name);
     nSamples = meta.spikeGroups.nSamples(shankID);
-    spkGrpChans = meta.spikeGroups.groups{shankID};
+    spkGrpChans = meta.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
     
     if getWaveforms
         % load waveforms
@@ -104,17 +129,18 @@ for i=1:length(cluFiles)
        spikes.UID(count) = count; % this only works if all shanks are loaded... how do we optimize this?
        ind = find(clu == cells(c));
        spikes.times{count} = res(ind) ./ samplingRate;
-       spikes.spikeGroup(count) = i;
+       spikes.shankID(count) = i;
        spikes.cluID(count) = cells(c);
               
        if getWaveforms
            wvforms = squeeze(median(wav(ind,:,:)));
            for t = 1:size(wvforms,1)
-              [a(t) b(t)] = min(wvforms(t,:)); 
+              [a(t) b(t)] = max(abs(wvforms(t,:))); 
            end
            [aa bb] = min(a);
            spikes.meanWaveform{count} = wvforms(bb,:);
-           spikes.maxWaveformCh(count) = spkGrpChans(bb);        
+           spikes.maxWaveformCh(count) = spkGrpChans(bb);     
+           clear a aa b bb
        end
        count = count + 1;
     end
@@ -122,22 +148,74 @@ end
 
 spikes.sessionName = meta.FileName;
 
-
-%% filter by spikeGroups input
-
-%% filter by region input
-
-%% filter by UID input
-
-
-
 end
 
 
+%% filter by spikeGroups input
+if ~isempty(spikeGroups)
+    [toRemove] = ~ismember(spikes.shankID,spikeGroups);
+    spikes.UID(toRemove) = [];
+    for r = 1:length(toRemove)
+        if toRemove(r) == 1
+         spikes.times{r} = [];
+        end
+    end
+    spikes.times = removeEmptyCells(spikes.times);
+    spikes.cluID(toRemove) = [];
+    spikes.shankID(toRemove) = [];
+    for r = 1:length(toRemove)
+        if toRemove(r) == 1
+         spikes.meanWaveform{r} = [];
+        end
+    end
+    spikes.meanWaveform = removeEmptyCells(spikes.meanWaveform);
+    spikes.maxWaveformCh(toRemove) = [];
+end
+%% filter by region input
+if ~isempty(region)
+        [toRemove] = ~ismember(spikes.region,region);
+    spikes.UID(toRemove) = [];
+    for r = 1:length(toRemove)
+        if toRemove(r) == 1
+         spikes.times{r} = [];
+        end
+    end
+    spikes.times = removeEmptyCells(spikes.times);
+    spikes.cluID(toRemove) = [];
+    spikes.shankID(toRemove) = [];
+    for r = 1:length(toRemove)
+        if toRemove(r) == 1
+         spikes.meanWaveform{r} = [];
+        end
+    end
+    spikes.meanWaveform = removeEmptyCells(spikes.meanWaveform);
+    spikes.maxWaveformCh(toRemove) = [];
+end
+%% filter by UID input
+if ~isempty(UID)
+        [toRemove] = ~ismember(spikes.UID,UID);
+    spikes.UID(toRemove) = [];
+    for r = 1:length(toRemove)
+        if toRemove(r) == 1
+         spikes.times{r} = [];
+        end
+    end
+    spikes.times = removeEmptyCells(spikes.times);
+    spikes.cluID(toRemove) = [];
+    spikes.shankID(toRemove) = [];
+    for r = 1:length(toRemove)
+        if toRemove(r) == 1
+         spikes.meanWaveform{r} = [];
+        end
+    end
+    spikes.meanWaveform = removeEmptyCells(spikes.meanWaveform);
+    spikes.maxWaveformCh(toRemove) = [];
+end
 
-
-
-
+%% save to buzcode format
+if saveMat
+    save([meta.FileName '.spikes.cellinfo.mat'],'spikes')
+end
 
 
 
