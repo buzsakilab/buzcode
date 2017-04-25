@@ -45,7 +45,8 @@ end
 if nargin < 4,
 	waveforms = LoadBinary(filename,'nChannels',nChannels);
 else
-	waveforms = LoadBinary(filename,'nChannels',nChannels,'nRecords',nSamples*ones(size(list)),'offset',nSamples*(list-1));	
+	waveforms = LoadBinary(filename,'nChannels',nChannels,'samples',...
+        nSamples,'offset',nSamples);	
 end
 waveforms = reshape(waveforms',nChannels,nSamples,[]);
 waveforms = permute(waveforms,[3 1 2]); % rearrange: spike #, channel, sample
