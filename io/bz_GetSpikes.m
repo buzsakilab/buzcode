@@ -1,4 +1,4 @@
-function spikes = bz_getSpikes(varargin)
+function spikes = bz_GetSpikes(varargin)
 % bz_getSpikes - Get spike timestamps.
 %
 % USAGE
