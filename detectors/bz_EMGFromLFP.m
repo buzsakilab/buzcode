@@ -45,7 +45,7 @@ function [EMG] = bz_EMGFromLFP(basePath,varargin)
 % Brendon Watson, Dan Levenstein, David Tingley, 2017
 %% Buzcode name of the EMGCorr.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
-matfilename = fullfile(basePath,[recordingname,'.EMG.LFP.mat']);
+matfilename = fullfile(basePath,[recordingname,'.EMGFromLFP.LFP.mat']);
 %% xmlameters
 p = inputParser;
 addParameter(p,'restrict',[0 inf],@isnumeric)

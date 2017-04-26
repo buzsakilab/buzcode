@@ -80,7 +80,7 @@ switch lower(method)
         clear fil
     case ('wavelet')% Use Wavelet transform to calulate the signal phases
         nvoice = 12;
-        freqlist= 2.^(log2(passband(1)):1/nvoice:log2(passband(2)));
+        freqlist= unique(round(2.^(log2(passband(1)):1/nvoice:log2(passband(2)))));
         [wt,freqlist] = awt_freqlist(lfp, samplingRate, freqlist);
         amp = (real(wt).^2 + imag(wt).^2).^.5;
         phase = atan2(imag(wt),real(wt));
@@ -149,11 +149,11 @@ for a = 1:length(spikes)
     end
 end
 PhaseLockingData = v2struct(phasedistros,phasebins,phasestats,spkphases);
-save('BWRat19_032413_lfp57PhaseLockingData30-200Hz.mat','PhaseLockingData');
-% lfpPhaseRawData = v2struct(mIdx,freqlist,lfpphase);
-% save('BWRat19_032413_lfp54PhaseRawData30-200Hz.mat','lfpPhaseRawData');
-% save('BWRat19_032413_lfp54PhaseRawData30-200Hz_amp.mat','amp');
-% save('BWRat19_032413_lfp54PhaseRawData30-200Hz_phase.mat','phase');
+save('BWRat19_032413_lfp57PhaseLockingData1-625Hz.mat','PhaseLockingData');
+lfpPhaseRawData = v2struct(mIdx,freqlist,lfpphase);
+save('BWRat19_032413_lfp57PhaseRawData1-625Hz.mat','lfpPhaseRawData');
+save('BWRat19_032413_lfp57PhaseRawData1-625Hz_amp.mat','amp');
+save('BWRat19_032413_lfp57PhaseRawData1-625Hz_phase.mat','phase');
 %% Cumulative effect across all spikes from all cells... not saving these stats for now
 % phasebins=[];
 % if length(cum_spkphases) > 10

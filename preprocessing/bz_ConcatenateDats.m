@@ -90,7 +90,7 @@ else
     disp(['Primary .dats concatenated successfully'])
 end
 
-%% if intan, also concatenate the other .datss
+%% if intan, also concatenate the other .dats
 if strcmp(SessionMetadata.ExtracellEphys.RecordingSystem,'Intan')
     for odidx = 1:length(otherdattypes)
         eval(['tdatpaths = ' otherdattypes{odidx} 'datpaths;']);
