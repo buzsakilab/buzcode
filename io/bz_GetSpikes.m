@@ -130,6 +130,10 @@ for i=1:length(cluFiles)
     end
     
     cells  = unique(clu);
+    % remove MUA and NOISE clusters...
+    cells(cells==0) = [];
+    cells(cells==1) = [];  % consider adding MUA as another input argument...?
+    
     for c = 1:length(cells)
        spikes.UID(count) = count; % this only works if all shanks are loaded... how do we optimize this?
        ind = find(clu == cells(c));
