@@ -1,4 +1,4 @@
-function [phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,lfpfreq,method,plotting)
+function [phasedistros,phasebins,phasestats,h] = PhaseModulation(spikes,lfp,passband,intervals,lfpfreq,method,plotting)
 % USAGE
 %[phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,lfpfreq,method,plotting)
 % 

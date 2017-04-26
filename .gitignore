@@ -52,6 +52,9 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+#Windows temporary files
+~$*
+
 #Matlab temporary files
 *.m~
 #Vim and other text editor tmp files
