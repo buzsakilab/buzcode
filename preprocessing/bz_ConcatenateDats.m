@@ -21,6 +21,7 @@ newdatpath = fullfile(basepath,[basename,'.dat']);
 switch SessionMetadata.ExtracellEphys.RecordingSystem
     case 'Intan'
         otherdattypes = {'analogin';'digitalin';'auxiliary';'time';'supply'};
+        bad_otherdattypes = [];
         for odidx = 1:length(otherdattypes)
             eval(['new' otherdattypes{odidx} 'path = fullfile(basepath,''' otherdattypes{odidx} '.dat'');'])
         end

@@ -478,8 +478,8 @@ else
                 load(tpath)%should now have the EMG variable with fields 
                 
                 tos = fspec{1}.to;
-                times = EMG.timestamps;
-                vals = EMG.data;
+                times = EMGFromLFP.timestamps;
+                vals = EMGFromLFP.data;
                 motion = ResampleTolerant(vals,length(tos),length(times));
             case 'None'
                 motion = [];
