@@ -7,21 +7,38 @@ function SetCurrentSession(varargin)
 %
 %  USAGE
 %
-%    SetCurrentSession(filename,varargin)
+%    SetCurrentSession(varargin)
 %
-%    filename       optional parameter file name ('basename.xml'); use 'same' to force reload
+%    basepath       optional path to recording you'd like to load
+%    basename       optional recording name to load
+%    xmlFile        optional xml filename to load
 %    <options>      optional list of property-value pairs (see table below)
 %
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
-%     'spikes'      load or skip spike files (default = 'on')
+%     'spikes'      logical to load spikes (default = true)
 %    =========================================================================
+%
+%  EXAMPLES
+%   
+%   SetCurrentSession('basepath',pwd)
+%   SetCurrentSession('basepath',pwd,'basename','20170313_0um_0um_170313_122027','xmlFile','20170313_0um_0um_170313_122027.xml')
+%
+%   Can also be used without basepath but you MUST BE IN THE RECORDING DIRECTORY
+%
+%   SetCurrentSession
+%   SetCurrentSession('basename','20170313_0um_0um_170313_122027')  
+%   SetCurrentSession('xmlFile','20170313_0um_0um_170313_122027.xml')
+%   SetCurrentSession('basename','20170313_0um_0um_170313_122027','xmlFile','20170313_0um_0um_170313_122027.xml') 
+%
 %
 %  NOTE
 %
-%    If no parameter file name is specified, an interactive file selection
+%    If no xmlFile is givien, it is first assumed to be the same naming as 'basename'
+%    If if that xmlFile can't be found, an interactive file selection
 %    dialog is displayed.
+%    If an xmlFile is given that does not exist, an error will be thrown
 
 % Copyright (C) 2004-2014 by Michaël Zugaro, 2014 by Gabrielle Girardeau
 %
@@ -30,93 +47,82 @@ function SetCurrentSession(varargin)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
-% Default values
-spikes = 'on';
-filename = '';
 
-if nargin == 0
-    xml = dir('*xml');
-    if size(xml,1)>1
-        warning('you have more than one XML file in this directory, assuming folder/xml names match...')
-        path = pwd;
-        temp = strsplit(path,'/');
-        filename = [temp{length(temp)} '.xml'];
-    end
-    if size(xml,1) == 1
-        filename = xml.name;
-    end
+p = inputParser;
+addParameter(p,'basepath','',@isstr)
+addParameter(p,'basename','',@isstr)
+addParameter(p,'xmlFile','',@isstr)
+addParameter(p,'spikes',true,@islogical)
 
+% addParameter(p,'position',true,@islogical)  to be added some day
+% addParameter(p,'events',true,@islogical)
+
+parse(p,varargin{:})
+
+basename = p.Results.basename;
+basepath = p.Results.basepath;
+xmlFile = p.Results.xmlFile;
+spikes = p.Results.spikes;
+
+% did you give one of the correct input sets? let's find out...
+
+% if you gave nothing, you better be in the right directory....
+if isempty(basepath) & isempty(basename) & isempty(xmlFile)
+   basepath = pwd;
+   temp = strsplit(basepath,filesep);
+   basename = temp{length(temp)};
+   xmlFile = [basename '.xml'];
+   if ~exist([basepath filesep xmlFile])
+      [xmlFile,basepath] = uigetfile('*.xml','Please select a parameter file for this session'); 
+      basename = xmlFile(1:end-3);
+   end
 end
 
-% Filename?
-if nargin ~= 0 
-	if ~isstring_FMAT(varargin{1},'spikes') & strcmp(varargin{1}(end-3:end),'.xml')
-		filename = varargin{1};
-		varargin = {varargin{2:end}};
-    end
-end
-if isempty(filename) & nargin ~=0 
-    if ~strcmp(varargin{1}(end-3:end),'.xml') % if you didn't give an xml, then maybe it is a file path?
-        if strcmp(varargin{1}(end),'/')
-            xml = dir([varargin{1} '*xml']);
-            if ~isempty(xml) & length(xml) == 1
-                filename = [varargin{1} xml.name];
-            elseif length(xml)>1
-                path = varargin{1};
-                temp = removeEmptyCells(strsplit(path,'/'));
-                filename = [temp{length(temp)} '.xml'];
-                varargin{1} = [];
-                varargin = removeEmptyCells(varargin);
-            end
-        else
-            xml = dir([varargin{1} '/*xml']); 
-            if ~isempty(xml) & length(xml) == 1
-                filename = [varargin{1} '/' xml.name];
-                varargin{1} = [];
-                varargin = removeEmptyCells(varargin);
-            elseif length(xml) > 1 % multiple XMLs but we assume common naming...
-                path = varargin{1};
-                temp = strsplit(path,'/');
-                filename = [temp{length(temp)} '.xml'];
-                varargin{1} = [];
-                varargin = removeEmptyCells(varargin); % this may lead to problems....
-            end
-        end 
-	end
-end  % this is a hideous piece of code I wish I could forget existed...
-
-
-
-% Check number of parameters
-if mod(length(varargin),2) ~= 0,
-  error('Incorrect number of parameters (type ''help <a href="matlab:help SetCurrentSession">SetCurrentSession</a>'' for details).');
+% if you gave only basepath, there better be an xml there...
+if ~isempty(basepath) & isempty(basename) & isempty(xmlFile)
+   temp = strsplit(basepath,filesep);
+   basename = temp{length(temp)};
+   xmlFile = [basename '.xml'];
+   if ~exist([basepath filesep xmlFile])
+      error('could not find an xml...') 
+   end
 end
 
-% Parse parameter list
-for i = 1:2:length(varargin),
-	if ~ischar(varargin{i}),
-		error(['Parameter ' num2str(i+2) ' is not a property (type ''help <a href="matlab:help SetCurrentSession">SetCurrentSession</a>'' for details).']);
-	end
-	switch(lower(varargin{i})),
-		case 'spikes',
-			spikes = lower(varargin{i+1});
-			if ~isstring_FMAT(spikes,'on','off'),
-				error('Incorrect value for property ''spikes'' (type ''help <a href="matlab:help SetCurrentSession">SetCurrentSession</a>'' for details).');
-			end
-		otherwise,
-			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help SetCurrentSession">SetCurrentSession</a>'' for details).']);
+% if you gave basepath and xmlFile, let's check if that xml exists...
+if ~isempty(basepath) & isempty(basename) & ~isempty(xmlFile)
+   temp = strsplit(basepath,filesep);
+   basename = temp{length(temp)};
+   if ~exist([basepath filesep xmlFile])
+      error('could not find an xml...') 
+   end
+end
 
-  end
+% if you gave only basename, you better be in the right directory....
+if isempty(basepath) & ~isempty(basename) & isempty(xmlFile)
+   basepath = pwd;
+   xmlFile = [basename '.xml'];
+   if ~exist([basepath filesep xmlFile])
+      error('could not find an xml...') 
+   end
+end
+
+% if you gave only xmlFile, you better be in the right directory....
+if isempty(basepath) & isempty(basename) & ~isempty(xmlFile)
+   basepath = pwd;
+   temp = strsplit(basepath,filesep);
+   basename = temp{length(temp)};
+   if ~exist([basepath filesep xmlFile])
+      error('could not find an xml...') 
+   end
 end
 
 global DATA;
-separator = filesep;
 
 % Initialization
-if isempty(DATA) || ~isfield(DATA,'session') || ~isfield(DATA.session,'path') || ~isfield(DATA.session,'basename'),
+if isempty(DATA) || ~isfield(DATA,'session') || ~isfield(DATA.session,'basepath') || ~isfield(DATA.session,'basename')
 	format long g;
-	DATA.session.basename = '';
-	DATA.session.path = '';
+	DATA.session.basename = [];
+	DATA.session.basepath = [];
 	DATA.spikeGroups.nGroups = 0;
 	DATA.spikeGroups.nSamples = [];
 	DATA.spikeGroups.peakSamples = [];
@@ -136,54 +142,26 @@ if isempty(DATA) || ~isfield(DATA,'session') || ~isfield(DATA.session,'path') ||
 %  	Settings;
 end
 
-if isempty(filename) || (strcmp(filename,'same') && isempty(DATA.session.basename)),
-	% Interactive mode
-	[filename,path] = uigetfile('*.xml','Please select a parameter file for this session');
-	if filename == 0,return; end
-	filename = [path filename];
-end
-
-if strcmp(filename,'same'),
-	% Force reload
-	path = DATA.session.path;
-	basename = DATA.session.basename;
-else
-	% Parse file name
-	[path,basename] = fileparts(filename);
-	if isempty(path),
-        path = pwd;
-	else
-		if ~exist(path),
-			error(['Directory ''' path ''' does not exist.']);
-		end
-		% Clean path (e.g. simplify ../ or ./ substrings) and make it absolute
-		here = pwd;
-		cd(path);
-		path = pwd;
-		cd(here);
-	end
-end
-
 disp(['Loading session files for ' basename]);
 
 % File already loaded?
-if strcmp(basename,DATA.session.basename) & strcmp(path,DATA.session.path) & ~strcmp(filename,'same'),
+if strcmp(basename,DATA.session.basename) & strcmp(basepath,DATA.session.basepath) 
 	disp(['... session files already loaded, skipping - type SetCurrentSession(''same'') to force reload']);
 	disp('Done');
 	return
 end
 
 % Parameter file
-DATA = LoadParameters(filename);
-disp(['... loaded parameter file ''' basename '.xml''']);
+DATA = LoadParameters([basepath filesep xmlFile]);
+disp(['... loaded parameter file ''' xmlFile '']);
 
 % Event file(s)
 DATA.events.time = [];
 DATA.events.description = {};
-eventFiles = dir([path separator basename '.*.evt']);
+eventFiles = dir([basepath filesep basename '.*.evt']);
 if ~isempty(eventFiles),
 	for i = 1:length(eventFiles),
-		events = LoadEvents([path separator eventFiles(i).name]);
+		events = LoadEvents([basepath filesep eventFiles(i).name]);
 		if isempty(events.time), continue; end
 		DATA.events.time = [DATA.events.time ; events.time];
 		DATA.events.description = {DATA.events.description{:} events.description{:}}';
@@ -197,39 +175,39 @@ end
 
 % Position file
 DATA.positions = [];
-if exist([path separator basename '.pos']),
-	DATA.positions = LoadPositions([path separator basename '.pos'],DATA.rates.video);
+if exist([basepath filesep basename '.pos']),
+	DATA.positions = LoadPositions([basepath filesep basename '.pos'],DATA.rates.video);
 	disp(['... loaded position file ''' basename '.pos''']);
-elseif exist([path separator basename '.whl']),
-	DATA.positions = LoadPositions([path separator basename '.whl'],DATA.rates.video);
+elseif exist([basepath filesep basename '.whl']),
+	DATA.positions = LoadPositions([basepath filesep basename '.whl'],DATA.rates.video);
 	disp(['... loaded position file ''' basename '.whl''']);
-elseif exist([path separator basename '.whl']),
-	DATA.positions = LoadPositions([path separator basename '.mqa'],DATA.rates.video);
+elseif exist([basepath filesep basename '.whl']),
+	DATA.positions = LoadPositions([basepath filesep basename '.mqa'],DATA.rates.video);
 	disp(['... loaded position file ''' basename '.mqa''']);
 else
 	disp('... (no position file found)');
 end
 
 % Spike files
-if strcmp(spikes,'on'),
+if spikes == 1
 	DATA.spikes = [];
 	for i = 1:DATA.spikeGroups.nGroups,
-		filename = [path separator basename '.' int2str(i) '.clu'];
-		if exist(filename,'file'),
+		fullpath = [basepath filesep basename '.' int2str(i) '.clu'];
+		if exist(fullpath,'file'),
 			try
-				DATA.spikes = [DATA.spikes;LoadSpikeTimes(filename,DATA.rates.wideband)];
-				disp(['... loaded spike files ''' basename '.' int2str(i) '.clu''']);
+				DATA.spikes = [DATA.spikes;LoadSpikeTimes(fullpath,DATA.rates.wideband)];
+				disp(['... loaded spike files ''' fullpath '.' int2str(i) '.clu''']);
 			catch
-				disp(['... (could not load spike files ''' basename '.' int2str(i) '.clu'')']);
+				disp(['... (could not load spike files ''' fullpath '.' int2str(i) '.clu'')']);
 			end
 		else
-			filename = [path separator basename '.clu.' int2str(i)];
-			if exist(filename,'file'),
+			fullpath = [basepath filesep basename '.clu.' int2str(i)];
+			if exist(fullpath,'file'),
 				try
-					DATA.spikes = [DATA.spikes;LoadSpikeTimes(filename,DATA.rates.wideband)];
-					disp(['... loaded spike files ''' basename '.clu.' int2str(i) '''']);
+					DATA.spikes = [DATA.spikes;LoadSpikeTimes(fullpath,DATA.rates.wideband)];
+					disp(['... loaded spike files ''' fullpath '.clu.' int2str(i) '''']);
 				catch
-					disp(['... (could not load spike files ''' basename '.clu.' int2str(i) ''')']);
+					disp(['... (could not load spike files ''' fullpath '.clu.' int2str(i) ''')']);
 				end
 			end
 		end
@@ -243,6 +221,6 @@ end
 
 % This is updated only once the files have been properly loaded
 DATA.session.basename = basename;
-DATA.session.path = path;
+DATA.session.basepath = basepath;
 
 disp('Done');

@@ -55,12 +55,6 @@ swFFTspec = abs(swFFTspec);
 totz = zscore(abs(sum(zFFTspec')));
 badtimes = find(totz>5);
 zFFTspec(badtimes,:) = 0;
-
-%% PCA for Broadband Slow Wave
-%  [COEFF, SCORE, ~, ~, EXPLAINED] = pca(zFFTspec);
-%  % broadbandSlowWave = SCORE(:,1);
-% PC1weights = COEFF(:,1);
-% PC1expvar = EXPLAINED(1);
  
 %% Set Broadband filter weights for Slow Wave
 load('SWweights.mat')
@@ -73,7 +67,6 @@ thsmoothfact = 10; %used to be 15
 
 broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
 broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
-
 
  
 %% Calculate theta
