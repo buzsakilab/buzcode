@@ -115,7 +115,6 @@ for i=1:length(cluFiles)
     
     temp = strsplit(cluFiles(i).name,'.');
     shankID = str2num(temp{length(temp)});
-    
     clu = load(cluFiles(i).name);
     clu = clu(2:end); % toss the first sample to match res/spk files
     res = load(resFiles(i).name);
@@ -140,7 +139,7 @@ for i=1:length(cluFiles)
        spikes.UID(count) = count; % this only works if all shanks are loaded... how do we optimize this?
        ind = find(clu == cells(c));
        spikes.times{count} = res(ind) ./ samplingRate;
-       spikes.shankID(count) = i;
+       spikes.shankID(count) = shankID;
        spikes.cluID(count) = cells(c);
               
        if getWaveforms
