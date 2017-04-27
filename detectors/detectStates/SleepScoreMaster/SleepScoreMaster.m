@@ -229,12 +229,12 @@ NREMints = stateintervals{2};
 REMints = stateintervals{3};
 WAKEints = stateintervals{1};
 
-[StateIntervals,SleepState,durationprams] = StatesToFinalScoring(NREMints,WAKEints,REMints);
+[SleepState,durationparams] = StatesToFinalScoring(NREMints,WAKEints,REMints);
 
 %bzStyle
-SleepState.detectorparms.SWchannum = SleepScoreLFP.SWchanID;
-SleepState.detectorparms.THchannum = SleepScoreLFP.THchanID;
-SleepState.detectorparms.durationprams = durationprams;
+SleepState.detectorparams.SWchannum = SleepScoreLFP.SWchanID;
+SleepState.detectorparams.THchannum = SleepScoreLFP.THchanID;
+SleepState.detectorparams.durationparams = durationparams;
 SleepState.detectorname = 'SleepScoreMaster';
 SleepState.detectiondate = today;
 save(bz_sleepstatepath,'SleepState');

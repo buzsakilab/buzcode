@@ -21,6 +21,7 @@ newdatpath = fullfile(basepath,[basename,'.dat']);
 switch SessionMetadata.ExtracellEphys.RecordingSystem
     case 'Intan'
         otherdattypes = {'analogin';'digitalin';'auxiliary';'time';'supply'};
+        bad_otherdattypes = [];
         for odidx = 1:length(otherdattypes)
             eval(['new' otherdattypes{odidx} 'path = fullfile(basepath,''' otherdattypes{odidx} '.dat'');'])
         end
@@ -90,7 +91,7 @@ else
     disp(['Primary .dats concatenated successfully'])
 end
 
-%% if intan, also concatenate the other .datss
+%% if intan, also concatenate the other .dats
 if strcmp(SessionMetadata.ExtracellEphys.RecordingSystem,'Intan')
     for odidx = 1:length(otherdattypes)
         eval(['tdatpaths = ' otherdattypes{odidx} 'datpaths;']);

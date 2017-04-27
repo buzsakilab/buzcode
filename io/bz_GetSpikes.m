@@ -11,7 +11,7 @@ function spikes = bz_GetSpikes(varargin)
 %    region          -string region ID to load neurons from specific region (requires metadata file)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
-%    getWaveforms    -logical (default=true) to load waveform data
+%    getWaveforms    -logical (default=true) to load mean of raw waveform data
 %    forceReload     -logical (default=false) to force loading from
 %                     res/clu/spk files
 %    saveMat         -logical (default=false) to save in buzcode format
@@ -25,7 +25,7 @@ function spikes = bz_GetSpikes(varargin)
 %          .region         -region ID for each neuron (especially important large scale, high density probes)
 %          .shankID        -shank ID that each neuron was recorded on
 %          .maxWaveformCh  -channel # with largest amplitude spike for each neuron
-%          .meanWaveform   -average waveform on maxWaveformCh
+%          .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
 %          .cluID          -cluster ID, NOT UNIQUE ACROSS SHANKS
 %           
 % NOTES
@@ -111,6 +111,8 @@ end
 count = 1;
 
 for i=1:length(cluFiles)
+    disp(['working on ' spkFiles(i).name])
+    
     temp = strsplit(cluFiles(i).name,'.');
     shankID = str2num(temp{length(temp)});
     
@@ -130,6 +132,10 @@ for i=1:length(cluFiles)
     end
     
     cells  = unique(clu);
+    % remove MUA and NOISE clusters...
+    cells(cells==0) = [];
+    cells(cells==1) = [];  % consider adding MUA as another input argument...?
+    
     for c = 1:length(cells)
        spikes.UID(count) = count; % this only works if all shanks are loaded... how do we optimize this?
        ind = find(clu == cells(c));
@@ -138,12 +144,12 @@ for i=1:length(cluFiles)
        spikes.cluID(count) = cells(c);
               
        if getWaveforms
-           wvforms = squeeze(median(wav(ind,:,:)));
+           wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
            for t = 1:size(wvforms,1)
               [a(t) b(t)] = max(abs(wvforms(t,:))); 
            end
-           [aa bb] = min(a);
-           spikes.meanWaveform{count} = wvforms(bb,:);
+           [aa bb] = max(a);
+           spikes.rawWaveform{count} = wvforms(bb,:);
            spikes.maxWaveformCh(count) = spkGrpChans(bb);     
            clear a aa b bb
        end
@@ -170,10 +176,10 @@ if ~isempty(spikeGroups)
     spikes.shankID(toRemove) = [];
     for r = 1:length(toRemove)
         if toRemove(r) == 1
-         spikes.meanWaveform{r} = [];
+         spikes.rawWaveform{r} = [];
         end
     end
-    spikes.meanWaveform = removeEmptyCells(spikes.meanWaveform);
+    spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
     spikes.maxWaveformCh(toRemove) = [];
 end
 %% filter by region input
@@ -191,10 +197,10 @@ if ~isempty(region)
     spikes.shankID(toRemove) = [];
     for r = 1:length(toRemove)
         if toRemove(r) == 1
-         spikes.meanWaveform{r} = [];
+         spikes.rawWaveform{r} = [];
         end
     end
-    spikes.meanWaveform = removeEmptyCells(spikes.meanWaveform);
+    spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
     spikes.maxWaveformCh(toRemove) = [];
 end
 %% filter by UID input
@@ -211,10 +217,10 @@ if ~isempty(UID)
     spikes.shankID(toRemove) = [];
     for r = 1:length(toRemove)
         if toRemove(r) == 1
-         spikes.meanWaveform{r} = [];
+         spikes.rawWaveform{r} = [];
         end
     end
-    spikes.meanWaveform = removeEmptyCells(spikes.meanWaveform);
+    spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
     spikes.maxWaveformCh(toRemove) = [];
 end
 

@@ -99,7 +99,7 @@ frequency = p.Results.frequency;
 show = p.Results.show;
 restrict = p.Results.restrict;
 sd = p.Results.stdev;
-noise = p.Results.noise;
+noise = bz_FilterLFP(double(p.Results.noise),'passband',[130 200]);
 lowThresholdFactor = p.Results.thresholds(1);
 highThresholdFactor = p.Results.thresholds(2);
 minInterRippleInterval = p.Results.durations(1);
@@ -282,9 +282,11 @@ ripples.detectorName = 'bz_FindRipples';
 ripples.peaks = rips(:,2);
 ripples.peakNormedPower = rips(:,4);
 ripples.stdev = sd;
-ripples.noise.times = bad(:,[1 3]);
-ripples.noise.peaks = bad(:,[2]);
-ripples.noise.peakNormedPower = bad(:,[4]);
+if ~isempty(bad)
+    ripples.noise.times = bad(:,[1 3]);
+    ripples.noise.peaks = bad(:,[2]);
+    ripples.noise.peakNormedPower = bad(:,[4]);
+end
 
 
 ripples.detectorParams = p.Results;
