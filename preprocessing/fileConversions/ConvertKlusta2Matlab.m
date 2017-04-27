@@ -78,6 +78,13 @@ elseif strcmp(basename, 'lfpfile')
     basename = d.name(1:end-4);
 end
 
+if saveFiles % make file names
+    cluname = fullfile(basepath,[basename '.clu.' num2str(shank)]);
+    resname = fullfile(basepath,[basename '.res.' num2str(shank)]);
+    fetname = fullfile(basepath,[basename '.fet.' num2str(shank)]);
+    spkname = fullfile(basepath,[basename '.spk.' num2str(shank)]); 
+end
+
 % Start grabbing data
 datpath = fullfile(basepath,[basename '.dat']);
 tkwik = fullfile(basepath,num2str(shank),[basename '_sh' num2str(shank) '.kwik']);
@@ -102,11 +109,12 @@ spktimes = h5read(tkwik,['/channel_groups/' num2str(shank) '/spikes/time_samples
 
 %% spike extraction from dat
 wav = []; 
-if wvformExtract
+tsampsperwave = (sbefore+safter);
+ngroupchans = length(channellist);
+valsperwave = tsampsperwave * ngroupchans;
+if wvformExtract & ~exist(spkname)  % only create .spk file if it doesn't already exist
+    disp('loading from .dat file')
     dat=memmapfile(datpath,'Format','int16');
-    tsampsperwave = (sbefore+safter);
-    ngroupchans = length(channellist);
-    valsperwave = tsampsperwave * ngroupchans;
     wvforms_all = zeros(length(spktimes),valsperwave,'int16');
     delete(gcp('nocreate')); parpool(numCores)
     parfor j=1:length(spktimes)
@@ -137,32 +145,23 @@ if wvformExtract
     wvforms_all = reshape(wvforms_all',size(wvforms_all,1)*size(wvforms_all,2),1);
     wav = reshape(wvforms_all,ngroupchans,tsampsperwave,[]);
     wav = permute(wav,[3 1 2]);
+elseif wvformExtract & exist(spkname) % load from .spk if it exists
+    disp('loading from .spk file')
+    fid = fopen(spkname,'r');
+    wav = fread(fid,[1 inf],'int16');
+    wav = reshape(wav,ngroupchans,tsampsperwave,[]);
+    wav = permute(wav,[3 1 2]);
 end
 %% Spike features
+
 fets = h5read(tkwx,['/channel_groups/' num2str(shank) '/features_masks']);
 fets = double(squeeze(fets(1,:,:)));
-
-%mean activity per spike
-% fetmeans = mean(fets,1);
-%find first pcs, make means of those... 
-% featuresperspike = 4;
-% firstpcslist = 1:featuresperspike:size(fets,1);
-% firstpcmeans = mean(fets(firstpcslist,:),1);
-% nfets = size(fets,1)+1;
-% fets = cat(1,fets,fetmeans,firstpcmeans,wvpowers,wvranges,double(spktimes'));
-% fets = cat(1,nfets,fets);
-
 fet = fets';
 
 %% writing to clu, res, fet, spk
 if saveFiles
-    cluname = fullfile(basepath,[basename '.clu.' num2str(shank)]);
-    resname = fullfile(basepath,[basename '.res.' num2str(shank)]);
-    fetname = fullfile(basepath,[basename '.fet.' num2str(shank)]);
-    spkname = fullfile(basepath,[basename '.spk.' num2str(shank)]);
 
     %clu
-    
     for i=1:length(kwikinfo.Groups)  % sometimes .kwik has more groups than clu (empty?)..
         group(i) = h5readatt(tkwik,kwikinfo.Groups(i).Name,'cluster_group');
         temp = strsplit(kwikinfo.Groups(i).Name,'/');
@@ -180,7 +179,6 @@ if saveFiles
         end
     end
     
-
     clu = cat(1,length(unique(clu)),double(clu));
     fid=fopen(cluname,'w'); 
     fprintf(fid,'%.0f\n',clu);
@@ -188,7 +186,6 @@ if saveFiles
     clear fid
 
     fid=fopen(resname,'w'); 
-    % fprintf(fid,'%d\n',spktimes);
     fprintf(fid,'%.0f\n',spktimes);
     fclose(fid);
     clear fid
