@@ -162,13 +162,21 @@ if saveFiles
     spkname = fullfile(basepath,[basename '.spk.' num2str(shank)]);
 
     %clu
-    cluster_names = unique(clu);
-    for i=1:length(cluster_names)
+    
+    for i=1:length(kwikinfo.Groups)  % sometimes .kwik has more groups than clu (empty?)..
         group(i) = h5readatt(tkwik,kwikinfo.Groups(i).Name,'cluster_group');
         temp = strsplit(kwikinfo.Groups(i).Name,'/');
         clusterID(i) = str2num(temp{length(temp)}); % fix for if channel ordering is mixed up (we don't know that the first clusters are noise/MUA)
-        if group(i)~=2
-        clu(clu == clusterID(i)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
+    end
+    
+    cluster_names = unique(clu);
+    for i=1:length(cluster_names)
+        [a b] =ismember(cluster_names(i),double(clusterID));
+        if isempty(b)
+            warning('could not find cluster name?')
+        end
+        if group(b)~=2
+            clu(clu == clusterID(b)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
         end
     end
     
