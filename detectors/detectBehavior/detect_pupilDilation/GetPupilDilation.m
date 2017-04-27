@@ -215,8 +215,8 @@ end
     imagesc(vidframe_orig);
     hold on
     rectangle('Position',out_a(pam).BoundingBox,'EdgeColor',[1 0 0],...
-        'Curvature', [1,1],'LineWidth',1)
-    plot(X,Y,'g+')
+        'Curvature', [1,1],'LineWidth',0.5)
+    plot(X,Y,'g+','markersize',3)
     hold off
     end
     
@@ -224,7 +224,15 @@ end
     
    if SAVEVID && mod(ff,savevidfr)==0;  
    subplot(4,1,4)
-   plot(1:ff,puparea(1:ff),'k')
+       windur = 3000; %frames
+       earlypoint = max(1,ff-windur);
+       plot(earlypoint:ff,puparea(earlypoint:ff),'k')
+       hold on
+       plot(ff,puparea(ff),'ro')
+       hold off
+       xlim([earlypoint ff])
+       yrange = [min(puparea) max(puparea)];
+       if yrange(1)~=yrange(2); ylim([min(puparea) max(puparea)]); end
    end
      
    if SAVEVID && mod(ff,savevidfr)==0;
@@ -241,7 +249,7 @@ if SAVEVID; close(pupdiamVid); end
 %(make window in units of seconds or figure out the best # frames)
 smoothwin = 10;  %frames
 puparea_pxl = puparea;
-puparea = smooth(puparea,smoothwin);
+puparea = smooth(puparea,smoothwin); %,'rloess'); %try rloess method... needs percentage of total points span
 puparea = (puparea-min(puparea))./(max(puparea)-min(puparea));
 
 %% Load the analogin for the timestamps
