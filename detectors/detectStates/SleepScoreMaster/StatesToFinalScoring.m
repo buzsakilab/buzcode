@@ -1,4 +1,4 @@
-function [StateIntervals,SleepState,durationprams] = StatesToFinalScoring(NREMints,WAKEints,REMints)
+function [SleepState,durationparams] = StatesToFinalScoring(NREMints,WAKEints,REMints)
 
 minPacketDuration = 30;
 maxMicroarousalDuration = 100;
@@ -8,12 +8,12 @@ minSWSEpisodeDuration = 20;
 minWAKEEpisodeDuration = 20;
 minREMEpisodeDuration = 20;
 
-durationprams.minPacketDuration = minPacketDuration;
-durationprams.maxMicroarousalDuration = maxMicroarousalDuration;
-durationprams.maxEpisodeDuration = maxEpisodeDuration;
-durationprams.minSWSEpisodeDuration = minSWSEpisodeDuration;
-durationprams.minWAKEEpisodeDuration = minWAKEEpisodeDuration;
-durationprams.minREMEpisodeDuration = minREMEpisodeDuration;
+durationparams.minPacketDuration = minPacketDuration;
+durationparams.maxMicroarousalDuration = maxMicroarousalDuration;
+durationparams.maxEpisodeDuration = maxEpisodeDuration;
+durationparams.minSWSEpisodeDuration = minSWSEpisodeDuration;
+durationparams.minWAKEEpisodeDuration = minWAKEEpisodeDuration;
+durationparams.minREMEpisodeDuration = minREMEpisodeDuration;
 
 
 SWSlengths = NREMints(:,2)-NREMints(:,1);
@@ -32,23 +32,23 @@ WAKEIntervals = WAKEints(WAKElengths>maxMicroarousalDuration,:);
 %Find the MA states that are before (or between two) REM states
 [ ~,~,MA_REM,~ ] = FindIntsNextToInts(MAIntervals,REMints);
 %"Real" MAs are those that are not before REM state
-realMA = setdiff(1:length(MAIntervals),MA_REM);
+realMA = setdiff(1:size(MAIntervals,1),MA_REM);
 
 MA_REM = MAIntervals(MA_REM,:);
 MAIntervals = MAIntervals(realMA,:);
 
 
 
-%% Save: old format - remove once compadible with StateEditor
-StateIntervals.NREMstate = NREMints;
-StateIntervals.REMstate = REMints;
-StateIntervals.WAKEstate = WAKEIntervals;
-StateIntervals.NREMepisode = episodeintervals{2};
-StateIntervals.REMepisode = episodeintervals{3};
-StateIntervals.WAKEepisode = episodeintervals{1};
-StateIntervals.NREMpacket = packetintervals;
-StateIntervals.MAstate = MAIntervals;
-StateIntervals.MA_REM = MA_REM;
+% %% Save: old format - remove once compatible with StateEditor
+% StateIntervals.NREMstate = NREMints;
+% StateIntervals.REMstate = REMints;
+% StateIntervals.WAKEstate = WAKEIntervals;
+% StateIntervals.NREMepisode = episodeintervals{2};
+% StateIntervals.REMepisode = episodeintervals{3};
+% StateIntervals.WAKEepisode = episodeintervals{1};
+% StateIntervals.NREMpacket = packetintervals;
+% StateIntervals.MAstate = MAIntervals;
+% StateIntervals.MA_REM = MA_REM;
 
 %% Save: buzcode format
 SleepState.ints.NREMstate = NREMints;

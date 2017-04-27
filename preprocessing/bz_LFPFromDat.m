@@ -47,7 +47,7 @@ elseif exist(xmlname,'file')
     oldsamplerate = parameters.rates.wideband;
     newsamplerate = parameters.lfpSampleRate;
 else
-    display(['No SessionMetadata.mat file... resorting to user input,',...
+    display(['No baseName.SessionMetadata.mat or baseName.xml file... resorting to user input,',...
         'you might want to make a SessionMetadata.mat...'])
     nchannels = input('How many channels in the file?');
     oldsamplerate = input('.dat SampleRate?');
@@ -65,6 +65,10 @@ warning(['This function uses ReampleBinary, which does NOT low-pass filter ',...
     'your LFP.  As a result it has high levels of spike contamination.  ',...
     'Consider updating this function to use ProcessResample() from NDM.'])
 ResampleBinary(datname,lfpname,nchannels,N,D);
+
+display('baseName.lfp file created! Huzzah!')
+
+end
 
 
 

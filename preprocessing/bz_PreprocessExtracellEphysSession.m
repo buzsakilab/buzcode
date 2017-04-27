@@ -6,7 +6,7 @@ elseif isempty(basepath)
     basepath = cd;
 end
 
-%% Assuiming one already did bz_SetAnimalMetadata
+%% Assuming one already did bz_SetAnimalMetadata
 bz_RunSessionMetadata(basepath);
 
 %% making an xml if needed
