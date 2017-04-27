@@ -14,7 +14,7 @@
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
-function minmax(varargin)
+function minmax_FMAT(varargin)
 
 if nargin < 1,
   error('Incorrect number of parameters (type ''help <a href="matlab:help minmax">minmax</a>'' for details).');

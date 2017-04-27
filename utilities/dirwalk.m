@@ -140,6 +140,7 @@ Listing(find(bad)) = [];
 % Call Visitor function
 cwd = pwd;
 cd(topPath)
+disp(varargin)
 visitorOutputs = visitor_call_helper(topPath, Listing, ...
     visitorHandle, visitorNumOutputs, varargin{:});
 cd(cwd);
