@@ -1,6 +1,64 @@
-function bz_ConcatenateDats(basepath,deletedats)
-%assumes you are in or pointed to a directory containing subdirectories for
-% various recording files from a single session
+function bz_ConcatenateDats(basepath,deleteoriginaldatsbool)
+% bz_ConcatenateDats - Concatenate raw .dat files found in a session folder
+% - for either intan type systems or amplipex
+% 
+% ALGORITHM OUTLINE: looks for .dat files in a folder (or in subfolders) to
+% concatenate together.  The concatenation happens via system commands 
+% ("cat" command for linux/mac, "copy" command if windows/pc).  Uses
+% different assumptions to find and recognize relevant .dats depending on
+% the acquisition system.  
+% 
+% REQUIREMENTS: Assumes you are in or pointed to a directory containing 
+% subdirectories for various recording files from a single session. *It is 
+% assumed that an earlier-acquired data file/folder will have a name that
+% is sorted alphanumerically earlier.  Alphanumeric sorting order is
+% assumed to be the recording temporal sequence.
+% Works with acquisition systems: Intan and Amplipex - 
+%   1) intan: wherein subfolders are inside the session folder.  Each
+%   subfolder contains simultaneously-recorded .dat files recorded for a
+%   continuous period of time.  Start/stop recording commands each create a
+%   new folder.  *It is assumed that the alphanumeric sorting of these 
+%   folders corresponds with their sequence in acquisiton time.*  
+%   These folders contain
+%       - info.rhd files with metadata about the recording. 
+%       - amplifier.dat - int16 file with usually neural data from the
+%           headstage
+%       - auxiliary.dat (optional) - uint16 file from auxiliary channels on
+%           the headstage - often accelerometer
+%       - analogin.dat (optional) - uint16 file from analogin channels on 
+%           main board 
+%       - digitalin.dat (optional) - uint16 file recording all 16 digital 
+%           channels on main board 
+%       - time.dat - int32 file giving recording sample indicies (e.g. 
+%           0,1,2,3...) for each sample recorded in other channels
+%       - supply.dat - uint16 file showing voltage supplied to (?preamp?)
+%   2) Amplipex: wherein there are a series of sequientially named .dat
+%   files, where the first might be called [basename]-01.dat, the next
+%   [basename]-02.dat etc.  *It is assumed that the alphanumeric sorting of
+%   these folders corresponds with their sequence in acquisiton time.*
+%   There are not assumed to be any sub-dat files, these .dats are assumed
+%   to carry all information.
+%
+%  USAGE
+%
+%    bz_ConcatenateDats(basepath,deletedats)
+%
+%  INPUTS
+%
+%    basepath          computer path to session folder.  Defaults to
+%                      current folder if no input given
+%    deleteoriginaldatsbool  - boolean denoting whether to delete (1) or
+%                              not delete (0) original .dats after
+%                              concatenation.  Default = 0.
+%
+%  OUTPUT
+%     Operates on files in specified folder.  No output variable
+%
+%  EXAMPLES
+%      Can be called directly or via bz_PreprocessExtracellEphysSession.m
+%
+% Copyright (C) 2017 by Brendon Watson
+
 
 %% Input and directory handling 
 if ~exist('basepath','var')
@@ -12,7 +70,7 @@ end
 basename = bz_BasenameFromBasepath(basepath);
 
 if ~exist('deletedats','var')
-    deletedats = 0;
+    deleteoriginaldatsbool = 0;
 end
     
 %%
@@ -118,7 +176,7 @@ if strcmp(SessionMetadata.ExtracellEphys.RecordingSystem,'Intan')
         eval(['recordingbytes = ' otherdattypes{odidx} 'datsizes;'])
         if t.bytes ~= sum(recordingbytes)
             error(['New ' otherdattypes{odidx} '.dat size not right.  Exiting after .dats converted.  Not deleting'])
-            deletedats = 0;
+            deleteoriginaldatsbool = 0;
         else
             disp([otherdattypes{odidx} ' concatenated successfully'])
         end
@@ -127,7 +185,7 @@ end
 
 
 %% Delete original dats, if that option is chosen
-if deletedats
+if deleteoriginaldatsbool
     %for other .dats
     for odidx = 1:length(otherdattypes)
         eval(['tdatpaths = ' otherdattypes{odidx} 'datpaths;']);

@@ -1,5 +1,5 @@
 function [lfp] = bz_GetLFP(varargin)
-%GetLFP - Get local field potentials.
+% bz_GetLFP - Get local field potentials.
 %
 %  Load local field potentials from disk. No longer dependent on
 %  FMAT/SetCurrentSession.
