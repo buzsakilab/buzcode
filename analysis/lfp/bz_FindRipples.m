@@ -99,7 +99,7 @@ frequency = p.Results.frequency;
 show = p.Results.show;
 restrict = p.Results.restrict;
 sd = p.Results.stdev;
-noise = bz_FilterLFP(double(p.Results.noise),'passband',[130 200]);
+noise = p.Results.noise;
 lowThresholdFactor = p.Results.thresholds(1);
 highThresholdFactor = p.Results.thresholds(2);
 minInterRippleInterval = p.Results.durations(1);
@@ -227,6 +227,7 @@ if ~isempty(noise)
     %% lets try to also remove EMG artifact?
     
     
+
 end
 
 % Optionally, plot results
