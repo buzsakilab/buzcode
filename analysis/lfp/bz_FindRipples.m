@@ -30,7 +30,7 @@ function [ripples] = bz_FindRipples(varargin)
 %     Properties    Values
 %    -------------------------------------------------------------------------
 %     'thresholds'  thresholds for ripple beginning/end and peak, in multiples
-%                   of the stdev (default = [2 5])
+%                   of the stdev (default = [2 5]); must be integer values
 %     'durations'   min inter-ripple interval and max ripple duration, in ms
 %                   (default = [30 100])
 %     'baseline'    interval used to compute normalization (default = all)
@@ -242,7 +242,7 @@ if strcmp(show,'on')
 		subplot(nPlots,1,6);
   		ylim([0 highThresholdFactor*1.1]);
 	else
-		MultiPlotXY([time signal],[time squaredSignal],[time normalizedSquaredSignal]);
+		MultiPlotXY([timestamps signal],[timestamps squaredSignal],[timestamps normalizedSquaredSignal]);
 %  		MultiPlotXY(time,signal,time,squaredSignal,time,normalizedSquaredSignal);
 		nPlots = 3;
 		subplot(nPlots,1,3);
