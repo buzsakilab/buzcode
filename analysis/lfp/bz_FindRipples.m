@@ -287,6 +287,10 @@ if ~isempty(bad)
     ripples.noise.times = bad(:,[1 3]);
     ripples.noise.peaks = bad(:,[2]);
     ripples.noise.peakNormedPower = bad(:,[4]);
+else
+    ripples.noise.times = [];
+    ripples.noise.peaks = [];
+    ripples.noise.peakNormedPower = [];
 end
 
 
