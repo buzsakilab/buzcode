@@ -24,6 +24,9 @@ function times = LoadSpikeTimes(filename,rate)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
+warning('This function is now deprecated from /buzcode, try using bz_GetSpikes.m')
+
+
 [path,basename,extension] = fileparts(filename);
 if isempty(path), path = '.'; end
 
