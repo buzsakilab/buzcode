@@ -1,17 +1,17 @@
 function bz_WriteEventFile(filepath,filename,eventTimes,eventLabels)
 
 % bz_WriteEventFile(filepath,filename,SR, eventTimes)
-
+%
 % DESCRIPTION  This fx takes event times and generates a neuroscope .evt file
-
+%
 % INPUTS
 % filepath:    Path where want to save .evt file
 % filename:    Name of .evt file; if [], output .evt will have same name as .xml file in filepath
 % eventTimes:  Matrix of event times in seconds, in format time by event x type
 % eventLabels: Cell array of column header labels (strings) for each event type
-
+%
 % OUTPUT       .evt file in designated filepath
-
+%
 % E.G.         Save output of bz_FindRipples as a .evt file for viewing in neuroscope
 %              bz_WriteEventFile(filepath,[],[ripples.times(:,1) ripples.peaks ripples.times(:,2)],{'tstart'; 'tpeak'; 'tstop'})
 
