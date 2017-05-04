@@ -65,6 +65,8 @@ function spikes = GetSpikeTimes(units,varargin)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
+warning('This function is now deprecated from /buzcode, try using bz_GetSpikes.m')
+
 global DATA;
 if isempty(DATA),
 	error('No session defined (did you forget to call SetCurrentSession? Type ''help <a href="matlab:help Data">Data</a>'' for details).');

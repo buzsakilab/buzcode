@@ -97,9 +97,20 @@ else % do the below then filter by inputs...
     
 disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
-cluFiles = dir([basepath filesep '*.clu*']);
+cluFiles = dir([basepath filesep '*.clu*']);  % sort to be in correct order?
 resFiles = dir([basepath filesep '*.res*']);
 spkFiles = dir([basepath filesep '*.spk*']);
+
+% ensures we load in sequential order (forces compatibility with FMAT
+% ordering)
+for i = 1:length(cluFiles)
+    temp = strsplit(cluFiles(i).name,'.');
+    shanks(i) = str2num(temp{length(temp)});
+end
+[shanks ind] = sort(shanks);
+cluFiles = cluFiles(ind);
+resFiles = resFiles(ind); 
+spkFiles = spkFiles(ind);
 
 % check if there are matching #'s of files
 if length(cluFiles) ~= length(resFiles) & length(cluFiles) ~= length(spkFiles)
@@ -110,7 +121,7 @@ end
 % use the .res files to get spike times
 count = 1;
 
-for i=1:length(cluFiles)
+for i=1:length(cluFiles) 
     disp(['working on ' spkFiles(i).name])
     
     temp = strsplit(cluFiles(i).name,'.');

@@ -12,7 +12,7 @@ function bz_LFPFromDat(basepath)
 %       basePath/baseName.SessionMetadata.mat  (recommended)
 %       basePath/baseName.xml
 %
-%If basePath not specified, tries the current path.
+%If basePath not specified, tries the current working directory.
 %
 %
 %OUTPUT
