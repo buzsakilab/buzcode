@@ -45,9 +45,19 @@ if ~exist('xml','var')
     xml = LoadParameters([basename '.xml']);
 end
 nGrps = length(xml.SpkGrps);
+
+
+% look for process_pca_multi or ndm_pca
+if ~system('which ndm_pca')
+    pca = 'ndm_pca ';
+elseif ~system('which process_pca_multi')
+    pca = 'process_pca_multi ';
+end
+
+
 for g = 1:nGrps
-    cmd = ['process_pca_multi ' basename ' ' num2str(g)];
-%     cmd = ['ndm_pca ' basename ' ' num2str(i)];
+%     cmd = ['process_pca_multi ' basename ' ' num2str(g)];
+    cmd = [pca basename ' ' num2str(g)];
     disp(cmd)
     a =  system(cmd)
 end

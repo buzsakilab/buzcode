@@ -56,7 +56,8 @@ if isfield(par.SpkGrps,'nSamples')
 end
 
 grouplookup = zeros(totalch,1);
-for a= 1:par.nElecGps
+% for a= 1:par.nElecGps
+for a = 1:length(par.SpkGrps) % fixed
     grouplookup(par.SpkGrps(a).Channels+1) = a;
 end
 allgroups = unique(grouplookup);
@@ -127,7 +128,7 @@ for groupidx = 1:length(allgroups)
     end
     
     %% spike extraction from dat
-    if groupidx == 1;
+    if groupidx == 1
         dat = memmapfile(datpath,'Format','int16');
     end
     tsampsperwave   = (sbefore+safter);
