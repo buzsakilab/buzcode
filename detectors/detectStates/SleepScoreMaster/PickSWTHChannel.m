@@ -2,8 +2,17 @@ function [SleepScoreLFP] = PickSWTHChannel(basePath,figfolder,scoretime,SWWeight
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %
+<<<<<<< HEAD
 %% Buzcode name of the SleepScoreLFP.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
+=======
+<<<<<<< Updated upstream
+=======
+%% Buzcode name of the SleepScoreLFP.LFP.mat file
+[datasetfolder,recordingname,extension] = fileparts(basePath);
+recordingname = [recordingname extension];
+
+>>>>>>> b1538f000d3aa603a714250f47545622f7968bda
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreLFP.LFP.mat']);
 
 saveFiles = true;
@@ -16,6 +25,17 @@ if exist(matfilename,'file') && ~OVERWRITE
         display([matfilename,' does not contain a variable called SleepScoreLFP'])
     end
     return
+<<<<<<< HEAD
+=======
+end
+display('Picking SW and TH Channels for SleepScoreLFP.LFP.mat')
+
+>>>>>>> Stashed changes
+%%
+
+if ~exist('SWWeightsName','var')
+    SWWeightsName = 'SWweights.mat';
+>>>>>>> b1538f000d3aa603a714250f47545622f7968bda
 end
 display('Picking SW and TH Channels for SleepScoreLFP.LFP.mat')
 
@@ -33,7 +53,16 @@ else
 end
 
 %% FMA
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
+
+
+>>>>>>> b1538f000d3aa603a714250f47545622f7968bda
 Par = LoadPar_SleepScore(xmlfilename);
+=======
+Par = LoadParameters(xmlfilename);
+>>>>>>> Stashed changes
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
 

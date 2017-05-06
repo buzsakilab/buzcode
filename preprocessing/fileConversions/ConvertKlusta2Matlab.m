@@ -192,7 +192,8 @@ if saveFiles
     
     SaveFetIn(fetname,fet);
     %spk
-    if wvformExtract
+    
+    if wvformExtract & ~exist(spkname)
         fid=fopen(spkname,'w'); 
         fwrite(fid,wvforms_all,'int16');
         fclose(fid);
