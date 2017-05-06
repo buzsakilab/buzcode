@@ -85,18 +85,9 @@ if ~exist('basePath','var')
     if isequal(basePath,0);return;end  
 end
 
-<<<<<<< HEAD
-%Separate datasetfolder and recordingname
-[datasetfolder,recordingname] = fileparts(basePath);
-=======
-<<<<<<< Updated upstream
-=======
 %Separate datasetfolder and recordingname
 [datasetfolder,recordingname,extension] = fileparts(basePath);
 recordingname = [recordingname,extension]; % fileparts parses '.' into extension
-
->>>>>>> Stashed changes
->>>>>>> b1538f000d3aa603a714250f47545622f7968bda
 
 if ~exist('SWWeightsName','var')
     SWWeightsName = 'SWweights.mat';
