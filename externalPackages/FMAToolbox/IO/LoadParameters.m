@@ -30,7 +30,10 @@ end
 if ~exist(filename),
 	error(['File ''' filename ''' not found.']);
 end
-[pathname,basename] = fileparts(filename);
+[pathname,basename,extension] = fileparts(filename);
+% if ~strcmp(extension,'.xml')
+%     basename = [basename extension];
+% end
 
 if isempty(pathname)
     pathname = pwd;
