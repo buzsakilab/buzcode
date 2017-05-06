@@ -133,12 +133,6 @@ if wvformExtract & ~exist(spkname)  % only create .spk file if it doesn't alread
         if rem(j,50000) == 0
             disp([num2str(j) ' out of ' num2str(length(spktimes)) ' done'])
         end
-        %some processing for fet file
-        % wvaswv = reshape(wvforms,tsampsperwave,ngroupchans);
-        % wvranges(j,:) = range(wvaswv);
-        % wvpowers(j) = sum(sum(wvaswv.^2));
-        % lastpoint = tsampsperwave*ngroupchans*(j-1);
-        % wvforms_all(lastpoint+1 : lastpoint+valsperwave) = wvforms;
         wvforms_all(j,:)=wvforms(:);
     end
     clear dat
