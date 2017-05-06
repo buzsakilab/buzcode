@@ -38,10 +38,10 @@ if size(pos,2)>6
 %     p(isnan(p(:,1)),:)=[];
     m = min(p(:));
     p = p+m*2;
-    p(:,1) = fastrms(p(:,1),12);
-    p(:,2) = fastrms(p(:,2),12);
-%     p(:,1) = smoothts(p(:,1),'b',180);
-%     p(:,2) = smoothts(p(:,2),'b',180);
+%     p(:,1) = fastrms(p(:,1),12);
+%     p(:,2) = fastrms(p(:,2),12);
+    p(:,1) = smoothts(p(:,1),'b',20);
+    p(:,2) = smoothts(p(:,2),'b',20);
 
     vel = nansum(abs(diff(p)'))';
     vel(vel>100) = 0;
@@ -60,7 +60,7 @@ if size(pos,2)>6
     [x y]=ginput();
     velThresh=x; %7e-5; % change this to first min peak in vel histogram
     close all
-    scatter(p(:,1),p(:,2),'.k')
+    scatter(p(:,1),p(:,2),1,'.k')
     distThresh =  mean(max(p)-min(p))./2;
 end
 dbstop if error
