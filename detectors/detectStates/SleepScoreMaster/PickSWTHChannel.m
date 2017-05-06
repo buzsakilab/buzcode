@@ -20,7 +20,7 @@ if exist(matfilename,'file') && ~OVERWRITE
     return
 end
 display('Picking SW and TH Channels for SleepScoreLFP.LFP.mat')
-oada
+
 %%
 
 xmlfilename = [datasetfolder,'/',recordingname,'/',recordingname,'.xml'];
