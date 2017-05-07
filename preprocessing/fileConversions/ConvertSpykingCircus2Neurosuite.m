@@ -42,8 +42,8 @@ eval(['!cp ' oldtemplatespath ' ' newtemplatespath])
 par = LoadPar(xmlpath);
 % par = LoadXml(xmlpath);
 totalch = par.nChannels;
-sbefore = 16;%samples before/after for spike extraction
-safter = 24;%... could read from SpkGroups in xml
+% sbefore = 17;%samples before/after for spike extraction
+% safter = 16;%... could read from SpkGroups in xml - was originally 16
 if isfield(par.SpkGrps,'nSamples')
     if ~isempty(par.SpkGrps(1).nSamples);
         if isfield(par.SpkGrps,'PeakSample')
@@ -54,6 +54,11 @@ if isfield(par.SpkGrps,'nSamples')
         end
     end
 end
+
+% sbefore = 16;
+% safter = 16;
+
+
 
 grouplookup = zeros(totalch,1);
 % for a= 1:par.nElecGps
@@ -127,17 +132,56 @@ for groupidx = 1:length(allgroups)
         continue
     end
     
-    %% spike extraction from dat
-    if groupidx == 1
-        dat = memmapfile(datpath,'Format','int16');
-    end
-    tsampsperwave   = (sbefore+safter);
-    ngroupchans     = length(channellist);
-    valsperwave     = tsampsperwave * ngroupchans;
-    wvforms_all     = zeros(length(tspktimes)*tsampsperwave*ngroupchans,1,'int16');
-%     wvranges        = zeros(length(tspktimes),ngroupchans);
-%     wvpowers        = zeros(1,length(tspktimes));
-    
+%     %% spike extraction from dat - old version
+%     if groupidx == 1
+%         dat = memmapfile(datpath,'Format','int16');
+%     end
+%     tsampsperwave   = (sbefore+safter);
+%     ngroupchans     = length(channellist);
+%     valsperwave     = tsampsperwave * ngroupchans;
+%     wvforms_all     = zeros(length(tspktimes)*tsampsperwave*ngroupchans,1,'int16');
+% %     wvranges        = zeros(length(tspktimes),ngroupchans);
+% %     wvpowers        = zeros(1,length(tspktimes));
+%     
+%     for j=1:length(tspktimes)
+%         try
+%             w = dat.data((double(tspktimes(j))-sbefore).*totalch+1:(double(tspktimes(j))+safter).*totalch);
+%             wvforms=reshape(w,totalch,[]);
+%             %select needed channels
+%             wvforms = wvforms(channellist,:);
+%     %         % detrend
+%     %         wvforms = floor(detrend(double(wvforms)));
+%             % median subtract
+%             wvforms = wvforms - repmat(median(wvforms, 2),1,sbefore+safter);
+%             wvforms = wvforms(:);
+%             
+%         catch
+%             disp(['Error extracting spike at sample ' int2str(double(tspktimes(j))) '. Saving as zeros']);
+%             disp(['Time range of that spike was: ' num2str(double(tspktimes(j))-sbefore) ' to ' num2str(double(tspktimes(j))+safter) ' samples'])
+%             wvforms = zeros(valsperwave,1);
+%         end
+% 
+%         %some processing for fet file
+% %         wvaswv = reshape(wvforms,tsampsperwave,ngroupchans);
+% %         wvranges(j,:) = range(wvaswv);
+% %         wvpowers(j) = sum(sum(wvaswv.^2));
+% 
+%         lastpoint = tsampsperwave*ngroupchans*(j-1);
+%         wvforms_all(lastpoint+1 : lastpoint+valsperwave) = wvforms';
+%     %     wvforms_all(j,:,:)=int16(floor(detrend(double(wvforms)')));
+%         if rem(j,100000) == 0
+%             disp([num2str(j) ' out of ' num2str(length(tspktimes)) ' done'])
+%         end
+%     end
+
+        %% spike extraction from dat - new version
+    dat=memmapfile(datpath,'Format','int16');
+    tsampsperwave = (sbefore+safter);
+    ngroupchans = length(channellist);
+    valsperwave = tsampsperwave * ngroupchans;
+    wvforms_all=zeros(length(tspktimes)*tsampsperwave*ngroupchans,1,'int16');
+    wvranges = zeros(length(tspktimes),ngroupchans);
+    wvpowers = zeros(1,length(tspktimes));
     for j=1:length(tspktimes)
         try
             w = dat.data((double(tspktimes(j))-sbefore).*totalch+1:(double(tspktimes(j))+safter).*totalch);
@@ -149,7 +193,6 @@ for groupidx = 1:length(allgroups)
             % median subtract
             wvforms = wvforms - repmat(median(wvforms')',1,sbefore+safter);
             wvforms = wvforms(:);
-            
         catch
             disp(['Error extracting spike at sample ' int2str(double(tspktimes(j))) '. Saving as zeros']);
             disp(['Time range of that spike was: ' num2str(double(tspktimes(j))-sbefore) ' to ' num2str(double(tspktimes(j))+safter) ' samples'])
@@ -157,18 +200,23 @@ for groupidx = 1:length(allgroups)
         end
 
         %some processing for fet file
-%         wvaswv = reshape(wvforms,tsampsperwave,ngroupchans);
-%         wvranges(j,:) = range(wvaswv);
-%         wvpowers(j) = sum(sum(wvaswv.^2));
+        wvaswv = reshape(wvforms,tsampsperwave,ngroupchans);
+        wvranges(j,:) = range(wvaswv);
+        wvpowers(j) = sum(sum(wvaswv.^2));
 
         lastpoint = tsampsperwave*ngroupchans*(j-1);
-        wvforms_all(lastpoint+1 : lastpoint+valsperwave) = wvforms';
+        wvforms_all(lastpoint+1 : lastpoint+valsperwave) = wvforms;
     %     wvforms_all(j,:,:)=int16(floor(detrend(double(wvforms)')));
-        if rem(j,100000) == 0
+        if rem(j,50000) == 0
             disp([num2str(j) ' out of ' num2str(length(tspktimes)) ' done'])
         end
     end
-
+    clear dat
+    wvranges = wvranges';
+    
+    
+    
+    
     %% not doing fets for now
     
     %% writing to clu, res, fet, spk
