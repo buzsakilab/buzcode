@@ -78,7 +78,16 @@ if isempty(basename)
    end
    lfp.Filename = d.name;
    basename = strsplit(lfp.Filename,'.');
-   basename = basename{1};
+   if length(basename) > 2
+       base = [];
+       for i=1:length(basename)-1
+          base = [base basename{i} '.'];
+       end
+       basename = base(1:end-1);  % this is an fugly hack to make things work with Kenji's naming system...
+   else
+       basename = basename{1};
+   end
+   
 else
    lfp.Filename = [basename '.lfp'];
 end
