@@ -3,7 +3,9 @@ function [SleepScoreLFP] = PickSWTHChannel(basePath,figfolder,scoretime,SWWeight
 %   Detailed explanation goes here
 %
 %% Buzcode name of the SleepScoreLFP.LFP.mat file
-[datasetfolder,recordingname] = fileparts(basePath);
+[datasetfolder,recordingname,extension] = fileparts(basePath);
+recordingname = [recordingname extension];
+
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreLFP.LFP.mat']);
 
 saveFiles = true;
@@ -33,7 +35,7 @@ else
 end
 
 %% FMA
-Par = LoadPar_SleepScore(xmlfilename);
+Par = LoadParameters(xmlfilename);
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
 
