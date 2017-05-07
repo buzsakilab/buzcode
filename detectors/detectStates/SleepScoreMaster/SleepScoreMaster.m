@@ -5,7 +5,7 @@ function SleepScoreMaster(basePath,varargin)
 %INPUT 
 %   basePath        folder containing .xml and .lfp files.
 %                   basePath and files should be of the form:
-%                   whateverfolder/recordingName/recordingName.lfp
+%                   'whateverfolder/recordingName/recordingName'
 %   (optional)      If no inputs included, select folder(s) containing .lfp
 %                   and .xml file in prompt.
 %   (optional)      if no .lfp in basePath, option to select multiple 
@@ -86,7 +86,8 @@ if ~exist('basePath','var')
 end
 
 %Separate datasetfolder and recordingname
-[datasetfolder,recordingname] = fileparts(basePath);
+[datasetfolder,recordingname,extension] = fileparts(basePath);
+recordingname = [recordingname,extension]; % fileparts parses '.' into extension
 
 if ~exist('SWWeightsName','var')
     SWWeightsName = 'SWweights.mat';
