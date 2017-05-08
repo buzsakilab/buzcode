@@ -126,16 +126,16 @@ for i=1:length(cluFiles)
     
     temp = strsplit(cluFiles(i).name,'.');
     shankID = str2num(temp{length(temp)});
-    clu = load(cluFiles(i).name);
+    clu = load(fullfile(basepath,cluFiles(i).name));
     clu = clu(2:end); % toss the first sample to match res/spk files
-    res = load(resFiles(i).name);
+    res = load(fullfile(basepath,resFiles(i).name));
     nSamples = meta.spikeGroups.nSamples(shankID);
     spkGrpChans = meta.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
     
     if getWaveforms
         % load waveforms
         chansPerSpikeGrp = length(meta.spikeGroups.groups{shankID});
-        fid = fopen(spkFiles(i).name,'r');
+        fid = fopen(fullfile(basepath,spkFiles(i).name),'r');
         wav = fread(fid,[1 inf],'int16');
         wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
         wav = permute(wav,[3 1 2]);
