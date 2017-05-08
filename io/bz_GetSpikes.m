@@ -58,6 +58,7 @@ function spikes = bz_GetSpikes(varargin)
 % TODO
 % - integrate session metadata in place of xml-LoadParameters
 % - get 'region' input working with session metadata
+%% Deal With Inputs 
 p = inputParser;
 addParameter(p,'spikeGroups',[],@isvector);
 addParameter(p,'region','',@isstr); % won't work without metadata 
@@ -90,7 +91,7 @@ nChannels = meta.nChannels;
 
 
 %% if the cellinfo file exist and we don't want to re-load files
-if exist([basepath filesep meta.FileName '.spikes.cellinfo.mat']) & forceReload == false
+if exist([basepath filesep meta.FileName '.spikes.cellinfo.mat'],'file') && forceReload == false
     disp('loading spikes from cellinfo file..')
     load([basepath filesep meta.FileName '.spikes.cellinfo.mat'])
 else % do the below then filter by inputs...
