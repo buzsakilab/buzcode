@@ -40,8 +40,8 @@ if size(pos,2)>6
     p = p+m*2;
 %     p(:,1) = fastrms(p(:,1),12);
 %     p(:,2) = fastrms(p(:,2),12);
-    p(:,1) = smoothts(p(:,1),'b',20);
-    p(:,2) = smoothts(p(:,2),'b',20);
+    p(:,1) = smoothts(p(:,1),'b',40);
+    p(:,2) = smoothts(p(:,2),'b',40);
 
     vel = nansum(abs(diff(p)'))';
     vel(vel>100) = 0;
@@ -110,7 +110,7 @@ for l=1:length(locsmat)
             if any(vel(locsmat(l,1)-120:locsmat(l,1)+120)<velThresh) & any(vel(locsmat(l+next,1)-120:locsmat(l+next,1)+120)<velThresh)
             startPos=pos(locsmat(l,1),:);
             stopPos=pos(locsmat(l+next,1),:);
-            if lastStop-1 < startPos(1) % cut off four seconds for some 'wiggle' room
+            if lastStop < startPos(1) % cut off four seconds for some 'wiggle' room
 %                 [a b]=min(abs(nanmean(startPos([1 3]))-x)+abs(nanmean(startPos([2 4]))-y));
 %                 [aa c]=min(abs(nanmean(stopPos([1 3]))-x)+abs(nanmean(stopPos([2 4]))-y)); 
                 [a b]=min(abs((startPos([8]))-x)+abs((startPos([10]))-y));
