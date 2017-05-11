@@ -11,7 +11,8 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 %DLevenstein
 
 %% Buzcode name of the SleepScoreMetrics.LFP.mat file
-[datasetfolder,recordingname] = fileparts(basePath);
+[datasetfolder,recordingname,extension] = fileparts(basePath);
+recordingname = [recordingname,extension]; % fileparts parses '.' into extension
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreMetrics.LFP.mat']);
 plotmaterialsfilename = fullfile(basePath,[recordingname,'.StatePlotMaterials.mat']);
 

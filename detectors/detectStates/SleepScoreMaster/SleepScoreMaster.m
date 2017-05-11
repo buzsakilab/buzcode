@@ -197,7 +197,7 @@ end
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
-EMG = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
+EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
                                      'rejectChannels',rejectchannels);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
@@ -214,7 +214,7 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 %Calculate the scoring metrics: broadbandLFP, theta, EMG in 
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,SleepScoreLFP,EMG,overwrite);
+                                           basePath,SleepScoreLFP,EMGFromLFP,overwrite);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
