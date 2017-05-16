@@ -41,6 +41,7 @@ function [ripples] = bz_FindRipples(varargin)
 %     'noise'       noisy unfiltered channel used to exclude ripple-
 %                   like noise (events also present on this channel are
 %                   discarded)
+%    saveMat         -logical (default=false) to save in buzcode format
 %    =========================================================================
 %
 %  OUTPUT
@@ -76,16 +77,17 @@ addParameter(p,'durations',[30 100],@isnumeric)
 addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'stdev',[],@isnumeric)
 addParameter(p,'noise',[],@ismatrix)
+addParameter(p,'saveMat',true,@islogical);
 
 if isstr(varargin{1})  % if first arg is basepath
     addRequired(p,'basepath',@isstr)
     addRequired(p,'channel',@isnumeric)    
     parse(p,varargin{:})
-    
-    xmlfile = dir([p.Results.basepath '/*xml']);
-    SetCurrentSession([p.Results.basepath '/' xmlfile.name]);
-    lfp = GetLFP(p.Results.channel);
+    basename = bz_BasenameFromBasepath(p.Results.basepath);
+    xmlfile = [basename '.xml'];
+    lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
     signal = bz_FilterLFP(double(lfp.data),'passband',[130 200]);
+    timestamps = lfp.timestamps;
 elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     addRequired(p,'lfp',@isnumeric)
     addRequired(p,'timestamps',@isnumeric)
@@ -118,7 +120,7 @@ window = ones(windowLength,1)/windowLength;
 keep = [];
 if ~isempty(restrict)
     for i=1:size(restrict,1)
-	keep(timestamps>=restrict(i,1)&timestamps<=restrict(i,2)) = 1;
+        keep(timestamps>=restrict(i,1)&timestamps<=restrict(i,2)) = 1;
     end
 end
 keep = logical(keep); 
@@ -295,7 +297,16 @@ end
 
 
 ripples.detectorParams = p.Results;
-ripples.detectorParams = rmfield(ripples.detectorParams,{'noise','timestamps'});
+ripples.detectorParams = rmfield(ripples.detectorParams,'noise');
+if isfield(ripples.detectorParams,'timestamps')  
+    ripples.detectorParams = rmfield(ripples.detectorParams,'timestamps');
+end
+
+
+if p.Results.saveMat
+    save([p.Results.basepath filesep basename '.events.ripples.mat'],'ripples')
+end
+
 
 function y = Filter0(b,x)
 
