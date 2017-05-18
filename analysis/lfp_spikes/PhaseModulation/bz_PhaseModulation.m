@@ -14,10 +14,13 @@ function [PhaseLockingData] = bz_PhaseModulation(varargin)
 %               phase modulation.  Formats accepted: tstoolbox intervalSet
 %               or a 2column matrix of [starts stops] in seconds
 %
-% samplingRate  - (optional) specifies lfp sampling frequency default:1250
+% samplingRate  - (optional) specifies lfp sampling frequency default=1250
 %
 % method        - (optional) method selection for how to generate phase, 
 %               possibilties are: 'hilbert' (default) or 'wavelet'
+%
+% powerThresh   - integer power threshold to use as cut off, 
+%                 measured in standard deviations (default = 2)
 %
 % plotting      - (optional) 1 if want to plot, 0 if not. Default:1
 %
@@ -53,6 +56,7 @@ addParameter(p,'samplingRate',1250,@isnumeric)
 addParameter(p,'method','hilbert',@isstr)
 addParameter(p,'plotting',true,@islogical)
 addParameter(p,'numBins',[180],@isnumeric)
+addParameter(p,'powerThresh',[2],@isnumeric)
 addParameter(p,'saveData',false,@islogical)
 
 % addParameter(p,'threshold',0,@isnumeric)
@@ -68,6 +72,7 @@ samplingRate = p.Results.samplingRate; % sampling rate of continuous signal (LFP
 method = p.Results.method; 
 plotting = p.Results.plotting;
 numBins = p.Results.numBins;
+powerThresh = p.Results.powerThresh;
 saveData = p.Results.saveData;
 
 
@@ -77,6 +82,7 @@ switch lower(method)
         [b a] = butter(4,[passband(1)/(samplingRate/2) passband(2)/(samplingRate/2)],'bandpass');
 %         [b a] = cheby2(4,20,passband/(samplingRate/2));
         filt = FiltFiltM(b,a,double(lfp.data(:,1)));
+        power = fastrms(filt,ceil(samplingRate./passband(1)));  % approximate power is frequency band
         hilb = hilbert(filt);
         lfpphase = mod(angle(hilb),2*pi);
         clear fil
@@ -100,6 +106,34 @@ switch lower(method)
         % not yet coded
         % filter, smooth, diff = 0, diffdiff = negative
 end
+%% update intervals to remove sub-threshold power periods
+disp('finding intervals below power threshold...')
+thresh = mean(power) + std(power)*powerThresh;
+minWidth = samplingRate./passband(2) * 2; % set the minimum width to two cycles
+
+below=find(power<thresh);
+if max(diff(diff(below))) == 0
+    below_thresh = [below(1) below(end)];
+elseif length(below)>0;
+    ends=find(diff(below)~=1);
+    ends(end+1)=length(below);
+    ends=sort(ends);
+    lengths=diff(ends);
+    stops=below(ends)./samplingRate;
+    starts=lengths./samplingRate;
+    starts = [1; starts];
+    below_thresh(:,2)=stops;
+    below_thresh(:,1)=stops-starts;
+else
+    below_thresh=[];
+end
+
+% now merge interval sets from input and power threshold
+
+intervals = SubtractIntervals(intervals,below_thresh);  % subtract out low power intervals
+
+intervals = intervals(diff(intervals')>minWidth./samplingRate,:); % only keep min width epochs
+
 
 %% Get phases for each spike for each cell
 h = [];
