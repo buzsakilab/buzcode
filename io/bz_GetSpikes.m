@@ -98,9 +98,33 @@ else % do the below then filter by inputs...
     
 disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
-cluFiles = dir([basepath filesep '*.clu*']);  % sort to be in correct order?
+cluFiles = dir([basepath filesep '*.clu*']);  
 resFiles = dir([basepath filesep '*.res*']);
 spkFiles = dir([basepath filesep '*.spk*']);
+
+% remove *temp* files
+tempFiles = zeros(length(cluFiles),1);
+for i = 1:length(cluFiles)
+    if ~isempty(findstr('temp',cluFiles(i).name))
+        tempFiles(i) = 1;
+    end
+end
+cluFiles(tempFiles==1)=[];
+tempFiles = zeros(length(resFiles),1);
+for i = 1:length(resFiles)
+    if ~isempty(findstr('temp',resFiles(i).name))
+        tempFiles(i) = 1;
+    end
+end
+resFiles(tempFiles==1)=[];
+tempFiles = zeros(length(spkFiles),1);
+for i = 1:length(spkFiles)
+    if ~isempty(findstr('temp',spkFiles(i).name))
+        tempFiles(i) = 1;
+    end
+end
+spkFiles(tempFiles==1)=[];
+
 
 % ensures we load in sequential order (forces compatibility with FMAT
 % ordering)
