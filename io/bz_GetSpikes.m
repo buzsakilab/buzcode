@@ -217,7 +217,7 @@ if ~isempty(spikeGroups)
 end
 %% filter by region input
 if ~isempty(region)
-  toRemove = ~ismember(sessionInfo.region,region);
+  toRemove = ~ismember(spikes.region,region);
     spikes.UID(toRemove) = [];
     for r = 1:length(toRemove)
         if toRemove(r) == 1
