@@ -121,6 +121,7 @@ spkFiles(tempFiles==1)=[];
 
 if isempty(cluFiles)
     disp('no clu files found...')
+    spikes = [];
     return
 end
 
@@ -176,9 +177,7 @@ for i=1:length(cluFiles)
        spikes.times{count} = res(ind) ./ samplingRate;
        spikes.shankID(count) = shankID;
        spikes.cluID(count) = cells(c);
-       if isfield(sessionInfo,'region') % assign region by shank, eventually move this down to max waveform channel for large probes that span regions
-          spikes.region{count} = sessionInfo.region{sessionInfo.lfpChans(i)}; 
-       end
+           
        if getWaveforms
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
            for t = 1:size(wvforms,1)
@@ -186,7 +185,10 @@ for i=1:length(cluFiles)
            end
            [aa bb] = max(a);
            spikes.rawWaveform{count} = wvforms(bb,:);
-           spikes.maxWaveformCh(count) = spkGrpChans(bb);     
+           spikes.maxWaveformCh(count) = spkGrpChans(bb);  
+           if isfield(sessionInfo,'region')  
+                spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)}; 
+           end
            clear a aa b bb
        end
        count = count + 1;
