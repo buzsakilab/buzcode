@@ -141,17 +141,25 @@ end
     pos(pos==-1) = NaN;
     newPos = interp1(frameT,pos,timestamps);
   
-    behav.positions.x = nanmean(pos(:,[2 4])');
-    behav.positions.y = nanmean(pos(:,[3 5])');
+    behavior.positions.x = nanmean(pos(:,[2 4])');
+    behavior.positions.y = nanmean(pos(:,[3 5])');
+    behavior.position.z = [];
     dx = pos(:,3) - pos(:,5);
     dy = pos(:,2) - pos(:,4);
-	ang = atan2(dy,dx)-angOffset;
-	ang = mod(ang,2*pi);
-    behav.orientations.z = ang; 
+% 	ang = atan2(dy,dx)-angOffset;
+% 	ang = mod(ang,2*pi);
+    [orientation rho] = cart2pol(pos(:,3)-pos(:,5),pos(:,2)-pos(:,4));
+    behavior.orientations.yaw = orientation; 
+    behavior.orientation.pitch = [];
+    behavior.orientation.roll = [];
+    behavior.rotationType = 'euler';
+    behavior.description = '';
+    behavior.events = [];
+    
     warning('come up with a better head dir calculation...') 
 error('this function is unfinished and may not comform to the new data formatting standards...')
-    behav.timestamps = pos(:,1);
+    behavior.timestamps = pos(:,1);
 %     dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);
-
+    save([fbasename '.behavior.mat'],'behavior');
 end
 
