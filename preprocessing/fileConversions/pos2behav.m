@@ -2,11 +2,9 @@ function [] = pos2behav(pos,varargin)
 %pos2behav - convert old .pos files/variables to buzcode 'behavior' struct.
 %
 %  USAGE
-%
 %    [behav] = pos2beahv(varargin)
 %
 % INPUTS
-%
 %    pos            Nx5 position data (columns 2 and 4 are X, 3 and 5 are
 %                   Y, and 1 is timestamps; there are two X/Y variables for two LED's)
 %
@@ -31,7 +29,6 @@ function [] = pos2behav(pos,varargin)
 %                   accepted inputs are 'led', 'optitrack', and ...
 %
 %  OUTPUT
-%
 %    behavior       struct with the following fields
 %                   .position      -reconstructed postions for each frame
 %                            .x
@@ -55,11 +52,7 @@ function [] = pos2behav(pos,varargin)
 %                   .description
 %                   .events        -Important time markers (behavioral scoring of trials, etc) 
 %
-%
-%
-%
 %  Written by David Tingley, 2017
-
 
 
 % determine if LED tracking or Motive tracking...
@@ -91,19 +84,35 @@ switch trackingType
         behavior.position.y = y_coords;
         behavior.position.z = [];
         behavior.timestamps = timestamps;
-        behavior.samplingRate = 1000 .* mean(diff(behavior.timestamps));
+        behavior.samplingRate = 1000 ./ mean(diff(behavior.timestamps))./1000;
         behavior.units = 'pixels';
-        
-
         behavior.orientation.yaw = orientation;
         behavior.orientation.pitch = [];
         behavior.orientation.roll = [];
         behavior.rotationType = 'euler';
-        
         behavior.description = '';
         behavior.events = [];
         
     case trackingType == 'optitrack'
+        
+        behavior.position.x = pos(:,8);
+        behavior.position.y = pos(:,10);
+        behavior.position.z = pos(:,9);
+        behavior.timestamps = pos(:,1);
+        behavior.samplingRate = 1000 ./ mean(diff(behavior.timestamps))./1000;
+        if nanstd(pos(:,7)) > 10  % determine unit of measure
+            behavior.units = 'meters';
+        else
+            behavior.units = 'mm';
+        end
+        behavior.orientation.x = pos(:,4);
+        behavior.orientation.y = pos(:,5);
+        behavior.orientation.z = pos(:,6);
+        behavior.orientation.w = pos(:,7);
+        behavior.rotationType = 'quaternion';
+        behavior.errorPerMarker = pos(:,11);
+        behavior.description = '';
+        behavior.events = [];
         
     otherwise
         error('unrecognized tracking type, have you added a new tracking method?')        

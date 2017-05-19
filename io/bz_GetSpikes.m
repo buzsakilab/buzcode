@@ -119,6 +119,11 @@ for i = 1:length(spkFiles)
 end
 spkFiles(tempFiles==1)=[];
 
+if isempty(cluFiles)
+    disp('no clu files found...')
+    return
+end
+
 
 % ensures we load in sequential order (forces compatibility with FMAT
 % ordering)
