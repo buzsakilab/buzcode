@@ -187,7 +187,7 @@ end
      
     
     %Detect blinking very large/small avgerage/std eye pixel intensity
-    unstablewindow = 8; %window of frames around detected unstable frames to denote as unstable
+    unstablewindow = 10; %window of frames around detected unstable frames to denote as unstable
   %  integratetime =  %try just using a window in the past?
     UNSTABLE = 0;
     meaneyepixel(ff) = mean(double(vidframe(eyemask))./255);
@@ -306,7 +306,7 @@ smoothwin = 10;  %frames
 puparea_pxl = puparea;
 puparea = smooth(puparea,smoothwin); %,'rloess'); %try rloess method... needs percentage of total points span
 %Long unstable epochs should be kept nan.....
-puparea = (puparea-min(puparea))./(max(puparea)-min(puparea));
+puparea = puparea./max(puparea);
 
 %% Load the analogin for the timestamps
 
