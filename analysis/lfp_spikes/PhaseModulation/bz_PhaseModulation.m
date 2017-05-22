@@ -139,6 +139,7 @@ intervals = intervals(diff(intervals')>minWidth./samplingRate,:); % only keep mi
 %% Get phases for each spike for each cell
 h = [];
 % cum_spkphases = [];
+phasebins=[];
 spkphases = cell(1,length(spikes));
 for a = 1:length(spikes)
     

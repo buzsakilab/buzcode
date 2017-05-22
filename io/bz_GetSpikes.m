@@ -96,24 +96,24 @@ cluFiles = dir([basepath filesep '*.clu*']);
 resFiles = dir([basepath filesep '*.res*']);
 spkFiles = dir([basepath filesep '*.spk*']);
 
-% remove *temp* files
+% remove *temp* and *autosave* files files
 tempFiles = zeros(length(cluFiles),1);
 for i = 1:length(cluFiles)
-    if ~isempty(findstr('temp',cluFiles(i).name))
+    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name))
         tempFiles(i) = 1;
     end
 end
 cluFiles(tempFiles==1)=[];
 tempFiles = zeros(length(resFiles),1);
 for i = 1:length(resFiles)
-    if ~isempty(findstr('temp',resFiles(i).name))
+    if ~isempty(findstr('temp',resFiles(i).name)) | ~isempty(findstr('autosave',resFiles(i).name))
         tempFiles(i) = 1;
     end
 end
 resFiles(tempFiles==1)=[];
 tempFiles = zeros(length(spkFiles),1);
 for i = 1:length(spkFiles)
-    if ~isempty(findstr('temp',spkFiles(i).name))
+    if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name))
         tempFiles(i) = 1;
     end
 end
@@ -161,7 +161,7 @@ for i=1:length(cluFiles)
         % load waveforms
         chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
         fid = fopen(fullfile(basepath,spkFiles(i).name),'r');
-        wav = fread(fid,[1 inf],'int16');
+        wav = fread(fid,[1 inf],'int16=>int16');
         wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
         wav = permute(wav,[3 1 2]);
     end
