@@ -41,7 +41,7 @@ function [ripples] = bz_FindRipples(varargin)
 %     'noise'       noisy unfiltered channel used to exclude ripple-
 %                   like noise (events also present on this channel are
 %                   discarded)
-%    saveMat         -logical (default=false) to save in buzcode format
+%     'saveMat'     logical (default=true) to save in buzcode format
 %    =========================================================================
 %
 %  OUTPUT
@@ -64,7 +64,6 @@ function [ripples] = bz_FindRipples(varargin)
 % (at your option) any later version.
 
 %% TODO
-% make compatible with LFP being int16 instead of double
 
 warning('this function is under development and may not work... yet')
 
@@ -84,7 +83,6 @@ if isstr(varargin{1})  % if first arg is basepath
     addRequired(p,'channel',@isnumeric)    
     parse(p,varargin{:})
     basename = bz_BasenameFromBasepath(p.Results.basepath);
-    xmlfile = [basename '.xml'];
     lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
     signal = bz_FilterLFP(double(lfp.data),'passband',[130 200]);
     timestamps = lfp.timestamps;
@@ -304,7 +302,7 @@ end
 
 
 if p.Results.saveMat
-    save([p.Results.basepath filesep basename '.events.ripples.mat'],'ripples')
+    save([p.Results.basepath filesep basename '.ripples.event.mat'],'ripples')
 end
 
 

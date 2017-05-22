@@ -76,7 +76,7 @@ basepath = p.Results.basepath;
 
 %% let's check that there is an appropriate LFP file
 if isempty(basename)
-   warning('No basename given, so we look for a *lfp/*eeg file...')
+   disp('No basename given, so we look for a *lfp/*eeg file...')
    d = dir([basepath filesep '*lfp']);
    if length(d) > 1 % we assume one .lfp file or this should break
        error('there is more than one .lfp file in this directory?');
