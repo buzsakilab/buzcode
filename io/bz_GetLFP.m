@@ -56,7 +56,7 @@ channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
 
 % parse args
 p = inputParser;
-addRequired(p,'channels','all',channelsValidation)
+addRequired(p,'channels',channelsValidation)
 addParameter(p,'basename','',@isstr)
 addParameter(p,'intervals',[0 Inf],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
