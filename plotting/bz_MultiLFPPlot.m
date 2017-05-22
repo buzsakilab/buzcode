@@ -44,10 +44,10 @@ end
 %Space based on median absolute deviation - robust to outliers.
 channelrange = 6.*mad(single(lfp.data(windex,chindex)),1);
 lfpmidpoints = -cumsum(channelrange);
-lfpplotdata = int16(bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)),lfpmidpoints));
+lfpplotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)),lfpmidpoints));
 
 %% Do the plot
-plot(lfp.timestamps(windex),lfpplotdata,'k')
+plot(lfp.timestamps(windex),lfpplotdata,'k','linewidth',0.2)
 xlabel('t (s)')
 ylabel('LFP by Depth')
 set(gca,'Ytick',fliplr(lfpmidpoints))
