@@ -10,10 +10,15 @@ function [lfp] = bz_GetLFP(varargin)
 %
 %  INPUTS
 %
-%    channels(required) -list of channels to load (use keyword 'all' for all)
+%    channels(required) -must be first input, numeric  
+%                        list of channels to load (use keyword 'all' for all)
 %                        channID is 0-indexing, a la neuroscope
-%    basename          -base file name to load
-%    intervals          -list of time intervals [0 10; 20 30] to read from the LFP file
+%  Name-value paired inputs:
+%    basename           -base file name to load
+%    basepath           - folder in which .lfp file will be found (default
+%                           is pwd)
+%    intervals          -list of time intervals [0 10; 20 30] to read from 
+%                           the LFP file (default is [0 inf])
 %
 %  OUTPUT
 %
@@ -50,6 +55,7 @@ function [lfp] = bz_GetLFP(varargin)
 % TODO
 % add saveMat input 
 % expand channel selection options (i.e. region or spikegroup)
+% add forcereload
 %% Parse the inputs!
 channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
     'channels must be numeric or "all"');
