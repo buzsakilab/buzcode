@@ -25,7 +25,33 @@ function [ pupildilation ] = GetPupilDilation(basePath)
 %
 %
 %Note: you may need gstreamer: https://gstreamer.freedesktop.org/download/
+%
+%
+%USING THE DETECTOR
+%This detector some amount of user input to determine best intensity
+%thresholds for the pupil and eyelid for blink and unstable frames
+%detection. Upon running the function, user will be promped with a series
+%of steps, described below with tips for best performance.
+%
+%Step 0: Make sure your files conform to the buzcode guidelines above
+%Step 1: Trace the eye.
+%-Trace the eyelid. This serves two purposes. First, excluding dark shadows
+%in the corner of the eye that may be mistaken for a pupil. Second, this
+%eye outline serves as a bseline for detection of blinking and other
+%instabilities. If the eye presented in the first frame is not ideal,
+%please press or hold "ESC" until an ideal eye presents itself, as this 
+%will be used as the template throughout the rest of the recording.
+%Step 2: Trace the pupil.
+%-This doesn't have to be perfect, but should avoid including any non-pupil
+%pixels.
+%Step 3: Adjust pupil/nonpupil threshold
+%-Place the threshold in the histogram to get the best separation between 
+%the two histograms. Looking for most pupil in the grey image with least
+%amount of shadow contamination.
+%
+%
 %DLevenstein 2017
+%With many suggestions from WMunoz to improve detection quality.
 %%
 
 if ~exist('basePath','var')
@@ -33,7 +59,9 @@ if ~exist('basePath','var')
 end
 [baseFolder,baseName] = fileparts(basePath);
 %%
+WHISKCONTAMINATION = true;
 
+%%
 
 %addpath(fullfile(baseFolder,baseName));
 
@@ -55,7 +83,7 @@ if SAVEVID
     open(pupdiamVid);
 end
 %%
-%Load in the video (has to be in not .avi for now...)
+%Load in the video
 pupilvidobj = VideoReader(vidName);
 NumberOfFrames = pupilvidobj.NumberOfFrames;
 
@@ -66,157 +94,182 @@ imagesize=size(vidframe);
 %Initiate the pupil area vector, center coordinates
 puparea = nan(NumberOfFrames,1);
 pupcoords = nan(NumberOfFrames,2);
+unstableframes = [];
 
 %Loop through the frames and get pupil location/area
 pupfig = figure;
  colormap('gray')
 for ff = 1:NumberOfFrames 
-%ff = 1;
 if mod(ff,200)==0
 display([num2str(ff),' of ' num2str(NumberOfFrames),' Frames'])
 end
 
-     vidframe=read(pupilvidobj,ff);
-     
-     %Convert to greyscale
+    %Read the video and convert to grayscale
+	vidframe=read(pupilvidobj,ff); 
     if size(vidframe,3)==3
         vidframe = rgb2gray(vidframe);
     end
-    vidframe_orig = vidframe;
-
-
-    
-    %Define the mask: trace the eye
-    if ff==1
-        
+    vidframe_orig = vidframe; %Hold on to the original image for later
+   
+    %USER: Define the full eye mask: trace the eye
+    if ~exist('eyemask','var')        
         subplot(2,2,1)
-        imagesc(vidframe_orig);
-        title('Trace the Eye')
-        h = imfreehand;
-        mask = ~createMask(h);
-        %keyboard
-%         mask = false(size(vidframe));
-%         ymax = 70; ymin = 40; xmax = 60; xmin = 35;
-%         mask(xmax:end,:) = true;
-%         mask(1:xmin,:) = true;
-%         mask(:,1:ymin) = true;
-%         mask(:,ymax:end) = true;
-%         
-%         %
-%         maskval =  max(vidframe(:));
-        maskval = 255;
+            imagesc(vidframe_orig);
+            title({'Trace the Eye','Hit "ESC" for next frame'})
+            set(gca,'ytick',[]);set(gca,'xtick',[]);
+        h_eye = imfreehand;
+        if isempty(h_eye); continue; end %Go to next frame if user aborts
+        eyeline = getPosition(h_eye);
+        eyemask = createMask(h_eye);
+        noneyeval = 255;
     end
-    vidframe(mask) = maskval;
+    vidframe(~eyemask) = noneyeval; %Put the noneye pixels to saturation 
     
-
     %Define the pupil size and intensity threshold - trace the pupil
-    if ff==1
-        
-            %Show the Masked frame
-            subplot(2,2,3)
-         imagesc(vidframe)
-        title('Trace the Pupil')
-        
+    if ~exist('pupilmask','var') 
+        %Show the Masked frame
+        subplot(2,2,3)
+            imagesc(vidframe)
+            title('Trace the Pupil')
+        %Trace the pupil
         h = imfreehand;
         pupilmask = createMask(h);
         
         %Get the pixel values for pupil, eye, and not-pupil eye
         pupilpixels = double(vidframe(pupilmask))./255; 
-        irispixels  = double(vidframe(~mask & ~ pupilmask))./255; 
-        eyepixels = double(vidframe(~mask))./255; 
+        irispixels  = double(vidframe(eyemask & ~pupilmask))./255; 
+        eyepixels = double(vidframe(eyemask))./255; 
+        
+        %Blink threshold
+        unstablemeanthresh = 0.6; %std
+        unstablestdthresh = 0.15;
+        eyerange = mean(eyepixels)+unstablemeanthresh.*std(eyepixels).*[-1 1];
+        blinkstdthresh = std(eyepixels)+unstablestdthresh.*[-1 1];
         
         intensitybins = linspace(0,1,40);
         pupilhist = hist(pupilpixels,intensitybins);
         irishist = hist(irispixels,intensitybins);
         eyehist = hist(eyepixels,intensitybins);
         
-       % keyboard
-        pupilsizethresh = 30; %Pupil must be larger than this many pixels.
-        %Pupil must be darker than this intensity: 2.5std above mean pupil
+        pupilsizethresh = 20; %Pupil must be larger than this many pixels
+        %Starting intensity threshold: 2.5std above mean pupil
         intensitythresh = mean(pupilpixels)+1.*std(pupilpixels); 
-        %%
         x = 1;
         while ~isempty(x)
-        tentativepupil=2.*~im2bw(vidframe,intensitythresh);
-        tentativenotpupil=im2bw(vidframe,intensitythresh);
+            tentativepupil=2.*~im2bw(vidframe,intensitythresh);
+            tentativenotpupil=im2bw(vidframe,intensitythresh);
+            tentativemap = eyemask+tentativepupil+tentativenotpupil;
+            subplot(2,2,3)
+                imagesc(tentativemap)
+            subplot(2,2,2)
+                bar(intensitybins,eyehist)
+                hold on
+                plot(intensitybins,irishist,'g','linewidth',2)
+                plot(intensitybins,pupilhist,'r','linewidth',2)
+                plot([1 1].*intensitythresh,get(gca,'ylim'),'r--')
+                xlim([0 1])
+                legend('Whole Eye','Not Pupil','Pupil',...
+                    'location','northwest')
         
-        tentativemap = ~mask+tentativepupil+tentativenotpupil;
-        subplot(2,2,3)
-        imagesc(tentativemap)
-        
-        subplot(2,2,2)
-        bar(intensitybins,eyehist)
-        hold on
-        plot(intensitybins,irishist,'g','linewidth',2)
-        plot(intensitybins,pupilhist,'r','linewidth',2)
-        plot([1 1].*intensitythresh,get(gca,'ylim'),'r--')
-        xlim([0 1])
-        legend('Whole Eye','Not Pupil','Pupil','location','northwest')
-        
-       %Show eye with over/under pixels. allow user to select threshold and show new over/under 
-       title({'Click to adjust threshold', 'or press RETURN for current threshold'})
-        [x,~] = ginput(1);
-        hold off
-        if isempty(x); break; end
-        intensitythresh = x; 
+            %Show eye with over/under pixels. 
+            %allow user to select threshold and show new over/under 
+            title({'Click to adjust threshold',...
+               'or press RETURN for current threshold'})
+            [x,~] = ginput(1);
+            hold off
+            if isempty(x); break; end
+            intensitythresh = x; 
         end
-          %%
-
-    
-
+        
         %%
        % set(pupfig,'visible','off')   
     end
      
+    
+    %Detect blinking very large/small avgerage/std eye pixel intensity
+    unstablewindow = 10; %window of frames around detected unstable frames to denote as unstable
+  %  integratetime =  %try just using a window in the past?
+    UNSTABLE = 0;
+    meaneyepixel(ff) = mean(double(vidframe(eyemask))./255);
+     stdeyepixel(ff) = std(double(vidframe(eyemask))./255);
+    %display(['Mean: ',num2str(meaneyepixel(ff)),'.   Range: ',num2str(eyerange)])
+    if meaneyepixel(ff) < eyerange(1) || meaneyepixel(ff) > eyerange(2) ||...
+            stdeyepixel(ff) < blinkstdthresh(1) || stdeyepixel(ff) > blinkstdthresh(2)
+        UNSTABLE = 1;
+        unstableframes = unique([unstableframes,[ff-unstablewindow:ff+unstablewindow]]);
+        puparea(unstableframes)=nan;
+    end
+    
+    
     %Get the pupil - all pixels below intensity threshold (black)
     pupil=~im2bw(vidframe,intensitythresh);
 
     if SAVEVID && mod(ff,savevidfr)==0; 
-        subplot(4,4,9);imagesc(pupil); end
+        subplot(4,4,9);imagesc(pupil);
+        set(gca,'ytick',[]);set(gca,'xtick',[]);
+    end
     %Show the thresholded image
 
     
     %Remove small objects and holes (i.e. dark/bright spots)
-    pupil=bwmorph(pupil,'close');
+   % pupil=bwmorph(pupil,'close');
+    pupil=imclose(pupil,strel('disk',4)); %Number of pixels to try to merge
     if SAVEVID && mod(ff,savevidfr)==0; 
-         subplot(4,4,10);imagesc(pupil); end
+         subplot(4,4,10);imagesc(pupil);
+        set(gca,'ytick',[]);set(gca,'xtick',[]);
+    end
     
     pupil=bwmorph(pupil,'open');
     if SAVEVID && mod(ff,savevidfr)==0; 
-         subplot(4,4,11);imagesc(pupil); end
+         subplot(4,4,11);imagesc(pupil);
+        set(gca,'ytick',[]);set(gca,'xtick',[]);
+    end
     
     pupil=bwareaopen(pupil,pupilsizethresh);
     pupil=imfill(pupil,'holes');
     if SAVEVID && mod(ff,savevidfr)==0; 
-         subplot(4,4,12);imagesc(pupil); end
-
+         subplot(4,4,12);imagesc(pupil);
+        set(gca,'ytick',[]);set(gca,'xtick',[]);
+    end
+    
+     
     % Tagged objects in BW image
     L=bwlabel(pupil);
     % Get areas and tracking rectangle
     out_a=regionprops(L);
     % Count the number of objects
-    N=size(out_a,1);
+    N_objects=size(out_a,1);
     
-    if N < 1 || isempty(out_a) % Returns if no object in the image
-        continue
-    end
+    if N_objects < 1 || isempty(out_a) || UNSTABLE || ismember(ff,unstableframes)% Returns if no object in the image
+        %Save nans for unstable framess
+        X=nan;
+        Y=nan;
+        puparea(ff) = nan;
+        %Stuff so plot doesn't crash
+        pam = 1;
+        out_a(pam).BoundingBox = [0 0 0 0];
+    else
 
-    % Select larger area
-    areas=[out_a.Area];
-    [area_max pam]=max(areas);
-    puparea(ff) = area_max;
-    
-    centro=round(out_a(pam).Centroid);
-    X=centro(1);
-    Y=centro(2);
+        % Select larger area
+        areas=[out_a.Area];
+        [area_max pam]=max(areas);
+        puparea(ff) = area_max;
+
+        centro=round(out_a(pam).Centroid);
+        X=centro(1);
+        Y=centro(2);
+    end
   
     if SAVEVID && mod(ff,savevidfr)==0;  
     subplot(2,2,1)
     imagesc(vidframe_orig);
+    %caxis([0 255])
     hold on
+    plot(eyeline(:,1),eyeline(:,2),'b:','linewidth',0.5)
     rectangle('Position',out_a(pam).BoundingBox,'EdgeColor',[1 0 0],...
         'Curvature', [1,1],'LineWidth',0.5)
     plot(X,Y,'g+','markersize',3)
+    set(gca,'ytick',[]);set(gca,'xtick',[]);
     hold off
     end
     
@@ -224,15 +277,17 @@ end
     
    if SAVEVID && mod(ff,savevidfr)==0;  
    subplot(4,1,4)
+       yrange = [min(puparea) max(puparea)];
        windur = 3000; %frames
        earlypoint = max(1,ff-windur);
-       plot(earlypoint:ff,puparea(earlypoint:ff),'k')
+       plot(earlypoint:ff,(puparea(earlypoint:ff)-yrange(1))./diff(yrange),'k')
        hold on
        plot(ff,puparea(ff),'ro')
+       plot(unstableframes,zeros(size(unstableframes)),'r.','markersize',10)
        hold off
        xlim([earlypoint ff])
-       yrange = [min(puparea) max(puparea)];
-       if yrange(1)~=yrange(2); ylim([min(puparea) max(puparea)]); end
+       %if yrange(1)~=yrange(2); ylim([min(puparea) max(puparea)]); end
+       ylim([0 1])
    end
      
    if SAVEVID && mod(ff,savevidfr)==0;
@@ -250,7 +305,8 @@ if SAVEVID; close(pupdiamVid); end
 smoothwin = 10;  %frames
 puparea_pxl = puparea;
 puparea = smooth(puparea,smoothwin); %,'rloess'); %try rloess method... needs percentage of total points span
-puparea = (puparea-min(puparea))./(max(puparea)-min(puparea));
+%Long unstable epochs should be kept nan.....
+puparea = puparea./max(puparea);
 
 %% Load the analogin for the timestamps
 
@@ -297,14 +353,13 @@ end
 
 %%
 figure
-subplot(2,1,1)
-plot(t_pulse,timepulses,'k')
-hold on
-plot(pulset,zeros(size(pulset)),'r+')
-
-subplot(2,1,2)
-hist(interpulse)
-
+    subplot(2,1,1)
+        plot(t_pulse,timepulses,'k')
+        hold on
+        plot(pulset,zeros(size(pulset)),'r+')
+    subplot(2,1,2)
+        hist(interpulse)
+NiceSave('PupilFrames',figfolder,baseName)
 %%
 trange = pulset([1 end]);
 numframes = length(puparea);
@@ -322,11 +377,18 @@ pupildilation.t_pulse = pulset;
 pupildilation.t_interp = t_interp;
 pupildilation.puparea = puparea;
 pupildilation.puparea_pxl = puparea_pxl;
+pupildilation.eyepixelmean = meaneyepixel;
+pupildilation.unstableframes = unstableframes;
+pupildilation.eyepixelstd = stdeyepixel;
 pupildilation.pupcoords = pupcoords;
+
 pupildilation.detectorname = 'GetPupilDilation';
 pupildilation.detectiondate = today('datetime');
-pupildilation.detectorparms.mask = mask;
+pupildilation.detectorparms.mask = eyemask;
 pupildilation.detectorparms.intensitythresh = intensitythresh;
+pupildilation.detectorparms.unstablewindow = unstablewindow;
+pupildilation.detectorparms.blinkstdthresh = blinkstdthresh;
+pupildilation.detectorparms.eyerange = eyerange;
 
 
 save(savefile,'pupildilation')

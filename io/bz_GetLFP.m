@@ -54,11 +54,15 @@ function [lfp] = bz_GetLFP(varargin)
 %
 % TODO
 % add saveMat input 
+% expand channel selection options (i.e. region or spikegroup)
 % add forcereload
+%% Parse the inputs!
+channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
+    'channels must be numeric or "all"');
 
 % parse args
 p = inputParser;
-addRequired(p,'channels',@isnumeric)
+addRequired(p,'channels',channelsValidation)
 addParameter(p,'basename','',@isstr)
 addParameter(p,'intervals',[0 Inf],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
@@ -105,6 +109,14 @@ try
     samplingRate = xml.lfpSampleRate;
 catch
      samplingRate = xml.rates.lfp; % old ugliness we need to get rid of
+end
+
+%% Channel load options
+%Right now this assumes that all means channels 0:nunchannels-1 (neuroscope
+%indexing), we could also add options for this to be select region or spike
+%group from the xml...
+if strcmp(channels,'all')
+    channels = 0:(nChannels-1);
 end
 
 %% get the data
