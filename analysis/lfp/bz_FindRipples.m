@@ -109,7 +109,7 @@ maxRippleDuration = p.Results.durations(2);
 
 
 % Parameters
-windowLength = frequency/1250*11;
+windowLength = frequency/frequency*11;
 
 % Square and normalize signal
 
