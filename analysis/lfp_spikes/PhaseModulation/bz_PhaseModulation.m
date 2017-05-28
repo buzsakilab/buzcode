@@ -1,4 +1,4 @@
-function [PhaseLockingData] = bz_PhaseModulation(varargin)
+ function [PhaseLockingData] = bz_PhaseModulation(varargin)
 % USAGE
 %[phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,samplingRate,method,plotting)
 % 
