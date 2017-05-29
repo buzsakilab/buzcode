@@ -151,7 +151,7 @@ end
         irishist = hist(irispixels,intensitybins);
         eyehist = hist(eyepixels,intensitybins);
         
-        pupilsizethresh = 20; %Pupil must be larger than this many pixels
+        pupilsizethresh = 15; %Pupil must be larger than this many pixels
         %Starting intensity threshold: 2.5std above mean pupil
         intensitythresh = mean(pupilpixels)+1.*std(pupilpixels); 
         x = 1;
@@ -277,7 +277,7 @@ end
     
    if SAVEVID && mod(ff,savevidfr)==0;  
    subplot(4,1,4)
-       yrange = [min(puparea) max(puparea)];
+       yrange = [0 max(puparea)];
        windur = 3000; %frames
        earlypoint = max(1,ff-windur);
        plot(earlypoint:ff,(puparea(earlypoint:ff)-yrange(1))./diff(yrange),'k')
@@ -300,14 +300,6 @@ end
 if SAVEVID; close(pupdiamVid); end
 
 
-%0-1 Normalize, smooth the pupil area trace 
-%(make window in units of seconds or figure out the best # frames)
-smoothwin = 10;  %frames
-puparea_pxl = puparea;
-puparea = smooth(puparea,smoothwin); %,'rloess'); %try rloess method... needs percentage of total points span
-%Long unstable epochs should be kept nan.....
-puparea = puparea./max(puparea);
-
 %% Load the analogin for the timestamps
 
 timepulses = LoadBinary(analogName,'nChannels',1,'precision','uint16');
@@ -317,66 +309,115 @@ sf_pulse = 1./20000; %Sampling Frequency of the .abf file
 t_pulse = [1:length(timepulses)]'.*sf_pulse;
 
 pulsethreshold =1e4;  %Adjust this later to set based on input.
-pulseonsets = find(diff(timepulses<pulsethreshold)==1);
+%Find where pulse channel crosses in the upward direction
+pulseonsets = find(diff(timepulses>pulsethreshold)==1); 
 pulset = t_pulse(pulseonsets);
 
-minpulsedur = 0.003; %Remove double/noise crossings
 
+minpulsedur = 0.003; %Remove double/noise crossings
 shortpulses=diff(pulset)<(minpulsedur);
 pulset(shortpulses) = [];
 
 interpulse = diff(pulset);
+sf_eff = 1./mean(interpulse);
+
+%Check that frame duration is constant up to tolerance (no skipped frames)
+tol = 0.001;
+
+if range(interpuls)>tol
+    warning('Frame rate is not constant...')
+end
 
 % longpulses=diff(pulset)>(2.*expectedpulserate);
 % pulset(longpulses) = [];
 
 %hist(diff(pulset))
 
-%% Clampex Pulses
-% timepulses = abfload(abfname);
-% timepulses = timepulses(:,1);
-% 
-% sf_abf = 1./20000; %Sampling Frequency of the .abf file
-% t_pulse = [1:length(timepulses)]'.*sf_abf;
-% 
-% pulsethreshold =0.5;  %Adjust this later to set based on input.
-% pulseonsets = find(diff(timepulses<pulsethreshold)==1);
-% pulset = t_pulse(pulseonsets);
-
-
-%pulset(1) = []; %remove the first trigger... make this more rigorous later 
 
 %% Check that the number of identified pulses = the number of frames
 if length(pulset)~=length(puparea); 
     display('WARNING: NUMBER OF FRAMES DON"T MATCH!!!    v sad.');%keyboard; 
 end
 
-%%
-figure
-    subplot(2,1,1)
-        plot(t_pulse,timepulses,'k')
-        hold on
-        plot(pulset,zeros(size(pulset)),'r+')
-    subplot(2,1,2)
-        hist(interpulse)
-NiceSave('PupilFrames',figfolder,baseName)
-%%
+
+
+%% Estimate and check sampling frequency of the camera
+
+
+
+%% Smooth and normalize the pupil diameter trace
+
+%0-1 Normalize, smooth the pupil area trace 
+%(make window in units of seconds or figure out the best # frames)
+smoothwin_s = 0.5;  %s
+%smoothwin = 10;  %frames
+smoothwin_frames = round(smoothwin_s.*sf_eff); %Calculate window in frames 
+puparea_raw = puparea; %In units of pixels
+puparea = smooth(puparea,smoothwin_frames,'moving'); %,'rloess'); %try rloess method... needs percentage of total points span
+%Long unstable epochs should be kept nan.....
+puparea = puparea./max(puparea);
+
+%% Linearly interpolate bad frames of duration less than some window...
+
+
+
+%% Align the timestamps
 trange = pulset([1 end]);
 numframes = length(puparea);
 t_interp = linspace(trange(1),trange(2),numframes)';
 
 %%
+timestamps = pulset(1:numframes);
+data = puparea;
+
+%% Detection Quality Control Figure
+figure
+    subplot(4,1,2)
+        plot(t_pulse,timepulses,'k')
+        hold on
+        plot(pulset,zeros(size(pulset)),'r+')
+        
+    subplot(4,1,1)
+        plot(puparea,'k')
+        hold on
+        plot(unstableframes,zeros(size(unstableframes)),'r.','markersize',10)
+        hold on
+
+    subplot(4,2,5)
+        plot(t_pulse,timepulses,'k')
+        hold on
+        plot(pulset,zeros(size(pulset)),'r+')
+        xlim(pulset(1)+[-0.05 0.1])
+        
+    subplot(4,2,8)
+        hist(interpulse)
+    subplot(4,2,7)
+        hist(puparea,linspace(0,1,20))
+        xlim([0 1])
+NiceSave('PupilFrames',figfolder,baseName)
+
+
+%%
+figure
+    subplot(4,1,4)
+        plot(t_pulse,timepulses,'k')
+        hold on
+        plot(pulset,zeros(size(pulset)),'r+')
+    subplot(4,1,3)
+        plot(timestamps,puparea_raw,'k')
+%     subplot(2,1,2)
+%         hist(interpulse)
 
 
 
 
 
-%% Behavior struct
+%% Behavior struct for saving
 
 pupildilation.t_pulse = pulset;
 pupildilation.t_interp = t_interp;
 pupildilation.puparea = puparea;
-pupildilation.puparea_pxl = puparea_pxl;
+pupildilation.puparea_pxl = puparea_raw;
 pupildilation.eyepixelmean = meaneyepixel;
 pupildilation.unstableframes = unstableframes;
 pupildilation.eyepixelstd = stdeyepixel;
