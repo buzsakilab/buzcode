@@ -5,7 +5,7 @@ function SleepScoreMaster(basePath,varargin)
 %INPUT 
 %   basePath        folder containing .xml and .lfp files.
 %                   basePath and files should be of the form:
-%                   whateverfolder/recordingName/recordingName.lfp
+%                   'whateverfolder/recordingName/recordingName'
 %   (optional)      If no inputs included, select folder(s) containing .lfp
 %                   and .xml file in prompt.
 %   (optional)      if no .lfp in basePath, option to select multiple 
@@ -25,7 +25,7 @@ function SleepScoreMaster(basePath,varargin)
 %                   containing the weights for the various frequencies to
 %                   be used for SWS detection.  Default is 'SWweights.mat'
 %                     - For hippocampus-only recordings, enter
-%                     'SWWeightsHPC.mat' for this
+%                     'SWweightsHPC.mat' for this
 %   'Notch60Hz'     Boolean 0 or 1.  Value of 1 will notch out the 57.5-62.5 Hz
 %                   band, default is 0, no notch.  This can be necessary if
 %                   electrical noise.
@@ -86,7 +86,8 @@ if ~exist('basePath','var')
 end
 
 %Separate datasetfolder and recordingname
-[datasetfolder,recordingname] = fileparts(basePath);
+[datasetfolder,recordingname,extension] = fileparts(basePath);
+recordingname = [recordingname,extension]; % fileparts parses '.' into extension
 
 if ~exist('SWWeightsName','var')
     SWWeightsName = 'SWweights.mat';
@@ -196,7 +197,7 @@ end
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
-EMG = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
+EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
                                      'rejectChannels',rejectchannels);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
@@ -213,7 +214,7 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 %Calculate the scoring metrics: broadbandLFP, theta, EMG in 
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,SleepScoreLFP,EMG,overwrite);
+                                           basePath,SleepScoreLFP,EMGFromLFP,overwrite);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')

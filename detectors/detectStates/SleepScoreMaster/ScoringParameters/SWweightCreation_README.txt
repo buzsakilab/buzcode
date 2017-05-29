@@ -9,3 +9,7 @@ No60 is created using
 
 NoHVS is created using
 >> SWweights(SWfreqlist<=18 & SWfreqlist>=12) = 0;
+
+M1M3KO is created using
+>> SWweights(SWfreqlist<=30 & SWfreqlist>=2) = 0;
+

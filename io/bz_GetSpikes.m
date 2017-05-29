@@ -8,7 +8,7 @@ function spikes = bz_GetSpikes(varargin)
 % INPUTS
 %
 %    spikeGroups     -vector subset of shank IDs to load
-%    region          -string region ID to load neurons from specific region (requires metadata file)
+%    region          -string region ID to load neurons from specific region (requires sessionInfodata file)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
 %    getWaveforms    -logical (default=true) to load mean of raw waveform data
@@ -32,7 +32,7 @@ function spikes = bz_GetSpikes(varargin)
 %
 % This function can be used in several ways to load spiking data.
 % Specifically, it loads spiketimes for individual neurons and other
-% metadata that describes each neuron.  Spiketimes can be loaded using the
+% sessionInfodata that describes each neuron.  Spiketimes can be loaded using the
 % UID(1-N), the shank the neuron was on, or the region it was recorded in.
 % The default behavior is to load all spikes in a recording. The .shankID
 % and .cluID fields can be used to reconstruct the 'units' variable often
@@ -56,11 +56,12 @@ function spikes = bz_GetSpikes(varargin)
 % written by David Tingley, 2017
 
 % TODO
-% - integrate session metadata in place of xml-LoadParameters
-% - get 'region' input working with session metadata
+% - integrate session sessionInfodata in place of xml-LoadParameters
+% - get 'region' input working with session sessionInfodata
+%% Deal With Inputs 
 p = inputParser;
 addParameter(p,'spikeGroups',[],@isvector);
-addParameter(p,'region','',@isstr); % won't work without metadata 
+addParameter(p,'region','',@isstr); % won't work without sessionInfodata 
 addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'getWaveforms',true,@islogical)
@@ -77,29 +78,64 @@ getWaveforms = p.Results.getWaveforms;
 forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 
-% get meta info about recording, for now we'll use the xml.
-meta = LoadParameters(basepath);
-samplingRate = meta.rates.wideband;
-nChannels = meta.nChannels;
-
-
-% to use session metadata, ADD IT HERE AS 'meta' and not below.
-
-% samplingRate = meta.rates.wdieband;
-% nChannels = meta.nChannels;
+% get sessionInfo info about recording, for now we'll use the xml.
+sessionInfo = bz_getSessionInfo;  % calls loadparameters if sessionInfo doesn't exist
+samplingRate = sessionInfo.rates.wideband;
+nChannels = sessionInfo.nChannels;
 
 
 %% if the cellinfo file exist and we don't want to re-load files
-if exist([basepath filesep meta.FileName '.spikes.cellinfo.mat']) & forceReload == false
+if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') && forceReload == false
     disp('loading spikes from cellinfo file..')
-    load([basepath filesep meta.FileName '.spikes.cellinfo.mat'])
+    load([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'])
 else % do the below then filter by inputs...
     
 disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
-cluFiles = dir([basepath filesep '*.clu*']);
+cluFiles = dir([basepath filesep '*.clu*']);  
 resFiles = dir([basepath filesep '*.res*']);
 spkFiles = dir([basepath filesep '*.spk*']);
+
+% remove *temp* and *autosave* files files
+tempFiles = zeros(length(cluFiles),1);
+for i = 1:length(cluFiles)
+    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name))
+        tempFiles(i) = 1;
+    end
+end
+cluFiles(tempFiles==1)=[];
+tempFiles = zeros(length(resFiles),1);
+for i = 1:length(resFiles)
+    if ~isempty(findstr('temp',resFiles(i).name)) | ~isempty(findstr('autosave',resFiles(i).name))
+        tempFiles(i) = 1;
+    end
+end
+resFiles(tempFiles==1)=[];
+tempFiles = zeros(length(spkFiles),1);
+for i = 1:length(spkFiles)
+    if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name))
+        tempFiles(i) = 1;
+    end
+end
+spkFiles(tempFiles==1)=[];
+
+if isempty(cluFiles)
+    disp('no clu files found...')
+    spikes = [];
+    return
+end
+
+
+% ensures we load in sequential order (forces compatibility with FMAT
+% ordering)
+for i = 1:length(cluFiles)
+    temp = strsplit(cluFiles(i).name,'.');
+    shanks(i) = str2num(temp{length(temp)});
+end
+[shanks ind] = sort(shanks);
+cluFiles = cluFiles(ind);
+resFiles = resFiles(ind); 
+spkFiles = spkFiles(ind);
 
 % check if there are matching #'s of files
 if length(cluFiles) ~= length(resFiles) & length(cluFiles) ~= length(spkFiles)
@@ -110,23 +146,22 @@ end
 % use the .res files to get spike times
 count = 1;
 
-for i=1:length(cluFiles)
+for i=1:length(cluFiles) 
     disp(['working on ' spkFiles(i).name])
     
     temp = strsplit(cluFiles(i).name,'.');
     shankID = str2num(temp{length(temp)});
-    
-    clu = load(cluFiles(i).name);
+    clu = load(fullfile(basepath,cluFiles(i).name));
     clu = clu(2:end); % toss the first sample to match res/spk files
-    res = load(resFiles(i).name);
-    nSamples = meta.spikeGroups.nSamples(shankID);
-    spkGrpChans = meta.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
+    res = load(fullfile(basepath,resFiles(i).name));
+    nSamples = sessionInfo.spikeGroups.nSamples(shankID);
+    spkGrpChans = sessionInfo.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
     
     if getWaveforms
         % load waveforms
-        chansPerSpikeGrp = length(meta.spikeGroups.groups{shankID});
-        fid = fopen(spkFiles(i).name,'r');
-        wav = fread(fid,[1 inf],'int16');
+        chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
+        fid = fopen(fullfile(basepath,spkFiles(i).name),'r');
+        wav = fread(fid,[1 inf],'int16=>int16');
         wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
         wav = permute(wav,[3 1 2]);
     end
@@ -140,9 +175,9 @@ for i=1:length(cluFiles)
        spikes.UID(count) = count; % this only works if all shanks are loaded... how do we optimize this?
        ind = find(clu == cells(c));
        spikes.times{count} = res(ind) ./ samplingRate;
-       spikes.shankID(count) = i;
+       spikes.shankID(count) = shankID;
        spikes.cluID(count) = cells(c);
-              
+           
        if getWaveforms
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
            for t = 1:size(wvforms,1)
@@ -150,14 +185,17 @@ for i=1:length(cluFiles)
            end
            [aa bb] = max(a);
            spikes.rawWaveform{count} = wvforms(bb,:);
-           spikes.maxWaveformCh(count) = spkGrpChans(bb);     
+           spikes.maxWaveformCh(count) = spkGrpChans(bb);  
+           if isfield(sessionInfo,'region')  
+                spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)}; 
+           end
            clear a aa b bb
        end
        count = count + 1;
     end
 end
 
-spikes.sessionName = meta.FileName;
+spikes.sessionName = sessionInfo.FileName;
 
 end
 
@@ -169,9 +207,11 @@ if ~isempty(spikeGroups)
     for r = 1:length(toRemove)
         if toRemove(r) == 1
          spikes.times{r} = [];
+         spikes.region{r} = [];
         end
     end
     spikes.times = removeEmptyCells(spikes.times);
+    spikes.region = removeEmptyCells(spikes.region);
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
     for r = 1:length(toRemove)
@@ -184,24 +224,27 @@ if ~isempty(spikeGroups)
 end
 %% filter by region input
 if ~isempty(region)
-    warning('region input is not working yet, get metadata loading working first!')
-        [toRemove] = ~ismember(spikes.region,region);
+  toRemove = ~ismember(spikes.region,region);
     spikes.UID(toRemove) = [];
     for r = 1:length(toRemove)
         if toRemove(r) == 1
          spikes.times{r} = [];
+         spikes.region{r} = [];
         end
     end
     spikes.times = removeEmptyCells(spikes.times);
+    spikes.region = removeEmptyCells(spikes.region);
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.rawWaveform{r} = [];
+    if isfield(spikes,'rawWaveform')
+        for r = 1:length(toRemove)
+            if toRemove(r) == 1
+             spikes.rawWaveform{r} = [];
+            end
         end
+        spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
+        spikes.maxWaveformCh(toRemove) = [];
     end
-    spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
-    spikes.maxWaveformCh(toRemove) = [];
 end
 %% filter by UID input
 if ~isempty(UID)
@@ -210,9 +253,11 @@ if ~isempty(UID)
     for r = 1:length(toRemove)
         if toRemove(r) == 1
          spikes.times{r} = [];
+         spikes.region{r} = [];
         end
     end
     spikes.times = removeEmptyCells(spikes.times);
+    spikes.region = removeEmptyCells(spikes.region);
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
     for r = 1:length(toRemove)
@@ -226,7 +271,7 @@ end
 
 %% save to buzcode format
 if saveMat
-    save([basepath filesep meta.FileName '.spikes.cellinfo.mat'],'spikes')
+    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
 end
 
 

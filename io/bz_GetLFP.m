@@ -1,5 +1,5 @@
 function [lfp] = bz_GetLFP(varargin)
-%GetLFP - Get local field potentials.
+% bz_GetLFP - Get local field potentials.
 %
 %  Load local field potentials from disk. No longer dependent on
 %  FMAT/SetCurrentSession.
@@ -10,10 +10,15 @@ function [lfp] = bz_GetLFP(varargin)
 %
 %  INPUTS
 %
-%    channels(required) -list of channels to load (use keyword 'all' for all)
+%    channels(required) -must be first input, numeric  
+%                        list of channels to load (use keyword 'all' for all)
 %                        channID is 0-indexing, a la neuroscope
-%    basename          -base file name to load
-%    intervals          -list of time intervals [0 10; 20 30] to read from the LFP file
+%  Name-value paired inputs:
+%    basename           -base file name to load
+%    basepath           - folder in which .lfp file will be found (default
+%                           is pwd)
+%    intervals          -list of time intervals [0 10; 20 30] to read from 
+%                           the LFP file (default is [0 inf])
 %
 %  OUTPUT
 %
@@ -49,10 +54,15 @@ function [lfp] = bz_GetLFP(varargin)
 %
 % TODO
 % add saveMat input 
+% expand channel selection options (i.e. region or spikegroup)
+% add forcereload
+%% Parse the inputs!
+channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
+    'channels must be numeric or "all"');
 
 % parse args
 p = inputParser;
-addRequired(p,'channels',@isnumeric)
+addRequired(p,'channels',channelsValidation)
 addParameter(p,'basename','',@isstr)
 addParameter(p,'intervals',[0 Inf],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
@@ -66,7 +76,7 @@ basepath = p.Results.basepath;
 
 %% let's check that there is an appropriate LFP file
 if isempty(basename)
-   warning('No basename given, so we look for a *lfp/*eeg file...')
+   disp('No basename given, so we look for a *lfp/*eeg file...')
    d = dir([basepath filesep '*lfp']);
    if length(d) > 1 % we assume one .lfp file or this should break
        error('there is more than one .lfp file in this directory?');
@@ -78,7 +88,16 @@ if isempty(basename)
    end
    lfp.Filename = d.name;
    basename = strsplit(lfp.Filename,'.');
-   basename = basename{1};
+   if length(basename) > 2
+       base = [];
+       for i=1:length(basename)-1
+          base = [base basename{i} '.'];
+       end
+       basename = base(1:end-1);  % this is an fugly hack to make things work with Kenji's naming system...
+   else
+       basename = basename{1};
+   end
+   
 else
    lfp.Filename = [basename '.lfp'];
 end
@@ -90,6 +109,14 @@ try
     samplingRate = xml.lfpSampleRate;
 catch
      samplingRate = xml.rates.lfp; % old ugliness we need to get rid of
+end
+
+%% Channel load options
+%Right now this assumes that all means channels 0:nunchannels-1 (neuroscope
+%indexing), we could also add options for this to be select region or spike
+%group from the xml...
+if strcmp(channels,'all')
+    channels = 0:(nChannels-1);
 end
 
 %% get the data

@@ -1,4 +1,8 @@
 function bz_MakeXML(basepath)
+% Starts from a basepath to make a .xml file.  Assumes presence of
+% .SessionMetadata.mat and .AnimalMetadata.mat
+%
+% Brendon Watson 2017
 
 if ~exist('basepath','var')
     basepath = cd;

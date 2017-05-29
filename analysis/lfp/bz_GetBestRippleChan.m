@@ -12,6 +12,9 @@ for i=1:length(lfp.channels)
     mmRippleRatio(i) = mRipple(i)./meRipple(i);
 end
 
+mmRippleRatio(mRipple<1) = 0;
+mmRippleRatio(meRipple<1) = 0;
+
 [minVal loc] = max(mmRippleRatio);
 chan = lfp.channels(loc);
 end
