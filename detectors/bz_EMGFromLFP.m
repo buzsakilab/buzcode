@@ -1,6 +1,5 @@
-function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
+function [EMGFromLFP,xcorr_chs,specialChannels,usableshankchannels] = bz_EMGFromLFP(basePath,varargin)
 % USAGE
-%
 % [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveFiles)
 %
 % INPUTS
@@ -10,8 +9,9 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 %   (Optional)
 %       'restrict'         - interval of time (relative to recording) to sleep score
 %                            default = [0 inf]
-%       'specialChannels'   - vector of 'special' channels that you DO want to use for EMGCorr calc
+%       'specialChannels'   - vector of 'special' channels that you DO want to use for EMGCorr calc (will be added to those auto-selected by spike group)
 %       'rejectChannels'    - vector of 'bad' channels that you DO NOT want to use for EMGCorr calc
+%       'restrictChannels'  - use only these channels (Neuroscope numbers)
 %       'saveFiles'         true/false - default:true
 %       'saveLocation'      default: basePath
 %       'overwrite'         true/false - overwrite saved EMGFromLFP.LFP.mat
@@ -43,14 +43,16 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 % Mean pairwise correlations are calculated for each time point.
 % 
 % Erik Schomburg, Brendon Watson, Dan Levenstein, David Tingley, 2017
+% Updated: Rachel Swanson 5/2017
 %% Buzcode name of the EMGCorr.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
 matfilename = fullfile(basePath,[recordingname,'.EMGFromLFP.LFP.mat']);
-%% xmlameters
+%% xmlPameters
 p = inputParser;
 addParameter(p,'restrict',[0 inf],@isnumeric)
 addParameter(p,'specialChannels',[],@isnumeric)
 addParameter(p,'rejectChannels',[],@isnumeric)
+addParameter(p,'restrictChannels',[],@isnumeric)
 addParameter(p,'saveFiles',1,@isnumeric)
 addParameter(p,'saveLocation','',@isstr)
 addParameter(p,'overwrite',true,@islogical)
@@ -59,6 +61,7 @@ parse(p,varargin{:})
 restrict = p.Results.restrict;
 specialChannels = p.Results.specialChannels;
 rejectChannels = p.Results.rejectChannels;
+restrictChannels = p.Results.restrictChannels;
 saveFiles = p.Results.saveFiles;
 overwrite = p.Results.overwrite;
 
@@ -145,6 +148,11 @@ for i=1:length(spkgrpstouse)
    end
 end
 xcorr_chs = unique([xcorr_chs,specialChannels]);
+
+% If restrict channel case:
+if ~isempty(restrictChannels)
+xcorr_chs = restrictChannels;
+end;
 
 %% Read and filter channel
 % read channels
