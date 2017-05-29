@@ -10,6 +10,8 @@ function SessionMetadata = bz_SessionMetadataTextTemplate(basepath)
 %
 % INPUTS
 %   basepath - computer path to the session folder of interest
+%   AnimalSessionUncertain - If 1, user must confirm source of
+%      animalmetadata.mat. If 0 will look for it.  Default = 1
 % 
 % OUTPUTS
 %    SessionMetadata and saved basename.SessionMetadata.mat
@@ -21,7 +23,7 @@ function SessionMetadata = bz_SessionMetadataTextTemplate(basepath)
 % Brendon Watson 2017
 
 
-
+%% Input handling/parsing
 if ~exist('basepath','var')
     basepath = cd;
 elseif isempty(basepath)
@@ -29,9 +31,13 @@ elseif isempty(basepath)
 end
 basename = bz_BasenameFromBasepath(basepath);
 
+
 %% HUMAN INPUT BELOW
+% Preprocessing specifiers
+SessionMetadata.Preprocess.AnimalMetadataSource = {'AnimalFolderAbove'};
+
 % Surgery and Animal metadata
-SessionMetadata.Animal.WeightGrams = [250];
+SessionMetadata.Animal.WeightGrams = [];
 
 % Extracell Ephys metadata
 SessionMetadata.ExtracellEphys.NumberOfTurnsSinceSurgery = [0];%vector, one entry per probe
@@ -48,9 +54,9 @@ SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform = 16;%default
 SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave = 4;%default
 
 % Optogenetics metadata
-FiberNum = 1;%copy more of these blocks - one per probe
-SessionMetadata.Optogenetics.Fibers(FiberNum).StimulusRecordingChannelDatType = 'AnalogIn';%'AnalogIn' for Intan, 'Main' if fused with other dat
-SessionMetadata.Optogenetics.Fibers(FiberNum).StimulusRecordingChannelNumber = [];%
+% FiberNum = 1;%copy more of these blocks - one per probe
+% SessionMetadata.Optogenetics.Fibers(FiberNum).StimulusRecordingChannelDatType = 'AnalogIn';%'AnalogIn' for Intan, 'Main' if fused with other dat
+% SessionMetadata.Optogenetics.Fibers(FiberNum).StimulusRecordingChannelNumber = [];%
 %?else
 
 % Behavior metadata - this section makes an error
@@ -93,19 +99,31 @@ SessionMetadata.Optogenetics.Fibers(FiberNum).StimulusRecordingChannelNumber = [
 % metadata from recording system
 % 
 supradir = fileparts(basepath);
-d1 = dir(fullfile(basepath,'*.AnimalMetadata.mat'));
-d2 = dir(fullfile(supradir,'*.AnimalMetadata.mat'));
-guessamdpath = [];
 finalamdpath = fullfile(basepath,[basename,'.AnimalMetadata.mat']);
-if ~isempty(d1)%if already one in this path
-    guessamdpath = fullfile(basepath,d1(1).name);
-elseif ~isempty(d2)%if one in directory above
-    guessamdpath = fullfile(supradir,d2(1).name);
-else%if cannot be found, ask user 
-    disp('No local AnimalMetadata.mat found');
+% if we know the AnimalMetadata is one folder above basepath (ie in Animal
+% folder as usual)
+if strcmp(SessionMetadata.Preprocess.AnimalMetadataSource{1},'AnimalFolderAbove')
+    d2 = dir(fullfile(supradir,'*.AnimalMetadata.mat'));
+    inputamdpath = fullfile(supradir,d2(1).name);
 end
-[FileName,PathName] = uigetfile('.AnimalMetadata.mat','Find AnimalMetaData.mat',guessamdpath);
-inputamdpath = fullfile(PathName,FileName);
+
+% in other cases search for it and ask user
+if ~exist('inputamdpath','var')
+    guessamdpath = [];
+    d1 = dir(fullfile(basepath,'*.AnimalMetadata.mat'));
+    d2 = dir(fullfile(supradir,'*.AnimalMetadata.mat'));
+    finalamdpath = fullfile(basepath,[basename,'.AnimalMetadata.mat']);
+
+
+    if ~isempty(d1)%if already one in this path
+        guessamdpath = fullfile(basepath,d1(1).name);
+    elseif ~isempty(d2)%if one in directory above
+        guessamdpath = fullfile(supradir,d2(1).name);
+    else%if cannot be found, ask user 
+        disp('No local AnimalMetadata.mat found');
+    end
+    inputamdpath = fullfile(PathName,FileName);
+end
 
 if ~strcmp(inputamdpath,finalamdpath)
     copyfile(inputamdpath,finalamdpath)

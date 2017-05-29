@@ -1,4 +1,4 @@
-function [PhaseLockingData] = bz_PhaseModulation(varargin)
+ function [PhaseLockingData] = bz_PhaseModulation(varargin)
 % USAGE
 %[phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,samplingRate,method,plotting)
 % 
@@ -155,7 +155,7 @@ for a = 1:length(spikes)
         phasestats.mode(a) = nan;
         spkphases{a} = nan;
     else
-        spkphases{a} = lfpphase(round(s*samplingRate));
+        spkphases{a} = lfpphase(ceil(s*samplingRate));
 
 %         cum_spkphases = vertcat(cum_spkphases, spkphases{a});
 
