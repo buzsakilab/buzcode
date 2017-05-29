@@ -42,17 +42,18 @@ end
 %% Calculate and implement spacing between channels
 
 %Space based on median absolute deviation - robust to outliers.
-channelrange = 6.*mad(single(lfp.data(windex,chindex)),1);
+channelrange = 8.*mad(single(lfp.data(windex,chindex)),1);
 lfpmidpoints = -cumsum(channelrange);
 lfpplotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)),lfpmidpoints));
 
 %% Do the plot
-plot(lfp.timestamps(windex),lfpplotdata,'k','linewidth',0.2)
+plot(lfp.timestamps(windex),lfpplotdata,'k','linewidth',0.1)
 xlabel('t (s)')
 ylabel('LFP by Depth')
 set(gca,'Ytick',fliplr(lfpmidpoints))
 set(gca,'yticklabels',fliplr(channels))
 ylim(fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange)))
+xlim(timewin)
 
 
 end

@@ -43,7 +43,8 @@ function [ specvarcorr,specbyvar ] = bz_LFPSpecToExternalVar( LFP,extvar,specpar
 %
 %DLevenstein 2017 (beta, feel free to improve...)
 %TO DO IDEAS
-%   -other spectrum types: FFT, MT
+%   -other spectrum types: MT
+%   -multi-channel lfp... just loop each channel/column, select 'channels'
 %   -default specparms
 %% Calculate the spectrogram - FFT or WVLT
 if ~isfield(specparms,'type')
@@ -130,9 +131,11 @@ end
 
 %% power-signal correlation for each frequency
 sigthresh = 0.05; %Significance threshold (pvalue)
+% [specvarcorr.corr,specvarcorr.pval] = ...
+%     corr(interpvar_LFP(~isnan(interpvar_LFP)),...
+%     spec(:,~isnan(interpvar_LFP))','type','spearman');
 [specvarcorr.corr,specvarcorr.pval] = ...
-    corr(interpvar_LFP(~isnan(interpvar_LFP)),...
-    spec(:,~isnan(interpvar_LFP))','type','spearman');
+    corr(interpvar_LFP,spec','rows','complete','type','spearman');
 corrsig = specvarcorr.pval<=sigthresh;
 
 %% Figure
@@ -182,7 +185,8 @@ subplot(6,3,[12 15])
         case 'log'
             colorbar
         case 'mean'
-            ColorbarWithAxis([0.6 1.4],'Power (mean^1)');
+            ColorbarWithAxis([0.4 1.6],'Power (mean^1)');
+            colormap(gca,'jet')
         case 'logmean'
             ColorbarWithAxis([-0.1 0.1],'Power log10(mean^-^1)');
     end
