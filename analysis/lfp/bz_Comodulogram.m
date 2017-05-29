@@ -1,6 +1,6 @@
-function [ comod ] = bz_Comodulogram( lfp,specparms,figparms )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+function [ comod ] = bz_Comodulogram(lfp,specparms,figparms)
+%[ comod ] = bz_Comodulogram(lfp,specparms,figparms) calculates the
+%comodulogram (i.e. power-power correlation) for an lfp file.
 %
 %
 %INPUT
@@ -25,14 +25,11 @@ function [ comod ] = bz_Comodulogram( lfp,specparms,figparms )
 %       .plotname   nametag for the saved figure
 %       .figfolder  folder to save the figure in
 %       .baseName   baseName of the recording for the figure
-
-
-%%
 %
-%
-%
-%
-%
+%DLevenstein 2017
+%TO DO 
+% -update to work with multiple LFP channels...
+% -use input parser to include default specparms
 %% Calculate the spectrogram - FFT or WVLT
 if ~isfield(specparms,'type')
     specparms.type = 'wavelet';
@@ -63,7 +60,7 @@ switch specparms.type
         
         %Calculate the FFT spectrogram parameters - covert from s to sf
         winsize = specparms.winsize*lfp.samplingRate;
-        noverlap = specparms.noverlap*lfp.samplingRate; %Might want to calaulte overlap based on pupil...?
+        noverlap = specparms.noverlap*lfp.samplingRate;
         %Calculate the FFT spectrogram
         [spec,~,spectimestamps] = spectrogram(single(lfp.data),...
             winsize,noverlap,comod.freqs,lfp.samplingRate);
