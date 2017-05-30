@@ -1,4 +1,4 @@
-function [EMGFromLFP,xcorr_chs,specialChannels,usableshankchannels] = bz_EMGFromLFP(basePath,varargin)
+function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 % USAGE
 % [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveFiles)
 %
