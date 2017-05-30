@@ -71,10 +71,11 @@ end
 
 % Smooth
 if smooth ~= 0
-	if length(samples(1,2:end)) >= 2
-		smooth = [smooth 0];
-	end
-	samples = Smooth(samples,smooth);
+    samples = medfilt1(samples,smooth);
+% 	if length(samples(1,2:end)) >= 2
+% 		smooth = [smooth 0];
+% 	end
+% 	samples = Smooth(samples,smooth);
 end
 
 % Differentiate

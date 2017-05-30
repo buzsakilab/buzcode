@@ -38,7 +38,7 @@ function [maps,data,stats] = bz_RippleStats(filtered,timestamps,ripples,varargin
 
 % Default values
 samplingRate = 1250;
-durations = [-50 50]/1000;
+durations = [-75 75]/1000;
 nCorrBins = 50;
 %  corrBinSize = 400;
 corrDuration = 20;
@@ -75,13 +75,15 @@ nHalfCenterBins = 3;
 centerBin = ceil(nBins/2);
 centerBins = centerBin-nHalfCenterBins:centerBin+nHalfCenterBins;
 
+idx = ceil((ripples.peaks-ripples.times(:,1))*ripples.detectorParams.frequency);
+
 % Compute instantaneous phase and amplitude
 h = hilbert(filtered);
 phase = angle(h);
 amplitude = abs(h);
 unwrapped = unwrap(phase);
 % Compute instantaneous frequency
-frequency = bz_Diff(unwrapped,timestamps,'smooth',0);
+frequency = bz_Diff(medfilt1(unwrapped,12),timestamps,'smooth',0);
 frequency = frequency/(2*pi);
 
 % Compute ripple map
@@ -100,10 +102,12 @@ maps.phase = SyncMap(p,i,'durations',durations,'nbins',nBins,'smooth',0);
 [a,i] = Sync([timestamps amplitude],ripples.peaks,'durations',durations);
 maps.amplitude = SyncMap(a,i,'durations',durations,'nbins',nBins,'smooth',0);
 
+idx(idx>length(maps.frequency(1,:))) = length(maps.frequency(1,:));
 % Ripple frequency and amplitude at peak
-data.peakFrequency = maps.frequency(:,centerBin);
-data.peakAmplitude = maps.amplitude(:,centerBin);
-
+for i= 1:length(ripples.times)
+    data.peakFrequency(i) = maps.frequency(i,idx(i));
+    data.peakAmplitude(i) = maps.amplitude(i,idx(i));
+end
 % Ripple durations
 data.duration = abs(diff(ripples.times'))';
 
