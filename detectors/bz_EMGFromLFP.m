@@ -24,7 +24,7 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 %                               basePath/baseName.EMGFromLFP.LFP.mat
 %          .timestamps          - timestamps (in seconds) that match .data samples
 %          .data                - correlation data
-%          .channels            - channels #'s used for analysis
+%          .channels            - channel #'s used for analysis
 %          .detectorName        - string name of function used
 %          .samplingFrequency   - 1 / sampling rate of EMGCorr data
 %
@@ -47,6 +47,7 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 %% Buzcode name of the EMGCorr.LFP.mat file
 [datasetfolder,recordingname] = fileparts(basePath);
 matfilename = fullfile(basePath,[recordingname,'.EMGFromLFP.LFP.mat']);
+
 %% xmlPameters
 p = inputParser;
 addParameter(p,'restrict',[0 inf],@isnumeric)
@@ -69,7 +70,7 @@ if ~isempty(p.Results.saveLocation)
     matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMGFromLFP.LFP.mat']);
 end
 
-%% Check if EMGCorr has already been claculated for this recording
+%% Check if EMGCorr has already been calculated for this recording
 %If the EMGCorr file already exists, load and return with EMGCorr in hand
 if exist(matfilename,'file') && ~overwrite
     display('EMGFromLFP Correlation already calculated - loading from EMGFromLFP.LFP.mat')
@@ -107,7 +108,7 @@ else
 end
     
 
-xcorr_halfwindow_s = 0.5;%specified in s
+xcorr_halfwindow_s = 0.5; %specified in s
 % downsampleFs = 125;
 % downsampleFactor = round(Fs/downsampleFs);
 binScootS = 0.5;
@@ -147,7 +148,7 @@ for i=1:length(spkgrpstouse)
       end
    end
 end
-xcorr_chs = unique([xcorr_chs,specialChannels]);
+xcorr_chs = unique([xcorr_chs,specialChannels]); 
 
 % If restrict channel case:
 if ~isempty(restrictChannels)
@@ -210,7 +211,7 @@ EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
 
 EMGFromLFP.timestamps = timestamps'./Fs;
 EMGFromLFP.data = EMGCorr;
-EMGFromLFP.channels = xcorr_chs;
+EMGFromLFP.channels = xcorr_chs-1;
 EMGFromLFP.detectorName = 'bz_EMGFromLFP';
 EMGFromLFP.samplingFrequency = samplingFrequency; 
 
