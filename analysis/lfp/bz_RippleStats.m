@@ -104,10 +104,16 @@ maps.amplitude = SyncMap(a,i,'durations',durations,'nbins',nBins,'smooth',0);
 
 idx(idx>length(maps.frequency(1,:))) = length(maps.frequency(1,:));
 % Ripple frequency and amplitude at peak
-for i= 1:length(ripples.times)
-    data.peakFrequency(i) = maps.frequency(i,idx(i));
-    data.peakAmplitude(i) = maps.amplitude(i,idx(i));
-end
+% for i= 1:length(ripples.times)
+%     data.peakFrequency(i) = maps.frequency(i,idx(i));
+%     data.peakAmplitude(i) = maps.amplitude(i,idx(i));
+% end
+% data.peakFrequency = data.peakFrequency';
+% data.peakAmplitude = data.peakAmplitude';
+
+data.peakFrequency = maps.frequency(:,centerBin);
+data.peakAmplitude = maps.amplitude(:,centerBin);
+
 % Ripple durations
 data.duration = abs(diff(ripples.times'))';
 
