@@ -18,7 +18,6 @@ function SleepScoreMaster(basePath,varargin)
 %                   EMG, but recluster and score
 %   'savebool'      Default: true
 %   'scoretime'     Default: [0 Inf]
-a
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
 %                   be used for SWS detection.  Default is 'SWweights.mat'
@@ -45,6 +44,7 @@ a
 %                   signal
 %   'ThetaChannels' A vector list of channels that may be chosen for Theta
 %                   signal
+%   'rejectChannels' A vector of channels to exclude from the analysis
 %
 %OUTPUT
 %   StateIntervals  structure containing start/end times (seconds) of
