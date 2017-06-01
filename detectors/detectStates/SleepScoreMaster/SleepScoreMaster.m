@@ -18,9 +18,7 @@ function SleepScoreMaster(basePath,varargin)
 %                   EMG, but recluster and score
 %   'savebool'      Default: true
 %   'scoretime'     Default: [0 Inf]
-%   'badchannels'   file datasetfolder/recordingname/'bad_channels.txt'
-%                   that lists channels will omit certain channels from EMG
-%                   detection and LFP selection
+a
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
 %                   be used for SWS detection.  Default is 'SWweights.mat'
@@ -152,6 +150,7 @@ addParameter(p,'NotchHVS',defaultNotchHVS)
 addParameter(p,'NotchTheta',defaultNotchTheta)
 addParameter(p,'SWChannels',defaultNotchTheta)
 addParameter(p,'ThetaChannels',defaultNotchTheta)
+addParameter(p,'rejectChannels',[]);
 
 parse(p,varargin{:})
 %Clean up this junk...
@@ -166,6 +165,8 @@ NotchHVS = p.Results.NotchHVS;
 NotchTheta = p.Results.NotchTheta;
 SWChannels = p.Results.SWChannels;
 ThetaChannels = p.Results.ThetaChannels;
+rejectChannels = p.Results.rejectChannels;
+
 
 %% Database File Management 
 savefolder = fullfile(savedir,recordingname);
@@ -187,10 +188,9 @@ bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']
 %% Get channels not to use
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
-    rejectchannels = SessionMetadata.ExtracellEphys.BadChannels;
+    rejectChannels = SessionMetadata.ExtracellEphys.BadChannels;
 else
     display('No baseName.SessionMetadata.mat - so no rejected channels')
-    rejectchannels = [];
 end
 
 %% CALCULATE EMG FROM HIGH-FREQUENCY COHERENCE
@@ -198,7 +198,7 @@ end
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
 EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
-                                     'rejectChannels',rejectchannels);
+                                     'rejectChannels',rejectChannels);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
 %Determine the best channels for Slow Wave and Theta separation.
@@ -206,7 +206,7 @@ EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,.
 SleepScoreLFP = PickSWTHChannel(basePath,...
                             figloc,scoretime,SWWeightsName,...
                             Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
-                            SWChannels,ThetaChannels,rejectchannels,...
+                            SWChannels,ThetaChannels,rejectChannels,...
                             overwrite);
 
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG
