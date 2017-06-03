@@ -25,7 +25,14 @@ statesfile = fullfile(basePath,[baseName,'.',statesName,'.states.mat']);
 
 %evalin('caller',['load(''',statesfile,''')']);
 
-statestruct = load(statesfile);
+if exist(statesfile,'file')
+    statestruct = load(statesfile);
+else
+    warning([statesfile,' does not exist...'])
+    states = [];
+    return
+end
+
 varsInFile = fieldnames(statestruct);
 
 if numel(varsInFile)==1

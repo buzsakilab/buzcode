@@ -7,7 +7,7 @@ function spikes = bz_GetSpikes(varargin)
 % 
 % INPUTS
 %
-%    spikeGroups     -vector subset of shank IDs to load
+%    spikeGroups     -vector subset of shank IDs to load (Default: all)
 %    region          -string region ID to load neurons from specific region (requires sessionInfodata file)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
@@ -59,8 +59,11 @@ function spikes = bz_GetSpikes(varargin)
 % - integrate session sessionInfodata in place of xml-LoadParameters
 % - get 'region' input working with session sessionInfodata
 %% Deal With Inputs 
+spikeGroupsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
+    'spikeGroups must be numeric or "all"');
+
 p = inputParser;
-addParameter(p,'spikeGroups',[],@isvector);
+addParameter(p,'spikeGroups','all',spikeGroupsValidation);
 addParameter(p,'region','',@isstr); % won't work without sessionInfodata 
 addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
@@ -201,7 +204,7 @@ end
 
 
 %% filter by spikeGroups input
-if ~isempty(spikeGroups)
+if ~strcmp(spikeGroups,'all')
     [toRemove] = ~ismember(spikes.shankID,spikeGroups);
     spikes.UID(toRemove) = [];
     for r = 1:length(toRemove)
