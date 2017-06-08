@@ -267,11 +267,11 @@ if FileExistsIn([baseName,'.eegstates.mat'])
                 end
             catch
                 try
-                    %First try Anton's bz_LoadBinary
-                    eeg = bz_LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+                    %First try Anton's LoadBinary - this is not in buzcode
+                    eeg = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
                 catch
                     %Otherwise try to use Micheal Zugaro
-                    eeg = bz_LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
+                    eeg = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
                     eeg = double(eeg);
                 end
                 
@@ -384,12 +384,12 @@ else
         
         disp(['Loading eeg channels: ', int2str(Chs)]);
         
-%         try
-%             %First try Anton's bz_LoadBinary
-%             eeg1 = bz_LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
-%         catch
+        try
+            %First try Anton's LoadBinary
+            eeg1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+        catch
             %Otherwise try to use Micheal Zugaro
-            eeg1 = bz_LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
+            eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
             eeg1 = single(eeg1);
 %         end
         disp('Done.');
@@ -499,12 +499,12 @@ else
                 if exist('motionSignal', 'var')
                     meeg = motionSignal;
                 else
-%                     try
-%                         %First try Anton's bz_LoadBinary
-%                         meeg = bz_LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
-%                     catch
+                    try
+                        %First try Anton's LoadBinary
+                        meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+                    catch
                         %Otherwise try to use Micheal Zugaro
-                        meeg = bz_LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
+                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
                         meeg = single(meeg);
 %                     end
                 end
@@ -529,11 +529,11 @@ else
                     meeg = motionSignal;
                 else
                     try
-                        %First try Anton's bz_LoadBinary
-                        meeg = bz_LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+                        %First try Anton's LoadBinary
+                        meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
                     catch
                         %Otherwise try to use Micheal Zugaro
-                        meeg = bz_LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
+                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
                         meeg = single(meeg);
                     end
                 end
@@ -3703,11 +3703,11 @@ end
 end
 
 
-%bz_LoadBinary - Load data from a binary file.
+%LoadBinary - Load data from a binary file.
 %
 %  USAGE
 %
-%    data = bz_LoadBinary(filename,<options>)
+%    data = LoadBinary(filename,<options>)
 %
 %    filename       file to read
 %    <options>      optional list of property-value pairs (see table below)
@@ -3732,7 +3732,7 @@ end
 % the Free Software Foundation; either version 2 of the License, or
 % (at your option) any later version.
 
-function data = bz_LoadBinaryIn(filename,varargin)
+function data = LoadBinaryIn(filename,varargin)
 
 % Default values
 start = 0;
@@ -3744,53 +3744,53 @@ frequency = 20000;
 channels = 1;
 
 if nargin < 1 | mod(length(varargin),2) ~= 0,
-  error('Incorrect number of parameters (type ''help bz_LoadBinary'' for details).');
+  error('Incorrect number of parameters (type ''help LoadBinary'' for details).');
 end
 
 % Parse options
 for i = 1:2:length(varargin),
   if ~isa(varargin{i},'char'),
-    error(['Parameter ' num2str(i+3) ' is not a property (type ''help bz_LoadBinary'' for details).']);
+    error(['Parameter ' num2str(i+3) ' is not a property (type ''help LoadBinary'' for details).']);
   end
   switch(lower(varargin{i})),
     case 'duration',
       duration = varargin{i+1};
       if ~isa(duration,'numeric') | length(duration) ~= 1 | duration < 0,
-        error('Incorrect value for property ''duration'' (type ''help bz_LoadBinary'' for details).');
+        error('Incorrect value for property ''duration'' (type ''help LoadBinary'' for details).');
       end
     case 'frequency',
       frequency = varargin{i+1};
       if ~isa(frequency,'numeric') | length(frequency) ~= 1 | frequency <= 0,
-        error('Incorrect value for property ''frequency'' (type ''help bz_LoadBinary'' for details).');
+        error('Incorrect value for property ''frequency'' (type ''help LoadBinary'' for details).');
       end
     case 'start',
       start = varargin{i+1};
       if ~isa(start,'numeric') | length(start) ~= 1,
-        error('Incorrect value for property ''start'' (type ''help bz_LoadBinary'' for details).');
+        error('Incorrect value for property ''start'' (type ''help LoadBinary'' for details).');
       end
 		if start < 0, start = 0; end
     case 'nchannels',
       nChannels = varargin{i+1};
       if ~((round(channels) == channels & channels > 0)) | length(nChannels) ~= 1,
-        error('Incorrect value for property ''nChannels'' (type ''help bz_LoadBinary'' for details).');
+        error('Incorrect value for property ''nChannels'' (type ''help LoadBinary'' for details).');
       end
     case 'channels',
       channels = varargin{i+1};
       if ~(round(channels) == channels & channels > 0)
-        error('Incorrect value for property ''channels'' (type ''help bz_LoadBinary'' for details).');
+        error('Incorrect value for property ''channels'' (type ''help LoadBinary'' for details).');
       end
     case 'precision',
       precision = varargin{i+1};
       if ~isa(precision,'char'),
-        error('Incorrect value for property ''precision'' (type ''help bz_LoadBinary'' for details).');
+        error('Incorrect value for property ''precision'' (type ''help LoadBinary'' for details).');
       end
     case 'skip',
       skip = varargin{i+1};
       if ~IsPositiveInteger(skip) | length(skip) ~= 1,
-        error('Incorrect value for property ''skip'' (type ''help bz_LoadBinary'' for details).');
+        error('Incorrect value for property ''skip'' (type ''help LoadBinary'' for details).');
       end
     otherwise,
-      error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help bz_LoadBinary'' for details).']);
+      error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help LoadBinary'' for details).']);
   end
 end
 
@@ -3855,7 +3855,7 @@ if nSamples > maxSamplesPerChunk,
 	% Read all chunks
 	i = 1;
 	for j = 1:nChunks,
-		d = bz_LoadBinaryChunkIn(f,'frequency',frequency,'nChannels',nChannels,'channels',channels,'duration',durationPerChunk,'skip',skip);
+		d = LoadBinaryChunkIn(f,'frequency',frequency,'nChannels',nChannels,'channels',channels,'duration',durationPerChunk,'skip',skip);
 		[m,n] = size(d);
 		if m == 0, break; end
 		data(i:i+m-1,:) = d;
@@ -3866,7 +3866,7 @@ if nSamples > maxSamplesPerChunk,
 	% If the data size is not a multiple of the chunk size, read the remainder
 	remainder = duration - nChunks*durationPerChunk;
 	if remainder ~= 0,
-		d = bz_LoadBinaryChunkIn(f,'frequency',frequency,'nChannels',nChannels,'channels',channels,'duration',remainder,'skip',skip);
+		d = LoadBinaryChunkIn(f,'frequency',frequency,'nChannels',nChannels,'channels',channels,'duration',remainder,'skip',skip);
 		[m,n] = size(d);
 		if m ~= 0,
 			data(i:i+m-1,:) = d;
@@ -3958,11 +3958,11 @@ nFreqRanges = size(FreqRange,1);
 %end
 end
 
-%bz_LoadBinaryChunk - Load data chunck from an open binary file.
+%LoadBinaryChunk - Load data chunck from an open binary file.
 %
 %  USAGE
 %
-%    data = bz_LoadBinaryChunk(fid,<options>)
+%    data = LoadBinaryChunk(fid,<options>)
 %
 %    fid            file id (obtained via fopen)
 %    <options>      optional list of property-value pairs (see table below)
@@ -3985,7 +3985,7 @@ end
 % the Free Software Foundation; either version 2 of the License, or
 % (at your option) any later version.
 
-function data = bz_LoadBinaryChunkIn(fid,varargin)
+function data = LoadBinaryChunkIn(fid,varargin)
 
 % Default values
 start = 0;
@@ -3997,54 +3997,54 @@ frequency = 20000;
 channels = [];
 
 if nargin < 1 | mod(length(varargin),2) ~= 0,
-  error('Incorrect number of parameters (type ''help bz_LoadBinaryChunk'' for details).');
+  error('Incorrect number of parameters (type ''help LoadBinaryChunk'' for details).');
 end
 
 % Parse options
 for i = 1:2:length(varargin),
   if ~isa(varargin{i},'char'),
-    error(['Parameter ' num2str(i+3) ' is not a property (type ''help bz_LoadBinaryChunk'' for details).']);
+    error(['Parameter ' num2str(i+3) ' is not a property (type ''help LoadBinaryChunk'' for details).']);
   end
   switch(lower(varargin{i})),
     case 'duration',
       duration = varargin{i+1};
       if ~isa(duration,'numeric') | length(duration) ~= 1 | duration < 0,
-        error('Incorrect value for property ''duration'' (type ''help bz_LoadBinaryChunk'' for details).');
+        error('Incorrect value for property ''duration'' (type ''help LoadBinaryChunk'' for details).');
       end
     case 'frequency',
       frequency = varargin{i+1};
       if ~isa(frequency,'numeric') | length(frequency) ~= 1 | frequency <= 0,
-        error('Incorrect value for property ''frequency'' (type ''help bz_LoadBinaryChunk'' for details).');
+        error('Incorrect value for property ''frequency'' (type ''help LoadBinaryChunk'' for details).');
       end
     case 'start',
       start = varargin{i+1};
       fromCurrentIndex = false;
       if ~isa(start,'numeric') | length(start) ~= 1,
-        error('Incorrect value for property ''start'' (type ''help bz_LoadBinaryChunk'' for details).');
+        error('Incorrect value for property ''start'' (type ''help LoadBinaryChunk'' for details).');
       end
 		if start < 0, start = 0; end
     case 'nchannels',
       nChannels = varargin{i+1};
       if ~isa(nChannels,'numeric') | length(nChannels) ~= 1,
-        error('Incorrect value for property ''nChannels'' (type ''help bz_LoadBinaryChunk'' for details).');
+        error('Incorrect value for property ''nChannels'' (type ''help LoadBinaryChunk'' for details).');
       end
     case 'channels',
       channels = varargin{i+1};
       if ~isa(channels,'numeric'),
-        error('Incorrect value for property ''channels'' (type ''help bz_LoadBinaryChunk'' for details).');
+        error('Incorrect value for property ''channels'' (type ''help LoadBinaryChunk'' for details).');
       end
     case 'precision',
       precision = varargin{i+1};
       if ~isa(precision,'char'),
-        error('Incorrect value for property ''precision'' (type ''help bz_LoadBinaryChunk'' for details).');
+        error('Incorrect value for property ''precision'' (type ''help LoadBinaryChunk'' for details).');
       end
     case 'skip',
       skip = varargin{i+1};
       if ~isa(skip,'numeric') | length(skip) ~= 1,
-        error('Incorrect value for property ''skip'' (type ''help bz_LoadBinaryChunk'' for details).');
+        error('Incorrect value for property ''skip'' (type ''help LoadBinaryChunk'' for details).');
       end
     otherwise,
-      error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help bz_LoadBinaryChunk'' for details).']);
+      error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help LoadBinaryChunk'' for details).']);
   end
 end
 
