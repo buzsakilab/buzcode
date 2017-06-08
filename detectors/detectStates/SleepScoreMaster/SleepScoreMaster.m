@@ -1,4 +1,4 @@
-function SleepScoreMaster(basePath,varargin)
+function SleepState = SleepScoreMaster(basePath,varargin)
 %SleepScoreMaster(datasetfolder,recordingname)
 %This is the master function for sleep state scoring.
 %
