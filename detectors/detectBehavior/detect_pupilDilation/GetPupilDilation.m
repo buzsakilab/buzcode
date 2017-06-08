@@ -324,7 +324,7 @@ sf_eff = 1./mean(interpulse);
 %Check that frame duration is constant up to tolerance (no skipped frames)
 tol = 0.001;
 
-if range(interpuls)>tol
+if range(interpulse)>tol
     warning('Frame rate is not constant...')
 end
 
