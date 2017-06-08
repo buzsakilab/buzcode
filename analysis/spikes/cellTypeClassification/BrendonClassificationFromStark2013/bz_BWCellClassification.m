@@ -1,72 +1,93 @@
-% function  [CellClassOutput, PyrBoundary] = BWCellClassification (fileBase, SpkWvform_all, SpkWvform_idx, Cells, ECells, ICells)
-function  [CellClassOutput, PyrBoundary,Waveforms] = BWCellClassification (filebasename, cellshanknums, shanks, ESynapseCells, ISynapseCells)
+function  [CellClass] = bz_CellClassification (basePath, varargin)
 % Loads cell spike waveforms from the local folder, characterizes them and
 % separates them into E vs I cells.  Manual verification based on clickable
 % gui from Shige.
 % 
-% INPUTS
-% filebasename - basename of files in the local folder
-% cellshanknums - per-shank number of each cell to load, ie cell 2 on shank 4 has a
-%                 cellshanknum of 2
-% shanks - spikegroup numbers of each cell, these corresond to .clu.x
-%                 numbers
-% ESynapseCells - pre-labeled E cells, ie from synaptic interactions
-% ISynapseCells - pre-labeled I cells, ie from synaptic interactions
+%INPUTS
+% baseName - basename of files in the local folder (default: pwd)
+% 'knownE' - UIDs of known E cells, ie from synaptic interactions
+% 'knownI' - UIDs of known I cells, ie from synaptic interactions
+% 'saveMat'- true/false, save basePath/baseName.CellClass.cellinfo.mat
+%            (default:true)
+% 'saveFig'- true/false, save a DetectionFigure for posterity/QC 
+%            (default:true)
 %
-% OUTPUTS
-% CellClassOutput - array with multiple columns:
-%        - Column 1: cell numbers in order
-%        - Column 2: trough-peak lag in ms
-%        - Column 3: wavelet-based spike width
-%        - Column 4: neurons classified as having I-like waveforms
-%        - Column 5: neurons classified as having E-like waveforms
-% PyrBoundary - x,y of manually drawn line of boundary
-% Waveforms - the saved waveforms per cell
+%OUTPUTS
+%   CellClass
+%       .UID    -UID for each of the cells, matching spikes.cellinfo.mat
+%       .pE 	-index vector, true for putative excitatory (RS) cells
+%       .pI     -index vector, true for putative inhibitory (NS) cells
+%       .Waveforms -mean waveforms of each cell at the max channel
+%       .label 	-labels for each cell 'pE' or 'pI'
+%       .detectionparms.TroughPeakMs
+%       .detectionparms.SpikeWidthMs
+%       .detectionparms.PyrBoundary - x,y of manually drawn line of boundary
+%
 %
 % Mixture of functions from Shigeyoshi Fujisawa (WaveShapeClassification),
 % Adrien Peyrache (wavelet-based determination of spike width) and Eran Stark (wfeatures, spikestats).
 %
 % Brendon Watson 2014
+% Modified to buzcode format DLevenstein 2017
+%% input Parsing
 
+p = inputParser;
+addParameter(p,'knownE',[],@isvector);
+addParameter(p,'knownI',[],@isvector);
+addParameter(p,'saveMat',true,@islogical);
+addParameter(p,'saveFig',true,@islogical);
 
-% if ~exist('basepath','var')
-%     [~,filebasename,~] = fileparts(cd);
-% end
-Par = LoadPar([filebasename '.xml']);
-cellnums = 1:length(shanks);
+parse(p,varargin{:})
 
-OneMs = round(Par.SampleRate/1000);
-MaxWaves = [];
-allshanks = unique(shanks);
+knownE = p.Results.knownE;
+knownI = p.Results.knownI;
+SAVEMAT = p.Results.saveMat;
+SAVEFIG = p.Results.saveFig;
+%%
+Par = LoadParameters(basePath);
+OneMs = round(Par.rates.wideband/1000);
+
+baseName = bz_BasenameFromBasepath(basePath);
+figfolder = fullfile(basePath,'DetectionFigures');
+savefile = fullfile(basePath,[baseName,'.CellClass.cellinfo.mat']);
+spikesfile = fullfile(basePath,[baseName,'.spikes.cellinfo.mat']);
 
 %% gather waves
-for a = 1:length(allshanks);
-    thisshank = allshanks(a);
-    AllWaves{thisshank} = [];%separated AllWaves in case each shank has diff number of sites
-%     theseChannels = Par.SpkGrps(thisshank).Channels;
-    numChannels = length(Par.SpkGrps(thisshank).Channels);
-    nSamples = Par.SpkGrps(a).nSamples;
-    spkname = fullfile(fpath,[filebasename '.spk.' num2str(thisshank)]);
-    
-    cellsthisshank = cellnums(shanks==thisshank);
-    intrashankclunums = cellshanknums(shanks == thisshank);
-    cluname = fullfile(fpath,[filebasename '.clu.' num2str(thisshank)]);
-    clu = LoadClu(cluname);
-    for b = 1:length(cellsthisshank)
-        spikesthiscell = find(clu == intrashankclunums(b));        
-        Waveforms = LoadSpikeWaveforms(spkname,numChannels,nSamples,spikesthiscell);%load one cell at a time
-        meanwaves = squeeze(mean(Waveforms,1));
-        AllWaves{thisshank}(:,:,end+1) = meanwaves;
-        [dummy,maxwaveidx] = max(abs(max(meanwaves,[],2)-min(meanwaves,[],2)));
-        MaxWaves(:,end+1) = meanwaves(maxwaveidx,:);
-    end
-    disp(['Shank ',num2str(a),' (Orig#:' num2str(thisshank) ') Done'])
-    AllWaves{thisshank}(:,:,1) = [];
+if ~exist(spikesfile,'file')
+    display(['spikes.cellinfo.mat does not yet exist,',...
+        'saving one to insure cell UIDs are consistent across cellinfo files.'])
 end
+spikes = bz_GetSpikes('basepath',basePath,'saveMat',true);
+MaxWaves = cat(1,spikes.rawWaveform{:})';
+
+%% Previous waveform loading code
+% for a = 1:length(allshanks);
+%     thisshank = allshanks(a);
+%     AllWaves{thisshank} = [];%separated AllWaves in case each shank has diff number of sites
+% %     theseChannels = Par.SpkGrps(thisshank).Channels;
+%     numChannels = length(Par.SpkGrps(thisshank).Channels);
+%     nSamples = Par.SpkGrps(a).nSamples;
+%     spkname = fullfile(fpath,[filebasename '.spk.' num2str(thisshank)]);
+%     
+%     cellsthisshank = cellnums(shanks==thisshank);
+%     intrashankclunums = cellshanknums(shanks == thisshank);
+%     cluname = fullfile(fpath,[filebasename '.clu.' num2str(thisshank)]);
+%     clu = LoadClu(cluname);
+%     for b = 1:length(cellsthisshank)
+%         spikesthiscell = find(clu == intrashankclunums(b));        
+%         Waveforms = LoadSpikeWaveforms(spkname,numChannels,nSamples,spikesthiscell);%load one cell at a time
+%         meanwaves = squeeze(mean(Waveforms,1));
+%         AllWaves{thisshank}(:,:,end+1) = meanwaves;
+%         [dummy,maxwaveidx] = max(abs(max(meanwaves,[],2)-min(meanwaves,[],2)));
+%         MaxWaves(:,end+1) = meanwaves(maxwaveidx,:);
+%     end
+%     disp(['Shank ',num2str(a),' (Orig#:' num2str(thisshank) ') Done'])
+%     AllWaves{thisshank}(:,:,1) = [];
+% end
 
 %% get trough-peak delay times
-AllWaves(:,:,1) = [];
-for a = 1:length(cellnums)
+%AllWaves(:,:,1) = [];
+for a = 1:size(MaxWaves,2)
     thiswave = MaxWaves(:,a);
     [minval,minpos] = min(thiswave);
     minpos = minpos(1);
@@ -74,7 +95,7 @@ for a = 1:length(cellnums)
         [dummy,maxpos] = max(thiswave(minpos+1:end));
         maxpos=maxpos(1);
         maxpos = maxpos+minpos;
-        tp(a) = maxpos-minpos;
+        tp(a) = maxpos-minpos; %In number of samples
 end
 
 %% get spike width by taking inverse of max frequency in spectrum (based on Adrien's use of Eran's getWavelet)
@@ -105,24 +126,44 @@ INT = ~RS;
 
 %% Plot for manual selection of boundary, with display of separatrix as a guide.
 h = figure;
-title('Discriminate pyr and int (select Pyramidal; left click to draw boundary, center click to complete)');
+title({'Discriminate pyr and int (select Pyramidal)','left click to draw boundary', 'center click/ENTER to complete)'});
 fprintf('\nDiscriminate pyr and int (select Pyramidal)');
 xlabel('Trough-To-Peak Time (ms)')
 ylabel('Wave width (via inverse frequency) (ms)')
-[ELike,PyrBoundary] = ClusterPointsBoundaryOutBW([x y],ESynapseCells,ISynapseCells,m,b);
+[ELike,PyrBoundary] = ClusterPointsBoundaryOutBW([x y],knownE,knownI,m,b);
 
 %% Mean waveforms output
-TroughPeakMs = x;
-SpikeWidthMs = y;
-MeanWaveforms = v2struct(AllWaves,MaxWaves,cellnums,cellshanknums,shanks,filebasename,TroughPeakMs,SpikeWidthMs,ELike);
-save(fullfile(bmd.basepath,[filebasename,'_MeanWaveforms.mat']),'MeanWaveforms')
+CellClass.UID = spikes.UID;
+CellClass.pE = ELike';
+CellClass.pI = ~ELike';
+CellClass.label = cell(size(CellClass.UID));
+CellClass.label(CellClass.pE) = {'pE'};
+CellClass.label(CellClass.pI) = {'pI'};
+CellClass.detectionparms.TroughPeakMs = x';
+CellClass.detectionparms.SpikeWidthMs = y';
+CellClass.detectionparms.PyrBoundary = PyrBoundary;
+CellClass.Waveforms = MaxWaves;
 
-%% Ready output variable
-CellClassOutput(:,1) = cellnums;
-CellClassOutput(:,2) = x;%trough to peak time in ms
-CellClassOutput(:,3) = y;%full trough time in ms
-CellClassOutput(:,4) = -1;%ilike, based on user click (outside polygon)
-CellClassOutput(ELike,4) = 1;%elike, inside polygon
-CellClassOutput(:,5) = zeros(size(cellnums));
-CellClassOutput(ISynapseCells,5) = -1;%ICells, based on funcsynapse input
-CellClassOutput(ESynapseCells,5) = 1;%Ecells, based on funcsynapse output
+if SAVEMAT
+    save(savefile,'CellClass')
+end
+
+%%
+if SAVEFIG
+    figure
+        plot(CellClass.detectionparms.TroughPeakMs(CellClass.pE),...
+            CellClass.detectionparms.SpikeWidthMs(CellClass.pE),'k.')
+        hold on
+        plot(CellClass.detectionparms.TroughPeakMs(CellClass.pI),...
+            CellClass.detectionparms.SpikeWidthMs(CellClass.pI),'r.')
+        axis tight
+        plot(CellClass.detectionparms.PyrBoundary(:,1),...
+            CellClass.detectionparms.PyrBoundary(:,2))
+        xb = get(gca,'XLim');
+        yb = get(gca,'YLim');
+        plot(xb,[m*xb(1)+b m*xb(2)+b])
+        xlabel('Trough to Peak Time (ms)')
+        ylabel('Spike Width (ms)')
+        
+        NiceSave('CellClassification',figfolder,baseName)
+end
