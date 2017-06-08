@@ -386,12 +386,14 @@ figure
         hold on
         set(gca,'xticklabel',[])
         ylabel({'Pupil Diameter','(max^-^1)'})
+        xlim(t_pulse([1 end]))
     subplot(4,1,4)
         plot(t_pulse,timepulses,'k')
         hold on
         plot(pulset,zeros(size(pulset)),'r+')
         xlabel('t (s)');ylabel('Pulses')
         set(gca,'ytick',[])
+        xlim(t_pulse([1 end]))
         
         
 
