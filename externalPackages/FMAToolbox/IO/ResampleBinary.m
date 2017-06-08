@@ -22,7 +22,7 @@ function ResampleBinary(inputName,outputName,nChannels,up,down)
 %
 %    FROM           TO       UP     DOWN
 %    =====================================
-%    20000          1025     1      16
+%    20000          1250     1      16
 %    19531.25       20000    128    125
 %    19531.25       1025     128    125*16
 %    19841.29...    20000    126    125

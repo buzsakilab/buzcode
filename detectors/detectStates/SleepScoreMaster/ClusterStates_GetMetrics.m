@@ -11,7 +11,8 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 %DLevenstein
 
 %% Buzcode name of the SleepScoreMetrics.LFP.mat file
-[datasetfolder,recordingname] = fileparts(basePath);
+[datasetfolder,recordingname,extension] = fileparts(basePath);
+recordingname = [recordingname,extension]; % fileparts parses '.' into extension
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreMetrics.LFP.mat']);
 plotmaterialsfilename = fullfile(basePath,[recordingname,'.StatePlotMaterials.mat']);
 
@@ -201,11 +202,11 @@ end
 histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
 
 %% Ouput Structure: StateScoreMetrics
-LFPparms = SleepScoreLFP.params;
+LFPparams = SleepScoreLFP.params;
 THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
 SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
-    t_clus,badtimes,reclength,histsandthreshs,LFPparms,THchanID,SWchanID,recordingname);
+    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,recordingname);
 save(matfilename,'SleepScoreMetrics');
 
 StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);

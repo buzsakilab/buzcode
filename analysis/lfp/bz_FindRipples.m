@@ -30,7 +30,7 @@ function [ripples] = bz_FindRipples(varargin)
 %     Properties    Values
 %    -------------------------------------------------------------------------
 %     'thresholds'  thresholds for ripple beginning/end and peak, in multiples
-%                   of the stdev (default = [2 5])
+%                   of the stdev (default = [2 5]); must be integer values
 %     'durations'   min inter-ripple interval and max ripple duration, in ms
 %                   (default = [30 100])
 %     'baseline'    interval used to compute normalization (default = all)
@@ -41,6 +41,7 @@ function [ripples] = bz_FindRipples(varargin)
 %     'noise'       noisy unfiltered channel used to exclude ripple-
 %                   like noise (events also present on this channel are
 %                   discarded)
+%     'saveMat'     logical (default=true) to save in buzcode format
 %    =========================================================================
 %
 %  OUTPUT
@@ -63,7 +64,6 @@ function [ripples] = bz_FindRipples(varargin)
 % (at your option) any later version.
 
 %% TODO
-% make compatible with LFP being int16 instead of double
 
 warning('this function is under development and may not work... yet')
 
@@ -76,16 +76,16 @@ addParameter(p,'durations',[30 100],@isnumeric)
 addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'stdev',[],@isnumeric)
 addParameter(p,'noise',[],@ismatrix)
+addParameter(p,'saveMat',false,@islogical);
 
 if isstr(varargin{1})  % if first arg is basepath
     addRequired(p,'basepath',@isstr)
     addRequired(p,'channel',@isnumeric)    
     parse(p,varargin{:})
-    
-    xmlfile = dir([p.Results.basepath '/*xml']);
-    SetCurrentSession([p.Results.basepath '/' xmlfile.name]);
-    lfp = GetLFP(p.Results.channel);
+    basename = bz_BasenameFromBasepath(p.Results.basepath);
+    lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
     signal = bz_FilterLFP(double(lfp.data),'passband',[130 200]);
+    timestamps = lfp.timestamps;
 elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     addRequired(p,'lfp',@isnumeric)
     addRequired(p,'timestamps',@isnumeric)
@@ -109,7 +109,7 @@ maxRippleDuration = p.Results.durations(2);
 
 
 % Parameters
-windowLength = frequency/1250*11;
+windowLength = frequency/frequency*11;
 
 % Square and normalize signal
 
@@ -118,7 +118,7 @@ window = ones(windowLength,1)/windowLength;
 keep = [];
 if ~isempty(restrict)
     for i=1:size(restrict,1)
-	keep(timestamps>=restrict(i,1)&timestamps<=restrict(i,2)) = 1;
+        keep(timestamps>=restrict(i,1)&timestamps<=restrict(i,2)) = 1;
     end
 end
 keep = logical(keep); 
@@ -227,6 +227,7 @@ if ~isempty(noise)
     %% lets try to also remove EMG artifact?
     
     
+
 end
 
 % Optionally, plot results
@@ -242,7 +243,7 @@ if strcmp(show,'on')
 		subplot(nPlots,1,6);
   		ylim([0 highThresholdFactor*1.1]);
 	else
-		MultiPlotXY([time signal],[time squaredSignal],[time normalizedSquaredSignal]);
+		MultiPlotXY([timestamps signal],[timestamps squaredSignal],[timestamps normalizedSquaredSignal]);
 %  		MultiPlotXY(time,signal,time,squaredSignal,time,normalizedSquaredSignal);
 		nPlots = 3;
 		subplot(nPlots,1,3);
@@ -282,13 +283,28 @@ ripples.detectorName = 'bz_FindRipples';
 ripples.peaks = rips(:,2);
 ripples.peakNormedPower = rips(:,4);
 ripples.stdev = sd;
-ripples.noise.times = bad(:,[1 3]);
-ripples.noise.peaks = bad(:,[2]);
-ripples.noise.peakNormedPower = bad(:,[4]);
+if ~isempty(bad)
+    ripples.noise.times = bad(:,[1 3]);
+    ripples.noise.peaks = bad(:,[2]);
+    ripples.noise.peakNormedPower = bad(:,[4]);
+else
+    ripples.noise.times = [];
+    ripples.noise.peaks = [];
+    ripples.noise.peakNormedPower = [];
+end
 
 
 ripples.detectorParams = p.Results;
-ripples.detectorParams = rmfield(ripples.detectorParams,{'noise','timestamps'});
+ripples.detectorParams = rmfield(ripples.detectorParams,'noise');
+if isfield(ripples.detectorParams,'timestamps')  
+    ripples.detectorParams = rmfield(ripples.detectorParams,'timestamps');
+end
+
+
+if p.Results.saveMat
+    save([p.Results.basepath filesep basename '.ripples.event.mat'],'ripples')
+end
+
 
 function y = Filter0(b,x)
 

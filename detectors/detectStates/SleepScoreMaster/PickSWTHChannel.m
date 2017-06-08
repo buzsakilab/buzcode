@@ -3,7 +3,9 @@ function [SleepScoreLFP] = PickSWTHChannel(basePath,figfolder,scoretime,SWWeight
 %   Detailed explanation goes here
 %
 %% Buzcode name of the SleepScoreLFP.LFP.mat file
-[datasetfolder,recordingname] = fileparts(basePath);
+[datasetfolder,recordingname,extension] = fileparts(basePath);
+recordingname = [recordingname extension];
+
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreLFP.LFP.mat']);
 
 saveFiles = true;
@@ -33,7 +35,7 @@ else
 end
 
 %% FMA
-Par = LoadPar_SleepScore(xmlfilename);
+Par = LoadParameters(xmlfilename);
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
 
@@ -231,7 +233,7 @@ SWchanID = SWChannels(goodSWidx);      %Channel IDnumber of the
 THchanID = ThetaChannels(goodTHidx);   %best SW and theta channels
 
 %% Load the best channels at sampling frequency needed for clustering later
-downsample_save = 5;  %Not checked for bugs after adding...
+downsample_save = Par.lfpSampleRate./250;
 sf = Par.lfpSampleRate./downsample_save;
 swthLFP = LoadBinary(rawlfppath,'frequency',Par.lfpSampleRate,...
     'downsample',downsample_save,...

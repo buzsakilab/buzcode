@@ -34,14 +34,24 @@ if pos(1,1) == 0 & size(pos,2) < 6
 end
 if size(pos,2)>6
     %% new code for IR Motive tracking
+%     if std(pos(:,10)) > 50
+%        pos(:,8) = pos(:,8)./1000;
+%        pos(:,9) = pos(:,9)./1000;
+%        pos(:,10) = pos(:,10)./1000; 
+%     end
     p = pos(:,[8 10]);
+    if std(pos(:,8)) > 100
+        p(:,1) = p(:,1)./1000;
+        
+        p(:,2) = p(:,2)./1000;
+    end
 %     p(isnan(p(:,1)),:)=[];
     m = min(p(:));
-    p = p+m*2;
-    p(:,1) = fastrms(p(:,1),12);
-    p(:,2) = fastrms(p(:,2),12);
-%     p(:,1) = smoothts(p(:,1),'b',180);
-%     p(:,2) = smoothts(p(:,2),'b',180);
+    p = p-m;
+%     p(:,1) = fastrms(p(:,1),12);
+%     p(:,2) = fastrms(p(:,2),12);
+    p(:,1) = smoothts(p(:,1),'b',40);
+    p(:,2) = smoothts(p(:,2),'b',40);
 
     vel = nansum(abs(diff(p)'))';
     vel(vel>100) = 0;
@@ -60,8 +70,9 @@ if size(pos,2)>6
     [x y]=ginput();
     velThresh=x; %7e-5; % change this to first min peak in vel histogram
     close all
-    scatter(p(:,1),p(:,2),'.k')
+    scatter(p(:,1),p(:,2),1,'.k')
     distThresh =  mean(max(p)-min(p))./2;
+%     axis([-1 1 -1 1])
 end
 dbstop if error
  
@@ -110,7 +121,7 @@ for l=1:length(locsmat)
             if any(vel(locsmat(l,1)-120:locsmat(l,1)+120)<velThresh) & any(vel(locsmat(l+next,1)-120:locsmat(l+next,1)+120)<velThresh)
             startPos=pos(locsmat(l,1),:);
             stopPos=pos(locsmat(l+next,1),:);
-            if lastStop-1 < startPos(1) % cut off four seconds for some 'wiggle' room
+            if lastStop < startPos(1) % cut off four seconds for some 'wiggle' room
 %                 [a b]=min(abs(nanmean(startPos([1 3]))-x)+abs(nanmean(startPos([2 4]))-y));
 %                 [aa c]=min(abs(nanmean(stopPos([1 3]))-x)+abs(nanmean(stopPos([2 4]))-y)); 
                 [a b]=min(abs((startPos([8]))-x)+abs((startPos([10]))-y));

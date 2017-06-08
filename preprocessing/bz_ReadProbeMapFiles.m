@@ -1,13 +1,64 @@
 function [ChannelsPerGroupSuperficialToDeep,SpatialChannelXY,NumChansPerProbe,GroupsPerChannel] =...
     bz_ReadProbeMapFiles(probemaplist)
-%                   Must have the following format features:
+% USAGE
+% [ChannelsPerGroupSuperficialToDeep,SpatialChannelXY,NumChansPerProbe,GroupsPerChannel] =...
+%     bz_ReadProbeMapFiles(probemaplist)
+% 
+% INPUTS
+%       probemaplist      - character cell (cell array of strings), each
+%           string is the name of a probemap .xlsx file that is on the
+%           matlab path.  these are typically at
+%           /buzcode/generalComputation/gemetries
+%       
+%           Probe .xlsx files must have the following format features:
 %                       - A column with row 1 having text "BY VERTICAL POSITION/SHANK (IE FOR DISPLAY)".
 %                       In this row must be cells specifying SHANK 1, 
 %                       SHANK 2, etc.  
 %                       - Two rows right of that a column with channel
 %                       numbers listed from superficial to deep in the
-%                       shank group specified two to the left.
-
+%                       shank group specified two to the left.      
+%                   See NRX_Buzsaki32_4X8.xlsx or NRX_Buzsaki64_6X10.xlsx
+%                   as templates
+%
+%
+% OUTPUTS
+%       ChannelsPerGroupSuperficialToDeep - Cell array of cell arrays, 
+%           one cell compartment per probe.  Per-probe cell arrays list 
+%           channels in each spike group, in format of a
+%           cellarray of vectors, each vector is the channels in a spike
+%           group, most superficial channel listed first in each vector,
+%           most deep is last.  One 
+%       SpatialChannelXY - Cell array of double arrays, one cell compartment
+%           per probe.  The double arrays per probe, are nchannels x 3 
+%           giving within-probe geometry in probe -centric coordinates.  In
+%           some probes the 0,0 point is the bottom site of shank 1.
+%           Column 1 = channel number
+%           Column 2 = X coordinate (horizontal) coord within probe
+%           Column 3 = Y coordinate (horizontal) coord within probe
+%       NumChansPerProbe - Cell array of double arrays, one cell compartment
+%           per probe.  Single number per probe denoting number of channels 
+%           in each probe 
+%       GroupsPerChannel - Cell array of double arrays, one cell compartment
+%           per probe.  Single number per probe denoting number of groups 
+%           in each probe
+%
+% DESCRIPTION
+%
+% Uses xlsread to open the specified .xlsx file, finds columns with
+% specificaions as above, finds channels within shanks/spike groups
+% assuming they are listed in the .xlsx file in superficial-to-deep order.
+% Also gathers probe geometry by looking for columns with "X" and "Y" at
+% tops.
+%
+% Current format of .xlsx files was totally rushed and seat of the pants,
+% my want to modify them.  
+% 
+% See NRX_Buzsaki32_4X8.xlsx or NRX_Buzsaki64_6X10.xlsx as templates
+%
+% SEE ALSO
+% 
+% 
+% Brendon Watson 2017                   
 
 
 % grouplist_all = [];

@@ -84,7 +84,7 @@ if AnimalMetadata.Modules.ExtracellEphys
     AnimalMetadata.ExtracellEphys.Probes.PluggingOrder = [1,2];% order will be represented in .xml, ie if intan splitter dicates
     AnimalMetadata.ExtracellEphys.Probes.SiteSizesInUmSq = [160];%In square microns
     AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames = {'NRX_Buzsaki64_5X12';'NRX_Buzsaki64_8X8'};%filenames in /buzcode/GeneralComputation/geometries
-    AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames = {'Ket1_Impedances_5Shank.csv','Ket1_Impedances_8Shank.csv'};%Filenames in basepath folder, or leave as {} if none
+    AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames = {};%Filenames in basepath folder, or leave as {} if none
 
     %ONLY ENTER THIS MANUALLY IF YOU WOULD LIKE TO USE THE EXISTING .xml 
     %SPIKE GROUPS INSTEAD OF CALCULATING FROM A PROBE GEOMETRY FILE
@@ -114,14 +114,16 @@ end
 
 % Optogenetics metadata
 if AnimalMetadata.Modules.Optogenetics
-    AnimalMetadata.Optogenetics.Opsin = [];    
-    FiberNum = 1;%copy more of these blocks - one per probe
+    AnimalMetadata.Optogenetics.Opsin = {''};%one character string per probe   
+    AnimalMetadata.Optogenetics.Promoter = {''};%one character string per probe
+%copy more of these blocks - one per fiber
+    FiberNum = 1;%copy more of these blocks - one per fiber
     AnimalMetadata.Optogenetics.Fibers(ProbeNum).FiberRadiusMicrons = [];
     AnimalMetadata.Optogenetics.Fibers(ProbeNum).LightSourceWavelengthNm = [];
     AnimalMetadata.Optogenetics.Fibers(ProbeNum).LightSourceDevice = [];
-    AnimalMetadata.Optogenetics.Fibers(FiberNum).AffiliatedProbeNumber = [];%Probe if proximal to a probe
+    AnimalMetadata.Optogenetics.Fibers(FiberNum).AffiliatedProbeNumber = [];%Probe if proximal to a probe. Probe number based on ordering above
     AnimalMetadata.Optogenetics.Fibers(FiberNum).AffiliatedShankSpikeGroupIndex = [];%If proximal to a shank 
-    AnimalMetadata.Optogenetics.Fibers(FiberNum).DistanceProixmalToShankTipInUm = [];
+    AnimalMetadata.Optogenetics.Fibers(FiberNum).DistanceProximalToShankTipInUm = [];
     AnimalMetadata.Optogenetics.Fibers(FiberNum).APCoordinates = [];%if if not with a probe
     AnimalMetadata.Optogenetics.Fibers(FiberNum).MLCoordinates = [];
     AnimalMetadata.Optogenetics.Fibers(FiberNum).DVCoordinates = [];

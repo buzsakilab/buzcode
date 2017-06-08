@@ -103,6 +103,9 @@ troughs = 10.^EMGbins(troughidx);
 Whsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.Whthreshold),'nearest'));
 if Whsign==-1; 
     EMGparms.Whthreshold = troughs(find(troughs>EMGparms.Whthreshold,1,'first'));
+    if isempty(EMGparms.Whthreshold)
+        EMGparms.Whthreshold = troughs(end);
+    end
 elseif Whsign==1
     EMGparms.Whthreshold = troughs(find(troughs<EMGparms.Whthreshold,1,'last'));
 end
