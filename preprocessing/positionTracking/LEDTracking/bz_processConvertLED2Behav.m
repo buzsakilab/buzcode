@@ -21,7 +21,7 @@
 %
 % DEPENDENCIES:
 %
-%   LoadBinary
+%   bz_LoadBinary
 %   Process_DetectLED
 
 
@@ -99,7 +99,7 @@ end
     dat = dat(syncChan,:);
     
     % the line below does not work correctly with Intan analogin.dat files
-%     dat = LoadBinary(syncDatFile,'nchannels',syncNbCh,'channels',syncChan);
+%     dat = bz_LoadBinary(syncDatFile,'nchannels',syncNbCh,'channels',syncChan);
 
     t = (0:length(dat)-1)'/syncSampFq;
     

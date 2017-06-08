@@ -302,8 +302,8 @@ if SAVEVID; close(pupdiamVid); end
 
 %% Load the analogin for the timestamps
 
-timepulses = LoadBinary(analogName,'nChannels',1,'precision','uint16');
-%LoadBinary('uint16')
+timepulses = bz_LoadBinary(analogName,'nChannels',1,'precision','uint16');
+%bz_LoadBinary('uint16')
 
 sf_pulse = 1./20000; %Sampling Frequency of the .abf file
 t_pulse = [1:length(timepulses)]'.*sf_pulse;

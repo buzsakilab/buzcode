@@ -131,7 +131,7 @@ xcorr_chs = unique([xcorr_chs,specialchannels]);
 % read channels
 xcorr_chs = xcorr_chs + 1; % loadparameters returns 0 indexed (neuroscope) channels, 
                            % but Loadbinary.m takes 1-indexed channel #'s
-lfp = LoadBinary(lfploc,'nChannels',nChannels,'channels',xcorr_chs,...
+lfp = bz_LoadBinary(lfploc,'nChannels',nChannels,'channels',xcorr_chs,...
     'start',scoretime(1),'duration',diff(scoretime)); %read and convert to mV    
 
 % Filter first in high frequency band to remove low-freq physiologically
