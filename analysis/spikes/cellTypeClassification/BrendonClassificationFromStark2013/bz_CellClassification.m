@@ -11,9 +11,12 @@ function  [CellClass] = bz_CellClassification (basePath, varargin)
 %            (default:true)
 % 'saveFig'- true/false, save a DetectionFigure for posterity/QC 
 %            (default:true)
+% 'forceReload'     -logical (default=false) to force reclassifying even if
+%                    the CellClass.cellinfo.mat already exists
 %
 %OUTPUTS
-%   CellClass
+%   CellClass   buzcode structure saved to
+%               basePath/baseName.CellClass.cellinfo.mat
 %       .UID    -UID for each of the cells, matching spikes.cellinfo.mat
 %       .pE 	-index vector, true for putative excitatory (RS) cells
 %       .pI     -index vector, true for putative inhibitory (NS) cells
@@ -36,6 +39,7 @@ addParameter(p,'knownE',[],@isvector);
 addParameter(p,'knownI',[],@isvector);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'saveFig',true,@islogical);
+addParameter(p,'forceReload',false,@islogical);
 
 parse(p,varargin{:})
 
@@ -43,6 +47,7 @@ knownE = p.Results.knownE;
 knownI = p.Results.knownI;
 SAVEMAT = p.Results.saveMat;
 SAVEFIG = p.Results.saveFig;
+FORCERELOAD = p.Results.forceReload;
 %%
 Par = LoadParameters(basePath);
 OneMs = round(Par.rates.wideband/1000);
@@ -52,6 +57,11 @@ figfolder = fullfile(basePath,'DetectionFigures');
 savefile = fullfile(basePath,[baseName,'.CellClass.cellinfo.mat']);
 spikesfile = fullfile(basePath,[baseName,'.spikes.cellinfo.mat']);
 
+if exist(savefile,'file') && ~FORCERELOAD
+    display(['Cells already Classified, loading ',baseName,'.CellClass.cellinfo.mat'])
+    load(savefile) %replace this with a bz_LoadCellinfo... function
+    return
+end
 %% gather waves
 if ~exist(spikesfile,'file')
     display(['spikes.cellinfo.mat does not yet exist,',...
