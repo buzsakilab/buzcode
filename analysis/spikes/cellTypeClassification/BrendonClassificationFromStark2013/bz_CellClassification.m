@@ -20,8 +20,8 @@ function  [CellClass] = bz_CellClassification (basePath, varargin)
 %       .UID    -UID for each of the cells, matching spikes.cellinfo.mat
 %       .pE 	-index vector, true for putative excitatory (RS) cells
 %       .pI     -index vector, true for putative inhibitory (NS) cells
-%       .Waveforms -mean waveforms of each cell at the max channel
 %       .label 	-labels for each cell 'pE' or 'pI'
+%       .detectionparms.Waveforms -mean waveforms of each cell at the max channel
 %       .detectionparms.TroughPeakMs
 %       .detectionparms.SpikeWidthMs
 %       .detectionparms.PyrBoundary - x,y of manually drawn line of boundary
@@ -152,7 +152,7 @@ CellClass.label(CellClass.pI) = {'pI'};
 CellClass.detectionparms.TroughPeakMs = x';
 CellClass.detectionparms.SpikeWidthMs = y';
 CellClass.detectionparms.PyrBoundary = PyrBoundary;
-CellClass.Waveforms = MaxWaves;
+CellClass.detectionparms.Waveforms = MaxWaves;
 
 if SAVEMAT
     save(savefile,'CellClass')
