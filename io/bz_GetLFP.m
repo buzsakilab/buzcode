@@ -50,7 +50,6 @@ function [lfp] = bz_GetLFP(varargin)
 % NOTES
 % -'select' option has been removed, it allowed switching between 0 and 1
 %   indexing.  This should no longer be necessary with .lfp.mat structs
-% -'restrict' option has been removed, it was redundant with 'intervals'
 %
 % TODO
 % add saveMat input 
@@ -64,15 +63,24 @@ channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
 p = inputParser;
 addRequired(p,'channels',channelsValidation)
 addParameter(p,'basename','',@isstr)
-addParameter(p,'intervals',[0 Inf],@isnumeric)
+addParameter(p,'intervals',[],@isnumeric)
+addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
 parse(p,varargin{:})
 basename = p.Results.basename;
 channels = p.Results.channels;
-intervals = p.Results.intervals;
 basepath = p.Results.basepath;
+
+% doing this so you can use either 'intervals' or 'restrict' as parameters to do the same thing
+intervals = p.Results.intervals;
+restrict = p.Results.restrict;
+if isempty(intervals) && isempty(restrict) % both empty
+    intervals = [0 Inf];
+elseif isempty(intervals) && ~isempty(restrict) % intervals empty, restrict isn't
+    intervals = restrict;
+end
 
 %% let's check that there is an appropriate LFP file
 if isempty(basename)
