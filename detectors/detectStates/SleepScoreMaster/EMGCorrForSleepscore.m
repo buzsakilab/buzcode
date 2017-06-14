@@ -1,4 +1,4 @@
-function [EMGCorr,sf_EMG] = EMGCorrForSleepscore(basenamepath,scoretime,specialchannels,rejectchannels)
+function [EMGCorr,sf_EMG] = EMGCorrForSleepscore(varargin)
 
 % USAGE
 %
@@ -12,7 +12,7 @@ function [EMGCorr,sf_EMG] = EMGCorrForSleepscore(basenamepath,scoretime,specialc
 %                            default = [0 inf]
 %       specialchannels   - vector of 'special' channels that you DO want to use for EMG calc
 %       rejectchannels    - vector of 'bad' channels that you DO NOT want to use for EMG calc
-%       
+%       emgRate           - rate of EMGCorr output [default = 2 Hz]      
 %
 % OUTPUTS
 % 
@@ -37,6 +37,22 @@ function [EMGCorr,sf_EMG] = EMGCorrForSleepscore(basenamepath,scoretime,specialc
 % Adapted 2015 Brendon Watson
 
 %% Parameters
+
+addRequired(p,'basenamepath',@isstr)
+addRequired(p,'scoretime',@isnumeric) 
+addRequired(p,'specialchannels',@isnumeric) 
+addRequired(p,'rejectchannels',@isnumeric) 
+addParameter(p,'emgRate',2,@isnumeric)
+parse(p,varargin{:})
+
+basenamepath = p.Results.basenamepath;
+scoretime = p.Results.scoretime;
+specialchannels = p.Results.specialchannels;
+rejectchannels = p.Results.rejectchannels;
+binScootS = 1 ./ p.Results.emgRate;
+
+
+
 savebool = 0;
 
 %% get basics about.lfp/lfp file
@@ -74,7 +90,6 @@ end
 xcorr_halfwindow_s = 0.5;%specified in s
 % downsampleFs = 125;
 % downsampleFactor = round(Fs/downsampleFs);
-binScootS = 0.5;
 sf_EMG = 1/binScootS;
 binScootSamps = Fs*binScootS;
 corrChunkSz = 20;%for batch-processed correlations
