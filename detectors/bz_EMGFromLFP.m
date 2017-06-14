@@ -1,6 +1,6 @@
 function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 % USAGE
-% [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveFiles)
+% [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveMat)
 %
 % INPUTS
 %       basePath      - string combination of basepath and basename of recording
@@ -12,7 +12,7 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 %       'specialChannels'   - vector of 'special' channels that you DO want to use for EMGCorr calc (will be added to those auto-selected by spike group)
 %       'rejectChannels'    - vector of 'bad' channels that you DO NOT want to use for EMGCorr calc
 %       'restrictChannels'  - use only these channels (Neuroscope numbers)
-%       'saveFiles'         true/false - default:true
+%       'saveMat'         true/false - default:true
 %       'saveLocation'      default: basePath
 %       'overwrite'         true/false - overwrite saved EMGFromLFP.LFP.mat
 %                           default: false
@@ -54,7 +54,7 @@ addParameter(p,'restrict',[0 inf],@isnumeric)
 addParameter(p,'specialChannels',[],@isnumeric)
 addParameter(p,'rejectChannels',[],@isnumeric)
 addParameter(p,'restrictChannels',[],@isnumeric)
-addParameter(p,'saveFiles',1,@isnumeric)
+addParameter(p,'saveMat',1,@isnumeric)
 addParameter(p,'saveLocation','',@isstr)
 addParameter(p,'overwrite',true,@islogical)
 addParameter(p,'samplingFrequency',2,@isnumeric)
@@ -65,7 +65,7 @@ restrict = p.Results.restrict;
 specialChannels = p.Results.specialChannels;
 rejectChannels = p.Results.rejectChannels;
 restrictChannels = p.Results.restrictChannels;
-saveFiles = p.Results.saveFiles;
+saveMat = p.Results.saveMat;
 overwrite = p.Results.overwrite;
 samplingFrequency = p.Results.samplingFrequency;
 
@@ -213,7 +213,7 @@ EMGFromLFP.channels = xcorr_chs-1;
 EMGFromLFP.detectorName = 'bz_EMGFromLFP';
 EMGFromLFP.samplingFrequency = samplingFrequency; 
 
-if saveFiles
+if saveMat
     %Save in buzcodeformat
     save(matfilename,'EMGFromLFP');
 end
