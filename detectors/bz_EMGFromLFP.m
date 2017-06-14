@@ -57,6 +57,8 @@ addParameter(p,'restrictChannels',[],@isnumeric)
 addParameter(p,'saveFiles',1,@isnumeric)
 addParameter(p,'saveLocation','',@isstr)
 addParameter(p,'overwrite',true,@islogical)
+addParameter(p,'samplingFrequency',2,@isnumeric)
+
 parse(p,varargin{:})
     
 restrict = p.Results.restrict;
@@ -65,6 +67,7 @@ rejectChannels = p.Results.rejectChannels;
 restrictChannels = p.Results.restrictChannels;
 saveFiles = p.Results.saveFiles;
 overwrite = p.Results.overwrite;
+samplingFrequency = p.Results.samplingFrequency;
 
 if ~isempty(p.Results.saveLocation)
     matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMGFromLFP.LFP.mat']);
@@ -107,14 +110,9 @@ else
     error('No SpikeGroups...')
 end
     
-
-xcorr_halfwindow_s = 0.5; %specified in s
-% downsampleFs = 125;
-% downsampleFactor = round(Fs/downsampleFs);
-binScootS = 0.5;
-samplingFrequency = 1/binScootS;
+binScootS = 1 ./ samplingFrequency;
 binScootSamps = Fs*binScootS;
-corrChunkSz = 20;%for batch-processed correlations
+corrChunkSz = 20; %for batch-processed correlations
 
 
 %% Pick shanks to analyze
@@ -170,7 +168,7 @@ lfp = filtsig_in(lfp, Fs, xcorr_freqband);
 
 %% xcorr 'strength' is the summed correlation coefficients between channel
 % pairs for a sliding window of 25 ms
-xcorr_window_samps = round(xcorr_halfwindow_s*Fs);
+xcorr_window_samps = round(binScootS*Fs);
 xcorr_window_inds = -xcorr_window_samps:xcorr_window_samps;%+- that number of ms in samples
 
 % new version... batches of correlation calculated at once
