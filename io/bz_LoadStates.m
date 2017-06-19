@@ -9,8 +9,7 @@ function [ states ] = bz_LoadStates(basePath,statesName)
 %
 %DLevenstein 2017
 %%
-
-[datasetPath,baseName] = fileparts(basePath);
+baseName = bz_BasenameFromBasepath(basePath);
 
 % if strcmp('statesName','all')
 %     allStatesFiles = dir(fullfile(datasetPath,baseName,[baseName,'.','*','.states.mat']));
