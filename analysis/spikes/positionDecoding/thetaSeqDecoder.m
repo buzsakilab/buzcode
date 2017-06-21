@@ -8,7 +8,7 @@ function [] = thetaSeqDecoder(spikes,lfp,behav)
 %                   each timestamp is represented in seconds
 %   positions       Nx2 matrix of X and Y positions
 %   lfp             
-%   trialIntervals
+%   behavior.events.trialIntervals
 %
 %
 % OUTPUTS
@@ -24,13 +24,27 @@ function [] = thetaSeqDecoder(spikes,lfp,behav)
 % 
 % written by david tingley, 2017
 
-numSpikesThresh = 3;
+numSpikesThresh = 2;
 
 %% first let's get the ratemaps for these cells, and find the place field 'centers'
 
 disp('getting ratemaps and place field statistics..')
+% if size(pos,2) > 6
+% [rateMap countMap occuMap phaseMap] = spaceRateMap(spikes.times,pos,map,mapping,trials,lfp);
+% else
+% [rateMap countMap occuMap phaseMap] = spaceRateMap_old(spikes.times,pos,map,mapping,trials,[lfp.timestamps double(lfp.data)]);
+% end
 
-[rateMap countMap occuMap phaseMap] = spaceRateMap(spikes.times,pos,map,mapping,trials,lfp);
+for j=1:length(spikes.times)
+    for i=1:length(behavior.events.trialConditions)
+        if strcmp(behavior.trackingType,'led')
+             [curve stats] = FiringCurve([behavior.events.trials{i}.timestamps behavior.events.trials{i}.mapping],spikes.times{j},'nBins',80);
+        elseif strcmp(behavior.trackingType,'optitrack')
+             [curve stats] = FiringCurve([behavior.events.trials{i}.timestamps behavior.events.trials{i}.mapping],spikes.times{j},'nBins',200);
+        end
+        rateMap(j,i,:) = curve.rate;
+    end
+end
 % remove high firing rate neurons
 for i=1:length(spikes.times)
     FR = length(spikes.times{i}) ./ lfp.duration;
@@ -40,16 +54,6 @@ for i=1:length(spikes.times)
 end
 [spktimes spkIDs] = spikes2sorted(spikes.times);
 
-for i=1:8
-for j=1:length(trials{i})
-    if size(trials{i}{j},2) == 5
-        t_ints{i}(j,:)= [trials{i}{j}(1,5);trials{i}{j}(end,5); i; j];
-    else
-        t_ints{i}(j,:)= [trials{i}{j}(1,1);trials{i}{j}(end,1); i; j];
-    end
-end
-end
-trialIntervals = cell2mat(t_ints');
 
 % let's calculate the population rate
 pop_rate = zeros(length(lfp.data),1);
@@ -58,14 +62,14 @@ for i=1:length(spikes.times)
 end
 
 % find place fields and their COM's
-for i=1:length(rateMap)
-    fields{i} = bz_getPlaceFields1D(rateMap{i});
+for i=1:length(unique(behavior.events.trialConditions))
+    fields{i} = bz_getPlaceFields1D(rateMap(:,behavior.events.trialConditions==i,:),'maxFieldWidth',80);
 end
 
 %% now let's find all theta cycles and split them into quartiles
 
 [b a] = butter(4,[5/(lfp.samplingRate/2) 16/(lfp.samplingRate/2)],'bandpass');
-filt = FiltFiltM(b,a,double(lfp.data));
+filt = FiltFiltM(b,a,double(lfp.data(:,1)));
 % phases = angle(hilbert(FiltFiltM(b,a,double(lfp.data(:,1)))));
 [blah peaks] = findpeaks(filt);
 [blah troughs] = findpeaks(-filt);
@@ -99,26 +103,28 @@ disp(['searching through ' num2str(size(quarts,1)) ' candidate theta cycles'])
 %% for cells spiking in the last quartile of each theta sequence
 cycles = quarts ./  lfp.samplingRate;
 
-for t = 1:size(trialIntervals,1)
-   trial_cycles = find(InIntervals(cycles(:,3),trialIntervals(t,1:2))); 
+for t = 1:size(behavior.events.trialIntervals,1)
+   trial_cycles = find(InIntervals(cycles(:,3),behavior.events.trialIntervals(t,1:2))); 
    if ~isempty(trial_cycles)
    for tt = 1:length(trial_cycles)
-    	cellIDs = unique(spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),4:5)))));
+    	cellIDs = unique(spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),[4 5])))));
         if length(cellIDs) > numSpikesThresh
         for cell = 1:length(cellIDs)
-            if ~isempty(fields{trialIntervals(t,3)}{cellIDs(cell)}) & length(fields{trialIntervals(t,3)}{cellIDs(cell)}) == 1
-                com(cell) = fields{trialIntervals(t,3)}{cellIDs(cell)}{1}.COM;
+            if ~isempty(fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}) & length(fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}) == 1
+                com(cell) = fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}{1}.COM;
             else
                 com(cell) = nan;
             end
         end
+        com(abs(com-1)<20)=nan;
+        com(abs(com-201)<20)=nan;
         predicted_lastquart(tt) = nanmedian(com);
-        if size(mapping{trialIntervals(t,3)}{trialIntervals(t,4)},2) == 14
-            [a b] = min(abs(mapping{trialIntervals(t,3)}{trialIntervals(t,4)}(:,14) - cycles(trial_cycles(tt),3)));
-            actual_pos(tt) = mapping{trialIntervals(t,3)}{trialIntervals(t,4)}(b,13);
+        if size(mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)},2) == 14
+            [a b] = min(abs(mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)}(:,14) - cycles(trial_cycles(tt),3)));
+            actual_pos(tt) = mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)}(b,13);
         else
-            [a b] = min(abs(mapping{trialIntervals(t,3)}{trialIntervals(t,4)}(:,6) - cycles(trial_cycles(tt),3)));
-             actual_pos(tt) = mapping{trialIntervals(t,3)}{trialIntervals(t,4)}(b,5);
+            [a b] = min(abs(mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)}(:,6) - cycles(trial_cycles(tt),3)));
+             actual_pos(tt) = mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)}(b,5);
         end
         
         clear com;
@@ -127,15 +133,17 @@ for t = 1:size(trialIntervals,1)
             predicted_lastquart(tt) = nan;
         end
         
-        cellIDs = unique(spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),[1 4])))));
+        cellIDs = unique(spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),[1 3])))));
         if length(cellIDs) > numSpikesThresh
         for cell = 1:length(cellIDs)
-            if ~isempty(fields{trialIntervals(t,3)}{cellIDs(cell)}) & length(fields{trialIntervals(t,3)}{cellIDs(cell)}) == 1
-                com(cell) = fields{trialIntervals(t,3)}{cellIDs(cell)}{1}.COM;
+            if ~isempty(fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}) & length(fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}) == 1
+                com(cell) = fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}{1}.COM;
             else
                 com(cell) = nan;
             end
         end
+        com(abs(com-1)<20)=nan;
+        com(abs(com-201)<20)=nan;
         predicted_pos(tt) = nanmedian(com);
         clear com;
         else

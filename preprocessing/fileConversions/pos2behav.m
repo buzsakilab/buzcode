@@ -1,4 +1,4 @@
-function [] = pos2behav(pos,varargin)
+function [behavior] = pos2behav(pos,trackingType,varargin)
 %pos2behav - convert old .pos files/variables to buzcode 'behavior' struct.
 %
 %  USAGE
@@ -54,10 +54,33 @@ function [] = pos2behav(pos,varargin)
 %
 %  Written by David Tingley, 2017
 
+p=inputParser();
+addParameter(p,'trials',[],@iscell);
+addParameter(p,'mapping',[],@iscell);
+addParameter(p,'map',[],@iscell);
+addParameter(p,'behavType','',@isstr);
+parse(p,varargin{:})
+
+trials = p.Results.trials;
+mapping = p.Results.mapping;
+map = p.Results.map;
+behavType = p.Results.behavType;
 
 % determine if LED tracking or Motive tracking...
 if size(pos,2) == 5
     trackingType = 'led';
+    % check if timestamps are first or last
+    [a b] = min(nanstd(diff(pos)));
+    if b == 5
+       pos = [pos(:,5),pos(:,1:4)];
+       ts_col = 5;
+       x_cols = [1 3];
+       y_cols = [2 4];
+    else
+        ts_col = 1;
+        x_cols = [2 4];
+        y_cols = [3 5];
+    end
 elseif size(pos,2) == 11
     trackingType = 'optitrack';
 else
@@ -66,22 +89,22 @@ end
 
 
 switch trackingType
-    case trackingType == 'led'
+    case 'led'
         % check if timestamps are first or last column....
         [~,ts] = min(nanstd(diff(pos)));
         if ts == 1
-            x_coords = nanmean(pos(:,[2 4])');
+            x_coords = nanmean(pos(:,[x_cols])');
             y_coords = nanmean(pos(:,[3 5])');
-            [orientation rho] = cart2pol(pos(:,3)-pos(:,5),pos(:,2)-pos(:,4));
+            [orientation rho] = cart2pol(pos(:,y_cols(1))-pos(:,y_cols(2)),pos(:,x_cols(2))-pos(:,x_cols(2)));
         else
             x_coords = nanmean(pos(:,[1 3])');
-            y_coords = nanmean(pos(:,[2 4])');
-            [orientation rho] = cart2pol(pos(:,2)-pos(:,4),pos(:,1)-pos(:,3));
+            y_coords = nanmean(pos(:,[x_cols])');
+            [orientation rho] = cart2pol(pos(:,x_cols(1))-pos(:,x_cols(2)),pos(:,y_cols(1))-pos(:,y_cols(2)));
         end
         timestamps = pos(:,ts);
         
-        behavior.position.x = x_coords;
-        behavior.position.y = y_coords;
+        behavior.position.x = x_coords';
+        behavior.position.y = y_coords';
         behavior.position.z = [];
         behavior.timestamps = timestamps;
         behavior.samplingRate = 1000 ./ mean(diff(behavior.timestamps))./1000;
@@ -90,10 +113,40 @@ switch trackingType
         behavior.orientation.pitch = [];
         behavior.orientation.roll = [];
         behavior.rotationType = 'euler';
-        behavior.description = '';
-        behavior.events = [];
+        behavior.description = behavType;
+        behavior.trackingType = trackingType;
         
-    case trackingType == 'optitrack'
+        if ~isempty(trials)
+            t=1;
+            for i=1:length(trials)
+                for j=1:length(trials{i})
+                    if size(trials{i}{j},2) == 5
+                    behavior.events.trials{t}.x = nanmean(trials{i}{j}(:,x_cols)')';
+                    behavior.events.trials{t}.y = nanmean(trials{i}{j}(:,y_cols)')';
+                    behavior.events.trials{t}.z = [];
+                    behavior.events.trials{t}.orientation.yaw = cart2pol(trials{i}{j}(:,x_cols(1))-...
+                        trials{i}{j}(:,x_cols(2)),trials{i}{j}(:,y_cols(1))-trials{i}{j}(:,y_cols(2)));
+                    behavior.events.trials{t}.orientation.pitch = [];
+                    behavior.events.trials{t}.orientation.roll = [];
+                    behavior.events.trials{t}.timestamps = trials{i}{j}(:,ts_col);
+                    behavior.events.trials{t}.mapping = mapping{i}{j}(:,5);
+                    map_c.x = nanmean(map{i}(:,x_cols)')';
+                    map_c.y = nanmean(map{i}(:,y_cols)')';
+                    map_c.z = [];
+                    behavior.events.map{i} = map_c;
+                    behavior.events.trialConditions(t) = i;
+                    
+                    behavior.events.trialIntervals(t,:) = [trials{i}{j}(1,5);trials{i}{j}(end,5)];
+                    else
+                        
+                    behavior.events.trialIntervals(t,:) = [trials{i}{j}(1,1);trials{i}{j}(end,1)];
+                    end
+                    t = 1+t;
+                end
+            end
+        end
+                
+    case 'optitrack'
         
         behavior.position.x = pos(:,8);
         behavior.position.y = pos(:,10);
@@ -111,7 +164,7 @@ switch trackingType
         behavior.orientation.w = pos(:,7);
         behavior.rotationType = 'quaternion';
         behavior.errorPerMarker = pos(:,11);
-        behavior.description = '';
+        behavior.description = behavType;
         behavior.events = [];
         
     otherwise
