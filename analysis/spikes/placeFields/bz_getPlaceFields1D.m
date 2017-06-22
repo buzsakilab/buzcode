@@ -21,7 +21,7 @@ function [ fields ] = bz_getPlaceFields1D(varargin)
 
 p = inputParser;
 addRequired(p,'ratemap',@isnumeric)
-addParameter(p,'minPeakRate',3,@isnumeric)
+addParameter(p,'minPeakRate',1,@isnumeric)
 addParameter(p,'minFieldWidth',5,@isnumeric)
 addParameter(p,'maxFieldWidth',100,@isnumeric)
 

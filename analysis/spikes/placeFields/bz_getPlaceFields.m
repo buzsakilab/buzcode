@@ -21,7 +21,7 @@ function [ fields ] = bz_getPlaceFields(varargin)
 
 p = inputParser;
 addRequired(p,'ratemap',1250,@isnumeric)
-addParameter(p,'minPeakRate',3,@isnumeric)
+addParameter(p,'minPeakRate',5,@isnumeric)
 addParameter(p,'minFieldWidth',8,@isnumeric)
 addParameter(p,'maxFieldWidth',100,@isnumeric)
 
@@ -41,7 +41,7 @@ for i=1:size(meanRates,1)
     [pks locs w] = findpeaks(fastrms(meanRates(i,:),5),'minpeakheight',minPeakRate,'MinPeakWidth',minFieldWidth);
     exclude=[];
     for j=1:length(locs)-1
-       if min(meanRates(i,locs(j):locs(j+1))) > ((pks(j)+pks(j+1))./2) * .3
+       if min(meanRates(i,locs(j):locs(j+1))) > ((pks(j)+pks(j+1))./2) * .1
            % exclude fields without a 70% decrease in rate between peaks
            if pks(j) > pks(j+1)
                exclude = [exclude;j+1];
@@ -55,7 +55,7 @@ for i=1:size(meanRates,1)
    
     for j=1:length(locs)
         
-        Map_Field = meanRates(i,:) > pks(j) * .3;
+        Map_Field = meanRates(i,:) > pks(j) * .1;
         
         start = locs(j);
         stop = locs(j);

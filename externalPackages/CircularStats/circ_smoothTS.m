@@ -21,20 +21,30 @@ function [ts_smooth] = circ_smoothTS(varargin)
 % HELP
 %
 % Written by David Tingley, 2017
+% TODO error handling when nBins > 1/2 ts
 
 p = inputParser;
 addRequired(p,'ts',@isvector);
 addRequired(p,'nBins',@isnumeric);
 addParameter(p,'method','median',@isstr)
-% addParameter(p,'exclude',[],@isvector);
+addParameter(p,'exclude',[],@isvector);
 
 parse(p,varargin{:});
 
 ts = p.Results.ts;
 nBins = p.Results.nBins;
 method = p.Results.method;
+exclude = p.Results.exclude;
 
+if ~isempty(exclude)
+    list = find(ts==exclude);
+    ts(list) = nan;
+end
 exclude = find(isnan(ts));
+if length(exclude) == length(ts)
+   ts_smooth = ts;
+   return
+end
 
 for i = 1:length(ts)
     if i <= nBins

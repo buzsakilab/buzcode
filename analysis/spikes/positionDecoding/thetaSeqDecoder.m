@@ -34,7 +34,7 @@ disp('getting ratemaps and place field statistics..')
 % else
 % [rateMap countMap occuMap phaseMap] = spaceRateMap_old(spikes.times,pos,map,mapping,trials,[lfp.timestamps double(lfp.data)]);
 % end
-
+% spikes = bz_GetSpikes('region','hpc');
 for j=1:length(spikes.times)
     for i=1:length(behavior.events.trialConditions)
         if strcmp(behavior.trackingType,'led')
@@ -63,13 +63,18 @@ end
 
 % find place fields and their COM's
 for i=1:length(unique(behavior.events.trialConditions))
-    fields{i} = bz_getPlaceFields1D(rateMap(:,behavior.events.trialConditions==i,:),'maxFieldWidth',80);
+    fields{i} = bz_getPlaceFields1D(rateMap(:,behavior.events.trialConditions==i,:),'minPeakRate',3,'maxFieldWidth',25,'minFieldWidth',4);
 end
 
 %% now let's find all theta cycles and split them into quartiles
+[b a] = butter(4,[1/(lfp.samplingRate/2) 4/(lfp.samplingRate/2)],'bandpass');
+delta= FiltFiltM(b,a,double(lfp.data(:,1)));
+delta_pow = fastrms(delta,1000);
 
-[b a] = butter(4,[5/(lfp.samplingRate/2) 16/(lfp.samplingRate/2)],'bandpass');
+[b a] = butter(4,[6/(lfp.samplingRate/2) 10/(lfp.samplingRate/2)],'bandpass');
 filt = FiltFiltM(b,a,double(lfp.data(:,1)));
+pow = fastrms(filt,250);
+
 % phases = angle(hilbert(FiltFiltM(b,a,double(lfp.data(:,1)))));
 [blah peaks] = findpeaks(filt);
 [blah troughs] = findpeaks(-filt);
@@ -107,69 +112,87 @@ for t = 1:size(behavior.events.trialIntervals,1)
    trial_cycles = find(InIntervals(cycles(:,3),behavior.events.trialIntervals(t,1:2))); 
    if ~isempty(trial_cycles)
    for tt = 1:length(trial_cycles)
-    	cellIDs = unique(spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),[4 5])))));
+    	cellIDs = (spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),[4 5])))));
         if length(cellIDs) > numSpikesThresh
         for cell = 1:length(cellIDs)
-            if ~isempty(fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}) & length(fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}) == 1
-                com(cell) = fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}{1}.COM;
+            if ~isempty(fields{behavior.events.trialConditions(t)}{cellIDs(cell)}) & length(fields{behavior.events.trialConditions(t)}{cellIDs(cell)}) == 1
+                com(cell) = fields{behavior.events.trialConditions(t)}{cellIDs(cell)}{1}.COM;
+                center(cell) = (fields{behavior.events.trialConditions(t)}{cellIDs(cell)}{1}.start+...
+                    fields{behavior.events.trialConditions(t)}{cellIDs(cell)}{1}.stop)./2;
             else
                 com(cell) = nan;
+                
+                center(cell) =nan;
             end
         end
-        com(abs(com-1)<20)=nan;
-        com(abs(com-201)<20)=nan;
-        predicted_lastquart(tt) = nanmedian(com);
-        if size(mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)},2) == 14
-            [a b] = min(abs(mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)}(:,14) - cycles(trial_cycles(tt),3)));
-            actual_pos(tt) = mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)}(b,13);
-        else
-            [a b] = min(abs(mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)}(:,6) - cycles(trial_cycles(tt),3)));
-             actual_pos(tt) = mapping{behavior.events.trialIntervals(t,3)}{behavior.events.trialIntervals(t,4)}(b,5);
-        end
+%         com(abs(com-1)<10)=nan;
+%         com(abs(center-length(behavior.events.map{behavior.events.trialConditions(t)}.x))<10)=nan;
+%         center(abs(center-1)<10)=nan;
+%         center(abs(center-length(behavior.events.map{behavior.events.trialConditions(t)}.x))<10)=nan;
+        predicted_lastquart(tt) = nanmean(center);
         
-        clear com;
+        [a b] = min(abs(behavior.events.trials{t}.timestamps - cycles(trial_cycles(tt),3)));
+        actual_pos(tt) = behavior.events.trials{t}.mapping(b);
+        vel = smooth(abs(diff(behavior.events.trials{t}.x))+abs(diff(behavior.events.trials{t}.y)),...
+            length(behavior.events.map{behavior.events.trialConditions(t)}.x)/10);
+        vel = [vel; vel(end)];
+        actual_vel(tt) = vel(b);
+        clear com center;
         else
             actual_pos(tt)=nan;
             predicted_lastquart(tt) = nan;
+            actual_vel(tt) = nan;
         end
         
-        cellIDs = unique(spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),[1 3])))));
+        cellIDs = (spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),[1 5])))));
         if length(cellIDs) > numSpikesThresh
         for cell = 1:length(cellIDs)
-            if ~isempty(fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}) & length(fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}) == 1
-                com(cell) = fields{behavior.events.trialIntervals(t,3)}{cellIDs(cell)}{1}.COM;
+            if ~isempty(fields{behavior.events.trialConditions(t)}{cellIDs(cell)}) & length(fields{behavior.events.trialConditions(t)}{cellIDs(cell)}) == 1
+                com(cell) = fields{behavior.events.trialConditions(t)}{cellIDs(cell)}{1}.COM;
+                center(cell) = (fields{behavior.events.trialConditions(t)}{cellIDs(cell)}{1}.start+...
+                    fields{behavior.events.trialConditions(t)}{cellIDs(cell)}{1}.stop)./2;
             else
                 com(cell) = nan;
+                center(cell) =nan;
             end
         end
-        com(abs(com-1)<20)=nan;
-        com(abs(com-201)<20)=nan;
-        predicted_pos(tt) = nanmedian(com);
-        clear com;
+%         com(abs(com-1)<10)=nan;
+%         com(abs(center-length(behavior.events.map{behavior.events.trialConditions(t)}.x))<10)=nan;
+%         center(abs(center-1)<10)=nan;
+%         center(abs(center-length(behavior.events.map{behavior.events.trialConditions(t)}.x))<10)=nan;
+        predicted_pos(tt) = nanmean(center);
+        clear com center;
         else
             predicted_pos(tt) = nan;
         end
+           
+       subplot(3,2,2)
+       plot(spktimes((InIntervals(spktimes,cycles(trial_cycles(tt),[1 5]))))-cycles(trial_cycles(tt),[3]),predicted_lastquart(tt)-actual_pos(tt),'.k')
+       hold on   
+       ylabel('predict last quart - actual')
+       xlabel('position of spike relative to theta trough')
+       
    end 
    subplot(3,2,1)
-   plot(actual_pos,predicted_pos-predicted_lastquart,'.k')
+   plot(actual_vel,predicted_lastquart-actual_pos,'.k')
    hold on
-   title('actual pos vs predicted diff')
-   xlabel('actual')
-   ylabel('predicted firstquarts - lastquart')
-   
+   title('actual vel vs  actual - pred lastquart ("lookahead")')
+   xlabel('actual vel')
+   ylabel('pred lastquart - actual')
+
    subplot(3,2,3)
-   plot(actual_pos, actual_pos-predicted_lastquart,'.k')
+   plot(actual_pos, predicted_lastquart-actual_pos,'.k')
    hold on;
    title('actual vs actual - pred lastquart ("lookahead")')
    xlabel('actual')
-   ylabel('actual - pred lastquart')
+   ylabel('pred lastquart - actual')
    
    subplot(3,2,4)
-   plot(actual_pos, actual_pos-predicted_pos,'.k')
+   plot(actual_pos, predicted_pos-actual_pos,'.k')
    hold on;
-   title('actual vs predicted quarts 1-3 ')
+   title('actual vs predicted quarts 1-5 ')
    xlabel('actual')
-   ylabel('actual - pred quarts 1-3')
+   ylabel('pred quarts 1-5 - actual')
    
    
    subplot(3,2,5)

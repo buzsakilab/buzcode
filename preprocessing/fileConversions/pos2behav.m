@@ -120,7 +120,6 @@ switch trackingType
             t=1;
             for i=1:length(trials)
                 for j=1:length(trials{i})
-                    if size(trials{i}{j},2) == 5
                     behavior.events.trials{t}.x = nanmean(trials{i}{j}(:,x_cols)')';
                     behavior.events.trials{t}.y = nanmean(trials{i}{j}(:,y_cols)')';
                     behavior.events.trials{t}.z = [];
@@ -137,10 +136,6 @@ switch trackingType
                     behavior.events.trialConditions(t) = i;
                     
                     behavior.events.trialIntervals(t,:) = [trials{i}{j}(1,5);trials{i}{j}(end,5)];
-                    else
-                        
-                    behavior.events.trialIntervals(t,:) = [trials{i}{j}(1,1);trials{i}{j}(end,1)];
-                    end
                     t = 1+t;
                 end
             end
@@ -165,7 +160,33 @@ switch trackingType
         behavior.rotationType = 'quaternion';
         behavior.errorPerMarker = pos(:,11);
         behavior.description = behavType;
-        behavior.events = [];
+        behavior.trackingType = trackingType;
+        
+         if ~isempty(trials)
+            t=1;
+            for i=1:length(trials)
+                for j=1:length(trials{i})
+                    behavior.events.trials{t}.x = trials{i}{j}(:,8);
+                    behavior.events.trials{t}.y = trials{i}{j}(:,10);
+                    behavior.events.trials{t}.z = trials{i}{j}(:,9);
+                    behavior.events.trials{t}.orientation.x = trials{i}{j}(:,4);
+                    behavior.events.trials{t}.orientation.y = trials{i}{j}(:,5);
+                    behavior.events.trials{t}.orientation.z = trials{i}{j}(:,6);
+                    behavior.events.trials{t}.orientation.w = trials{i}{j}(:,7);
+                    behavior.events.trials{t}.errorPerMarker = trials{i}{j}(:,11);
+                    behavior.rotationType = 'quaternion';
+                    behavior.events.trials{t}.timestamps = trials{i}{j}(:,1);
+                    behavior.events.trials{t}.mapping = mapping{i}{j}(:,13);
+                    map_c.x = map{i}(:,8);
+                    map_c.y = map{i}(:,10);
+                    map_c.z = map{i}(:,9);
+                    behavior.events.map{i} = map_c;
+                    behavior.events.trialConditions(t) = i;
+                    behavior.events.trialIntervals(t,:) = [trials{i}{j}(1,1);trials{i}{j}(end,1)];
+                    t = 1+t;
+                end
+            end
+        end
         
     otherwise
         error('unrecognized tracking type, have you added a new tracking method?')        
