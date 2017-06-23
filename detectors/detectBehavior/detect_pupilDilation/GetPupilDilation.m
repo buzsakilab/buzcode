@@ -82,6 +82,10 @@ if SAVEVID
     pupdiamVid.FrameRate = 1./(0.015.*savevidfr);
     open(pupdiamVid);
 end
+
+if exist(savefile,'file')
+    PREVIOUSDETECT = true;
+end
 %%
 %Load in the video
 pupilvidobj = VideoReader(vidName);
@@ -113,7 +117,7 @@ end
     end
     vidframe_orig = vidframe; %Hold on to the original image for later
     
-     meanvid = meanvid+single(vidframe_orig)./NumberOfFrames;
+    meanvid = meanvid+single(vidframe_orig)./NumberOfFrames;
     
     %USER: Define the full eye mask: trace the eye
     if ~exist('eyemask','var')        
