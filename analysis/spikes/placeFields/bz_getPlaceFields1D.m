@@ -54,9 +54,9 @@ for i=1:size(meanRates,1)
     end   
     pks(exclude) = [];
     locs(exclude)=[];
-   
+    fieldCount = 1;
     for j=1:length(locs)
-        fieldCount = 1;
+        
         Map_Field = meanRates(i,:) > pks(j) * .1;
         
         start = locs(j);
