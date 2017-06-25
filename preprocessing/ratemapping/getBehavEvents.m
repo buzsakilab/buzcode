@@ -441,3 +441,6 @@ hold on
 end
 title(tt);
 end
+
+% 
+% behavior = pos2behav(pos,'optitrack','trials',trials,'mapping',mapping,'map',map,'behavType','central alternation');

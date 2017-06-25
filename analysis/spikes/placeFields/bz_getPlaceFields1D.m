@@ -37,6 +37,7 @@ maxFieldWidth = p.Results.maxFieldWidth;
 
 meanRates = squeeze(mean(ratemap,2));
 
+stdRates = squeeze(std(ratemap,[],2));
 
 for i=1:size(meanRates,1)
     fields{i} = [];
@@ -52,6 +53,10 @@ for i=1:size(meanRates,1)
            end
        end
     end   
+    % remove field peaks with a standard dev higher than the mean
+    % (unreliable fields)
+    exclude = [exclude find( meanRates(i,locs) <  stdRates(i,locs))];
+    
     pks(exclude) = [];
     locs(exclude)=[];
     fieldCount = 1;
