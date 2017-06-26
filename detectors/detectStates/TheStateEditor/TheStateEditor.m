@@ -185,8 +185,10 @@ if ~exist('spikeInfo', 'var')
 end
 
 
+%These parameters are passed through all functions
 FO.downsampleGoal = 312.5;% display Hz goal, to save memory... will calculate downsample factor to match (ie 4 if 1250hz lfp file)
 FO.baseName = baseName;
+FO.basePath = pwd; %basePath is assumed to be pwd
 FO.eegShow = 2; %show 2 seconds of eeg
 FO.maxFreq = 40; %default starting frequency extent
 FO.hanningW = 10; %default hanning smoothing window
@@ -2168,23 +2170,34 @@ function saved = saveStates
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj);
 FO = guidata(obj(end));
 baseName = FO.baseName;
+basePath = FO.basePath;
 
-sints = IDXtoINT_In( FO.States ,5);%convert to start-stop intervals
-
+sints = IDXtoINT_In( FO.States,5);%convert to start-stop intervals
 % Join states into episodes
 NREMints = sints{3};
 REMints = sints{5};
 WAKEints = sints{1};
 [SleepState_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints);% FO.States
 
-% save to SleepState.states .mat file
-%load([baseName '.SleepState.states.mat'])%load it
-%if ~isfield(SleepState,'AutoScoreInts')%if this is the first stateeditor writes state
- %   SleepState.AutoScoreInts = SleepState.ints;
-%end
+% save to SleepState.states .mat file with proper formatting etc
+SleepState = bz_LoadStates(basePath,'SleepState'); %load old scoring
+if isempty(SleepState) %If no SleepState saved
+   display('No previous SleepState.states.mat file detected, saving anew')
+   SleepState.detectorname = 'TheStateEditor';
+   SleepState.detectiondate = today;
+end
+SleepState.LastManualUpdate = today;
+
+%if this is the first stateeditor writes, Save the old autoscoreints
+if ~isfield(SleepState,'AutoScoreInts') && strcmp(SleepState.detectorname,'SleepScoreMaster');
+    display('Original State Scoring from SleepScoreMaster detected...')
+    display('   saving old states as SleepState.AutoScoreInts')
+    SleepState.AutoScoreInts = SleepState.ints;
+end
 SleepState.ints = SleepState_new.ints;
 
-save([baseName '.SleepState.states.mat'],'SleepState')
+%Save the results!
+save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState')
 
 b = msgbox(['Saved work to ', baseName, '.SleepState.states.mat']);
 saved = 1;

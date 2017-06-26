@@ -1,5 +1,5 @@
 function [ EMGwhisk ] = GetWhiskFromEMG( basePath,varargin )
-%[ EMGwhisk ] = GetWhiskFromEMG( baseName,basePath ) 
+%[ EMGwhisk ] = GetWhiskFromEMG(basePath ) 
 %This is a detector that extracts whisking/nonwhisking epochs from 
 %implanted EMG in the whisker pad. Extracts also the EMG and EMG envelope.
 %
@@ -33,7 +33,7 @@ function [ EMGwhisk ] = GetWhiskFromEMG( basePath,varargin )
 if ~exist('basePath','var')
     basePath = pwd;
 end
-[baseFolder,baseName] = fileparts(basePath);
+baseName = bz_BasenameFromBasepath(basePath);
 %%
 abfname = fullfile(basePath,[baseName,'.abf']);
 analogName = fullfile(basePath,['analogin.dat']);
