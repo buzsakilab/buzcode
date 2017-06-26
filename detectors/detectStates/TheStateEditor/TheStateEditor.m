@@ -2169,7 +2169,7 @@ obj = findobj('tag','StateEditorMaster');  FO = guidata(obj);
 FO = guidata(obj(end));
 baseName = FO.baseName;
 
-sints = IDXtoINT_In( FO.States ,5);%convert to start-stop intervals
+sints = IDXtoINT_In( FO.States,5);%convert to start-stop intervals
 
 % Join states into episodes
 NREMints = sints{3};
@@ -2179,9 +2179,10 @@ WAKEints = sints{1};
 
 % save to SleepState.states .mat file
 %load([baseName '.SleepState.states.mat'])%load it
-%if ~isfield(SleepState,'AutoScoreInts')%if this is the first stateeditor writes state
- %   SleepState.AutoScoreInts = SleepState.ints;
-%end
+SleepState = bz_LoadStates(baseName,'SleepState');
+if ~isfield(SleepState,'AutoScoreInts')%if this is the first stateeditor writes state
+   SleepState.AutoScoreInts = SleepState.ints;
+end
 SleepState.ints = SleepState_new.ints;
 
 save([baseName '.SleepState.states.mat'],'SleepState')
