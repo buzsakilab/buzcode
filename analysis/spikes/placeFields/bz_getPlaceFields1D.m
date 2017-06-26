@@ -37,6 +37,7 @@ maxFieldWidth = p.Results.maxFieldWidth;
 
 meanRates = squeeze(mean(ratemap,2));
 
+stdRates = squeeze(std(ratemap,[],2));
 
 for i=1:size(meanRates,1)
     fields{i} = [];
@@ -52,11 +53,15 @@ for i=1:size(meanRates,1)
            end
        end
     end   
+    % remove field peaks with a standard dev higher than the mean
+    % (unreliable fields)
+    exclude = [exclude find( meanRates(i,locs) <  stdRates(i,locs))];
+    
     pks(exclude) = [];
     locs(exclude)=[];
-   
+    fieldCount = 1;
     for j=1:length(locs)
-        fieldCount = 1;
+        
         Map_Field = meanRates(i,:) > pks(j) * .1;
         
         start = locs(j);
@@ -74,6 +79,7 @@ for i=1:size(meanRates,1)
             fields{i}{fieldCount}.peakFR = pks(j);
             fields{i}{fieldCount}.peakLoc = locs(j);
             com = start; % calculate center of mass for field
+            fields{i}{fieldCount}.COM = fields{i}{fieldCount}.peakLoc;
             while sum(meanRates(i,start:stop)) - sum(meanRates(i,start:com)) > sum(meanRates(i,start:stop))./2
                 fields{i}{fieldCount}.COM = com;
                 com = com + 1;

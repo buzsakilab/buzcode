@@ -40,10 +40,15 @@ if ~isempty(exclude)
     list = find(ts==exclude);
     ts(list) = nan;
 end
+
 exclude = find(isnan(ts));
 if length(exclude) == length(ts)
    ts_smooth = ts;
    return
+end
+if nBins == 1
+    ts_smooth = ts;
+    return
 end
 
 for i = 1:length(ts)
@@ -56,7 +61,7 @@ for i = 1:length(ts)
     end
     
     [loc] = ~ismember(ind,exclude);
-    if ~isempty(loc)
+    if ~isempty(loc) 
         switch method
             case 'median'
                 ts_smooth(i) = circ_median(ts(ind(loc))');

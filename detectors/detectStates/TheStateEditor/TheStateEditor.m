@@ -2178,10 +2178,10 @@ WAKEints = sints{1};
 [SleepState_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints);% FO.States
 
 % save to SleepState.states .mat file
-load([baseName '.SleepState.states.mat'])%load it
-if ~isfield(SleepState,'AutoScoreInts')%if this is the first stateeditor writes state
-    SleepState.AutoScoreInts = SleepState.ints;
-end
+%load([baseName '.SleepState.states.mat'])%load it
+%if ~isfield(SleepState,'AutoScoreInts')%if this is the first stateeditor writes state
+ %   SleepState.AutoScoreInts = SleepState.ints;
+%end
 SleepState.ints = SleepState_new.ints;
 
 save([baseName '.SleepState.states.mat'],'SleepState')
