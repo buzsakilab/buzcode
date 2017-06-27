@@ -28,6 +28,9 @@ end
 if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the folder location instead of an actual xml file
     d = dir(fullfile(filename, '*xml'));
     filename = fullfile(filename, d.name);
+    if ~strcmp(filename(end-3:end),'.xml')
+        error(['No .xml in ',filename])
+    end
 end
 
 if ~exist(filename),
@@ -40,11 +43,6 @@ end
 
 if isempty(pathname)
     pathname = pwd;
-end
-
-if ~exist(filename,'file')
-    parameters = [];
-    warning('No .xml') 
 end
 
 t = xmltree(filename);
