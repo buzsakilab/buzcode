@@ -42,6 +42,11 @@ if isempty(pathname)
     pathname = pwd;
 end
 
+if ~exist(filename,'file')
+    parameters = [];
+    warning('No .xml') 
+end
+
 t = xmltree(filename);
 p = convert(t);
 % parameters = p;
