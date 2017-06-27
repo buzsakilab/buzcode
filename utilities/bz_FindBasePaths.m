@@ -11,6 +11,7 @@ function [ basePaths ] = bz_FindBasePaths(topPath)
 %   -has file baseName.sessionInfo.mat
 %   ....where basePath is whateverPath/baseName/
 %
+%Please add more criteria to fit your needs! (Lines >31)
 %DLevenstein 2017
 %% Get all the directories
 [basePaths, dirNames, fileNames] = dirwalk(topPath);
