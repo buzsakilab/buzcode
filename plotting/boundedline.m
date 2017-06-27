@@ -60,7 +60,7 @@ function varargout = boundedline(varargin)
 %   hp:         handles to patch objects
 %
 % Example:
-
+%
 % x = linspace(0, 2*pi, 50);
 % y1 = sin(x);
 % y2 = cos(x);

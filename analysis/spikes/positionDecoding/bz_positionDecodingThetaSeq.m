@@ -1,4 +1,4 @@
-function [] = thetaSeqDecoder(spikes,lfp,behav)
+function [] = thetaSeqDecoder(spikes,lfp,behavior)
 % USAGE
 %
 %
@@ -19,7 +19,7 @@ function [] = thetaSeqDecoder(spikes,lfp,behav)
 %
 % HELP
 % This function tries to reproduce the theta sequence detection and
-% decoding done in the following paper: Wikenheiser and Redish. Hippocampal
+% decoding done here: Wikenheiser and Redish. Hippocampal
 % theta sequences reflect current goals 2015
 % 
 % written by david tingley, 2017
@@ -29,22 +29,17 @@ numSpikesThresh = 2;
 %% first let's get the ratemaps for these cells, and find the place field 'centers'
 
 disp('getting ratemaps and place field statistics..')
-% if size(pos,2) > 6
-% [rateMap countMap occuMap phaseMap] = spaceRateMap(spikes.times,pos,map,mapping,trials,lfp);
-% else
-% [rateMap countMap occuMap phaseMap] = spaceRateMap_old(spikes.times,pos,map,mapping,trials,[lfp.timestamps double(lfp.data)]);
-% end
-% spikes = bz_GetSpikes('region','hpc');
-for j=1:length(spikes.times)
-    for i=1:length(behavior.events.trialConditions)
-        if strcmp(behavior.trackingType,'led')
-             [curve stats] = FiringCurve([behavior.events.trials{i}.timestamps behavior.events.trials{i}.mapping],spikes.times{j},'nBins',80);
-        elseif strcmp(behavior.trackingType,'optitrack')
-             [curve stats] = FiringCurve([behavior.events.trials{i}.timestamps behavior.events.trials{i}.mapping],spikes.times{j},'nBins',200);
-        end
-        rateMap(j,i,:) = curve.rate;
-    end
+if strcmp(behavior.trackingType,'optitrack')
+    tau = 5;
+    maxFieldWidth = 100;
+    minFieldWidth = 8;
+else
+   tau = 2; 
+   maxFieldWidth = 40;
+   minFieldWidth = 3;
 end
+[rateMap countMap opk_rate_vel_corruMap phaseMap] = bz_firingMap1D(spikes.times,behavior,lfp,tau);
+    
 % remove high firing rate neurons
 for i=1:length(spikes.times)
     FR = length(spikes.times{i}) ./ lfp.duration;
@@ -52,8 +47,6 @@ for i=1:length(spikes.times)
         spikes.times{i} = [];
     end
 end
-[spktimes spkIDs] = spikes2sorted(spikes.times);
-
 
 % let's calculate the population rate
 pop_rate = zeros(length(lfp.data),1);
@@ -63,15 +56,15 @@ end
 
 % find place fields and their COM's
 for i=1:length(unique(behavior.events.trialConditions))
-    fields{i} = bz_getPlaceFields1D(rateMap(:,behavior.events.trialConditions==i,:),'minPeakRate',3,'maxFieldWidth',25,'minFieldWidth',4);
+    fields{i} = bz_getPlaceFields1D(rateMap{i},'minPeakRate',3,'maxFieldWidth',maxFieldWidth,'minFieldWidth',minFieldWidth);
 end
 
-%% now let's find all theta cycles and split them into quartiles
-[b a] = butter(4,[1/(lfp.samplingRate/2) 4/(lfp.samplingRate/2)],'bandpass');
-delta= FiltFiltM(b,a,double(lfp.data(:,1)));
-delta_pow = fastrms(delta,1000);
+%% now let's find all theta thetaCycleQuartilesTS and split them into quartiles
+% [b a] = butter(4,[1/(lfp.samplingRate/2) 4/(lfp.samplingRate/2)],'bandpass');
+% delta= FiltFiltM(b,a,double(lfp.data(:,1)));
+% delta_pow = fastrms(delta,1000);
 
-[b a] = butter(4,[6/(lfp.samplingRate/2) 10/(lfp.samplingRate/2)],'bandpass');
+[b a] = butter(3,[6/(lfp.samplingRate/2) 10/(lfp.samplingRate/2)],'bandpass');
 filt = FiltFiltM(b,a,double(lfp.data(:,1)));
 pow = fastrms(filt,250);
 
@@ -82,37 +75,37 @@ pow = fastrms(filt,250);
 % [blah troughs] = findpeaks(-cos(phases));
 
 disp('segmenting theta cycles into quartiles by peaks/troughs..')
-if peaks(1) < troughs(1) 
+if peaks(1) < troughs(1) % make sure we start on a full cycle (peak to peak)
         peaks(1) = [];
 end
     
-for i=1:length(peaks) - 1
-    quarts(i,:) = [peaks(i) (peaks(i)+troughs(i+1))/2 troughs(i+1)  (peaks(i+1)+troughs(i+1))/2 peaks(i+1)];
+for i=1:length(peaks) - 1  % parse into quartiles
+    thetaCycleQuartilesBins(i,:) = [peaks(i) (peaks(i)+troughs(i+1))/2 troughs(i+1)  (peaks(i+1)+troughs(i+1))/2 peaks(i+1)];
 end
 
 % check that there are enough spikes for last theta cycle quartile
 keep=[];exclude=[];
 
-for i = 1:size(quarts,1)
-   if sum(pop_rate(quarts(i,4):quarts(i,5))) > numSpikesThresh
+for i = 1:size(thetaCycleQuartilesBins,1)
+   if sum(pop_rate(floor(thetaCycleQuartilesBins(i,4)):ceil(thetaCycleQuartilesBins(i,5)))) > numSpikesThresh
        keep = [keep; i];
    else
        exclude = [exclude;i];
    end
 end
 
-quarts = quarts(keep,:);
-disp(['searching through ' num2str(size(quarts,1)) ' candidate theta cycles'])
+thetaCycleQuartilesBins = thetaCycleQuartilesBins(keep,:);
+disp(['searching through ' num2str(size(thetaCycleQuartilesBins,1)) ' candidate theta cycles'])
 
 %% now we calculate the distance between the animals position and the COM 
 %% for cells spiking in the last quartile of each theta sequence
-cycles = quarts ./  lfp.samplingRate;
+thetaCycleQuartilesTS = thetaCycleQuartilesBins ./  lfp.samplingRate;
 
 for t = 1:size(behavior.events.trialIntervals,1)
-   trial_cycles = find(InIntervals(cycles(:,3),behavior.events.trialIntervals(t,1:2))); 
-   if ~isempty(trial_cycles)
-   for tt = 1:length(trial_cycles)
-    	cellIDs = (spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),[4 5])))));
+   trial_thetaCycleQuartilesTS = find(InIntervals(thetaCycleQuartilesTS(:,3),behavior.events.trialIntervals(t,1:2))); 
+   if ~isempty(trial_thetaCycleQuartilesTS)
+   for tt = 1:length(trial_thetaCycleQuartilesTS)
+    	cellIDs = (spikes.spindices((InIntervals(spikes.spindices(:,1),thetaCycleQuartilesTS(trial_thetaCycleQuartilesTS(tt),[4 5]))),2));
         if length(cellIDs) > numSpikesThresh
         for cell = 1:length(cellIDs)
             if ~isempty(fields{behavior.events.trialConditions(t)}{cellIDs(cell)}) & length(fields{behavior.events.trialConditions(t)}{cellIDs(cell)}) == 1
@@ -131,7 +124,7 @@ for t = 1:size(behavior.events.trialIntervals,1)
 %         center(abs(center-length(behavior.events.map{behavior.events.trialConditions(t)}.x))<10)=nan;
         predicted_lastquart(tt) = nanmean(center);
         
-        [a b] = min(abs(behavior.events.trials{t}.timestamps - cycles(trial_cycles(tt),3)));
+        [a b] = min(abs(behavior.events.trials{t}.timestamps - thetaCycleQuartilesTS(trial_thetaCycleQuartilesTS(tt),3)));
         actual_pos(tt) = behavior.events.trials{t}.mapping(b);
         vel = smooth(abs(diff(behavior.events.trials{t}.x))+abs(diff(behavior.events.trials{t}.y)),...
             length(behavior.events.map{behavior.events.trialConditions(t)}.x)/10);
@@ -144,7 +137,7 @@ for t = 1:size(behavior.events.trialIntervals,1)
             actual_vel(tt) = nan;
         end
         
-        cellIDs = (spkIDs((InIntervals(spktimes,cycles(trial_cycles(tt),[1 5])))));
+        cellIDs = (spikes.spindices((InIntervals(spikes.spindices(:,1),thetaCycleQuartilesTS(trial_thetaCycleQuartilesTS(tt),[1 3]))),2));
         if length(cellIDs) > numSpikesThresh
         for cell = 1:length(cellIDs)
             if ~isempty(fields{behavior.events.trialConditions(t)}{cellIDs(cell)}) & length(fields{behavior.events.trialConditions(t)}{cellIDs(cell)}) == 1
@@ -166,11 +159,11 @@ for t = 1:size(behavior.events.trialIntervals,1)
             predicted_pos(tt) = nan;
         end
            
-       subplot(3,2,2)
-       plot(spktimes((InIntervals(spktimes,cycles(trial_cycles(tt),[1 5]))))-cycles(trial_cycles(tt),[3]),predicted_lastquart(tt)-actual_pos(tt),'.k')
-       hold on   
-       ylabel('predict last quart - actual')
-       xlabel('position of spike relative to theta trough')
+%        subplot(3,2,2)
+%        plot(spikes.spindices((InIntervals(spikes.spindices(:,1),thetaCycleQuartilesTS(trial_thetaCycleQuartilesTS(tt),[1 5]))),1)-thetaCycleQuartilesTS(trial_thetaCycleQuartilesTS(tt),[3]),predicted_lastquart(tt)-actual_pos(tt),'.k')
+%        hold on   
+%        ylabel('predict last quart - actual')
+%        xlabel('position of spike relative to theta trough')
        
    end 
    subplot(3,2,1)
@@ -190,15 +183,15 @@ for t = 1:size(behavior.events.trialIntervals,1)
    subplot(3,2,4)
    plot(actual_pos, predicted_pos-actual_pos,'.k')
    hold on;
-   title('actual vs predicted quarts 1-5 ')
+   title('actual vs predicted thetaCycleQuartilesBins 1-3')
    xlabel('actual')
-   ylabel('pred quarts 1-5 - actual')
+   ylabel('pred thetaCycleQuartilesBins 1-3 - actual')
    
    
    subplot(3,2,5)
    plot(actual_pos,predicted_pos,'.k')
    hold on
-   title('pos vs pred pos first quarts')
+   title('pos vs pred pos first thetaCycleQuartilesBins')
    xlabel('actual')
    ylabel('predicted')
    

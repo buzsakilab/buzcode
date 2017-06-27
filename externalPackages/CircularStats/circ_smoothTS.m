@@ -32,16 +32,14 @@ addParameter(p,'exclude',[],@isvector);
 parse(p,varargin{:});
 
 ts = p.Results.ts;
+if size(ts,1) == 1;
+    ts = ts';
+end
+
 nBins = p.Results.nBins;
 method = p.Results.method;
 exclude = p.Results.exclude;
 
-if ~isempty(exclude)
-    list = find(ts==exclude);
-    ts(list) = nan;
-end
-
-exclude = find(isnan(ts));
 if length(exclude) == length(ts)
    ts_smooth = ts;
    return
@@ -51,6 +49,13 @@ if nBins == 1
     return
 end
 
+
+if ~isempty(exclude)
+    list = find(ts==exclude);
+    ts(list) = nan;
+end
+
+exclude = find(isnan(ts));
 for i = 1:length(ts)
     if i <= nBins
         ind = (1:i+floor(nBins/2)); 
@@ -61,21 +66,24 @@ for i = 1:length(ts)
     end
     
     [loc] = ~ismember(ind,exclude);
-    if ~isempty(loc) 
+    if ~isempty(loc) & sum(loc) > 0
         switch method
             case 'median'
-                ts_smooth(i) = circ_median(ts(ind(loc))');
+                ts_smooth(i) = circ_median(ts(ind(loc)));
             case 'mean'
-                ts_smooth(i) = circ_mean(ts(ind(loc))');
+                ts_smooth(i) = circ_mean(ts(ind(loc)));
             case 'guassian'
 
             case 'interp' 
                 
         end
+    else
+        ts_smooth(i) = ts(i);    
     end
     
 end
 
+ts_smooth(isnan(ts_smooth)) = 0;
 
 
 
