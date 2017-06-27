@@ -1,4 +1,4 @@
-function [ basePaths ] = bz_FindBasePaths(topPath)
+function [ basePaths,baseNames ] = bz_FindBasePaths(topPath)
 %basePaths = bz_FindBasePaths(topPath) finds all buzcode basePaths in any
 %directory within topPath and returns them.
 %
@@ -23,7 +23,7 @@ for pp = length(basePaths):-1:1 %Count down to maintain indexing
         basePaths(pp) = [];
     end
 end
-
+baseNames = cellfun(@bz_BasenameFromBasepath,basePaths,'UniformOutput',false);
 end
 
 
