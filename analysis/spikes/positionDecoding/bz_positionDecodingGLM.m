@@ -35,6 +35,7 @@ p = inputParser();
 addRequired(p,'spikes',@isstruct);
 addRequired(p,'behavior',@isstruct);
 addRequired(p,'lfp',@isstruct);
+addRequired(p,'smoothingRange',@isvector);
 
 addParameter(p,'plotting',@islogical);
 addParameter(p,'saveMat',@islogical);
@@ -43,6 +44,7 @@ parse(p,varargin{:})
 spikes = p.Results.spikes;
 behavior = p.Results.behavior;
 lfp = p.Results.lfp;
+smoothingRange = p.Results.smoothingRange;
 plotting = p.Results.plotting;
 saveMat = p.Results.saveMat;
 
