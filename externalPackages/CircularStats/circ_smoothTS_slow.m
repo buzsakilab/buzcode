@@ -1,4 +1,4 @@
-function [ts_smooth] = circ_smoothTS(varargin)
+function [ts_smooth] = circ_smoothTS_slow(varargin)
 % USAGE
 % [ts_smooth] = circ_smoothTS(varargin)
 %
@@ -55,25 +55,22 @@ if ~isempty(exclude)
 end
 
 exclude = find(isnan(ts));
-keep = find(~isnan(ts));
-
-f = find(diff(keep)<nBins);
-
-for i=1:length(f)
-    keep = [keep; [keep(f(i))-ceil(nBins/2):keep(f(i)+1)+ceil(nBins/2)]'];
-end
-
-keep = sort(unique(keep));
-
-if length(keep) == 0
-    ts_smooth = ts;
-    return
-end
+% keep = find(~isnan(ts));
+% 
+% f = find(diff(keep)<nBins);
+% for i=1:length(f)
+%     keep = [keep; [keep(f(i))+1:keep(f(i)+1)-1]'];
+% end
+% keep = sort(keep);
+% if length(keep) == 0
+%     ts_smooth = ts;
+%     return
+% end
 ts_smooth = zeros(length(ts),1);
 
-% for i=1:length(ts)
-for ii = 1:length(keep)
-    i = keep(ii);
+for i=1:length(ts)
+% for ii = 1:length(keep)
+%     i = keep(ii);
     if i <= nBins
         ind = (1:i+floor(nBins/2)); 
     elseif i >= length(ts) - nBins
@@ -81,9 +78,9 @@ for ii = 1:length(keep)
     else
         ind = (i-floor(nBins/2):i+floor(nBins/2));
     end
-    [loc] = ~ismember(ind,exclude);
     
-%     if ~isempty(loc) & sum(loc) > 0
+    [loc] = ~ismember(ind,exclude);
+    if ~isempty(loc) & sum(loc) > 0
         switch method
             case 'median'
                 ts_smooth(i) = circ_median(ts(ind(loc)));
@@ -94,9 +91,9 @@ for ii = 1:length(keep)
             case 'interp' 
                 
         end
-%     else
-%         ts_smooth(ind) = ts(i);    
-%     end
+    else
+        ts_smooth(i) = ts(i);    
+    end
     
 end
 

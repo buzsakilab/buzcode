@@ -7,6 +7,8 @@ function [positionDecodingGLM] = bz_positionDecodingGLM(varargin)
 %   spikes
 %
 %   behavior
+%
+%   smoothingRange
 %   
 %   plotting   
 %   
@@ -37,8 +39,8 @@ addRequired(p,'behavior',@isstruct);
 addRequired(p,'lfp',@isstruct);
 addRequired(p,'smoothingRange',@isvector);
 
-addParameter(p,'plotting',@islogical);
-addParameter(p,'saveMat',@islogical);
+addParameter(p,'plotting',true,@islogical);
+addParameter(p,'saveMat',false,@islogical);
 parse(p,varargin{:})
 
 spikes = p.Results.spikes;
@@ -50,13 +52,12 @@ saveMat = p.Results.saveMat;
 
 
 %% set up data format and cellinfo struct that will be returned
+disp('initializing data structs and formatting input data...')
 
 positionDecodingGLM.UID = spikes.UID;
 positionDecodingGLM.region = spikes.region;
 positionDecodingGLM.sessionName = spikes.sessionName; % session name
  
-
-
 conditions = unique(behavior.events.trialConditions);
 nCells = length(spikes.times);
 positionSamplingRate = behavior.samplingRate;
@@ -69,7 +70,6 @@ positionSamplingRate = behavior.samplingRate;
 for cond = conditions
     trials = find(behavior.events.trialConditions==cond);
     intervals = behavior.events.trialIntervals(trials,:);
-    
     for t = 1:length(trials)
         trial = trials(t);
         spk_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000)); % assumes intervals are in seconds, rounds to nearest millisecond
@@ -85,7 +85,7 @@ for cond = conditions
                 end
             end
             sp = find(InIntervals(spikes.times{cell},intervals(t,:)));
-            spk_trains{cond}{t}(cell,ceil((spikes.times{cell}(sp)-intervals(t,1))*1000))=1;
+            spk_trains{cond}{t}(cell,ceil((spikes.times{cell}(sp)-intervals(t,1))*1000+.00001))=1;
         end 
         
         position{cond}{t} = interp1(1:length(behavior.events.trials{trial}.x)...
@@ -107,52 +107,65 @@ end
 for cell=1:nCells  % initialize table for data
     positionDecodingGLM.results{cell} = table;
 end
-
+disp('running models...')
 for cond = conditions
+    warning off
     for window = smoothingRange
        for cell = 1:nCells 
             % phase coding 
-            phase_trains_smooth=circ_smoothTS(phase_trains{cond}(cell,:),window,'method','mean','exclude',0); 
+            phase_trains_smooth=circ_smoothTS_slow(phase_trains{cond}(cell,:),window,'method','mean','exclude',0); 
             [b dev stats] = glmfit(phase_trains_smooth',position{cond}','normal');
             yfit = glmval(b,phase_trains_smooth,'identity');
             struct.mse_phase = mean((yfit-position{cond}').^2); % mean squared error for rate code
+            struct.mse_phase_pval = stats.p';
+
             % phase coding 
             [b dev stats] = glmfit(cos(phase_trains_smooth)',position{cond}','normal');
             yfit = glmval(b,cos(phase_trains_smooth),'identity');
             struct.mse_phase_cos = mean((yfit-position{cond}').^2); % mean squared error for rate code
+            struct.mse_phase_cos_pval = stats.p';
+
             % phase coding 
             [b dev stats] = glmfit(sin(phase_trains_smooth)',position{cond}','normal');
             yfit = glmval(b,sin(phase_trains_smooth),'identity');
             struct.mse_phase_sin = mean((yfit-position{cond}').^2); % mean squared error for rate code
-            
+            struct.mse_phase_sin_pval = stats.p';
+
             
             % rate coding
             rates_trains_smooth = smooth(spk_trains{cond}(cell,:),window);
             [b dev stats] = glmfit(rates_trains_smooth',position{cond}','normal');
             yfit = glmval(b,rates_trains_smooth,'identity');
             struct.mse_rate = mean((yfit-position{cond}').^2);  % mean squared error for rate code
+            struct.mse_rate_pval = stats.p';
+            
+            
             % extra variables to save
+            struct.dfe = stats.dfe;
             struct.tau = window;
             struct.condition = cond;
             positionDecodingGLM.results{cell} = ...
                 [positionDecodingGLM.results{cell};struct2table(struct)];
-            if plotting & cell == 80
+            
+            if plotting & cell == 44
                 subplot(2,2,1)
-                plot(positionDecodingGLM.results{80}.tau,...
-                    positionDecodingGLM.results{80}.mse_rate,'r')
+                plot(positionDecodingGLM.results{44}.tau,...
+                    positionDecodingGLM.results{44}.mse_rate,'r')
                 subplot(2,2,2)
-                plot(positionDecodingGLM.results{80}.tau,...
-                    positionDecodingGLM.results{80}.mse_phase_cos,'g')
+                plot(positionDecodingGLM.results{44}.tau,...
+                    positionDecodingGLM.results{44}.mse_phase_cos,'g')
                 subplot(2,2,3)
-                plot(positionDecodingGLM.results{80}.tau,...
-                    positionDecodingGLM.results{80}.mse_phase_sin,'g')
+                plot(positionDecodingGLM.results{44}.tau,...
+                    positionDecodingGLM.results{44}.mse_phase_sin,'g')
                 subplot(2,2,4)
-                plot(positionDecodingGLM.results{80}.tau,...
-                    positionDecodingGLM.results{80}.mse_phase,'g')
+                plot(positionDecodingGLM.results{44}.tau,...
+                    positionDecodingGLM.results{44}.mse_phase,'g')
                 pause(.0001)
             end
        end
+       disp(['finished with window: ' num2str(window) ' out of ' num2str(smoothingRange(end)) ' total'])
     end
+    disp(['finished with condition: ' num2str(cond) ' out of ' num2str(length(conditions)) ' total'])
 end
 
 
