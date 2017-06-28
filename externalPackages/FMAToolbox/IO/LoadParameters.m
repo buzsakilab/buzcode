@@ -180,6 +180,10 @@ try %some xml may not have p.programs.program.... if so, ignore all of this
     %to do with, feel free to add more things here for your own purposes
     for pp = 1:length(pluginnames)
         if strcmp(pluginnames{pp},'badchannels')
+            %Badchannels should be a plugin in the xml, with a single
+            %parameter "badchannels" and a list of bad channels separated
+            %by a space. This is temporary while we get metadata ironed out
+            %-DL
             assert(strcmp(plugins{pp}.parameters.parameter.name,'badchannels'),...
                 'There is a plugin ''badchannels'', but the parameter name is not ''badchannels''')
             parameters.badchannels = str2num(plugins{pp}.parameters.parameter.value);
