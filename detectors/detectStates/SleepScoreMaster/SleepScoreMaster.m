@@ -99,19 +99,22 @@ if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file') &
     ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
     display(['no .lfp file in basePath, pick a selection of session folders',...
              'containing .lfp files'])
-        foldercontents = dir(basePath);
-        possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
+        %foldercontents = dir(basePath);
+        %possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
+        [basePaths,baseNames] = bz_FindBasePaths(basePath); %Find all basePaths within the topPath
         [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
-                        'ListString',possiblerecordingnames);
-        recordingname = possiblerecordingnames(s);
+                        'ListString',baseNames);
+        recordingname = baseNames(s);
+        basePaths = basePaths(s);
+        
 end
 
-%If multiple recordings, loop
+%If multiple recordings, loop calling SleepScoreMaster with each
 numrecs = length(recordingname);
 if numrecs > 1 & iscell(recordingname)
     display(['Multiple Recordings (',num2str(numrecs),')'])
     for rr = 1:numrecs
-        multibasepath = fullfile(basePath,recordingname{rr});
+        multibasepath = basePaths{rr};
         SleepScoreMaster(multibasepath,varargin{:})
         close all
     end
