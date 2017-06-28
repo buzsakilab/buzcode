@@ -26,7 +26,7 @@ if nargin < 1 % if we're especially lazy, we assume there is one XML in the curr
 end
 
 if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the folder location instead of an actual xml file
-    d = dir(fullfile(filename, '*xml'));
+    d = dir(fullfile(filename, '*xml')); %bug if multiple xmls, pick the one that matches baseName
     filename = fullfile(filename, d.name);
     if ~strcmp(filename(end-3:end),'.xml')
         error(['No .xml in ',filename])
@@ -137,9 +137,16 @@ try
                 parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group(a).channel{b});
             end 
         elseif iscell(p.anatomicalDescription.channelGroups.group)
-            for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
-                parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
-            end 
+            if iscell(p.anatomicalDescription.channelGroups.group{a}.channel)
+                for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
+                    parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
+                end 
+            elseif isvector(p.anatomicalDescription.channelGroups.group{a}.channel)
+                parameters.AnatGrps(a).Channels = p.anatomicalDescription.channelGroups.group{a}.channel;
+            else
+                warning('Anatomy Groups seems to have an issue, eh?..') 
+            end
+
         end
     end
     for a = 1:parameters.spikeGroups.nGroups
@@ -158,6 +165,6 @@ try
         end
     end
 catch
-   warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
+  warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
 end
 
