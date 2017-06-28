@@ -31,6 +31,9 @@ if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the fo
     if ~strcmp(filename(end-3:end),'.xml')
         error(['No .xml in ',filename])
     end
+    if length(d)>1
+        error('Multiple .xml files in this folder')
+    end 
 end
 
 if ~exist(filename),

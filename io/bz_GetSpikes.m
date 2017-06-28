@@ -138,7 +138,7 @@ for i = 1:length(cluFiles)
     shanks(i) = str2num(temp{length(temp)});
 end
 [shanks ind] = sort(shanks);
-cluFiles = cluFiles(ind);
+cluFiles = cluFiles(ind); %Bug here if there are any files x.clu.x that are not your desired clus
 resFiles = resFiles(ind); 
 spkFiles = spkFiles(ind);
 
@@ -162,7 +162,7 @@ for i=1:length(cluFiles)
     nSamples = sessionInfo.spikeGroups.nSamples(shankID);
     spkGrpChans = sessionInfo.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
     
-    if getWaveforms
+    if getWaveforms && sum(clu)>0 %bug fix if no clusters 
         % load waveforms
         chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
         fid = fopen(fullfile(basepath,spkFiles(i).name),'r');
