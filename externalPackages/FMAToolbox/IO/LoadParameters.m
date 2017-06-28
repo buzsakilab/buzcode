@@ -171,3 +171,19 @@ catch
   warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
 end
 
+
+%% For added plugins (such as badchannels)
+try %some xml may not have p.programs.program.... if so, ignore all of this
+    plugins = p.programs.program;
+    pluginnames = cellfun(@(X) X.name,plugins,'uniformoutput',false);
+    %Run through each plugin and check if it matches something we know what
+    %to do with, feel free to add more things here for your own purposes
+    for pp = 1:length(pluginnames)
+        if strcmp(pluginnames{pp},'badchannels')
+            assert(strcmp(plugins{pp}.parameters.parameter.name,'badchannels'),...
+                'There is a plugin ''badchannels'', but the parameter name is not ''badchannels''')
+            parameters.badchannels = str2num(plugins{pp}.parameters.parameter.value);
+        end
+    end
+end
+
