@@ -103,6 +103,10 @@ for a = 1:size(MaxWaves,2)
     minpos = minpos(1);
     [maxval,maxpos] = max(thiswave);
         [dummy,maxpos] = max(thiswave(minpos+1:end));
+        if isempty(maxpos)
+            warning('Your Waveform may be erroneous')
+            maxpos = 1
+        end
         maxpos=maxpos(1);
         maxpos = maxpos+minpos;
         tp(a) = maxpos-minpos; %In number of samples
