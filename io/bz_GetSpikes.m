@@ -192,11 +192,15 @@ for i=1:length(cluFiles)
            [aa bb] = max(a);
            spikes.rawWaveform{count} = wvforms(bb,:);
            spikes.maxWaveformCh(count) = spkGrpChans(bb);  
-           if isfield(sessionInfo,'region')  
-                spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)}; 
-           end
-           clear a aa b bb
        end
+       
+       hasxmlregion
+       if isfield(sessionInfo,'region')  
+            spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)};
+     %  elseif 
+      %     sessionInfo
+       end
+       clear a aa b bb
        count = count + 1;
     end
 end

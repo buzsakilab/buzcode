@@ -171,7 +171,21 @@ catch
   warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
 end
 
-
+%% Unit Info - will generally just get passed through in bz_GetSpikes
+try
+    numunits = length(p.units.unit);
+    for uu = 1:numunits
+        parameters.Units(uu).spikegroup = str2num(p.units.unit{uu}.group);
+        parameters.Units(uu).cluster = str2num(p.units.unit{uu}.cluster);
+        parameters.Units(uu).structure = p.units.unit{uu}.structure;
+        parameters.Units(uu).type = p.units.unit{uu}.type;
+        parameters.Units(uu).isolationDistance = str2num(p.units.unit{uu}.isolationDistance);
+        parameters.Units(uu).quality = p.units.unit{uu}.quality;
+        parameters.Units(uu).notes = p.units.unit{uu}.notes;
+    end
+catch
+%if no units in the .xml..... well probably not using them anyway, eh?
+end
 %% For added plugins (such as badchannels)
 try %some xml may not have p.programs.program.... if so, ignore all of this
     plugins = p.programs.program;
