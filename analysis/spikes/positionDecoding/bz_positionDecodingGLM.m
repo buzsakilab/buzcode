@@ -113,7 +113,7 @@ for cond = conditions
     for window = smoothingRange
        for cell = 1:nCells 
             % phase coding 
-            phase_trains_smooth=circ_smoothTS_slow(phase_trains{cond}(cell,:),window,'method','mean','exclude',0); 
+            phase_trains_smooth=circ_smoothTS(phase_trains{cond}(cell,:),window,'method','mean','exclude',0); 
             [b dev stats] = glmfit(phase_trains_smooth',position{cond}','normal');
             yfit = glmval(b,phase_trains_smooth,'identity');
             struct.mse_phase = mean((yfit-position{cond}').^2); % mean squared error for rate code

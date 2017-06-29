@@ -66,11 +66,15 @@ end
 
 ts_smooth = zeros(length(ts),1);
 for i =1:length(ff)
+    if keep(ff(i))>floor(nBins/2)  % prevents negative indices from being added
     ts_smooth(keep(ff(i))-floor(nBins/2):keep(ff(i))+floor(nBins/2)) = ts(keep(ff(i)));
+    end
 end
 
 for i=1:length(f)
+    if keep(f(i)) > floor(nBins/2) % prevents negative indices from being added
     keep = [keep; [keep(f(i))-floor(nBins/2):keep(f(i)+1)+floor(nBins/2)]'];
+    end
 end
 keep = sort(unique(keep));
 keep(keep>0)=[];

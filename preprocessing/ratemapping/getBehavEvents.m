@@ -116,8 +116,8 @@ for i=1:length(x)
     end
 end
 [a a locsmat] = spikes2sorted(locs);
-% f = find(locsmat(:,1)<120);
-% locsmat(f,:)=[];
+f = find(locsmat(:,1)<120);
+locsmat(f,:)=[];
 
 centerx = mean(x);
 centery = mean(y);
@@ -401,7 +401,7 @@ for tt = 1:length(trials)
 %     step2 = (max(g(:,1))-min(g(:,1)))./length(g(:,1));
 %     w = smooth(interp1(min(g(:,1)):step2+.0001:max(g(:,1)),g(:,1),min(g(:,1)):step:max(g(:,1))+.01,'linear','extrap'),3);
 %     plot(w,ww,'k')
-%     disp('finding mapping...')
+    disp('finding mapping...')
 %     map{tt} = [w,ww];
     for t =1:length(trials{tt})  % all trial types (rotations)
         for p = 1:length(trials{tt}{t})
