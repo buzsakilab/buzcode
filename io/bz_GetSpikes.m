@@ -213,6 +213,11 @@ spikes.sessionName = sessionInfo.FileName;
 
 end
 
+%% save to buzcode format (before exclusions)
+if saveMat
+    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
+end
+
 
 %% filter by spikeGroups input
 if ~strcmp(spikeGroups,'all')
@@ -292,10 +297,6 @@ alltimes = cat(1,spikes.times{:}); groups = cat(1,groups{:}); %from cell to arra
 [alltimes,sortidx] = sort(alltimes); groups = groups(sortidx); %sort both
 spikes.spindices = [alltimes groups];
 
-%% save to buzcode format
-if saveMat
-    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
-end
 
 
 
