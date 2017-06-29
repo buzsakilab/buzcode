@@ -88,9 +88,14 @@ for cond = conditions
             spk_trains{cond}{t}(cell,ceil((spikes.times{cell}(sp)-intervals(t,1))*1000+.00001))=1;
         end 
         
+%         position{cond}{t} = interp1(1:length(behavior.events.trials{trial}.x)...
+%             ,behavior.events.trials{trial}.mapping,1:positionSamplingRate/1000:length(...
+%             behavior.events.trials{trial}.x));
+        nBins = size(spk_trains{cond}{t},2);
+        nPos = length(behavior.events.trials{trial}.x);
         position{cond}{t} = interp1(1:length(behavior.events.trials{trial}.x)...
-            ,behavior.events.trials{trial}.mapping,1:positionSamplingRate/1000:length(...
-            behavior.events.trials{trial}.x));
+            ,behavior.events.trials{trial}.mapping,1:(nPos-1)/nBins:length(...
+            behavior.events.trials{trial}.x)); % the -1 gaurantees the length to be longer than the above spk/phase trains
         position{cond}{t} = position{cond}{t}(1:length(spk_trains{cond}{t}));
     end
 end
