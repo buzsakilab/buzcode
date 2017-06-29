@@ -8,7 +8,8 @@ function spikes = bz_GetSpikes(varargin)
 % INPUTS
 %
 %    spikeGroups     -vector subset of shank IDs to load (Default: all)
-%    region          -string region ID to load neurons from specific region (requires sessionInfodata file)
+%    region          -string region ID to load neurons from specific region
+%                     (requires sessionInfodata file or units->structures in xml)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
 %    getWaveforms    -logical (default=true) to load mean of raw waveform data
@@ -155,7 +156,7 @@ for i=1:length(cluFiles)
     disp(['working on ' spkFiles(i).name])
     
     temp = strsplit(cluFiles(i).name,'.');
-    shankID = str2num(temp{length(temp)});
+    shankID = str2num(temp{length(temp)}); %shankID is the spikegroup number
     clu = load(fullfile(basepath,cluFiles(i).name));
     clu = clu(2:end); % toss the first sample to match res/spk files
     res = load(fullfile(basepath,resFiles(i).name));
@@ -183,7 +184,7 @@ for i=1:length(cluFiles)
        spikes.shankID(count) = shankID;
        spikes.cluID(count) = cells(c);
 
-           
+       %Waveforms    
        if getWaveforms
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
            for t = 1:size(wvforms,1)
@@ -192,11 +193,18 @@ for i=1:length(cluFiles)
            [aa bb] = max(a);
            spikes.rawWaveform{count} = wvforms(bb,:);
            spikes.maxWaveformCh(count) = spkGrpChans(bb);  
-           if isfield(sessionInfo,'region')  
-                spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)}; 
+           %Regions (needs waveform peak)
+           if isfield(sessionInfo,'region') %from sessionInfo
+                spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)};
+           elseif isfield(sessionInfo,'Units') %from xml via Loadparamteres
+                %Find the xml Unit that matches group/cluster
+                unitnum = cellfun(@(X,Y) X==spikes.shankID(count) && Y==spikes.cluID(count),...
+                    {sessionInfo.Units(:).spikegroup},{sessionInfo.Units(:).cluster});
+                spikes.region{count} = sessionInfo.Units(unitnum).structure;
            end
            clear a aa b bb
        end
+       
        count = count + 1;
     end
 end

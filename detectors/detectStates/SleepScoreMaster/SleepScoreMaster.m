@@ -189,12 +189,16 @@ bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']
 
 
 %% Get channels not to use
+parameters = LoadParameters(basePath);
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
-    rejectChannels = SessionMetadata.ExtracellEphys.BadChannels;
+    rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];
+elseif isfield(parameters,'badchannels')
+    rejectChannels = [rejectChannels parameters.badchannels]; %get badchannels from the .xml
 else
-    display('No baseName.SessionMetadata.mat - so no rejected channels')
+    display('No baseName.SessionMetadata.mat, no badchannels in your xml - so no rejected channels')
 end
+
 
 %% CALCULATE EMG FROM HIGH-FREQUENCY COHERENCE
 % Load/Calculate EMG based on cross-shank correlations 
