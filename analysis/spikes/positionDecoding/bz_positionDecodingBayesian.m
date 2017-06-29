@@ -69,7 +69,6 @@ positionSamplingRate = behavior.samplingRate;
 for cond = conditions
     trials = find(behavior.events.trialConditions==cond);
     intervals = behavior.events.trialIntervals(trials,:);
-    
     for t = 1:length(trials)
         trial = trials(t);
         spk_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000)); % assumes intervals are in seconds, rounds to nearest millisecond
@@ -85,12 +84,17 @@ for cond = conditions
                 end
             end
             sp = find(InIntervals(spikes.times{cell},intervals(t,:)));
-            spk_trains{cond}{t}(cell,ceil((spikes.times{cell}(sp)-intervals(t,1))*1000))=1;
+            spk_trains{cond}{t}(cell,ceil((spikes.times{cell}(sp)-intervals(t,1))*1000+.00001))=1;
         end 
         
+%         position{cond}{t} = interp1(1:length(behavior.events.trials{trial}.x)...
+%             ,behavior.events.trials{trial}.mapping,1:positionSamplingRate/1000:length(...
+%             behavior.events.trials{trial}.x));
+        nBins = size(spk_trains{cond}{t},2);
+        nPos = length(behavior.events.trials{trial}.x);
         position{cond}{t} = interp1(1:length(behavior.events.trials{trial}.x)...
-            ,behavior.events.trials{trial}.mapping,1:positionSamplingRate/1000:length(...
-            behavior.events.trials{trial}.x));
+            ,behavior.events.trials{trial}.mapping,1:(nPos-1)/nBins:length(...
+            behavior.events.trials{trial}.x)); % the -1 gaurantees the length to be longer than the above spk/phase trains
         position{cond}{t} = position{cond}{t}(1:length(spk_trains{cond}{t}));
     end
 end
@@ -104,6 +108,24 @@ end
 
 
 %% set up bayesian decoder
+for cell=1:nCells  % initialize table for data
+    positionDecodingGLM.results{cell} = table;
+end
+disp('running models...')
+for cond = conditions
+    warning off
+    for window = smoothingRange
+        for cell = 1:nCells
+        phase_trains_smooth(cell,:)=circ_smoothTS(phase_trains{cond}(cell,:),window,'method','mean','exclude',0); 
+        rates_trains_smooth(cell,:) = Smooth(spk_trains{cond}(cell,:),window)*window;
+        end
+        
+        cl = poisson_naive_bayes_CL;
+        cl = train(cl,round(rates_trains_smooth),pos_train);
+
+    end
+end
+
 
 
 

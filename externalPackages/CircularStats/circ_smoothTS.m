@@ -59,6 +59,8 @@ keep = find(~isnan(ts));
 
 f = find(diff(keep)<nBins);
 ff = find(diff(keep)>=nBins);
+ff(end+1) = length(keep);  % include last ts 
+
 if length(keep) == 0
     ts_smooth = ts;
     return
@@ -68,17 +70,22 @@ ts_smooth = zeros(length(ts),1);
 for i =1:length(ff)
     if keep(ff(i))>floor(nBins/2)  % prevents negative indices from being added
     ts_smooth(keep(ff(i))-floor(nBins/2):keep(ff(i))+floor(nBins/2)) = ts(keep(ff(i)));
+    else
+    ts_smooth(1:keep(ff(i))+floor(nBins/2)) = ts(keep(ff(i)));    
     end
-end
+end 
 
 for i=1:length(f)
     if keep(f(i)) > floor(nBins/2) % prevents negative indices from being added
     keep = [keep; [keep(f(i))-floor(nBins/2):keep(f(i)+1)+floor(nBins/2)]'];
+    else
+    keep = [keep; [1:keep(f(i)+1)+floor(nBins/2)]'];    
     end
 end
 keep = sort(unique(keep));
-keep(keep>0)=[];
-% for i=1:length(ts)
+% keep(keep>0)=[];
+
+%% start smoothing
 for ii = 1:length(keep)
     i = keep(ii);
     if i <= nBins
