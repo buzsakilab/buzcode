@@ -129,7 +129,6 @@ for cond = conditions
                 rates_trains_smooth = [rates_trains_smooth; ...
                                        smooth(spk_trains{cond}{t}(cell,:),wind)];
             end
-            
             % phase coding
             [b dev stats] = glmfit(phase_trains_smooth',position{cond}','normal');
             yfit = glmval(b,phase_trains_smooth,'identity');
@@ -150,12 +149,10 @@ for cond = conditions
 
             
             % rate coding
-            
             [b dev stats] = glmfit(rates_trains_smooth',position{cond}','normal');
             yfit = glmval(b,rates_trains_smooth,'identity');
             struct.mse_rate = mean((yfit-position{cond}').^2);  % mean squared error for rate code
             struct.mse_rate_pval = stats.p';
-            
             
             % extra variables to save
             struct.dfe = stats.dfe;
@@ -166,17 +163,18 @@ for cond = conditions
             
             if ~isempty(plotting) & cell == plotting  % can only display one neuron for now..
                 subplot(2,2,1)
-                plot(positionDecodingGLM.results{plotting}.tau,...
-                    positionDecodingGLM.results{plotting}.mse_rate,'r')
+                rows = positionDecodingGLM.results{plotting}.condition == cond;
+                plot(positionDecodingGLM.results{plotting}.tau(rows),...
+                    positionDecodingGLM.results{plotting}.mse_rate(rows),'r')
                 subplot(2,2,2)
-                plot(positionDecodingGLM.results{plotting}.tau,...
-                    positionDecodingGLM.results{plotting}.mse_phase_cos,'g')
+                plot(positionDecodingGLM.results{plotting}.tau(rows),...
+                    positionDecodingGLM.results{plotting}.mse_phase_cos(rows),'g')
                 subplot(2,2,3)
-                plot(positionDecodingGLM.results{plotting}.tau,...
-                    positionDecodingGLM.results{plotting}.mse_phase_sin,'g')
+                plot(positionDecodingGLM.results{plotting}.tau(rows),...
+                    positionDecodingGLM.results{plotting}.mse_phase_sin(rows),'g')
                 subplot(2,2,4)
-                plot(positionDecodingGLM.results{plotting}.tau,...
-                    positionDecodingGLM.results{plotting}.mse_phase,'g')
+                plot(positionDecodingGLM.results{plotting}.tau(rows),...
+                    positionDecodingGLM.results{plotting}.mse_phase(rows),'g')
                 pause(.0001)
             end
        end
@@ -185,6 +183,7 @@ for cond = conditions
     disp(['finished with condition: ' num2str(cond) ' out of ' num2str(length(conditions)) ' total'])
 end
 
+positionDecodingGLM.dateRun = date;
 
 if saveMat 
    save([spikes.sessionName '.positionDecodingGLM.cellinfo.mat'],'positionDecodingGLM') 
