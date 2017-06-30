@@ -208,6 +208,7 @@ for cond = conditions
             subplot(2,2,4)
             plot(positionDecodingBayesian.tau,...
                 positionDecodingBayesian.mse_phase,'g')
+            pause(.001)
         end
         clear *train *test
         disp(['finished with window: ' num2str(wind) ' out of ' num2str(smoothingRange(end)) ' total'])
