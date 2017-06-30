@@ -154,6 +154,7 @@ count = 1;
 
 for i=1:length(cluFiles) 
     disp(['working on ' spkFiles(i).name])
+    WAVEFAULT = false;
     
     temp = strsplit(cluFiles(i).name,'.');
     shankID = str2num(temp{length(temp)}); %shankID is the spikegroup number
@@ -168,7 +169,12 @@ for i=1:length(cluFiles)
         chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
         fid = fopen(fullfile(basepath,spkFiles(i).name),'r');
         wav = fread(fid,[1 inf],'int16=>int16');
-        wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
+        try %bug in some spk files... wrong number of samples?
+            wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
+        catch
+            warning('something is wrong with your .spk file, no waveforms')
+            WAVEFAULT = true;
+        end
         wav = permute(wav,[3 1 2]);
     end
     
@@ -185,7 +191,7 @@ for i=1:length(cluFiles)
        spikes.cluID(count) = cells(c);
 
        %Waveforms    
-       if getWaveforms
+       if getWaveforms & ~WAVEFAULT
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
            for t = 1:size(wvforms,1)
               [a(t) b(t)] = max(abs(wvforms(t,:))); 
@@ -200,7 +206,14 @@ for i=1:length(cluFiles)
                 %Find the xml Unit that matches group/cluster
                 unitnum = cellfun(@(X,Y) X==spikes.shankID(count) && Y==spikes.cluID(count),...
                     {sessionInfo.Units(:).spikegroup},{sessionInfo.Units(:).cluster});
-                spikes.region{count} = sessionInfo.Units(unitnum).structure;
+                if sum(unitnum) == 0
+                    display(['xml Missing Unit - spikegroup: ',...
+                        num2str(spikes.shankID(count)),' cluster: ',...
+                        num2str(spikes.cluID(count))])
+                    spikes.region{count} = 'missingxml';
+                else %possible future bug: two xml units with same group/clu...              
+                    spikes.region{count} = sessionInfo.Units(unitnum).structure;
+                end
            end
            clear a aa b bb
        end
