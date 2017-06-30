@@ -1,6 +1,6 @@
 function [rateMap countMap occuMap phaseMap] = bz_firingMap1D(spikes,behavior,lfp,tau)
 % USAGE
-% [rateMap occuMap phaseMap] = spaceRateMap(spikes,pos,map,mapping,trials,lfp)
+% [rateMap countMap occuMap phaseMap] = bz_firingMap1D(spikes,behavior,lfp,tau)
 %
 % INPUTS
 %
