@@ -1,6 +1,6 @@
-function [positionDecodingBayesian] = bz_positionDecodingBayesian(varargin)
+function [positionDecodingMaxCorr] = bz_positionDecodingMaxCorr(varargin)
 % USAGE
-%   [] = bz_positionDecodingBayesian()
+%   [] = bz_positionDecodingMaxCorr()
 %
 % INPUTS
 %
@@ -14,7 +14,7 @@ function [positionDecodingBayesian] = bz_positionDecodingBayesian(varargin)
 %
 % OUTPUTS
 %
-%   positionDecodingBayesian     cellinfo struct with the following fields
+%   positionDecodingMaxCorr     cellinfo struct with the following fields
 %                      .UID
 %                      .region
 %                      .sessionName
@@ -51,10 +51,11 @@ saveMat = p.Results.saveMat;
 
 %% set up data format and popinfo struct that will be returned
 
+
 positionDecodingBayesian.UID = spikes.UID;
 positionDecodingBayesian.region = spikes.region;
 positionDecodingBayesian.sessionName = spikes.sessionName; % session name
- 
+
 conditions = unique(behavior.events.trialConditions);
 nCells = length(spikes.times);
 positionSamplingRate = behavior.samplingRate;
@@ -97,13 +98,11 @@ for cond = conditions
     end
 end
 
-%% set up bayesian decoder
-positionDecodingBayesian.UID = spikes.UID;
-positionDecodingBayesian.region = spikes.region;
-positionDecodingBayesian.sessionName = spikes.sessionName; % session name
-positionDecodingBayesian.results = table;
+%% set up MaxCorr decoder
+positionDecodingMaxCorr.results = table;
 
 disp('running models...')
+warning off % max cl model returns warning with NaNs and Inf values..
 for cond = conditions
     for iter = 1:5
     r = randperm(length(phase_trains{cond}));
@@ -127,8 +126,8 @@ for cond = conditions
         position_test = position{cond}{r(end)};
         
         %% rate coding model
-        cl = poisson_naive_bayes_CL;
-        cl = train(cl,round(rates_trains_smooth_train),position_train);
+        cl = max_correlation_coefficient_CL;
+        cl = train(cl,rates_trains_smooth_train,round(position_train));
         
         for ts = 1:length(position_test)
            yfit_rate(ts) = test(cl,round(rates_trains_smooth_test(:,ts))); 
@@ -164,60 +163,67 @@ for cond = conditions
         phase_trains_smooth_test_sin(isnan(phase_trains_smooth_test_sin))=0;
         
         % non-transformed circular decoding
-        cl = poisson_naive_bayes_CL;
-        cl = train(cl,phase_trains_smooth_train,position_train);
+        cl = max_correlation_coefficient_CL;
+        cl = train(cl,phase_trains_smooth_train,round(position_train));
+        
         for ts = 1:length(position_test)
            yfit_circ(ts) = test(cl,phase_trains_smooth_test(:,ts)); 
         end
         struct.mse_phase = mean((yfit_circ-position_test).^2);
         
-        % cos transformed circular decoding
-        cl = poisson_naive_bayes_CL;
-        cl = train(cl,phase_trains_smooth_train_cos,position_train);
+        % cos and sin transformed circular decoding
+        cl = max_correlation_coefficient_CL;
+        cl = train(cl,phase_trains_smooth_train_cos,round(position_train));
+        
         for ts = 1:length(position_test)
            yfit_cos(ts) = test(cl,phase_trains_smooth_test_cos(:,ts)); 
         end
         struct.mse_phase_cos = mean((yfit_cos-position_test).^2);
         
-        % cos transformed circular decoding
-        cl = poisson_naive_bayes_CL;
-        cl = train(cl,phase_trains_smooth_train_sin,position_train);
+        cl = max_correlation_coefficient_CL;
+        cl = train(cl,phase_trains_smooth_train_sin,round(position_train));
+        
         for ts = 1:length(position_test)
            yfit_sin(ts) = test(cl,phase_trains_smooth_test_sin(:,ts)); 
         end
         struct.mse_phase_sin = mean((yfit_sin-position_test).^2);
         
-        % both transformed circular decoding
-        cl = poisson_naive_bayes_CL;
-        cl = train(cl,[phase_trains_smooth_train_sin;phase_trains_smooth_train_cos],position_train);
+        % all phase models in one...
+        cl = max_correlation_coefficient_CL;
+        all_phase_train = [phase_trains_smooth_train_cos;phase_trains_smooth_train_sin];
+        all_phase_test =  [phase_trains_smooth_test_cos;phase_trains_smooth_test_sin];
+        cl = train(cl,all_phase_train,round(position_train));
+        
         for ts = 1:length(position_test)
-           yfit_all(ts) = test(cl,[phase_trains_smooth_test_sin(:,ts);phase_trains_smooth_test_cos(:,ts)]); 
+           yfit_circ_all(ts) = test(cl,all_phase_test(:,ts)); 
         end
-        struct.mse_phase_all = mean((yfit_all-position_test).^2);
+        struct.mse_phase_all = mean((yfit_circ_all-position_test).^2);
         
         %% put data into struct/table
         struct.tau = wind;
         struct.condition = cond;
         struct.iter = iter;
         struct.trialOrder = r;
-        positionDecodingBayesian.results = [positionDecodingBayesian.results;struct2table(struct)];
+        positionDecodingMaxCorr.results = [positionDecodingMaxCorr.results;struct2table(struct)];
         if plotting
             subplot(2,2,1)
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_rate,'r')
+            title('MaxCorr decoding of pos, r-rate, g-phase')
+%             iterRows = positionDecodingMaxCorr.iter == iter;
+            plot(positionDecodingMaxCorr.results.tau,...
+                positionDecodingMaxCorr.results.mse_rate,'r')
             hold on
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_phase_all,'g')
+            plot(positionDecodingMaxCorr.results.tau,...
+                positionDecodingMaxCorr.results.mse_phase_all,'g')
             hold off
             subplot(2,2,2)
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_phase_cos,'g')
+            plot(positionDecodingMaxCorr.results.tau,...
+                positionDecodingMaxCorr.results.mse_phase_cos,'g')
             subplot(2,2,3)
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_phase_sin,'g')
+            plot(positionDecodingMaxCorr.results.tau,...
+                positionDecodingMaxCorr.results.mse_phase_sin,'g')
             subplot(2,2,4)
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_phase,'g')
+            plot(positionDecodingMaxCorr.results.tau,...
+                positionDecodingMaxCorr.results.mse_phase,'g')
             pause(.001)
         end
         clear *train *test yfit*
@@ -227,10 +233,11 @@ for cond = conditions
     disp(['finished with condition: ' num2str(cond) ' out of ' num2str(length(conditions)) ' total'])
 end
 
-positionDecodingBayesion.dataRun = date;
+
+positionDecodingMaxCorr.dateRun = date;
 
 if saveMat 
-   save([spikes.sessionName '.positionDecodingBayesian.popinfo.mat'],'positionDecodingBayesian') 
+   save([spikes.sessionName '.positionDecodingMaxCorr.popinfo.mat'],'positionDecodingMaxCorr') 
 end
 
 

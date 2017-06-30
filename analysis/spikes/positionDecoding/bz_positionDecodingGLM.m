@@ -146,7 +146,12 @@ for cond = conditions
             yfit = glmval(b,sin(phase_trains_smooth),'identity');
             struct.mse_phase_sin = mean((yfit-position{cond}').^2); % mean squared error for rate code
             struct.mse_phase_sin_pval = stats.p';
-
+            
+            % phase coding all
+            [b dev stats] = glmfit([sin(phase_trains_smooth),cos(phase_trains_smooth)],position{cond}','normal');
+            yfit = glmval(b,[sin(phase_trains_smooth),cos(phase_trains_smooth)],'identity');
+            struct.mse_phase_all = mean((yfit-position{cond}').^2); % mean squared error for rate code
+            struct.mse_phase_all_pval = stats.p';
             
             % rate coding
             [b dev stats] = glmfit(rates_trains_smooth',position{cond}','normal');
@@ -163,9 +168,14 @@ for cond = conditions
             
             if ~isempty(plotting) & cell == plotting  % can only display one neuron for now..
                 subplot(2,2,1)
+                title('GLM decoding of pos, r-rate, g-phase')
                 rows = positionDecodingGLM.results{plotting}.condition == cond;
                 plot(positionDecodingGLM.results{plotting}.tau(rows),...
                     positionDecodingGLM.results{plotting}.mse_rate(rows),'r')
+                hold on
+                plot(positionDecodingGLM.results{plotting}.tau(rows),...
+                    positionDecodingGLM.results{plotting}.mse_phase_all(rows),'g')
+                hold off
                 subplot(2,2,2)
                 plot(positionDecodingGLM.results{plotting}.tau(rows),...
                     positionDecodingGLM.results{plotting}.mse_phase_cos(rows),'g')
