@@ -59,8 +59,9 @@ keep = find(~isnan(ts));
 
 f = find(diff(keep)<nBins);
 ff = find(diff(keep)>=nBins);
-ff(end+1) = length(keep);  % include last ts 
-
+if ~isempty(ff)
+    ff(end+1) = length(keep);  % include last ts 
+end
 if length(keep) == 0
     ts_smooth = ts;
     return
@@ -79,13 +80,17 @@ for i =1:length(ff)  % populate list with single spikes that occur sparsely
 end 
 
 for i=1:length(f) % populate list with spikes that occur within smoothing window
-    if keep(f(i)) > floor(nBins/2) & keep(f(i)+1)+floor(nBins/2) < length(ts) % prevents negative indices from being added
-        keep = [keep; [keep(f(i))-floor(nBins/2):keep(f(i)+1)+floor(nBins/2)]'];
-    elseif ~(keep(f(i)) > floor(nBins/2)) &  keep(f(i)+1)+floor(nBins/2) < length(ts) 
-        keep = [keep; [floor(nBins/2) + 1:keep(f(i)+1)+floor(nBins/2)]'];    
-    elseif keep(f(i)) > floor(nBins/2) & ~(keep(f(i)+1)+floor(nBins/2) < length(ts))
-        keep = [keep; [keep(f(i))-floor(nBins/2):length(ts)- floor(nBins/2)]'];    
-    end
+    ind = (keep(f(i))-floor(nBins/2):keep(f(i))+floor(nBins/2));
+    ind(ind<1) = [];
+    ind(ind>length(ts)) = [];
+    keep = [keep; ind'];
+%     if keep(f(i)) > floor(nBins/2) & keep(f(i)+1)+floor(nBins/2) < length(ts) % prevents negative indices from being added
+%         keep = [keep; [keep(f(i))-floor(nBins/2):keep(f(i)+1)+floor(nBins/2)]'];
+%     elseif ~(keep(f(i)) > floor(nBins/2)) &  keep(f(i)+1)+floor(nBins/2) < length(ts) 
+%         keep = [keep; [floor(nBins/2) + 1:keep(f(i)+1)+floor(nBins/2)]'];    
+%     elseif keep(f(i)) > floor(nBins/2) & ~(keep(f(i)+1)+floor(nBins/2) < length(ts))
+%         keep = [keep; [keep(f(i))-floor(nBins/2):length(ts)- floor(nBins/2)]'];    
+%     end
 end
 
 keep = sort(unique(keep));
