@@ -210,7 +210,7 @@ for cond = conditions
                 positionDecodingBayesian.mse_phase,'g')
             pause(.001)
         end
-        clear *train *test
+        clear *train *test yfit*
         disp(['finished with window: ' num2str(wind) ' out of ' num2str(smoothingRange(end)) ' total'])
     end
     end
