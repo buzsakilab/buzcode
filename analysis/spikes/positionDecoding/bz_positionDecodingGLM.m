@@ -167,6 +167,7 @@ for cond = conditions
                 [positionDecodingGLM.results{cell};struct2table(struct)];
             
             if ~isempty(plotting) & cell == plotting  % can only display one neuron for now..
+%                 figure(cond);
                 subplot(2,2,1)
                 title('GLM decoding of pos, r-rate, g-phase')
                 rows = positionDecodingGLM.results{plotting}.condition == cond;

@@ -34,7 +34,7 @@ for tt =1:length(unique(behavior.events.trialConditions))
     trials = find(behavior.events.trialConditions==tt);
     rateMap{tt} = zeros(length(spikes),length(trials),length(behavior.events.map{tt}.x));
     countMap{tt} = zeros(length(spikes),length(trials),length(behavior.events.map{tt}.x));
-    occuMap{tt} = zeros(1,length(behavior.events.map{tt}.x));
+    occuMap{tt} = zeros(length(trials),length(behavior.events.map{tt}.x));
     if ~isempty(behavior.events.map{tt})
         for i =1:length(spikes)
             phaseMap{tt}{i} = [];
@@ -73,8 +73,9 @@ for tt =1:length(unique(behavior.events.trialConditions))
             for mm = 1:length(behavior.events.trials{trials(m)}.mapping)
                 [a b] = min(abs(behavior.events.trials{trials(m)}.x(mm)-behavior.events.map{tt}.x)+...
                     abs(behavior.events.trials{trials(m)}.y(mm)-behavior.events.map{tt}.y));
-                occuMap{tt}(b) = occuMap{tt}(b) + 1;
+                occuMap{tt}(m,b) = occuMap{tt}(m,b) + 1;
             end
+            occuMap{tt}(m,:) = medfilt1(occuMap{tt}(m,:),tau*2);
         end
     end
 end
@@ -87,7 +88,9 @@ for tt =1:length(unique(behavior.events.trialConditions))
 %             rateMap{tt}(i,t,:) = smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
 %                 (smooth(occuMap{tt},tau)*(1/behavior.samplingRate)./numTrials);
             rateMap{tt}(i,t,:) = Smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
-                (Smooth(occuMap{tt},tau)*(1/behavior.samplingRate)./numTrials);
+                (smooth(mean(occuMap{tt}),tau)*(1/behavior.samplingRate));
+%               rateMap{tt}(i,t,:) = Smooth(squeeze(countMap{tt}(i,t,:))./...
+%                   mean(occuMap{tt})'.*(1/behavior.samplingRate),tau);
         end
     end
 end
