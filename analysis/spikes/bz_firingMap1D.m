@@ -75,7 +75,7 @@ for tt =1:length(unique(behavior.events.trialConditions))
                     abs(behavior.events.trials{trials(m)}.y(mm)-behavior.events.map{tt}.y));
                 occuMap{tt}(m,b) = occuMap{tt}(m,b) + 1;
             end
-            occuMap{tt}(m,:) = medfilt1(occuMap{tt}(m,:),tau*2);
+            occuMap{tt}(m,:) = medfilt1(occuMap{tt}(m,:),tau);
         end
     end
 end
@@ -88,7 +88,7 @@ for tt =1:length(unique(behavior.events.trialConditions))
 %             rateMap{tt}(i,t,:) = smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
 %                 (smooth(occuMap{tt},tau)*(1/behavior.samplingRate)./numTrials);
             rateMap{tt}(i,t,:) = Smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
-                (smooth(mean(occuMap{tt}),tau)*(1/behavior.samplingRate));
+                (Smooth(mean(occuMap{tt}),2*tau)*(1/behavior.samplingRate));
 %               rateMap{tt}(i,t,:) = Smooth(squeeze(countMap{tt}(i,t,:))./...
 %                   mean(occuMap{tt})'.*(1/behavior.samplingRate),tau);
         end
