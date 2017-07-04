@@ -1,7 +1,7 @@
 function [x y pos trials map mapping] = getBehavEvents_linearTrack(pos,bins)
 dbstop if error
 scatter(pos(:,8),pos(:,10),'.')
-axis([-1 1 -1 1])
+% axis([-1 1 -1 1])
 [x y]=ginput();
 x =  x(end-1:end);
 y = y(end-1:end);

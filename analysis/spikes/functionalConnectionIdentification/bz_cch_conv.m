@@ -1,4 +1,4 @@
-% CCH_CONV                  predictor and p-values for CCH using convolution
+% bz_CCH_CONV                  predictor and p-values for CCH using convolution
 %
 % CALL                      [ PVALS, PRED, QVALS ] = CCH_CONV( CCH, W )
 %
@@ -33,10 +33,11 @@
 % (including correction for multiple comparisons), check crossing of alpha
 % divided by the number of bins tested
 
-function [ pvals, pred, qvals ] = cch_conv( CCH, W, WINTYPE, HF, CALCP )
+function [ pvals, pred, qvals ] = bz_cch_conv( CCH, W, WINTYPE, HF, CALCP )
 
 % 1. CHECK ARGUMENTS
 nargs = nargin;
+CCH = double(CCH);
 if nargs < 1, error( 'missing argument CCH' ), end
 [ m n ] = size( CCH );
 if m * n <= 1, error( 'improper argument CCH' ), end
@@ -50,7 +51,7 @@ else
 end
 nlags = ( nsamps - 1 ) / 2;
 if ( sum( sum( CCH - round( CCH ) ) ) ) || ( sum( sum( CCH < 0 ) ) > 0 )
-    error( 'improper argument CCH (must contain non-negative integers)' )
+%    error( 'improper argument CCH (must contain non-negative integers)' )
 end
     
 if nargs < 2 || isempty( W ), W = 5; end
@@ -131,6 +132,7 @@ return
 function Y = local_firfilt( x, W ) % zero-phase lag low-pass filtering of x's columns with the FIR W
 C = length( W );
 D = ceil( C / 2 ) - 1;
+x = double(x);
 Y = filter( W, 1, [ flipud( x( 1 : C, : ) ); x; flipud( x( end - C + 1 : end, : ) ) ] );
 Y = Y( 1 + C + D : end - C + D, : );
 return

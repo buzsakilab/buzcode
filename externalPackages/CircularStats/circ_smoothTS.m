@@ -63,6 +63,7 @@ if ~isempty(ff)
     ff(end+1) = length(keep);  % include last ts 
 end
 if length(keep) == 0
+    ts(isnan(ts))=0;
     ts_smooth = ts;
     return
 end
