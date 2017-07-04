@@ -168,7 +168,12 @@ for i=1:length(cluFiles)
         chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
         fid = fopen(fullfile(basepath,spkFiles(i).name),'r');
         wav = fread(fid,[1 inf],'int16=>int16');
-        wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
+        try %bug in some spk files... wrong number of samples?
+            wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
+        catch
+            error(['something is wrong with your .spk file, no waveforms.',...
+                ' Use ''getWaveforms'', false while you get that figured out.'])
+        end
         wav = permute(wav,[3 1 2]);
     end
     
@@ -200,7 +205,14 @@ for i=1:length(cluFiles)
                 %Find the xml Unit that matches group/cluster
                 unitnum = cellfun(@(X,Y) X==spikes.shankID(count) && Y==spikes.cluID(count),...
                     {sessionInfo.Units(:).spikegroup},{sessionInfo.Units(:).cluster});
-                spikes.region{count} = sessionInfo.Units(unitnum).structure;
+                if sum(unitnum) == 0
+                    display(['xml Missing Unit - spikegroup: ',...
+                        num2str(spikes.shankID(count)),' cluster: ',...
+                        num2str(spikes.cluID(count))])
+                    spikes.region{count} = 'missingxml';
+                else %possible future bug: two xml units with same group/clu...              
+                    spikes.region{count} = sessionInfo.Units(unitnum).structure;
+                end
            end
            clear a aa b bb
        end
@@ -211,6 +223,11 @@ end
 
 spikes.sessionName = sessionInfo.FileName;
 
+end
+
+%% save to buzcode format (before exclusions)
+if saveMat
+    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
 end
 
 
@@ -292,10 +309,6 @@ alltimes = cat(1,spikes.times{:}); groups = cat(1,groups{:}); %from cell to arra
 [alltimes,sortidx] = sort(alltimes); groups = groups(sortidx); %sort both
 spikes.spindices = [alltimes groups];
 
-%% save to buzcode format
-if saveMat
-    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
-end
 
 
 
