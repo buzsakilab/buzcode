@@ -154,7 +154,6 @@ count = 1;
 
 for i=1:length(cluFiles) 
     disp(['working on ' spkFiles(i).name])
-    WAVEFAULT = false;
     
     temp = strsplit(cluFiles(i).name,'.');
     shankID = str2num(temp{length(temp)}); %shankID is the spikegroup number
@@ -172,8 +171,8 @@ for i=1:length(cluFiles)
         try %bug in some spk files... wrong number of samples?
             wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
         catch
-            warning('something is wrong with your .spk file, no waveforms')
-            WAVEFAULT = true;
+            error(['something is wrong with your .spk file, no waveforms.',...
+                ' Use ''getWaveforms'', false while you get that figured out.'])
         end
         wav = permute(wav,[3 1 2]);
     end
@@ -191,7 +190,7 @@ for i=1:length(cluFiles)
        spikes.cluID(count) = cells(c);
 
        %Waveforms    
-       if getWaveforms & ~WAVEFAULT
+       if getWaveforms
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
            for t = 1:size(wvforms,1)
               [a(t) b(t)] = max(abs(wvforms(t,:))); 
