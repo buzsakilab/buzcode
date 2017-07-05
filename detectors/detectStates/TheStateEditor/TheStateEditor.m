@@ -287,12 +287,11 @@ if FileExistsIn([baseName,'.eegstates.mat'])
     end
     if exist([baseName,'.SleepState.states.mat'],'file')
        load([baseName,'.SleepState.states.mat'])
-       stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.INTERstate)) max(max(SleepState.ints.WAKEstate)) max(max(SleepState.ints.MAstate))]); 
+       stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate)) max(max(SleepState.ints.MAstate))]); 
        states = zeros(1,stateslen);
        states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
        states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
        states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
-       states(find(inttoboolIn(SleepState.ints.INTERstate))) = 4; %added to include state 4 
        states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
        states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
     end
@@ -616,12 +615,11 @@ else
     if exist([baseName,'.SleepState.states.mat'],'file')
        load([baseName,'.SleepState.states.mat'])
        
-       stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate)) max(max(SleepState.ints.INTERstate)) max(max(SleepState.ints.MAstate))]); 
+       stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate)) max(max(SleepState.ints.MAstate))]); 
        states = zeros(1,stateslen);
        states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
        states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
        states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
-       states(find(inttoboolIn(SleepState.ints.INTERstate))) = 4; %added to include state 4
        states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
        states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
     end
@@ -2179,9 +2177,7 @@ sints = IDXtoINT_In( FO.States,5);%convert to start-stop intervals
 NREMints = sints{3};
 REMints = sints{5};
 WAKEints = sints{1};
-INTERints = sints{4};
-[SleepState_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints,INTERints);% FO.States
-
+[SleepState_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints);% FO.States
 
 % save to SleepState.states .mat file with proper formatting etc
 SleepState = bz_LoadStates(basePath,'SleepState'); %load old scoring
@@ -2198,7 +2194,6 @@ if ~isfield(SleepState,'AutoScoreInts') && strcmp(SleepState.detectorname,'Sleep
     display('   saving old states as SleepState.AutoScoreInts')
     SleepState.AutoScoreInts = SleepState.ints;
 end
-
 SleepState.ints = SleepState_new.ints;
 
 %Save the results!
@@ -2360,7 +2355,6 @@ else
         states(find(inttoboolIn(StateIntervals.WAKEstate))) = 1;
         states(find(inttoboolIn(StateIntervals.MAstate))) = 2;
         states(find(inttoboolIn(StateIntervals.NREMstate))) = 3;
-        states(find(inttoboolIn(StateIntervals.INTERstate))) = 4;
         states(find(inttoboolIn(StateIntervals.REMstate))) = 5;
         states = cat(2,states,zeros(1,numel(FO.States)-length(states)));
         FO.States = states;
@@ -2371,7 +2365,6 @@ else
         states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
         states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
         states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
-        states(find(inttoboolIn(StateIntervals.INTERstate))) = 4;
         states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
         states = cat(2,states,zeros(1,numel(FO.States)-length(states)));
         FO.States = states;
@@ -4829,8 +4822,7 @@ minWinREM = 6;
 minREMinW = 6;
 minREM = 6;
 minWAKE = 6;
-minINTER = 6;
-MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE, minINTER);
+MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE);
 
 % grab user-entered thresholds
 swthresh = get(FO.AutoClusterFig.swline,'XData');
@@ -4849,10 +4841,9 @@ FO.AutoScore.histsandthreshs.THthresh = THthresh;
 % Join states into episodes
 NREMints = stateintervals{2};
 REMints = stateintervals{3};
-INTERints = stateintervals{4};
 WAKEints = stateintervals{1};
 
-[SleepState_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints, INTERints);
+[SleepState_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints);
 
 % update plot and data in TheStateEditor GUI
 stateslen = size(FO.to,1);
@@ -4861,7 +4852,6 @@ states = zeros(1,stateslen);
 states(find(inttoboolIn(SleepState_new.ints.WAKEstate))) = 1;
 states(find(inttoboolIn(SleepState_new.ints.MAstate))) = 2;
 states(find(inttoboolIn(SleepState_new.ints.NREMstate))) = 3;
-states(find(inttoboolIn(SleepState_new.ints.INTERstate))) = 4;
 states(find(inttoboolIn(SleepState_new.ints.REMstate))) = 5;
 states = cat(2,states,zeros(1,length(FO.to)-length(states)));%pad to make sure is long enough
 
