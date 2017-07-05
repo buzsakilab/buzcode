@@ -324,15 +324,19 @@ else
         end
         H5F.close(fid)
         
-if exist([num2str(elec) '/nohup.out'])
+        if exist([num2str(elec) '/nohup.out'])  && exist([num2str(elec) '/' fbasename '_sh' num2str(elec) '.klg.' num2str(elec)])
             if exist([fbasename '_sh' num2str(elec) '.kwik']) > 0
                 fileID = fopen('nohup.out','a');
+                klgID = fopen([fbasename '_sh' num2str(elec) '.klg.' num2str(elec)],'a');
             else
                 fileID = fopen([num2str(elec) '/nohup.out'],'a');
+                klgID = fopen([num2str(elec)  '/' fbasename '_sh' num2str(elec) '.klg.' num2str(elec)],'a');
             end
             fmt = 'this elec has been autoclustered';
             fprintf(fileID,fmt);
-            fclose(fileID)
+            fprintf(klgID,fmt);
+            fclose(klgID);
+            fclose(fileID); % write to both nohup and .klg. log files
         else
             error('could not find nohup.out log file')
         end

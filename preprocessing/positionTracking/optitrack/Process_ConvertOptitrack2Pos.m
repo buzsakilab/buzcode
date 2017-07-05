@@ -29,6 +29,12 @@ function Process_ConvertOptitrack2Pos(fbasename,varargin)
 % 
 %
 
+if strcmp(fbasename,'')
+    d = dir('*sessionInfo.mat');
+    load(d.name);
+    fbasename = sessionInfo.FileName;
+end
+
 warning('this functions is now deprecated and has been replaced by processConvertOptitrack2Behav.m')
 
 syncDatFile = ['digitalin.dat']; % defaults if args aren't given... assuming a single digitalin channel on Intan
@@ -155,16 +161,16 @@ end
 
 % We now interpolate the data at 120 Hz (or sampling fqcy specified in
 % arguments)
-recDuration = length(dig)/syncSampFq;
+% recDuration = length(dig)/syncSampFq;
+% 
+% timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';
+% pos(pos==-1) = NaN;
+% newPos = interp1(frameT,pos,timestamps,'linear');
 
-timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';
-pos(pos==-1) = NaN;
-newPos = interp1(frameT,pos,timestamps,'linear');
+% timestamps(isnan(newPos(:,2))) = [];
+% newPos(isnan(newPos(:,2)),:)=[];
 
-timestamps(isnan(newPos(:,2))) = [];
-newPos(isnan(newPos(:,2)),:)=[];
-
-dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);
+dlmwrite([fbasename '.pos'],[frameT pos],'delimiter','\t', 'precision', 32);
 
 end
 

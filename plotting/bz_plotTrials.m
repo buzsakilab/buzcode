@@ -15,6 +15,6 @@ for tt = 1:length(unique(behavior.events.trialConditions))
     scatter(behavior.events.trials{ff(t)}.x(end),behavior.events.trials{ff(t)}.y(end),'.r')
 
     end
-title(tt);
+title(['condition: ' num2str(tt) ', # of trials: ' num2str(length(ff))]);
 end
 
