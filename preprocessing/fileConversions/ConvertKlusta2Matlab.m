@@ -179,9 +179,8 @@ if saveFiles
         if isempty(b)
             warning('could not find cluster name?')
         end
-        
         if keepMUA
-            if group(b) == 0
+            if group(b) == 0 || group(b) == 3
                 clu(clu == clusterID(b)) = 0; % noise
             elseif group(b) == 1
                 clu(clu == clusterID(b)) = 1; % MUA
