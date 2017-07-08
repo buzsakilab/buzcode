@@ -1,5 +1,5 @@
 function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
-    basename,wvformExtract,saveFiles,numCores)
+    basename,wvformExtract,saveFiles,numCores,keepMUA)
 % USAGE
 %
 % [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wvformExtract,saveFiles,numCores)
@@ -19,7 +19,8 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
 % numCores  - double between 1 and inf that sets the number of cores for a
 %             parloop to run (set 2-12 on SSD or RAID0 systems, set to 1
 %             for data stored on a single hard drive
-%
+% keepMUA   - binary (0 or 1) to choose whether to keep MUA as a separate
+%             cluster (#1)
 %
 % OUTPUTS
 %
@@ -40,6 +41,7 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
 %
 % Brendon Watson 2016 
 % edited by David Tingley 1/2017
+% edited by Aza and Antonio 7/2017
 
 % p = inputParser;
 % addRequired(p,'shank',@isnumeric)
@@ -93,7 +95,11 @@ kwikinfo = h5info(tkwik,['/channel_groups/' num2str(shank) '/clusters/main']);
 clu = h5read(tkwik,['/channel_groups/' num2str(shank) '/spikes/clusters/main']);
 cluster_names = unique(clu);
 
-totalch = h5readatt(tkwik,'/application_data/spikedetekt','nchannels');
+try % different klusta versions have different names for this field
+    totalch = h5readatt(tkwik,'/application_data/spikedetekt','nchannels');
+catch
+    totalch = h5readatt(tkwik,'/application_data/spikedetekt','n_channels');
+end
 try % some files don't have these variables saved in them?
     sbefore = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_before');
     safter = h5readatt(tkwik,'/application_data/spikedetekt','extract_s_after');
@@ -121,7 +127,12 @@ if wvformExtract & ~exist(spkname)  % only create .spk file if it doesn't alread
         try
             byteList = [];
             for i = 1:length(channellist)
-                ind = (double(spktimes(j))-sbefore).*totalch+1:(double(spktimes(j))+safter).*totalch;
+                ind1 = (double(spktimes(j)).*totalch); % correction for problems with high values
+                ind11 = int64(ind1) - int64(sbefore.*totalch) + 1;
+                ind2 = (double(spktimes(j)).*totalch);
+                ind22 = int64(ind2) + int64(safter.*totalch);
+                ind = ind11:ind22;
+                
                 byteList = [byteList; ind(double(channellist(i)):totalch:end)];
             end
             wvforms = dat.data(byteList);
@@ -169,8 +180,17 @@ if saveFiles
             warning('could not find cluster name?')
         end
         
-        if group(b)~=2
-            clu(clu == clusterID(b)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
+        if keepMUA
+            if group(b) == 0
+                clu(clu == clusterID(b)) = 0; % noise
+            elseif group(b) == 1
+                clu(clu == clusterID(b)) = 1; % MUA
+            end
+            
+        else
+            if group(b)~=2
+                clu(clu == clusterID(b)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
+            end
         end
     end
     
