@@ -93,7 +93,7 @@ isoMaxTresh = 2000;
 lratioMaxThresh = 1000;
 
 % Do Merging?
-doMerge = 1;
+doMerge = 0;
 % overwrite clu file
 rewriteclu= 1;
 % Write a log file?
@@ -319,8 +319,10 @@ else
             catch
                 disp([ num2str(cluster_names(i)) ' cluster group already exists'])
             end
-            h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/'...
-                num2str(cluster_names(i))],'cluster_group',3) % a human has not looked at these results, everything should be 'unsorted' (3 in .kwik format)
+            if doMerge
+                h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/'...
+                    num2str(cluster_names(i))],'cluster_group',3) % a human has not looked at these results, everything should be 'unsorted' (3 in .kwik format)
+            end
         end
         H5F.close(fid)
         

@@ -1,4 +1,4 @@
-function [] = restoreOriginalKwik(varargin)
+function [] = convertClu2Kwik(varargin)
 % USAGE
 % [] = restoreOriginalKwik(kwikfile)
 %
@@ -14,8 +14,11 @@ function [] = restoreOriginalKwik(varargin)
 
 p = inputParser;
 addParameter(p,'tkwik','',@isstr)
+addParameter(p,'clu','',@isvector)
 parse(p,varargin{:})
 tkwik = p.Results.tkwik;
+clu = p.Results.clu;
+
 disp(tkwik)
 
 if isempty(tkwik)  % remove this? we shouldn't assume there is a single .kwik in the cwd..
@@ -25,6 +28,7 @@ if isempty(tkwik)  % remove this? we shouldn't assume there is a single .kwik in
     catch
     end
 end
+cluster_groups = unique(clu);
 
 if ~isempty(tkwik)
     elec = split(tkwik,'.');
@@ -41,16 +45,22 @@ if ~isempty(tkwik)
     H5F.close(fid)
     % now re-populate from /original branch..
     fid = H5F.open(kwikinfo_original.Filename,'H5F_ACC_RDWR','H5P_DEFAULT');
-    for g = 1:length(kwikinfo_original.Groups)
-        clust = split(kwikinfo_original.Groups(g).Name,'/');
-        clust = clust{end};
+    for g = 1:length(cluster_groups)
+%         clust = split(kwikinfo_original.Groups(g).Name,'/');
+%         clust = clust{end};
+        clust = cluster_groups(g);
         try
         H5L.copy(fid,kwikinfo_original.Groups(g).Name,...
-                        fid,[kwikinfo_main.Name '/' clust],...
+                        fid,[kwikinfo_main.Name '/' num2str(clust)],...
                         'H5P_DEFAULT','H5P_DEFAULT')
-            h5writeatt(tkwik,kwikinfo_main.Groups(g).Name,'cluster_group',3)
         catch
             disp([ clust ' cluster group already exists'])
+        end
+    end
+    for g= 1:length(cluster_groups)
+        if g > 2
+        h5writeatt(tkwik,['/channel_groups/' num2str(elec) '/clusters/main/' ...
+            num2str(cluster_groups(g))],'cluster_group',2) 
         end
     end
     H5F.close(fid)
@@ -61,6 +71,6 @@ if ~isempty(tkwik)
     catch
         error(['could not restore cluster IDs for ' tkiwk])
     end
-    h5write(tkwik,['/channel_groups/' num2str(elec) '/spikes/clusters/main'],uint32(clu_orig));
-    disp(['restored cluster IDs for ' tkwik])
+    h5write(tkwik,['/channel_groups/' num2str(elec) '/spikes/clusters/main'],uint32(clu));
+    disp(['added clu file cluster IDs for ' tkwik])
 end
