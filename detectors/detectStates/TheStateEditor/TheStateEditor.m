@@ -269,7 +269,7 @@ if FileExistsIn([baseName,'.eegstates.mat'])
                 end
             catch
                 try
-                    %First try Anton's LoadBinary
+                    %First try Anton's LoadBinary - this is not in buzcode
                     eeg = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
                 catch
                     %Otherwise try to use Micheal Zugaro
@@ -386,10 +386,10 @@ else
         
         disp(['Loading eeg channels: ', int2str(Chs)]);
         
-%         try
-%             %First try Anton's LoadBinary
-%             eeg1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
-%         catch
+        try
+            %First try Anton's LoadBinary
+            eeg1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+        catch
             %Otherwise try to use Micheal Zugaro
             eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
             eeg1 = single(eeg1);
@@ -501,10 +501,10 @@ else
                 if exist('motionSignal', 'var')
                     meeg = motionSignal;
                 else
-%                     try
-%                         %First try Anton's LoadBinary
-%                         meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
-%                     catch
+                    try
+                        %First try Anton's LoadBinary
+                        meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+                    catch
                         %Otherwise try to use Micheal Zugaro
                         meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
                         meeg = single(meeg);

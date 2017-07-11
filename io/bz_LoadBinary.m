@@ -1,6 +1,6 @@
-function data = LoadBinary_Down_ss(filename,varargin)
+function data = bz_LoadBinary(filename,varargin)
 
-% LoadBinary - Load data from a multiplexed binary file.
+%bz_LoadBinary - Load data from a multiplexed binary file.
 %
 %  Reading a subset of the data can be done in two different manners: either
 %  by specifying start time and duration (more intuitive), or by indicating
@@ -9,7 +9,7 @@ function data = LoadBinary_Down_ss(filename,varargin)
 %
 %  USAGE
 %
-%    data = LoadBinary(filename,<options>)
+%    data = bz_LoadBinary(filename,<options>)
 %
 %    filename       file to read
 %    <options>      optional list of property-value pairs (see table below)
@@ -33,6 +33,7 @@ function data = LoadBinary_Down_ss(filename,varargin)
 
 % Copyright (C) 2004-2011 by Michaël Zugaro
 %Modified by DLevenstein 2016 to include downsampling
+% bz_ added to function name by Luke Sjulson 2017 to fix namespace issues
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -42,6 +43,7 @@ function data = LoadBinary_Down_ss(filename,varargin)
 % Default values
 nChannels = 1;
 precision = 'int16';
+warning(['this function assumes int16 precision, if your file is not int16 use load/resample.m'])
 skip = 0;
 frequency = 20000;
 channels = [];
@@ -54,79 +56,79 @@ samples = false;
 downsamplefactor = 1;
 
 if nargin < 1 | mod(length(varargin),2) ~= 0,
-  error('Incorrect number of parameters (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+  error('Incorrect number of parameters (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 end
 
 % Parse options
 for i = 1:2:length(varargin),
 	if ~ischar(varargin{i}),
-		error(['Parameter ' num2str(i+3) ' is not a property (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).']);
+		error(['Parameter ' num2str(i+3) ' is not a property (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).']);
 	end
 	switch(lower(varargin{i})),
 		case 'frequency',
 			frequency = varargin{i+1};
-			if ~isdscalar_ss(frequency,'>0'),
-				error('Incorrect value for property ''frequency'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isdscalar(frequency,'>0'),
+				error('Incorrect value for property ''frequency'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 			end
 		case 'start',
 			start = varargin{i+1};
-			if ~isdscalar_ss(start),
-				error('Incorrect value for property ''start'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isdscalar(start),
+				error('Incorrect value for property ''start'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 			end
 			if start < 0, start = 0; end
 			time = true;
 		case 'duration',
 			duration = varargin{i+1};
-			if ~isdscalar_ss(duration,'>=0'),
-				error('Incorrect value for property ''duration'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isdscalar(duration,'>=0'),
+				error('Incorrect value for property ''duration'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 			end
 			time = true;
 		case 'offset',
 			offset = varargin{i+1};
-			if ~isiscalar_ss(offset),
-				error('Incorrect value for property ''offset'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isiscalar(offset),
+				error('Incorrect value for property ''offset'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 			end
 			if offset < 0, offset = 0; end
 			samples = true;
 		case 'samples',
 			nSamplesPerChannel = varargin{i+1};
-			if ~isdscalar_ss(nSamplesPerChannel,'>=0'),
-				error('Incorrect value for property ''samples'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isdscalar(nSamplesPerChannel,'>=0'),
+				error('Incorrect value for property ''samples'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 			end
 			samples = true;
 		case 'nchannels',
 			nChannels = varargin{i+1};
-			if ~isiscalar_ss(nChannels,'>0'),
-				error('Incorrect value for property ''nChannels'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isiscalar(nChannels,'>0'),
+				error('Incorrect value for property ''nChannels'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 			end
 		case 'channels',
 			channels = varargin{i+1};
-			if ~isivector_ss(channels,'>0'),
-				error('Incorrect value for property ''channels'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isivector(channels,'>0'),
+				error('Incorrect value for property ''channels'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 			end
 		case 'precision',
 			precision = varargin{i+1};
-			if ~isstring_ss(precision),
-				error('Incorrect value for property ''precision'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isa(precision,'char'),
+				error('Incorrect value for property ''precision'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 			end
 		case 'skip',
 			skip = varargin{i+1};
-			if ~isiscalar_ss(skip,'>=0'),
-				error('Incorrect value for property ''skip'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isiscalar(skip,'>=0'),
+				error('Incorrect value for property ''skip'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
             end
 		case 'downsample',
 			downsamplefactor = varargin{i+1};
-			if ~isiscalar_ss(downsamplefactor,'>=0'),
-				error('Incorrect value for property ''downsample'' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).');
+			if ~isiscalar(downsamplefactor,'>=0'),
+				error('Incorrect value for property ''downsample'' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).');
 			end
 		otherwise,
-			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).']);
+			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).']);
 	end
 end
 
 % Either start+duration, or offset+size
 if time && samples,
-	error(['Data subset can be specified either in time or in samples, but not both (type ''help <a href="matlab:help LoadBinary">LoadBinary</a>'' for details).']);
+	error(['Data subset can be specified either in time or in samples, but not both (type ''help <a href="matlab:help bz_LoadBinary">bz_LoadBinary</a>'' for details).']);
 end
 
 % By default, load all channels
@@ -198,7 +200,9 @@ if isinf(nSamplesPerChannel) || nSamplesPerChannel > maxNSamplesPerChannel,
 end
 
 if downsamplefactor>1
-    precision = [num2str(nChannels),'*',precision];
+%     precision = [num2str(nChannels),'*',precision]; % this line is
+%     incorrect, the precision variable is a string that does not depend on
+%     the number of channels
     skip = nChannels*(downsamplefactor-1)*sampleSize;
     nSamplesPerChannel = floor(nSamplesPerChannel./downsamplefactor);
 end
@@ -214,7 +218,7 @@ else
 	nSamplesPerChunk = floor(maxSamplesPerChunk/nChannels)*nChannels;
 	nChunks = floor(nSamples/nSamplesPerChunk);
 	% Preallocate memory
-	data = zeros(nSamplesPerChannel,length(channels));
+	data = zeros(nSamplesPerChannel,length(channels),precision);
 	% Read all chunks
 	i = 1;
 	for j = 1:nChunks,
@@ -242,10 +246,10 @@ fclose(f);
 function data = LoadChunk(fid,nChannels,channels,nSamples,precision,skip)
 
 if skip ~= 0,
-	data = fread(fid,[nChannels nSamples],precision,skip);
+	data = fread(fid,[nChannels nSamples],[num2str(nChannels),'*',precision '=>' precision],skip);
     %data = fread(fid,[nChannels nSamples],[num2str(nChannels),'*',precision],nChannels*skip);
 else
-	data = fread(fid,[nChannels nSamples],precision);
+	data = fread(fid,[nChannels nSamples],[precision '=>' precision]);
 end
 data=data';
 
