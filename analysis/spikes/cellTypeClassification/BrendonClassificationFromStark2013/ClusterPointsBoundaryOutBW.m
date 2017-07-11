@@ -26,6 +26,8 @@ end
 if ~isempty(ICells)
     plot(Data(ICells,1),Data(ICells,2),'.r','markersize',12)
 end
+xlim([0 max([Data(:,1)+0.1;2])])
+ylim([0 max([Data(:,2)+0.1;2])])
 xb = get(gca,'XLim');
 yb = get(gca,'YLim');
 plot(xb,[m*xb(1)+b m*xb(2)+b])
@@ -40,7 +42,11 @@ h_lastline=[];
     zoomoff = 1;
     while 1
         [x y button]=PointInput(1);
-        res = button*zoomoff;      title('Discriminate pyr and int (select Pyramidal), right click to close polygon');
+        res = button*zoomoff;  
+        title({'Discriminate pyr and int (select Pyramidal)',...
+            'left click to draw boundary',...
+            'center click/ENTER to complete)'});
+
 
         switch res
             case 1 % left button

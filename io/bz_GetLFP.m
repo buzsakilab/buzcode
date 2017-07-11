@@ -111,7 +111,7 @@ else
 end
 
 %% things we can parse from xml file
-xml = LoadParameters([basename '.xml']);
+xml = LoadParameters(fullfile(basepath,[basename '.xml']));
 nChannels = xml.nChannels;
 try
     samplingRate = xml.lfpSampleRate;

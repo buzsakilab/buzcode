@@ -7,8 +7,9 @@ function spikes = bz_GetSpikes(varargin)
 % 
 % INPUTS
 %
-%    spikeGroups     -vector subset of shank IDs to load
-%    region          -string region ID to load neurons from specific region (requires sessionInfodata file)
+%    spikeGroups     -vector subset of shank IDs to load (Default: all)
+%    region          -string region ID to load neurons from specific region
+%                     (requires sessionInfodata file or units->structures in xml)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
 %    getWaveforms    -logical (default=true) to load mean of raw waveform data
@@ -22,6 +23,8 @@ function spikes = bz_GetSpikes(varargin)
 %          .sessionName    -name of recording file
 %          .UID            -unique identifier for each neuron in a recording
 %          .times          -cell array of timestamps (seconds) for each neuron
+%          .spindices      -sorted vector of [spiketime UID], useful for 
+%                           input to some functions and plotting rasters
 %          .region         -region ID for each neuron (especially important large scale, high density probes)
 %          .shankID        -shank ID that each neuron was recorded on
 %          .maxWaveformCh  -channel # with largest amplitude spike for each neuron
@@ -59,8 +62,11 @@ function spikes = bz_GetSpikes(varargin)
 % - integrate session sessionInfodata in place of xml-LoadParameters
 % - get 'region' input working with session sessionInfodata
 %% Deal With Inputs 
+spikeGroupsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
+    'spikeGroups must be numeric or "all"');
+
 p = inputParser;
-addParameter(p,'spikeGroups',[],@isvector);
+addParameter(p,'spikeGroups','all',spikeGroupsValidation);
 addParameter(p,'region','',@isstr); % won't work without sessionInfodata 
 addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
@@ -79,7 +85,7 @@ forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 
 % get sessionInfo info about recording, for now we'll use the xml.
-sessionInfo = bz_getSessionInfo;  % calls loadparameters if sessionInfo doesn't exist
+sessionInfo = bz_getSessionInfo(basepath);  % calls loadparameters if sessionInfo doesn't exist
 samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
@@ -133,7 +139,7 @@ for i = 1:length(cluFiles)
     shanks(i) = str2num(temp{length(temp)});
 end
 [shanks ind] = sort(shanks);
-cluFiles = cluFiles(ind);
+cluFiles = cluFiles(ind); %Bug here if there are any files x.clu.x that are not your desired clus
 resFiles = resFiles(ind); 
 spkFiles = spkFiles(ind);
 
@@ -150,19 +156,24 @@ for i=1:length(cluFiles)
     disp(['working on ' spkFiles(i).name])
     
     temp = strsplit(cluFiles(i).name,'.');
-    shankID = str2num(temp{length(temp)});
+    shankID = str2num(temp{length(temp)}); %shankID is the spikegroup number
     clu = load(fullfile(basepath,cluFiles(i).name));
     clu = clu(2:end); % toss the first sample to match res/spk files
     res = load(fullfile(basepath,resFiles(i).name));
     nSamples = sessionInfo.spikeGroups.nSamples(shankID);
     spkGrpChans = sessionInfo.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
     
-    if getWaveforms
+    if getWaveforms && sum(clu)>0 %bug fix if no clusters 
         % load waveforms
         chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
         fid = fopen(fullfile(basepath,spkFiles(i).name),'r');
         wav = fread(fid,[1 inf],'int16=>int16');
-        wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
+        try %bug in some spk files... wrong number of samples?
+            wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
+        catch
+            error(['something is wrong with your .spk file, no waveforms.',...
+                ' Use ''getWaveforms'', false while you get that figured out.'])
+        end
         wav = permute(wav,[3 1 2]);
     end
     
@@ -177,7 +188,8 @@ for i=1:length(cluFiles)
        spikes.times{count} = res(ind) ./ samplingRate;
        spikes.shankID(count) = shankID;
        spikes.cluID(count) = cells(c);
-           
+
+       %Waveforms    
        if getWaveforms
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
            for t = 1:size(wvforms,1)
@@ -186,11 +198,25 @@ for i=1:length(cluFiles)
            [aa bb] = max(a);
            spikes.rawWaveform{count} = wvforms(bb,:);
            spikes.maxWaveformCh(count) = spkGrpChans(bb);  
-           if isfield(sessionInfo,'region')  
-                spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)}; 
+           %Regions (needs waveform peak)
+           if isfield(sessionInfo,'region') %from sessionInfo
+                spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)};
+           elseif isfield(sessionInfo,'Units') %from xml via Loadparamteres
+                %Find the xml Unit that matches group/cluster
+                unitnum = cellfun(@(X,Y) X==spikes.shankID(count) && Y==spikes.cluID(count),...
+                    {sessionInfo.Units(:).spikegroup},{sessionInfo.Units(:).cluster});
+                if sum(unitnum) == 0
+                    display(['xml Missing Unit - spikegroup: ',...
+                        num2str(spikes.shankID(count)),' cluster: ',...
+                        num2str(spikes.cluID(count))])
+                    spikes.region{count} = 'missingxml';
+                else %possible future bug: two xml units with same group/clu...              
+                    spikes.region{count} = sessionInfo.Units(unitnum).structure;
+                end
            end
            clear a aa b bb
        end
+       
        count = count + 1;
     end
 end
@@ -199,9 +225,14 @@ spikes.sessionName = sessionInfo.FileName;
 
 end
 
+%% save to buzcode format (before exclusions)
+if saveMat
+    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
+end
+
 
 %% filter by spikeGroups input
-if ~isempty(spikeGroups)
+if ~strcmp(spikeGroups,'all')
     [toRemove] = ~ismember(spikes.shankID,spikeGroups);
     spikes.UID(toRemove) = [];
     for r = 1:length(toRemove)
@@ -269,10 +300,15 @@ if ~isempty(UID)
     spikes.maxWaveformCh(toRemove) = [];
 end
 
-%% save to buzcode format
-if saveMat
-    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
+%% Generate spindices matrics
+numcells = length(spikes.UID);
+for cc = 1:numcells
+    groups{cc}=spikes.UID(cc).*ones(size(spikes.times{cc}));
 end
+alltimes = cat(1,spikes.times{:}); groups = cat(1,groups{:}); %from cell to array
+[alltimes,sortidx] = sort(alltimes); groups = groups(sortidx); %sort both
+spikes.spindices = [alltimes groups];
+
 
 
 

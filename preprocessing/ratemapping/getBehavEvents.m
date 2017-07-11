@@ -16,7 +16,7 @@ if pos(1,1) == 0 & size(pos,2) < 6
     scatter(pos(:,1),pos(:,2),'.r')
     hold on
     scatter(pos(:,3),pos(:,4),'.b')
-    axis([-1 1 -1 1])
+%     axis([-1 1 -1 1])
     pos(intersect(find(pos(:,1)==0),find(pos(:,3)==0)),:) = nan;
     pos(intersect(find(pos(:,2)==0),find(pos(:,4)==0)),:) = nan;
 
@@ -25,22 +25,42 @@ if pos(1,1) == 0 & size(pos,2) < 6
     f = find(isnan(p(:,1)));
     p(:,2) = nanmean(pos(:,[2 4])');
     
-    velThresh = 3; 
-    distThresh = 1000; 
+    velThresh = 8; 
+    distThresh = 50; 
+    x_coord = 1;
+    y_coord = 2;
     
     vel = nansum(abs(diff(p)'))';
     vel(vel>100) = 0;
     vel = fastrms(vel,4);
+    subplot(2,1,1)
+    hist(vel(~isnan(p(2:end,1))),y_coord00);
+    axis([ 0 mean(vel)+8*std(vel) 0 max(hist(vel(~isnan(p(2:end,1))),y_coord00))])
+    subplot(2,1,2)
+    plot(vel(~isnan(p(2:end,1)))',1:sum(~isnan(p(2:end,1)))')
+    axis([ 0 mean(vel)+8*std(vel) 0 sum(~isnan(p(2:end,1)))])
+%     thresh = min(-vel);
+%     while max(diff((lo))) > 500
+%         [pl lo]=findpeaks(-vel,'MINPEAKHEIGHT',thresh);
+%         thresh = thresh - min(-vel)./100 ;
+%     end
+    [x y]=ginput();
+    velThresh=x; %7e-5; % change this to first min peak in vel histogram
+    close all
+    scatter(p(:,1),p(:,2),1,'.k')
+    distThresh =  mean(max(p)-min(p))./2;
 end
 if size(pos,2)>6
     %% new code for IR Motive tracking
-%     if std(pos(:,10)) > 50
-%        pos(:,8) = pos(:,8)./1000;
+%     if std(pos(:,y_coord)) > 50
+%        pos(:,x_coord) = pos(:,x_coord)./1000;
 %        pos(:,9) = pos(:,9)./1000;
-%        pos(:,10) = pos(:,10)./1000; 
+%        pos(:,y_coord) = pos(:,y_coord)./1000; 
 %     end
-    p = pos(:,[8 10]);
-    if std(pos(:,8)) > 100
+    x_coord = 8;
+    y_coord = 10;
+    p = pos(:,[x_coord y_coord]);
+    if nanstd(pos(:,x_coord)) > 100
         p(:,1) = p(:,1)./1000;
         
         p(:,2) = p(:,2)./1000;
@@ -72,6 +92,7 @@ if size(pos,2)>6
     close all
     scatter(p(:,1),p(:,2),1,'.k')
     distThresh =  mean(max(p)-min(p))./2;
+
 %     axis([-1 1 -1 1])
 end
 dbstop if error
@@ -87,7 +108,7 @@ ff = find(isnan(p(:,2)));
 
 for i=1:length(x)
     dists(i,:) = abs(p(:,1)-x(i))+abs(p(:,2)-y(i));
-    [pks{i} locs{i}]=findpeaks(-dists(i,:),'MinPeakHeight',-.2);
+    [pks{i} locs{i}]=findpeaks(-dists(i,:),'MinPeakHeight',-distThresh);
     locs{i}=locs{i}';
     for j=1:length(x)
     trials{i,j,1}=[];
@@ -124,15 +145,15 @@ for l=1:length(locsmat)
             if lastStop < startPos(1) % cut off four seconds for some 'wiggle' room
 %                 [a b]=min(abs(nanmean(startPos([1 3]))-x)+abs(nanmean(startPos([2 4]))-y));
 %                 [aa c]=min(abs(nanmean(stopPos([1 3]))-x)+abs(nanmean(stopPos([2 4]))-y)); 
-                [a b]=min(abs((startPos([8]))-x)+abs((startPos([10]))-y));
-                [aa c]=min(abs((stopPos([8]))-x)+abs((stopPos([10]))-y));  % set if for old vs new tracking system here
+                [a b]=min(abs((startPos(x_coord))-x)+abs((startPos(y_coord))-y));
+                [aa c]=min(abs((stopPos(x_coord))-x)+abs((stopPos(y_coord))-y));  % set if for old vs new tracking system here
                     subplot(2,2,1)
                     hold off
                     plot(p(:,1),p(:,2),'.k')
                     hold on
-                    plot(p(locsmat(l,1)-80:locsmat(l+next,1)+80,1),p(locsmat(l,1)-80:locsmat(l+next,1)+80,2),'.b')
-                    plot(p(locsmat(l,1),1),p(locsmat(l,1),2),'.g')
-                    plot(p(locsmat(l+next,1),1),p(locsmat(l+next,1),2),'.r')
+                    scatter(p(locsmat(l,1)-80:locsmat(l+next,1)+80,1),p(locsmat(l,1)-80:locsmat(l+next,1)+80,2),300,'.b')
+                    scatter(p(locsmat(l,1),1),p(locsmat(l,1),2),300,'.g')
+                    scatter(p(locsmat(l+next,1),1),p(locsmat(l+next,1),2),300,'.r')
                     subplot(2,2,2)
                     plot(vel(locsmat(l,1)-80:locsmat(l+next,1)+80))
                     hold on
@@ -163,9 +184,9 @@ for l=1:length(locsmat)
                     hold off
                     plot(p(:,1),p(:,2),'.k')
                     hold on
-                    plot(p(locsmat(l,1)-80:locsmat(l+next,1)+80,1),p(locsmat(l,1)-80:locsmat(l+next,1)+80,2),'.b')
-                    plot(p(locsmat(l,1),1),p(locsmat(l,1),2),'.g')
-                    plot(p(locsmat(l+next,1),1),p(locsmat(l+next,1),2),'.r')
+                    scatter(p(locsmat(l,1)-80:locsmat(l+next,1)+80,1),p(locsmat(l,1)-80:locsmat(l+next,1)+80,2),300,'.b')
+                    scatter(p(locsmat(l,1),1),p(locsmat(l,1),2),300,'.g')
+                    scatter(p(locsmat(l+next,1),1),p(locsmat(l+next,1),2),300,'.r')
                     subplot(2,2,2)
                     plot(vel(locsmat(l,1)-80:locsmat(l+next,1)+80))
                     hold on
@@ -210,7 +231,7 @@ for i=1:length(trials)
 end
 %% merge trials to the same length
 for i=1:length(trials_unsorted)
-       d = pdist(trials_unsorted{i}(:,[8 10]),'euclidean');
+       d = pdist(trials_unsorted{i}(:,[x_coord y_coord]),'euclidean');
        dd = squareform(d);
        dd(dd==0)=nan;
    while length(trials_unsorted{i})>bins
@@ -224,7 +245,7 @@ for i=1:length(trials_unsorted)
            trials_unsorted{i} = [trials_unsorted{i}(1:row-1,:);...
                                 mean(trials_unsorted{i}(row:col,:));...
                                 trials_unsorted{i}(col+1:end,:)];
-           d = pdist(trials_unsorted{i}(:,[8 10]),'euclidean');
+           d = pdist(trials_unsorted{i}(:,[x_coord y_coord]),'euclidean');
            dd = squareform(d);
            dd(dd==0)=nan;
        elseif abs((row-col))>1
@@ -236,8 +257,8 @@ end
 % cluster similarity
 for i=1:length(trials_unsorted)
     for j =1:length(trials_unsorted)
-        a = trials_unsorted{i}(:,[8 10]);
-        b = trials_unsorted{j}(:,[8 10]);
+        a = trials_unsorted{i}(:,[x_coord y_coord]);
+        b = trials_unsorted{j}(:,[x_coord y_coord]);
         temp = corrcoef(reshape(a,bins*2,1),reshape(b,bins*2,1));
         cc(i,j)=temp(2);
     end
@@ -260,10 +281,10 @@ while exitC == 0
         subplot(4,5,i)
         hold off
         for t = 1:length(trials{i})
-            scatter(trials{i}{t}(:,8),trials{i}{t}(:,10),'.k')
+            scatter(trials{i}{t}(:,x_coord),trials{i}{t}(:,y_coord),'.k')
             hold on
-            scatter(trials{i}{t}(1,8),trials{i}{t}(1,10),'.g')
-            scatter(trials{i}{t}(end,8),trials{i}{t}(end,10),'.r')
+            scatter(trials{i}{t}(1,x_coord),trials{i}{t}(1,y_coord),'.g')
+            scatter(trials{i}{t}(end,x_coord),trials{i}{t}(end,y_coord),'.r')
         end
     end
     pause(.01);
@@ -285,10 +306,10 @@ while exitC == 0
             subplot(4,5,i)
             hold off
             for t = 1:length(trials{i})
-                scatter(trials{i}{t}(:,8),trials{i}{t}(:,10),'.k')
+                scatter(trials{i}{t}(:,x_coord),trials{i}{t}(:,y_coord),'.k')
                 hold on
-                scatter(trials{i}{t}(1,8),trials{i}{t}(1,10),'.g')
-                scatter(trials{i}{t}(end,8),trials{i}{t}(end,10),'.r')
+                scatter(trials{i}{t}(1,x_coord),trials{i}{t}(1,y_coord),'.g')
+                scatter(trials{i}{t}(end,x_coord),trials{i}{t}(end,y_coord),'.r')
             end
         end
        adjust = input('merge[m]/split[s] ','s');
@@ -380,14 +401,14 @@ for tt = 1:length(trials)
 %     step2 = (max(g(:,1))-min(g(:,1)))./length(g(:,1));
 %     w = smooth(interp1(min(g(:,1)):step2+.0001:max(g(:,1)),g(:,1),min(g(:,1)):step:max(g(:,1))+.01,'linear','extrap'),3);
 %     plot(w,ww,'k')
-%     disp('finding mapping...')
+    disp('finding mapping...')
 %     map{tt} = [w,ww];
     for t =1:length(trials{tt})  % all trial types (rotations)
         for p = 1:length(trials{tt}{t})
             [a b] = min(nansum(abs([trials{tt}{t}(p,1)-map{tt}(:,1),...
-                trials{tt}{t}(p,8)-map{tt}(:,8),...
+                trials{tt}{t}(p,x_coord)-map{tt}(:,x_coord),...
                 trials{tt}{t}(p,9)-map{tt}(:,9),...
-                trials{tt}{t}(p,10)-map{tt}(:,10),...
+                trials{tt}{t}(p,y_coord)-map{tt}(:,y_coord),...
                 (trials{tt}{t}(p,1)-trials{tt}{t}(1,1))*50-map{tt}(:,1),...  % penalty for time differences
                 40*(p./length(trials{tt}{t})*length(map{tt}) - (1:length(map{tt})))'])'));     % penalty for order differences
             mapping{tt}{t}(p,:) = [map{tt}(b,1:end) b trials{tt}{t}(p,1)];
@@ -426,18 +447,21 @@ for tt = 1:length(trials)
 subplot(5,4,tt)
 for t = 1:length(trials{tt})
 %     scatter(map{tt}(:,1),map{tt}(:,2),'.')
-scatter(trials{tt}{t}(:,8),trials{tt}{t}(:,10),'.k')
+scatter(trials{tt}{t}(:,x_coord),trials{tt}{t}(:,y_coord),'.k')
 hold on
 
 %     axis([0 550 0 550])
 end
 for t = 1:length(trials{tt})
 %     scatter(map{tt}(:,1),map{tt}(:,2),'.')
-scatter(trials{tt}{t}(1,8),trials{tt}{t}(1,10),'.g')
-scatter(trials{tt}{t}(end,8),trials{tt}{t}(end,10),'.r')
+scatter(trials{tt}{t}(1,x_coord),trials{tt}{t}(1,y_coord),'.g')
+scatter(trials{tt}{t}(end,x_coord),trials{tt}{t}(end,y_coord),'.r')
 hold on
 
 %     axis([0 550 0 550])
 end
 title(tt);
 end
+
+% 
+% behavior = pos2behav(pos,'optitrack','trials',trials,'mapping',mapping,'map',map,'behavType','central alternation');

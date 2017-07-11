@@ -1,0 +1,129 @@
+
+
+Development Changelog
+
+
+
+
+* 1.0.2  (Tue, Jul 9 2013)
+
+  * Fixes 
+    
+    - basic_DS.m: fixed a bug that would cause an error to occur when shuffling the labels from simultaneously recorded data.  
+    
+  * Enhancements
+
+    - plot_standard_results_object.m:  the constructor so can now take a [num_results_to_plot x num_time_bins] matrix 
+      that has all the decoding results precomputed rather than just a cell array with the names of standard results files.  
+      The field plot_obj.errorbar_file_names can now also be a [num_results_to_plot x num_time_bins] matrix of precomputed errorbars     
+    
+    - plot_standard_results_TCT_object.m: the constructor can now take a [num_training_times x num_test_times] matrix with precompiled 
+      decoding results and this object will display a TCT plot with these precompiled results. 
+
+
+
+* 1.0.4  (Date 2015)
+
+  * Fixes 
+
+    - poisson_naive_bayes_CL.m: Fixed the code so that it will run when the decoding is done using only a single site (e.g., can now
+        run the code on only 1 neurons at a time).  To do this I changed the line when computing the log_likelihoods (line 134) 
+        by adding the index to sum over the first dimension (i.e., sum(-curr_lambdas + ..., 1)).   
+    
+    - plot_standard_results_object.m: Changed ismatrix(plot_obj.result_file_names) to ~iscell(plot_obj.result_file_names) on line 513 because
+        for some reason ismatrix was not working properly. One should now be able to compute (and plot) p-values using directories of null distribution 
+        files real decoding files.
+
+    - plot_standard_results_object.m: Changed the object so that if curr_time_interval can be set to a vector of times without causing an error by changing line 337 to:
+               if (isstruct(curr_time_interval) || ~isempty(curr_default_binning_parameters))  ||  ~(ismatrix(curr_time_interval) && ~isempty(curr_time_interval))  
+
+    - plot_standard_results_TCT_object.m: Changed the object so that if curr_time_interval can be set to a vector of times without causing an error by changing line 313 to:
+               if (isstruct(curr_time_interval) || ~isempty(curr_default_binning_parameters))  ||  ~(ismatrix(curr_time_interval) && ~isempty(curr_time_interval))  
+
+
+
+
+  * Enhancements
+
+    - standard_resample_CV.m:  Add a field stop_resample_runs_only_when_specfic_results_have_converged. Setting the different fields in this structure causes 
+        the resample runs to continue beyond those specified by num_resample_runs if the results have not converged to a 
+        stable estimate. stop_resample_runs_only_when_specfic_results_have_converged has the following fields 
+        that can be set which control the resample run stopping criteria for different types of results: .zero_one_loss_results: controls whether the zero one loss 
+        results have converged; .normalized_rank_results: controls whether the normalized rank results have converged
+        .decision_values: controls whether the decision value results have converged; .combined_CV_ROC_results: controls whether the combined CV ROC results have converged;
+        .separate_CV_ROC_results: controls whether the separate CV ROC results have converged. By default all these fields are set to empty meaning that no convergence 
+        stoping criteria are set by default. Setting any of these fields to a particular value causes the run_resample_cv method 
+        to keep running the resample run loop until the given mean result (over resample runs) changes by less than 
+        the specified value (over all training and test time periods) when any one resample run is left out.
+        This can be useful for speeding up the run-time when the decoding results have converged to a stable value. For example, one could 
+        set num_resample_runs to a lower number (say 10) and then setting  .zero_one_loss_results to a smallish value (say 1), which might cause 
+        fewer than the default value of 50 resample runs to be executed while getting results that are almost as accurate - i.e., there would 
+        at most be a change of 1 in the decoding accuracy (and any point in time) if the most sensitive resample run was left out. If any of 
+        these fields are set, there will still be a minimum number of resample runs executed that is specified by the num_resample_runs property, 
+        and then there will be additional resample runs to be executed until the desired convergence level is achieved. There is also an
+        additional field .stop_criteria_is_absolute_result_value (default = 1), which specifies whether the value set should be taken as an 
+        absolute change in the decoding accuracy - e.g., the actual zero-one decoding result values should change by less than 1 when any
+        resample run is left out. If this field is set to 0, then the values specified are given as a percentage change that should not occur
+        if any resample run is left out relative to the maximum of the mean decoding acccuracy - i.e., a value of 1 would 
+        mean that the results of leaving the ith resample run out, should not chance by more than 1% at that time point relative to the maximum 
+        decoding accuracy achieved (since the scale of a plot is determined relative to the maximum decoding accuracy this shows how much variance there is
+        in the results on a plot due to not using more resample runs). 
+
+    - standard_resample_CV.m: cv.display_progress properties now has a new field .convergence_values (default = 0) which displays the current resample run convergence values 
+        (and convergence target value) for the results that have been set by the cv.stop_resample_runs_only_when_specfic_results_have_converged paramters.
+
+    - pvalue_object.m: Added property real_decoding_results_lower_than_null_distribution (defult = 0) that if set to one will calculate 
+       the p-value based on the proportion of null distribution decoding results are lower than the actual real decoding result 
+       (i.e., the test shows the probability that the real decoding result would have been that low by chance).  
+
+    - pvalue_object.m: Added a property collapse_all_times_when_estimating_pvals (default = 0). If this is set to one, the null distributions 
+        from all time bins are combined together to create one larger total null distribution.  The p-values are then calculated by comparing 
+        the actual decoding accuracy at each point in time to this larger null distribution (with this same null distribution is used for all 
+        points in time). The advantage of using this is that if the null distributions at each point in time are the same, then one can get 
+        a more precise estimate of the p-values for the same computational cost. 
+
+    - plot_standard_resuls_TCT_object.m: The default setting for the property plot_training_latencies_increasing_up_the_y_axis has been changed to 1.
+
+    - plot_standard_resuls_TCT_object.m: Added a property significant_training_event_times that will draw horizontal lines at the times specified in this vector, which can be used to
+       indicate significant events that occurred during at particular training times in a trial.
+
+    - find_sites_k_label_repetitions.m: This function can now return a variable called label_names_used which specifies what label names were used
+        when counting repetitions. This variable is equal to label_names_to_use if label_names_to_use was passed as an input argument.
+
+    - create_binned_data_from_raster_data.m: No longer saves the binned data with the -v7.3 flag since this was not working propertly with later versions of Matlab.
+        The function now allows one to end the raster_file_directory_name with a a character string and only raster files that start with this character string will be 
+        included in the binned_data (e.g., if you have my_directory/*PFC* only raster files that contain PFC will be included in the binned_data. 
+
+    - plot_standard_resuls_object.m: The axes are now plotted so the tick marks face outward, only the bottom and left axes are plotted and PaperPositionMode is set to Auto
+        so the figure will be printed the way it looks on the screen. 
+
+
+
+  * Changes made to make the code compatible with Octave
+
+	 1. standard_result_cv.m: The fields() function doesn’t work in Octave so lines 460 and 746 to use the fieldnames() function instead.  
+        Also ismethod does not work properly in Octave so line 910 was changed to a try catch statement instead of using the ismethods function.
+        Made get_convergence_values.m a public method since for some unknown reason Octave would not run when it was made private, although it 
+        really should be a private method. 
+
+	 2. get_version_number.m: Line 12 to use square braces instead of curly braces
+
+	 3. max_correlation_coefficient_CL.m: The correlation coefficients is calculated in the test method body iitself rather than using the corrcoef function 
+        since Octave does not have the corrcoef function (Octave does have the corr function but this function is very slow). 
+
+	 4. load_binned_data_and_convert_firing_rates_to_spike_counts.m:  Line 71 was changed so that it can handle both rounding up and rounding down errors 
+        of close to epsilon precision (10^-12 precision), rather than just rounding up errors of this magnitude.  
+
+	 5. time_interval_object.m: Lines 118, 133, 162, 179 were changed from using the fields() fucntion to using the fieldnames() funciton. 
+
+	 6. plot_standard_results_TCT_object.m: Small modifications were made to lines 366 through 380 to be able to correctly plot the time labels on the x- and y- axes in Octave.
+
+     7. isOctave() function was added to the helper functions directory that indicates whether Octave is being run.
+    
+     8. A directory called octave_code/ was added that contains a new version of the union() function that can take a union of an empty matrix and a cell array. 
+        This function should be used to overload Octave's union function (but best to keep using Matlab's union function if runnning Matlab).
+
+     9. add_ndt_paths_and_init_rand_generator.m: Added a line of code that check whether Octave is beig run and if it is it adds the octave_code/ the Octave's search path
+        so that Octave's union function is overloaded.
+ 
+
