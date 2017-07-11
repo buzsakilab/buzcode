@@ -168,6 +168,7 @@ if saveFiles
         if isempty(b)
             warning('could not find cluster name?')
         end
+        
         if group(b)~=2
             clu(clu == clusterID(b)) = 0;  % re-name unsorted and noise as MUA/Noise cluster for FMATToolbox
         end
