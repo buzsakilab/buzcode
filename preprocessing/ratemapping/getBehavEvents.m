@@ -35,7 +35,7 @@ if pos(1,1) == 0 & size(pos,2) < 6
     vel = fastrms(vel,4);
     subplot(2,1,1)
     hist(vel(~isnan(p(2:end,1))),y_coord00);
-    axis([ 0 mean(vel)+8*std(vel) 0 max(hist(vel(~isnan(p(2:end,1))),y_coord00))])
+    axis([ 0 mean(vel)+8*std(vel) 0 max(hist(vel(~isnan(p(2:end,1))),y_coord))])
     subplot(2,1,2)
     plot(vel(~isnan(p(2:end,1)))',1:sum(~isnan(p(2:end,1)))')
     axis([ 0 mean(vel)+8*std(vel) 0 sum(~isnan(p(2:end,1)))])
