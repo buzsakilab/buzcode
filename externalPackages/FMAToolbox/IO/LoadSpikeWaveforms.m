@@ -43,7 +43,7 @@ if ~exist(filename),
 	error(['File ''' filename ''' not found.']);
 end
 if nargin < 4,
-	waveforms = LoadBinary(filename,'nChannels',nChannels);
+ 	waveforms = LoadBinary(filename,'nChannels',nChannels);
 else
 	waveforms = LoadBinary(filename,'nChannels',nChannels,'samples',...
         nSamples*ones(size(list)),'offset',nSamples*(list-1));	

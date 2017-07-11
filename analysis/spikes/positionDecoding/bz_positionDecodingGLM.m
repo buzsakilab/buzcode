@@ -8,6 +8,8 @@ function [positionDecodingGLM] = bz_positionDecodingGLM(varargin)
 %
 %   behavior
 %
+%   lfp 
+%
 %   smoothingRange
 %   
 %   plotting   - cell UID to plot
@@ -191,13 +193,15 @@ for cond = conditions
        end
        disp(['finished with wind: ' num2str(wind) ' out of ' num2str(smoothingRange(end)) ' total'])
     end
+    positionDecodingGLM.dateRun = date;  % this can take a very long time so lets save each loop...
+    if saveMat 
+        save([spikes.sessionName '.positionDecodingGLM.cellinfo.mat'],'positionDecodingGLM') 
+    end
     disp(['finished with condition: ' num2str(cond) ' out of ' num2str(length(conditions)) ' total'])
 end
 
-positionDecodingGLM.dateRun = date;
 
-if saveMat 
-   save([spikes.sessionName '.positionDecodingGLM.cellinfo.mat'],'positionDecodingGLM') 
-end
+
+
 
 

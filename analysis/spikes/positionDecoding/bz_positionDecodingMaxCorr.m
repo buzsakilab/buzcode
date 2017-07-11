@@ -231,13 +231,13 @@ for cond = conditions
     end
     end
     disp(['finished with condition: ' num2str(cond) ' out of ' num2str(length(conditions)) ' total'])
+    positionDecodingMaxCorr.dateRun = date;
+    if saveMat 
+       save([spikes.sessionName '.positionDecodingMaxCorr.popinfo.mat'],'positionDecodingMaxCorr') 
+    end
 end
 
 
-positionDecodingMaxCorr.dateRun = date;
 
-if saveMat 
-   save([spikes.sessionName '.positionDecodingMaxCorr.popinfo.mat'],'positionDecodingMaxCorr') 
-end
 
 
