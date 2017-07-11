@@ -7,8 +7,6 @@ function parameters = LoadParameters(filename)
 %    parameters = LoadParameters(filename)
 %
 %    filename            parameter file name
-%       -or-
-%    basePath            where the parameter file baseName.xml lives
 
 % Copyright (C) 2004-2011 by Michaël Zugaro
 %

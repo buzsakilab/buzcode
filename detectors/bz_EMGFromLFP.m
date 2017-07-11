@@ -1,6 +1,6 @@
 function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 % USAGE
-% [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveMat)
+% [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveFiles)
 %
 % INPUTS
 %       basePath      - string combination of basepath and basename of recording
@@ -12,7 +12,7 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 %       'specialChannels'   - vector of 'special' channels that you DO want to use for EMGCorr calc (will be added to those auto-selected by spike group)
 %       'rejectChannels'    - vector of 'bad' channels that you DO NOT want to use for EMGCorr calc
 %       'restrictChannels'  - use only these channels (Neuroscope numbers)
-%       'saveMat'         true/false - default:true
+%       'saveFiles'         true/false - default:true
 %       'saveLocation'      default: basePath
 %       'overwrite'         true/false - overwrite saved EMGFromLFP.LFP.mat
 %                           default: false
@@ -54,20 +54,17 @@ addParameter(p,'restrict',[0 inf],@isnumeric)
 addParameter(p,'specialChannels',[],@isnumeric)
 addParameter(p,'rejectChannels',[],@isnumeric)
 addParameter(p,'restrictChannels',[],@isnumeric)
-addParameter(p,'saveMat',1,@isnumeric)
+addParameter(p,'saveFiles',1,@isnumeric)
 addParameter(p,'saveLocation','',@isstr)
 addParameter(p,'overwrite',true,@islogical)
-addParameter(p,'samplingFrequency',2,@isnumeric)
-
 parse(p,varargin{:})
     
 restrict = p.Results.restrict;
 specialChannels = p.Results.specialChannels;
 rejectChannels = p.Results.rejectChannels;
 restrictChannels = p.Results.restrictChannels;
-saveMat = p.Results.saveMat;
+saveFiles = p.Results.saveFiles;
 overwrite = p.Results.overwrite;
-samplingFrequency = p.Results.samplingFrequency;
 
 if ~isempty(p.Results.saveLocation)
     matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMGFromLFP.LFP.mat']);
@@ -110,9 +107,14 @@ else
     error('No SpikeGroups...')
 end
     
-binScootS = 1 ./ samplingFrequency;
+
+xcorr_halfwindow_s = 0.5; %specified in s
+% downsampleFs = 125;
+% downsampleFactor = round(Fs/downsampleFs);
+binScootS = 0.5;
+samplingFrequency = 1/binScootS;
 binScootSamps = Fs*binScootS;
-corrChunkSz = 20; %for batch-processed correlations
+corrChunkSz = 20;%for batch-processed correlations
 
 
 %% Pick shanks to analyze
@@ -168,7 +170,7 @@ lfp = filtsig_in(lfp, Fs, xcorr_freqband);
 
 %% xcorr 'strength' is the summed correlation coefficients between channel
 % pairs for a sliding window of 25 ms
-xcorr_window_samps = round(binScootS*Fs);
+xcorr_window_samps = round(xcorr_halfwindow_s*Fs);
 xcorr_window_inds = -xcorr_window_samps:xcorr_window_samps;%+- that number of ms in samples
 
 % new version... batches of correlation calculated at once
@@ -177,7 +179,7 @@ numbins = length(timestamps);
 EMGCorr = zeros(numbins, 1);
 % tic
 counter = 1;
-for j=1:(length(xcorr_chs))
+for j=1:(length(xcorr_chs)-1)
     for k=(j+1):length(xcorr_chs)
         disp([num2str(counter*2 ./ (length(xcorr_chs)*length(xcorr_chs)*length(timestamps)))])
         c1 = [];
@@ -209,11 +211,11 @@ EMGCorr = EMGCorr/(length(xcorr_chs)*(length(xcorr_chs)-1)/2); % normalize
 
 EMGFromLFP.timestamps = timestamps'./Fs;
 EMGFromLFP.data = EMGCorr;
-EMGFromLFP.channels = xcorr_chs;
+EMGFromLFP.channels = xcorr_chs-1;
 EMGFromLFP.detectorName = 'bz_EMGFromLFP';
 EMGFromLFP.samplingFrequency = samplingFrequency; 
 
-if saveMat
+if saveFiles
     %Save in buzcodeformat
     save(matfilename,'EMGFromLFP');
 end

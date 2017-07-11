@@ -40,7 +40,7 @@ if size(pos,2)>6
 %        pos(:,10) = pos(:,10)./1000; 
 %     end
     p = pos(:,[8 10]);
-    if nanstd(pos(:,8)) > 100
+    if std(pos(:,8)) > 100
         p(:,1) = p(:,1)./1000;
         
         p(:,2) = p(:,2)./1000;
@@ -130,9 +130,9 @@ for l=1:length(locsmat)
                     hold off
                     plot(p(:,1),p(:,2),'.k')
                     hold on
-                    scatter(p(locsmat(l,1)-80:locsmat(l+next,1)+80,1),p(locsmat(l,1)-80:locsmat(l+next,1)+80,2),300,'.b')
-                    scatter(p(locsmat(l,1),1),p(locsmat(l,1),2),300,'.g')
-                    scatter(p(locsmat(l+next,1),1),p(locsmat(l+next,1),2),300,'.r')
+                    plot(p(locsmat(l,1)-80:locsmat(l+next,1)+80,1),p(locsmat(l,1)-80:locsmat(l+next,1)+80,2),'.b')
+                    plot(p(locsmat(l,1),1),p(locsmat(l,1),2),'.g')
+                    plot(p(locsmat(l+next,1),1),p(locsmat(l+next,1),2),'.r')
                     subplot(2,2,2)
                     plot(vel(locsmat(l,1)-80:locsmat(l+next,1)+80))
                     hold on
@@ -163,9 +163,9 @@ for l=1:length(locsmat)
                     hold off
                     plot(p(:,1),p(:,2),'.k')
                     hold on
-                    scatter(p(locsmat(l,1)-80:locsmat(l+next,1)+80,1),p(locsmat(l,1)-80:locsmat(l+next,1)+80,2),300,'.b')
-                    scatter(p(locsmat(l,1),1),p(locsmat(l,1),2),300,'.g')
-                    scatter(p(locsmat(l+next,1),1),p(locsmat(l+next,1),2),300,'.r')
+                    plot(p(locsmat(l,1)-80:locsmat(l+next,1)+80,1),p(locsmat(l,1)-80:locsmat(l+next,1)+80,2),'.b')
+                    plot(p(locsmat(l,1),1),p(locsmat(l,1),2),'.g')
+                    plot(p(locsmat(l+next,1),1),p(locsmat(l+next,1),2),'.r')
                     subplot(2,2,2)
                     plot(vel(locsmat(l,1)-80:locsmat(l+next,1)+80))
                     hold on
@@ -441,6 +441,3 @@ hold on
 end
 title(tt);
 end
-
-% 
-% behavior = pos2behav(pos,'optitrack','trials',trials,'mapping',mapping,'map',map,'behavType','central alternation');

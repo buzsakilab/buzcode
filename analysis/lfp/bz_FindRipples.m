@@ -1,18 +1,20 @@
 function [ripples] = bz_FindRipples(varargin)
 %FindRipples - Find hippocampal ripples (100~200Hz oscillations).
 %
-% USAGE
-%    [ripples] = bz_FindRipples(lfp.data,lfp.timestamps,<options>)
+%  USAGE
+%
+%    [ripples] = bz_FindRipples(lfp,timestamps,<options>)
+%
 %    OR
-%    [ripples] = bz_FindRipples(basepath,channel,<options>)
+%
+%   [ripples] = bz_FindRipples(basepath,channel,<options>)
 %
 %    Ripples are detected using the normalized squared signal (NSS) by
 %    thresholding the baseline, merging neighboring events, thresholding
 %    the peaks, and discarding events with excessive duration.
 %    Thresholds are computed as multiples of the standard deviation of
 %    the NSS. Alternatively, one can use explicit values, typically obtained
-%    from a previous call.  The estimated EMG can be used as an additional
-%    exclusion criteria
+%    from a previous call.
 %
 % INPUTS
 %    lfp            unfiltered LFP (one channel) to use
@@ -42,22 +44,16 @@ function [ripples] = bz_FindRipples(varargin)
 %     'saveMat'     logical (default=true) to save in buzcode format
 %    =========================================================================
 %
-% OUTPUT
+%  OUTPUT
 %
-%    ripples        buzcode format .event. struct with the following fields
-%                   .times             Nx2 matrix of start/stop times for
-%                                      each ripple
-%                   .detectorName      string ID for detector function used
-%                   .peaks             Nx1 matrix of peak power timestamps 
-%                   .stdev             standard dev used as threshold
-%                   .noise             candidate ripples that were
-%                                      identified as noise and removed
-%                   .peakNormedPower   Nx1 matrix of peak power values
-%                   .detectorParams    struct with input parameters given
-%                                      to the detector
-% SEE ALSO
+%    ripples        for each ripple, [start_t peak_t end_t peakNormalizedPower]
+%    stdev          standard deviation of the NSS (can be reused subsequently)
+%    noise          ripple-like activity recorded simultaneously on the noise
+%                   channel (for debugging info)
 %
-%    See also bz_FilterLFP, bz_RippleStats, bz_SaveRippleEvents, bz_PlotRippleStats.
+%  SEE
+%
+%    See also bz_FilterLFP, RippleStats, SaveRippleEvents, PlotRippleStats.
 
 % Copyright (C) 2004-2011 by Michaël Zugaro, initial algorithm by Hajime Hirase
 % edited by David Tingley, 2017
@@ -68,7 +64,6 @@ function [ripples] = bz_FindRipples(varargin)
 % (at your option) any later version.
 
 %% TODO
-% include EMG calculation in detection
 
 warning('this function is under development and may not work... yet')
 

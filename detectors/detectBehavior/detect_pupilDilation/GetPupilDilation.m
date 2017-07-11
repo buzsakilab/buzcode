@@ -51,7 +51,7 @@ function [ pupildilation ] = GetPupilDilation(basePath)
 %
 %
 %DLevenstein 2017
-%With many inputs from WMunoz to improve detection quality.
+%With many suggestions from WMunoz to improve detection quality.
 %%
 
 if ~exist('basePath','var')
@@ -82,10 +82,6 @@ if SAVEVID
     pupdiamVid.FrameRate = 1./(0.015.*savevidfr);
     open(pupdiamVid);
 end
-
-if exist(savefile,'file')
-    PREVIOUSDETECT = true;
-end
 %%
 %Load in the video
 pupilvidobj = VideoReader(vidName);
@@ -99,8 +95,6 @@ imagesize=size(vidframe);
 puparea = nan(NumberOfFrames,1);
 pupcoords = nan(NumberOfFrames,2);
 unstableframes = [];
-
-meanvid = zeros(imagesize(1:2));
 
 %Loop through the frames and get pupil location/area
 pupfig = figure;
@@ -116,9 +110,7 @@ end
         vidframe = rgb2gray(vidframe);
     end
     vidframe_orig = vidframe; %Hold on to the original image for later
-    
-    meanvid = meanvid+single(vidframe_orig)./NumberOfFrames;
-    
+   
     %USER: Define the full eye mask: trace the eye
     if ~exist('eyemask','var')        
         subplot(2,2,1)
@@ -205,7 +197,6 @@ end
             stdeyepixel(ff) < blinkstdthresh(1) || stdeyepixel(ff) > blinkstdthresh(2)
         UNSTABLE = 1;
         unstableframes = unique([unstableframes,[ff-unstablewindow:ff+unstablewindow]]);
-        unstableframes(unstableframes<1 | unstableframes>NumberOfFrames)=[];
         puparea(unstableframes)=nan;
     end
     
@@ -333,7 +324,7 @@ sf_eff = 1./mean(interpulse);
 %Check that frame duration is constant up to tolerance (no skipped frames)
 tol = 0.001;
 
-if range(interpulse)>tol
+if range(interpuls)>tol
     warning('Frame rate is not constant...')
 end
 
@@ -364,8 +355,7 @@ smoothwin_frames = round(smoothwin_s.*sf_eff); %Calculate window in frames
 puparea_raw = puparea; %In units of pixels
 puparea = smooth(puparea,smoothwin_frames,'moving'); %,'rloess'); %try rloess method... needs percentage of total points span
 %Long unstable epochs should be kept nan.....
-maxarea = max(puparea);
-puparea = puparea./maxarea;
+puparea = puparea./max(puparea);
 
 %% Linearly interpolate bad frames of duration less than some window...
 
@@ -377,73 +367,61 @@ numframes = length(puparea);
 t_interp = linspace(trange(1),trange(2),numframes)';
 
 %%
-timestamps = pulset(1:NumberOfFrames);
+timestamps = pulset(1:numframes);
 data = puparea;
 
 %% Detection Quality Control Figure
 figure
-
-    subplot(4,1,3)
-        plot(timestamps,puparea,'k')
-        hold on
-        plot(timestamps(unstableframes),zeros(size(unstableframes)),'r.','markersize',10)
-        hold on
-        set(gca,'xticklabel',[])
-        ylabel({'Pupil Diameter','(max^-^1)'})
-        xlim(t_pulse([1 end]))
-    subplot(4,1,4)
+    subplot(4,1,2)
         plot(t_pulse,timepulses,'k')
         hold on
         plot(pulset,zeros(size(pulset)),'r+')
-        xlabel('t (s)');ylabel('Pulses')
-        set(gca,'ytick',[])
-        xlim(t_pulse([1 end]))
         
-        
+    subplot(4,1,1)
+        plot(puparea,'k')
+        hold on
+        plot(unstableframes,zeros(size(unstableframes)),'r.','markersize',10)
+        hold on
 
-
-    subplot(6,2,2)
+    subplot(4,2,5)
         plot(t_pulse,timepulses,'k')
         hold on
         plot(pulset,zeros(size(pulset)),'r+')
         xlim(pulset(1)+[-0.05 0.1])
-        xlabel('t (s)');ylabel('Pulses')
-        set(gca,'ytick',[])
-        title('First Pulse')
         
-    subplot(6,2,4)
+    subplot(4,2,8)
         hist(interpulse)
-        xlabel('Frame Duration')
-    subplot(6,2,6)
+    subplot(4,2,7)
         hist(puparea,linspace(0,1,20))
         xlim([0 1])
-        xlabel('Pupil Diameter')
-        
-        
-    subplot(2,2,1)
-    imagesc(meanvid)
-    hold on
-        plot(pupcoords(:,1),pupcoords(:,2),'.')
-        title(baseName)
-        
-NiceSave('PupilDetection',figfolder,baseName)
+NiceSave('PupilFrames',figfolder,baseName)
+
+
+%%
+figure
+    subplot(4,1,4)
+        plot(t_pulse,timepulses,'k')
+        hold on
+        plot(pulset,zeros(size(pulset)),'r+')
+    subplot(4,1,3)
+        plot(timestamps,puparea_raw,'k')
+%     subplot(2,1,2)
+%         hist(interpulse)
+
+
 
 
 
 %% Behavior struct for saving
 
-pupildilation.samplingRate = sf_eff;
-pupildilation.timestamps = timestamps;
-pupildilation.data = data;
-
-pupildilation.t_pulse = pulset; 
+pupildilation.t_pulse = pulset;
+pupildilation.t_interp = t_interp;
+pupildilation.puparea = puparea;
 pupildilation.puparea_pxl = puparea_raw;
-
 pupildilation.eyepixelmean = meaneyepixel;
-pupildilation.eyepixelstd = stdeyepixel;
 pupildilation.unstableframes = unstableframes;
-
-pupildilation.pupilxy = pupcoords;
+pupildilation.eyepixelstd = stdeyepixel;
+pupildilation.pupcoords = pupcoords;
 
 pupildilation.detectorname = 'GetPupilDilation';
 pupildilation.detectiondate = today('datetime');

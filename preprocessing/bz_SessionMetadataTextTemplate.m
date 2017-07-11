@@ -395,8 +395,7 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
     
     %Get badchannels from badshanks... ie all channels on bad shanks are
     %bad
-    % Add bad channels to channels derived from bad channels
-%     if isempty(SessionMetadata.ExtracellEphys.BadChannels)
+    if isempty(SessionMetadata.ExtracellEphys.BadChannels)
         if ~isempty(SessionMetadata.ExtracellEphys.BadShanks)
             chanpergp = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep;
             badchans = [];
@@ -404,9 +403,9 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
                 tshank = SessionMetadata.ExtracellEphys.BadShanks;
                 badchans = cat(1,badchans,chanpergp{tshank});
             end
-            SessionMetadata.ExtracellEphys.BadChannels = cat(1,SessionMetadata.ExtracellEphys.BadChannels(:),badchans(:));
+            SessionMetadata.ExtracellEphys.BadChannels = badchans;
         end
-%     end 
+    end 
     
     %Get Spikegroups
     if strcmp(SessionMetadata.ExtracellEphys.SpikeGroups,'FromXML'); 

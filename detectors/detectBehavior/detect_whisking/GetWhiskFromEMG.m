@@ -1,5 +1,5 @@
 function [ EMGwhisk ] = GetWhiskFromEMG( basePath,varargin )
-%[ EMGwhisk ] = GetWhiskFromEMG(basePath ) 
+%[ EMGwhisk ] = GetWhiskFromEMG( baseName,basePath ) 
 %This is a detector that extracts whisking/nonwhisking epochs from 
 %implanted EMG in the whisker pad. Extracts also the EMG and EMG envelope.
 %
@@ -33,7 +33,7 @@ function [ EMGwhisk ] = GetWhiskFromEMG( basePath,varargin )
 if ~exist('basePath','var')
     basePath = pwd;
 end
-baseName = bz_BasenameFromBasepath(basePath);
+[baseFolder,baseName] = fileparts(basePath);
 %%
 abfname = fullfile(basePath,[baseName,'.abf']);
 analogName = fullfile(basePath,['analogin.dat']);
@@ -83,9 +83,10 @@ EMGparms.whiskmerge = 0.1;     %Minimum interwhisking duration (s)
 EMGparms.NWhmerge = 0.02;       %Minimum internonwhisking duration (s)
 
 %% Z-Score the EMGZ and get EMG envelope with RMS
-EMGz = NormToInt(EMG,'modZ'); %Modified Z score - robust to outliers
+EMGz = NormToInt(EMG,[],[],'modZ'); %Modified Z score - robust to outliers
 EMGsm = RMSEnvelope(EMGz,EMGparms.gausswidth,1/sf_down);
 EMGsm = EMGsm-min(EMGsm);
+
 whisk.EMGenvelope = EMGsm;
 
 %% Set the thresholds by whisking troughs - 
@@ -189,7 +190,7 @@ durhist.NWh = hist(log10(NWhdur),durhist.bins);
 
 %% Identify Pulses from Camera (in clampex)
 pulsethreshold_abf =0.5;  %Adjust this later to set based on input.
-pulseonsets = find(diff(pulse_abf>pulsethreshold_abf)==1);
+pulseonsets = find(diff(pulse_abf<pulsethreshold_abf)==1);
 pulset = t_abf(pulseonsets);
 
 interpulse = diff(pulset);
@@ -209,10 +210,11 @@ sf_pulse = 1./20000; %Sampling Frequency of the .abf file
 t_pulse = [1:length(timepulses)]'.*sf_pulse;
 
 pulsethreshold =1e4;  %Adjust this later to set based on input.
-pulseonsets = find(diff(timepulses>pulsethreshold)==1);
+pulseonsets = find(diff(timepulses<pulsethreshold)==1);
 pulset = t_pulse(pulseonsets);
 
 minpulsedur = 0.003; %Remove double/noise crossings
+
 shortpulses=diff(pulset)<(minpulsedur);
 pulset(shortpulses) = [];
 
@@ -221,16 +223,6 @@ interpulse = diff(pulset);
 if interpulse(1) > sum(interpulse(2:3))
     pulset(1) = []; 
 end
-sf_eff = 1./mean(interpulse);
-
-%Check that frame duration is constant up to tolerance (no skipped frames)
-tol = 0.001;
-
-if range(interpulse)>tol
-    warning('Frame rate is not constant...')
-end
-
-
 firstpulstime_lfp = pulset(1);
 
 %% Reset time to align to LFP

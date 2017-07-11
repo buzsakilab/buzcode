@@ -64,7 +64,7 @@ CheckChronux();
 f = 1250;
 frequency = [];
 window = 5;
-range = [];
+range = [];s
 overlap = [];
 step = [];
 show = 'off';
@@ -158,12 +158,6 @@ else
 	elseif overlap ~= window-step,
 		error('Incompatible ''step'' and ''overlap'' parameters (type ''help <a href="matlab:help MTSpectrogram">MTSpectrogram</a>'' for details).');
 	end
-end
-
-% If lfp was given without timestamps, add them...
-if size(lfp,2) == 1
-    lfp(:,2) = lfp(:,1);
-    lfp(:,1) = [1:size(lfp,1)]./frequency;
 end
 
 % Compute and plot spectrogram

@@ -181,9 +181,9 @@ end
 
 % Call the calculator: ---------------------------------------------------------
 if replyZ
-   [Y, Z] = FilterX(b, a, X, Z, Reverse);
+   [Y, Z] = filterX(b, a, X, Z, Reverse);
 else
-   Y = FilterX(b, a, X, Z, Reverse);
+   Y = filterX(b, a, X, Z, Reverse);
 end
 
 % Reconstruct original array dimension: ----------------------------------------

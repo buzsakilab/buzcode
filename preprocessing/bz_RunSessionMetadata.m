@@ -16,7 +16,7 @@ end
 basename = bz_BasenameFromBasepath(basepath);
 
 %% 
-bz_EditSessionMetadata(basepath)
+% bz_EditSessionMetadata(basepath)
 
 %%
 notesname = [basename,'_SessionMetadataText'];

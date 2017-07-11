@@ -1,8 +1,3 @@
-Welcome to the Buzsaki lab repository!
-The goal is to have this repo as your one-stop-shop for code you may need as a Buzsaki Lab member. This will include preprocessing pipelines as well as analysis functions. Everything will conform to a single (flexible, but documented) database structure.
-
-IMPORTANT: everything is under collective development by the lab.
-
 DATA FORMATTING STANDARDS
 (under development: read and contribute to the wiki!)
 https://github.com/buzsakilab/buzcode/wiki/Data-Formatting-Standards

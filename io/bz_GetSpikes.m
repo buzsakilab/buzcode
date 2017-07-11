@@ -7,7 +7,7 @@ function spikes = bz_GetSpikes(varargin)
 % 
 % INPUTS
 %
-%    spikeGroups     -vector subset of shank IDs to load (Default: all)
+%    spikeGroups     -vector subset of shank IDs to load
 %    region          -string region ID to load neurons from specific region (requires sessionInfodata file)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
@@ -22,8 +22,6 @@ function spikes = bz_GetSpikes(varargin)
 %          .sessionName    -name of recording file
 %          .UID            -unique identifier for each neuron in a recording
 %          .times          -cell array of timestamps (seconds) for each neuron
-%          .spindices      -sorted vector of [spiketime UID], useful for 
-%                           input to some functions and plotting rasters
 %          .region         -region ID for each neuron (especially important large scale, high density probes)
 %          .shankID        -shank ID that each neuron was recorded on
 %          .maxWaveformCh  -channel # with largest amplitude spike for each neuron
@@ -61,11 +59,8 @@ function spikes = bz_GetSpikes(varargin)
 % - integrate session sessionInfodata in place of xml-LoadParameters
 % - get 'region' input working with session sessionInfodata
 %% Deal With Inputs 
-spikeGroupsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
-    'spikeGroups must be numeric or "all"');
-
 p = inputParser;
-addParameter(p,'spikeGroups','all',spikeGroupsValidation);
+addParameter(p,'spikeGroups',[],@isvector);
 addParameter(p,'region','',@isstr); % won't work without sessionInfodata 
 addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
@@ -84,7 +79,7 @@ forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 
 % get sessionInfo info about recording, for now we'll use the xml.
-sessionInfo = bz_getSessionInfo(basepath);  % calls loadparameters if sessionInfo doesn't exist
+sessionInfo = bz_getSessionInfo;  % calls loadparameters if sessionInfo doesn't exist
 samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
@@ -182,7 +177,6 @@ for i=1:length(cluFiles)
        spikes.times{count} = res(ind) ./ samplingRate;
        spikes.shankID(count) = shankID;
        spikes.cluID(count) = cells(c);
-
            
        if getWaveforms
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
@@ -207,7 +201,7 @@ end
 
 
 %% filter by spikeGroups input
-if ~strcmp(spikeGroups,'all')
+if ~isempty(spikeGroups)
     [toRemove] = ~ismember(spikes.shankID,spikeGroups);
     spikes.UID(toRemove) = [];
     for r = 1:length(toRemove)
@@ -274,15 +268,6 @@ if ~isempty(UID)
     spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
     spikes.maxWaveformCh(toRemove) = [];
 end
-
-%% Generate spindices matrics
-numcells = length(spikes.UID);
-for cc = 1:numcells
-    groups{cc}=spikes.UID(cc).*ones(size(spikes.times{cc}));
-end
-alltimes = cat(1,spikes.times{:}); groups = cat(1,groups{:}); %from cell to array
-[alltimes,sortidx] = sort(alltimes); groups = groups(sortidx); %sort both
-spikes.spindices = [alltimes groups];
 
 %% save to buzcode format
 if saveMat
