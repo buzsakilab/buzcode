@@ -87,7 +87,10 @@ for cond = conditions
                 end
             end
             sp = find(InIntervals(spikes.times{cell},intervals(t,:)));
-            spk_trains{cond}{t}(cell,ceil((spikes.times{cell}(sp)-intervals(t,1))*1000+.00001))=1;
+            if ~isempty(sp)
+                spks = Restrict(ceil((spikes.times{cell}(sp)-intervals(t,1))*1000+.0000001),[1 size(spk_trains{cond}{t},2)]);
+                spk_trains{cond}{t}(cell,spks)=1;
+            end
         end 
         
 %         position{cond}{t} = interp1(1:length(behavior.events.trials{trial}.x)...
