@@ -127,12 +127,18 @@ for cond = conditions
        for cell = 1:nCells 
             %smoothing
             phase_trains_smooth=[];
+            cos_phase_trains_smooth=[];
+            sin_phase_trains_smooth=[];
             rates_trains_smooth = [];
             for t = 1:length(phase_trains{cond})
 %                 phase_trains_smooth=[phase_trains_smooth;...
 %                     circ_smoothTS(phase_trains{cond}{t}(cell,:),wind,'method','mean','exclude',0)];
                 phase_trains_smooth=[phase_trains_smooth;...
-                     Smooth(phase_trains{cond}{t}(cell,:),wind,'type','c')];
+                     Smooth((phase_trains{cond}{t}(cell,:)),wind,'type','c')];
+                cos_phase_trains_smooth=[cos_phase_trains_smooth;...
+                     Smooth(cos(phase_trains{cond}{t}(cell,:)),wind,'type','c')];
+                sin_phase_trains_smooth=[sin_phase_trains_smooth;...
+                     Smooth(sin(phase_trains{cond}{t}(cell,:)),wind,'type','c')];
                 rates_trains_smooth = [rates_trains_smooth; ...
                                        Smooth(spk_trains{cond}{t}(cell,:),wind)];
             end
@@ -143,20 +149,20 @@ for cond = conditions
             struct.mse_phase_pval = stats.p';
 
             % phase coding 
-            [b dev stats] = glmfit(cos(phase_trains_smooth)',position{cond}','normal');
-            yfit = glmval(b,cos(phase_trains_smooth),'identity');
+            [b dev stats] = glmfit(cos_phase_trains_smooth',position{cond}','normal');
+            yfit = glmval(b,cos_phase_trains_smooth,'identity');
             struct.mse_phase_cos = mean((yfit-position{cond}').^2); % mean squared error for rate code
             struct.mse_phase_cos_pval = stats.p';
 
             % phase coding 
-            [b dev stats] = glmfit(sin(phase_trains_smooth)',position{cond}','normal');
-            yfit = glmval(b,sin(phase_trains_smooth),'identity');
+            [b dev stats] = glmfit(sin_phase_trains_smooth',position{cond}','normal');
+            yfit = glmval(b,sin_phase_trains_smooth,'identity');
             struct.mse_phase_sin = mean((yfit-position{cond}').^2); % mean squared error for rate code
             struct.mse_phase_sin_pval = stats.p';
             
             % phase coding all
-            [b dev stats] = glmfit([sin(phase_trains_smooth),cos(phase_trains_smooth)],position{cond}','normal');
-            yfit = glmval(b,[sin(phase_trains_smooth),cos(phase_trains_smooth)],'identity');
+            [b dev stats] = glmfit([sin_phase_trains_smooth,cos_phase_trains_smooth],position{cond}','normal');
+            yfit = glmval(b,[sin_phase_trains_smooth,cos_phase_trains_smooth],'identity');
             struct.mse_phase_all = mean((yfit-position{cond}').^2); % mean squared error for rate code
             struct.mse_phase_all_pval = stats.p';
             
