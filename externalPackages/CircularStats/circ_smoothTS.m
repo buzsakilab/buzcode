@@ -106,15 +106,19 @@ for ii = 1:length(keep)
     [loc] = ~ismember(ind,exclude);
     
 %     if ~isempty(loc) & sum(loc) > 0
-        switch method
-            case 'median'
+        
+        if strcmp(method,'median')
                 ts_smooth(i) = circ_median(ts(ind(loc)));
-            case 'mean'
+        elseif strcmp(method,'mean')
                 ts_smooth(i) = circ_mean(ts(ind(loc)));
-            case 'guassian'
-
-            case 'interp' 
-                
+        elseif strcmp(method,'gaussian')
+                g = gauss(length(ind),2)';
+                ts_smooth(i) = circ_mean(ts(ind(loc)),g(loc));
+%                 ts_smooth(i) = circ_mean(ts(ind(loc)));
+        elseif strcmp(method,'interp')
+                error('interp not implented yet...')
+        else
+                error('couldnt find smoothing method')
         end
 %     else
 %         ts_smooth(ind) = ts(i);    

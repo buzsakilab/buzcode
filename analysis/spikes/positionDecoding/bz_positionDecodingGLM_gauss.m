@@ -1,6 +1,6 @@
-function [positionDecodingGLM] = bz_positionDecodingGLM(varargin)
+function [positionDecodingGLM_gaussian] = bz_positionDecodingGLM_gauss(varargin)
 % USAGE
-%   [] = bz_positionDecodingGLM()
+%   [] = bz_positionDecodingGLM_gauss()
 %
 % INPUTS
 %
@@ -18,7 +18,7 @@ function [positionDecodingGLM] = bz_positionDecodingGLM(varargin)
 %
 % OUTPUTS
 %
-%   positionDecodingGLM     cellinfo struct with the following fields
+%   positionDecodingGLM_gaussian     cellinfo struct with the following fields
 %                      .UID
 %                      .region
 %                      .sessionName
@@ -56,9 +56,9 @@ saveMat = p.Results.saveMat;
 %% set up data format and cellinfo struct that will be returned
 disp('initializing data structs and formatting input data...')
 
-positionDecodingGLM.UID = spikes.UID;
-positionDecodingGLM.region = spikes.region;
-positionDecodingGLM.sessionName = spikes.sessionName; % session name
+positionDecodingGLM_gaussian.UID = spikes.UID;
+positionDecodingGLM_gaussian.region = spikes.region;
+positionDecodingGLM_gaussian.sessionName = spikes.sessionName; % session name
  
 conditions = unique(behavior.events.trialConditions);
 nCells = length(spikes.times);
@@ -118,7 +118,7 @@ end
 
 %% set up GLM
 for cell=1:nCells  % initialize table for data
-    positionDecodingGLM.results{cell} = table;
+    positionDecodingGLM_gaussian.results{cell} = table;
 end
 disp('running models...')
 for cond = conditions
@@ -127,12 +127,20 @@ for cond = conditions
        for cell = 1:nCells 
             %smoothing
             phase_trains_smooth=[];
+            cos_phase_trains_smooth=[];
+            sin_phase_trains_smooth=[];
             rates_trains_smooth = [];
             for t = 1:length(phase_trains{cond})
+%                 phase_trains_smooth=[phase_trains_smooth;...
+%                     circ_smoothTS(phase_trains{cond}{t}(cell,:),wind,'method','mean','exclude',0)];
                 phase_trains_smooth=[phase_trains_smooth;...
-                    circ_smoothTS(phase_trains{cond}{t}(cell,:),wind,'method','mean','exclude',0)];
+                     Smooth((phase_trains{cond}{t}(cell,:)),wind,'type','c')];
+                cos_phase_trains_smooth=[cos_phase_trains_smooth;...
+                     Smooth(cos(phase_trains{cond}{t}(cell,:)),wind,'type','c')];
+                sin_phase_trains_smooth=[sin_phase_trains_smooth;...
+                     Smooth(sin(phase_trains{cond}{t}(cell,:)),wind,'type','c')];
                 rates_trains_smooth = [rates_trains_smooth; ...
-                                       smooth(spk_trains{cond}{t}(cell,:),wind)];
+                                       Smooth(spk_trains{cond}{t}(cell,:),wind)];
             end
             % phase coding
             [b dev stats] = glmfit(phase_trains_smooth',position{cond}','normal');
@@ -141,20 +149,20 @@ for cond = conditions
             struct.mse_phase_pval = stats.p';
 
             % phase coding 
-            [b dev stats] = glmfit(cos(phase_trains_smooth)',position{cond}','normal');
-            yfit = glmval(b,cos(phase_trains_smooth),'identity');
+            [b dev stats] = glmfit(cos_phase_trains_smooth',position{cond}','normal');
+            yfit = glmval(b,cos_phase_trains_smooth,'identity');
             struct.mse_phase_cos = mean((yfit-position{cond}').^2); % mean squared error for rate code
             struct.mse_phase_cos_pval = stats.p';
 
             % phase coding 
-            [b dev stats] = glmfit(sin(phase_trains_smooth)',position{cond}','normal');
-            yfit = glmval(b,sin(phase_trains_smooth),'identity');
+            [b dev stats] = glmfit(sin_phase_trains_smooth',position{cond}','normal');
+            yfit = glmval(b,sin_phase_trains_smooth,'identity');
             struct.mse_phase_sin = mean((yfit-position{cond}').^2); % mean squared error for rate code
             struct.mse_phase_sin_pval = stats.p';
             
             % phase coding all
-            [b dev stats] = glmfit([sin(phase_trains_smooth),cos(phase_trains_smooth)],position{cond}','normal');
-            yfit = glmval(b,[sin(phase_trains_smooth),cos(phase_trains_smooth)],'identity');
+            [b dev stats] = glmfit([sin_phase_trains_smooth,cos_phase_trains_smooth],position{cond}','normal');
+            yfit = glmval(b,[sin_phase_trains_smooth,cos_phase_trains_smooth],'identity');
             struct.mse_phase_all = mean((yfit-position{cond}').^2); % mean squared error for rate code
             struct.mse_phase_all_pval = stats.p';
             
@@ -168,37 +176,37 @@ for cond = conditions
             struct.dfe = stats.dfe;
             struct.tau = wind;
             struct.condition = cond;
-            positionDecodingGLM.results{cell} = ...
-                [positionDecodingGLM.results{cell};struct2table(struct)];
+            positionDecodingGLM_gaussian.results{cell} = ...
+                [positionDecodingGLM_gaussian.results{cell};struct2table(struct)];
             
             if ~isempty(plotting) & cell == plotting  % can only display one neuron for now..
 %                 figure(cond);
                 subplot(2,2,1)
                 title('GLM decoding of pos, r-rate, g-phase')
-                rows = positionDecodingGLM.results{plotting}.condition == cond;
-                plot(positionDecodingGLM.results{plotting}.tau(rows),...
-                    positionDecodingGLM.results{plotting}.mse_rate(rows),'r')
+                rows = positionDecodingGLM_gaussian.results{plotting}.condition == cond;
+                plot(positionDecodingGLM_gaussian.results{plotting}.tau(rows),...
+                    positionDecodingGLM_gaussian.results{plotting}.mse_rate(rows),'r')
                 hold on
-                plot(positionDecodingGLM.results{plotting}.tau(rows),...
-                    positionDecodingGLM.results{plotting}.mse_phase_all(rows),'g')
+                plot(positionDecodingGLM_gaussian.results{plotting}.tau(rows),...
+                    positionDecodingGLM_gaussian.results{plotting}.mse_phase_all(rows),'g')
                 hold off
                 subplot(2,2,2)
-                plot(positionDecodingGLM.results{plotting}.tau(rows),...
-                    positionDecodingGLM.results{plotting}.mse_phase_cos(rows),'g')
+                plot(positionDecodingGLM_gaussian.results{plotting}.tau(rows),...
+                    positionDecodingGLM_gaussian.results{plotting}.mse_phase_cos(rows),'g')
                 subplot(2,2,3)
-                plot(positionDecodingGLM.results{plotting}.tau(rows),...
-                    positionDecodingGLM.results{plotting}.mse_phase_sin(rows),'g')
+                plot(positionDecodingGLM_gaussian.results{plotting}.tau(rows),...
+                    positionDecodingGLM_gaussian.results{plotting}.mse_phase_sin(rows),'g')
                 subplot(2,2,4)
-                plot(positionDecodingGLM.results{plotting}.tau(rows),...
-                    positionDecodingGLM.results{plotting}.mse_phase(rows),'g')
+                plot(positionDecodingGLM_gaussian.results{plotting}.tau(rows),...
+                    positionDecodingGLM_gaussian.results{plotting}.mse_phase(rows),'g')
                 pause(.0001)
             end
        end
        disp(['finished with wind: ' num2str(wind) ' out of ' num2str(smoothingRange(end)) ' total'])
     end
-    positionDecodingGLM.dateRun = date;  % this can take a very long time so lets save each loop...
+    positionDecodingGLM_gaussian.dateRun = date;  % this can take a very long time so lets save each loop...
     if saveMat 
-        save([spikes.sessionName '.positionDecodingGLM.cellinfo.mat'],'positionDecodingGLM') 
+        save([spikes.sessionName '.positionDecodingGLM_gaussian.cellinfo.mat'],'positionDecodingGLM_gaussian') 
     end
     disp(['finished with condition: ' num2str(cond) ' out of ' num2str(length(conditions)) ' total'])
 end
