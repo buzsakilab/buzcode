@@ -219,7 +219,7 @@ PhaseLockingData = v2struct(phasedistros,phasebins,...
                             detectorName, detectorParams);
 
 if saveMat
- save([lfp.Filename(1:end-4) '.PhaseLockingData.cellinfo.mat']);
+ save([lfp.Filename(1:end-4) '.PhaseLockingData.cellinfo.mat'],'PhaseLockingData');
 end
 
 end
