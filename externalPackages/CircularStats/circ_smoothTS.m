@@ -112,7 +112,7 @@ for ii = 1:length(keep)
         elseif strcmp(method,'mean')
                 ts_smooth(i) = circ_mean(ts(ind(loc)));
         elseif strcmp(method,'gaussian')
-                g = gauss(length(ind),2)';
+                g = gauss(length(ind),1)';
                 ts_smooth(i) = circ_mean(ts(ind(loc)),g(loc));
 %                 ts_smooth(i) = circ_mean(ts(ind(loc)));
         elseif strcmp(method,'interp')
