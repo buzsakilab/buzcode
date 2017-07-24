@@ -124,7 +124,7 @@ disp('running models...')
 for cond = conditions
     warning off
     for wind = smoothingRange
-       for cell = 1:nCells 
+       for cell = 80%1:nCells 
             %smoothing
             phase_trains_smooth=[];
             cos_phase_trains_smooth=[];
@@ -134,13 +134,13 @@ for cond = conditions
 %                 phase_trains_smooth=[phase_trains_smooth;...
 %                     circ_smoothTS(phase_trains{cond}{t}(cell,:),wind,'method','mean','exclude',0)];
                 phase_trains_smooth=[phase_trains_smooth;...
-                     Smooth((phase_trains{cond}{t}(cell,:)),wind,'type','c')];
+                     gaussfilt(1:length(phase_trains{cond}{t}(cell,:)),phase_trains{cond}{t}(cell,:),wind)'];
                 cos_phase_trains_smooth=[cos_phase_trains_smooth;...
-                     Smooth(cos(phase_trains{cond}{t}(cell,:)),wind,'type','c')];
+                     gaussfilt(1:length(phase_trains{cond}{t}(cell,:)),cos(phase_trains{cond}{t}(cell,:)),wind)'];
                 sin_phase_trains_smooth=[sin_phase_trains_smooth;...
-                     Smooth(sin(phase_trains{cond}{t}(cell,:)),wind,'type','c')];
+                     gaussfilt(1:length(phase_trains{cond}{t}(cell,:)),sin(phase_trains{cond}{t}(cell,:)),wind)'];
                 rates_trains_smooth = [rates_trains_smooth; ...
-                                       Smooth(spk_trains{cond}{t}(cell,:),wind)];
+                                       gaussfilt(1:length(phase_trains{cond}{t}(cell,:)),spk_trains{cond}{t}(cell,:),wind)'];
             end
             % phase coding
             [b dev stats] = glmfit(phase_trains_smooth',position{cond}','normal');
