@@ -1,4 +1,4 @@
-function [rateMap countMap occuMap phaseMap] = bz_firingMap1D(spikes,behavior,lfp,tau)
+function [firingMaps] = bz_firingMap1D(varargin)
 % USAGE
 % [rateMap countMap occuMap phaseMap] = bz_firingMap1D(spikes,behavior,lfp,tau)
 %
@@ -27,43 +27,59 @@ function [rateMap countMap occuMap phaseMap] = bz_firingMap1D(spikes,behavior,lf
 % written by david tingley, 2017
 
 
+% parse inputs
+p=inputParser;
+addRequired(p,'spikes',@isstruct);
+addRequired(p,'behavior',@isstruct);
+addRequired(p,'lfp',@isstruct);
+addRequired(p,'tau',@isnumeric);
+addParameter(p,'saveMat',false,@islogical);
+parse(p,varargin{:});
+
+spikes = p.Results.spikes;
+behavior = p.Results.behavior;
+lfp = p.Results.lfp;
+tau = p.Results.tau;
+saveMat = p.Results.saveMat;
+
+% start processing
 [b a] = butter(3,[6/625 9/625],'bandpass');
 phases = (angle(hilbert(filtfilt(b,a,double(lfp.data(:,1))))));
 
 for tt =1:length(unique(behavior.events.trialConditions))
     trials = find(behavior.events.trialConditions==tt);
-    rateMap{tt} = zeros(length(spikes),length(trials),length(behavior.events.map{tt}.x));
-    countMap{tt} = zeros(length(spikes),length(trials),length(behavior.events.map{tt}.x));
+    rateMap{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
+    countMap{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
     occuMap{tt} = zeros(length(trials),length(behavior.events.map{tt}.x));
     if ~isempty(behavior.events.map{tt})
-        for i =1:length(spikes)
+        for i =1:length(spikes.times)
             phaseMap{tt}{i} = [];
         end
 
-        for i =1:length(spikes)
+        for i =1:length(spikes.times)
             for t=1:length(trials)
-                if ~isempty(spikes{i})
+                if ~isempty(spikes.times{i})
                 start = behavior.events.trialIntervals(trials(t),1);
                 stop =  behavior.events.trialIntervals(trials(t),2);
-                f = find(spikes{i}>start);
-                ff = find(spikes{i}<stop);
+                f = find(spikes.times{i}>start);
+                ff = find(spikes.times{i}<stop);
 
-                sp = intersect(f,ff);  % all spikes from a single trials
-                sp_w_ends = [start spikes{i}(sp)' stop ];
+                sp = intersect(f,ff);  % all spikes.times from a single trials
+                sp_w_ends = [start spikes.times{i}(sp)' stop ];
                 ISI = diff(sp_w_ends);
                 for s=1:length(ISI)-1
                    inst_rate(s) = 1./mean(ISI(s:s+1)); 
                 end 
                 for s =1:length(sp)
-                    [a b] = min(abs(spikes{i}(sp(s))-behavior.events.trials{trials(t)}.timestamps(:,1)));
+                    [a b] = min(abs(spikes.times{i}(sp(s))-behavior.events.trials{trials(t)}.timestamps(:,1)));
 
                     x = behavior.events.trials{trials(t)}.x(b);
                     y = behavior.events.trials{trials(t)}.y(b);
                     [aa bb] = min(abs(behavior.events.map{tt}.x-x)+abs(behavior.events.map{tt}.y-y));
 
                     countMap{tt}(i,t,bb) = countMap{tt}(i,t,bb) + 1;
-                    phaseMap{tt}{i} = [phaseMap{tt}{i}; bb t x y spikes{i}(sp(s))-start...
-                        inst_rate(s) phases(round(spikes{i}(sp(s))*1250))];
+                    phaseMap{tt}{i} = [phaseMap{tt}{i}; bb t x y spikes.times{i}(sp(s))-start...
+                        inst_rate(s) phases(round(spikes.times{i}(sp(s))*1250))];
 
                 end
                 end
@@ -82,7 +98,7 @@ end
 
 for tt =1:length(unique(behavior.events.trialConditions))
      trials = find(behavior.events.trialConditions==tt);
-    for i = 1:length(spikes)
+    for i = 1:length(spikes.times)
         numTrials = length(trials);
         for t = 1:length(trials)
 %             rateMap{tt}(i,t,:) = smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
@@ -94,5 +110,24 @@ for tt =1:length(unique(behavior.events.trialConditions))
         end
     end
 end
+
+%% restructure into cell info data type
+
+% inherit required fields from spikes cellinfo struct
+firingMaps.UID = spikes.UID;
+firingMaps.sessionName = spikes.sessionName;
+firingMaps.region = spikes.region; 
+
+% backwards compatible but we'll eventually want to change this...
+firingMaps.rateMaps = rateMap;
+firingMaps.countMaps = countMap;
+firingMaps.phaseMaps = phaseMap;
+firingMaps.occupancy = occuMap;
+
+if saveMat
+   save([firingMaps.sessionName '.firingMaps.cellinfo.mat'],'firingMaps'); 
+end
+
+
 
 end
