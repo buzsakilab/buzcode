@@ -340,7 +340,11 @@ else
             fclose(klgID);
             fclose(fileID); % write to both nohup and .klg. log files
         else
-            error('could not find nohup.out log file')
+            klgID = fopen([fbasename '_sh' num2str(elec) '.klg.' num2str(elec)],'a');
+            fmt = 'this elec has been autoclustered';
+            fprintf(klgID,fmt);
+            fclose(klgID);
+            warning('could not find nohup.out log file')
         end
     end
 
