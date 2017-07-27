@@ -15,7 +15,7 @@ function filtered = bz_Filter(samples,varargin)
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
-%     'passband'    pass frequency range
+%     'passband'    pass frequency range. [0 X] for low-pass, [X inf] for highpass
 %     'stopband'    stop frequency range
 %     'order'       filter order (number of cycles, default = 4)
 %     'ripple'      filter ripple (default = 20)
