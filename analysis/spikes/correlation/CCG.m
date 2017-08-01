@@ -8,7 +8,8 @@
 %                   (alternate) - can be {Ncells} array of [Nspikes] 
 %                   spiketimes for each cell 
 %                   NOTE: spiketimes in SECONDS.
-%    groups         group IDs for each event in time list
+%    groups         group IDs for each event in time list (should be
+%                   integers 1:nGroups)
 %                   (alternate) - []
 %    <options>      optional list of property-value pairs (see table below)
 %
@@ -17,7 +18,14 @@
 %    -------------------------------------------------------------------------
 %     'binSize'     bin size in s (default = 0.01)
 %     'duration'    duration in s of each xcorrelogram (default = 2)
+%     'norm'        normalization of the CCG, 'counts' or 'rate' (DL added 8/1/17)
+%                   'counts' gives raw event/spike count,
+%                   'rate' returns CCG in units of spks/second (default: counts)
 %    =========================================================================
+%
+%
+%  OUTPUT
+%   ccg     [ngroups x ngroups]
 %
 %  SEE
 %
@@ -36,6 +44,7 @@ function [ccg,t] = CCG(times,groups,varargin)
 duration = 2;
 binSize = 0.01;
 Fs = 1/20000;
+normtype = 'counts';
 
 % Option for spike times to be in {Ncells} array of spiketimes DL2017
 if iscell(times) && isempty(groups)
@@ -88,7 +97,9 @@ for i = 1:2:length(varargin),
 			if ~isdscalar(Fs,'>0'),
 				error('Incorrect value for property ''Fs'' (type ''help <a href="matlab:help CCG">CCG</a>'' for details).');
             end
-            
+        case 'norm'
+            normtype = varargin{i+1};
+     
   end
 end
 
@@ -107,7 +118,7 @@ halfBins = round(duration/binSize/2);
 nBins = 2*halfBins+1;
 t = (-halfBins:halfBins)'*binSize;
 times = round(times/Fs);
-binSize = round(binSize/Fs);
+binSize_Fs = round(binSize/Fs);
 if length(times) <= 1,
 	% ---- MODIFIED BY EWS, 1/2/2014 ----
     % *** Use unsigned integer format to save memory ***
@@ -120,7 +131,7 @@ end
 nEvents = length(times);
 % 
 
-counts = double(CCGHeart(times,uint32(groups),binSize,uint32(halfBins)));
+counts = double(CCGHeart(times,uint32(groups),binSize_Fs,uint32(halfBins)));
 % -----------------------------------
 % 
 % Reshape the results
@@ -132,4 +143,14 @@ if n < nGroups,
 	counts(nBins,nGroups,nGroups) = 0;
 end
 
+%Rate normalization: counts/numREFspikes/dt to put in units of spikes/s. DL
+switch normtype
+    case 'rate'
+        for gg = 1:nGroups
+            numREFspikes = sum(groups==gg);%number of reference events for group
+            counts(:,gg,:) = counts(:,gg,:)./numREFspikes./binSize;
+        end
+end
+        
+        
 ccg = flipud(counts);
