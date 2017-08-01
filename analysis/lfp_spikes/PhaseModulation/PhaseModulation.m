@@ -169,6 +169,16 @@ if length(cum_spkphases) > 10
         plot([0:360],cos(pi/180*[0:360])*0.05*max(cpd)+0.95*max(cpd),'color',[.7 .7 .7])
         set(h(end),'name',['PhaseModPlotsForAllCells']);
     end
+    
+else warning('too few spikes');
+    cpd = NaN(180, 1);
+    phasebins = NaN(180, 1);
+    cps.m = NaN;
+    cps.r = NaN;
+    cps.k = NaN;
+    cps.p = NaN;
+    cps.mode = NaN;
+    
 end
 
 
