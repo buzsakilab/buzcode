@@ -25,7 +25,10 @@
 %
 %
 %  OUTPUT
-%   ccg     [ngroups x ngroups]
+%   ccg     [t x ngroups x ngroups] matrix where ccg(t,i,j) is the
+%           number (or rate) of events of group j at time lag t with  
+%           respect to reference events from group i
+%   t       time lag vector (units: seonds)
 %
 %  SEE
 %
