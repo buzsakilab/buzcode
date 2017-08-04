@@ -218,7 +218,8 @@ if isunix
    % for the GCC compiler. If you think, that this is hilarious, send an
    % enhancement report to support@mathworks.com.
    
-    Flags = {'-O', 'CFLAGS="\$CFLAGS', '-std=c99"', 'FilterX.c'}; 
+%    Flags = {'-O', 'CFLAGS="\$CFLAGS', '-std=c99"', 'FilterX.c', '-v'}; 
+    Flags = {'-O', 'CFLAGS="\$CFLAGS', '-std=c99"', '-compatibleArrayDims', 'FilterX.c', '-v'}; 
    
    
 else
