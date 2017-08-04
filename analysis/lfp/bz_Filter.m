@@ -15,7 +15,7 @@ function filtered = bz_Filter(samples,varargin)
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
-%     'passband'    pass frequency range
+%     'passband'    pass frequency range. [0 X] for low-pass, [X inf] for highpass
 %     'stopband'    stop frequency range
 %     'order'       filter order (number of cycles, default = 4)
 %     'ripple'      filter ripple (default = 20)
@@ -153,6 +153,8 @@ switch(type),
 		if ~isempty(passband),
 			if passband(1) == 0,
 				[b a] = cheby2(order,ripple,passband(2)/nyquist,'low');
+            elseif passband(2) == inf
+                [b a] = cheby2(order,ripple,passband(1)/nyquist,'high');
 			else
 				[b a] = cheby2(order,ripple,passband/nyquist);
 			end
@@ -166,6 +168,9 @@ switch(type),
 			if passband(1) == 0,
                 filt_order = round(order*2*nyquist./passband(2));    
 				[b a] = fir1(filt_order,passband(2)/nyquist,'low');
+            elseif passband(2) == inf
+                filt_order = round(order*2*nyquist./passband(1));    
+				[b a] = fir1(filt_order,passband(1)/nyquist,'high');
             else
                 filt_order = round(order*2*nyquist./passband(1));  
 				[b a] = fir1(filt_order,passband/nyquist);

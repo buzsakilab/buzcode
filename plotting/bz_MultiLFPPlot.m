@@ -49,7 +49,7 @@ lfpplotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)),lfpmidpoints))
 %% Do the plot
 plot(lfp.timestamps(windex),lfpplotdata,'k','linewidth',0.5)
 xlabel('t (s)')
-ylabel('LFP by Depth')
+ylabel('LFP Channel')
 set(gca,'Ytick',fliplr(lfpmidpoints))
 set(gca,'yticklabels',fliplr(channels))
 ylim(fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange)))
