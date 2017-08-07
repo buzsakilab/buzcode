@@ -13,6 +13,7 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %   'channels'  subset/ordering of channels to plot (0-index a la neuroscope)
 %               default is to take the channels as ordered in lfp.channels
 %   'timewin'   only plot a subwindow of time
+%   'spikes'    a buzcode spikes struct to display spikes below the LFP
 %
 %
 %DLevenstein 2017
@@ -24,9 +25,11 @@ channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
 p = inputParser;
 addParameter(p,'channels','all',@isnumeric)
 addParameter(p,'timewin',[0 Inf],@isnumeric)
+addParameter(p,'spikes',[],@isstruct) %should have iscellinfo function
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
+spikes = p.Results.spikes;
 
 %% Channel and time stuff
 %Time Window
@@ -39,20 +42,31 @@ else
     [~,~,chindex] = intersect(lfp.channels,channels,'stable');
 end
 
+winspikes = spikes.spindices(:,1)>=timewin(1) & spikes.spindices(:,1)<=timewin(2);
 %% Calculate and implement spacing between channels
 
 %Space based on median absolute deviation - robust to outliers.
 channelrange = 8.*mad(single(lfp.data(windex,chindex)),1);
 lfpmidpoints = -cumsum(channelrange);
-lfpplotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)),lfpmidpoints));
+lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)),lfpmidpoints));
 
+spikeplotrange = [1 -lfpmidpoints(1)];
+spikes.plotdata = spikes.spindices(winspikes,:);
+spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff(spikeplotrange));
 %% Do the plot
-plot(lfp.timestamps(windex),lfpplotdata,'k','linewidth',0.5)
+ywinrange = fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange));
+if ~isempty(spikes)
+    ywinrange(2) = ywinrange(2)+max(spikes.plotdata(:,2));
+end
+
+plot(lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
+hold on
+plot(spikes.plotdata(:,1),spikes.plotdata(:,2),'k.')
 xlabel('t (s)')
 ylabel('LFP Channel')
 set(gca,'Ytick',fliplr(lfpmidpoints))
 set(gca,'yticklabels',fliplr(channels))
-ylim(fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange)))
+ylim(ywinrange)
 xlim(timewin)
 
 
