@@ -11,12 +11,13 @@ function [ states ] = bz_LoadStates(basePath,statesName)
 %%
 baseName = bz_BasenameFromBasepath(basePath);
 
-% if strcmp('statesName','all')
-%     allStatesFiles = dir(fullfile(datasetPath,baseName,[baseName,'.','*','.states.mat']));
-%     for
+%if strcmp('statesName','all')
+%     allStatesFiles = dir(fullfile(basePath,[baseName,'.','*','.states.mat']));
 %         [s,v] = listdlg('PromptString','Which states.mats would you like to load?',...
 %                         'ListString',allStatesFiles);
 %         statesfilestoload = allStatesFiles(s);
+        
+%end
 
 
 statesfile = fullfile(basePath,[baseName,'.',statesName,'.states.mat']);
