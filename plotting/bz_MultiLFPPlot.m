@@ -14,6 +14,7 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %               default is to take the channels as ordered in lfp.channels
 %   'timewin'   only plot a subwindow of time
 %   'spikes'    a buzcode spikes struct to display spikes below the LFP
+%   'axhandle'  axes handle in which to put the plot
 %
 %
 %DLevenstein 2017
@@ -26,10 +27,12 @@ p = inputParser;
 addParameter(p,'channels','all',@isnumeric)
 addParameter(p,'timewin',[0 Inf],@isnumeric)
 addParameter(p,'spikes',[],@isstruct) %should have iscellinfo function
+addParameter(p,'axhandle',gca)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
 spikes = p.Results.spikes;
+ax = p.Results.axhandle;
 
 %% Channel and time stuff
 %Time Window
@@ -59,13 +62,13 @@ if ~isempty(spikes)
     ywinrange(2) = ywinrange(2)+max(spikes.plotdata(:,2));
 end
 
-plot(lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
+plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
 hold on
-plot(spikes.plotdata(:,1),spikes.plotdata(:,2),'k.')
+plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.')
 xlabel('t (s)')
 ylabel('LFP Channel')
-set(gca,'Ytick',fliplr(lfpmidpoints))
-set(gca,'yticklabels',fliplr(channels))
+set(ax,'Ytick',fliplr(lfpmidpoints))
+set(ax,'yticklabels',fliplr(channels))
 ylim(ywinrange)
 xlim(timewin)
 
