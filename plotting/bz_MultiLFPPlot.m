@@ -28,11 +28,13 @@ addParameter(p,'channels','all',@isnumeric)
 addParameter(p,'timewin',[0 Inf],@isnumeric)
 addParameter(p,'spikes',[],@isstruct) %should have iscellinfo function
 addParameter(p,'axhandle',gca)
+addParameter(p,'scaleLFP',1,@isnumeric)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
 spikes = p.Results.spikes;
 ax = p.Results.axhandle;
+scaleLFP = p.Results.scaleLFP;
 
 %% Channel and time stuff
 %Time Window
@@ -51,7 +53,7 @@ winspikes = spikes.spindices(:,1)>=timewin(1) & spikes.spindices(:,1)<=timewin(2
 %Space based on median absolute deviation - robust to outliers.
 channelrange = 8.*mad(single(lfp.data(windex,chindex)),1);
 lfpmidpoints = -cumsum(channelrange);
-lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)),lfpmidpoints));
+lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfpmidpoints));
 
 spikeplotrange = [1 -lfpmidpoints(1)];
 spikes.plotdata = spikes.spindices(winspikes,:);

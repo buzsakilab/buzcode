@@ -1,4 +1,4 @@
-function [ events ] = bz_LoadEvents(basePath,eventsName)
+function [ events,filename ] = bz_LoadEvents(basePath,eventsName)
 %[ events ] = bz_LoadEvents(basePath,eventsName) function for
 %loading events.mat files. events.mat files are saved as...
 % datasetPath/baseName/baseName.eventsName.events.mat
@@ -20,15 +20,15 @@ baseName = bz_BasenameFromBasepath(basePath);
 %end
 
 
-eventsfile = fullfile(basePath,[baseName,'.',eventsName,'.events.mat']);
+filename = fullfile(basePath,[baseName,'.',eventsName,'.events.mat']);
 
 
 %evalin('caller',['load(''',eventsfile,''')']);
 
-if exist(eventsfile,'file')
-    eventstruct = load(eventsfile);
+if exist(filename,'file')
+    eventstruct = load(filename);
 else
-    warning([eventsfile,' does not exist...'])
+    warning([filename,' does not exist...'])
     events = [];
     return
 end
