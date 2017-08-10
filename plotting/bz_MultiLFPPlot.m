@@ -21,12 +21,13 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %% parse the inputs!
 channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
     'channels must be numeric or "all"');
+spikedefault.spindices = [nan nan];
 
 % parse args
 p = inputParser;
 addParameter(p,'channels','all',@isnumeric)
 addParameter(p,'timewin',[0 Inf],@isnumeric)
-addParameter(p,'spikes',[],@isstruct) %should have iscellinfo function
+addParameter(p,'spikes',spikedefault,@isstruct) %should have iscellinfo function
 addParameter(p,'axhandle',gca)
 addParameter(p,'scaleLFP',1,@isnumeric)
 parse(p,varargin{:})
@@ -60,7 +61,7 @@ spikes.plotdata = spikes.spindices(winspikes,:);
 spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff(spikeplotrange));
 %% Do the plot
 ywinrange = fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange));
-if ~isempty(spikes)
+if ~isnan(spikes.spindices)
     ywinrange(2) = ywinrange(2)+max(spikes.plotdata(:,2));
 end
 
