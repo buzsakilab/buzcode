@@ -248,6 +248,6 @@ SleepState.detectiondate = today;
 save(bz_sleepstatepath,'SleepState');
 
 display(['Sleep Score ',recordingname,': Complete!']);
-
+%Prompt user here to manually check detection with TheStateEditor
 end
 
