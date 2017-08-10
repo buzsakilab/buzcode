@@ -21,19 +21,26 @@ function parameters = LoadParameters(filename)
 % updated for compatibility by Rachel Swanson 05/28/2017
 
 if nargin < 1 % if we're especially lazy, we assume there is one XML in the current working directory....
-   xml = dir('*xml'); 
-   filename = xml.name;
+%    xml = dir('*xml'); 
+%    filename = xml.name;
+    filename = pwd; %if no input filename is basepath and you're looking for basename.xml
 end
 
+
 if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the folder location instead of an actual xml file
-    d = dir(fullfile(filename, '*xml')); %bug if multiple xmls, pick the one that matches baseName
-    filename = fullfile(filename, d.name);
-    if ~strcmp(filename(end-3:end),'.xml')
-        error(['No .xml in ',filename])
+    d = dir(fullfile(filename, '*xml')); 
+    
+    if length(d)>1 %if multiple .xmls, pick the one that matches baseName
+        baseName = bz_BasenameFromBasepath(filename);
+        correctxmlfilename = cellfun(@(X) strcmp(X,[baseName,'.xml']),{d.name});
+        d = d(correctxmlfilename);
+        display(['Multiple .xml files in this folder, trying ',baseName,'.xml'])
     end
-    if length(d)>1
-        error('Multiple .xml files in this folder')
+    if isempty(d) %if no .xmls - you have a problem
+        error(['No .xml in ',filename])
     end 
+    
+    filename = fullfile(filename, d.name);
 end
 
 if ~exist(filename),
