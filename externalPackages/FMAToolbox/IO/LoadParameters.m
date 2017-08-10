@@ -26,7 +26,6 @@ if nargin < 1 % if we're especially lazy, we assume there is one XML in the curr
     filename = pwd; %if no input filename is basepath and you're looking for basename.xml
 end
 
-
 if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the folder location instead of an actual xml file
     d = dir(fullfile(filename, '*xml')); 
     
