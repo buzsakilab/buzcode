@@ -3,27 +3,27 @@ function [ events,filename ] = bz_LoadEvents(basePath,eventsName)
 %loading events.mat files. events.mat files are saved as...
 % datasetPath/baseName/baseName.eventsName.events.mat
 %
-%eventsName can be the name of a events.mat file, or can be 'all' to load
+%eventsName can be the name of a events.mat file, or can be 'all' (nonfunctional) to load
 %all events.mat files for a given recording. If empty, prompts the user
 %with a list of available events.mat files in basePath
 %
 %DLevenstein 2017
 %%
+if ~exist('basePath','var')
+    basePath = pwd;
+end
 baseName = bz_BasenameFromBasepath(basePath);
 
-%if strcmp('eventsName','all')
-%     allEventsFiles = dir(fullfile(basePath,[baseName,'.','*','.events.mat']));
-%         [s,v] = listdlg('PromptString','Which events.mats would you like to load?',...
-%                         'ListString',allEventsFiles);
-%         eventsfilestoload = allEventsFiles(s);
-        
-%end
+if ~exist('eventsName','var')
+    allEventsFiles = dir(fullfile(basePath,[baseName,'.','*','.events.mat']));
+         [s,v] = listdlg('PromptString','Which events.mat would you like to load?',...
+                         'ListString',{allEventsFiles.name},'SelectionMode','single');
+    eventsfilestoload = allEventsFiles(s).name;
+    filename = fullfile(basePath,allEventsFiles(s).name);
+else
+    filename = fullfile(basePath,[baseName,'.',eventsName,'.events.mat']);
+end
 
-
-filename = fullfile(basePath,[baseName,'.',eventsName,'.events.mat']);
-
-
-%evalin('caller',['load(''',eventsfile,''')']);
 
 if exist(filename,'file')
     eventstruct = load(filename);
