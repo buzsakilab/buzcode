@@ -3,9 +3,9 @@ function [ events,filename ] = bz_LoadEvents(basePath,eventsName)
 %loading events.mat files. events.mat files are saved as...
 % datasetPath/baseName/baseName.eventsName.events.mat
 %
-%eventsName can be the name of a events.mat file, or can be 'all' (nonfunctional) to load
-%all events.mat files for a given recording. If empty, prompts the user
-%with a list of available events.mat files in basePath
+%eventsName can be the name of a events.mat file, If empty, prompts the user
+%with a list of available events.mat files in basePath.
+%Future update: 'all' (nonfunctional) to load all events.mat files for a given recording. 
 %
 %DLevenstein 2017
 %%
