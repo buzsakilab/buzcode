@@ -70,7 +70,7 @@ if isfield(events,'EventReview')
 %     FO.EventReview.falsealarm(isnan(FO.EventReview.falsealarm))=[];
 end
 %% Load The Data, eh?
-%EE_Initiate( FO )
+%could put to function: EE_Initiate
 try
     FO.detectionints = events.detectorinfo.detectionintervals;
     FO.detectionchannel = events.detectorinfo.detectionchannel;
