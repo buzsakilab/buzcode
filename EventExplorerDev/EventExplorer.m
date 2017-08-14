@@ -73,13 +73,21 @@ end
 %could put to function: EE_Initiate
 try
     FO.detectionints = events.detectorinfo.detectionintervals;
+catch
+    display('No events.detectorinfo.detectionintervals found in events.mat... using all time')
+    FO.detectionints = [0 Inf];
+end
+try
     FO.detectionchannel = events.detectorinfo.detectionchannel;
 catch
-    display('No DetectionChannel/Intervals found in events.mat... using NREM and SWchannel for now')
-[ SleepState ] = bz_LoadStates(FO.basePath,'SleepState');
-FO.detectionints = SleepState.ints.NREMstate;
-FO.detectionchannel = events.detectorinfo.detectionparms.SWchannel;
+    FO.detectionchannel = inputdlg({'No events.detectorinfo.detectionchannel found in events.mat...',...
+        'Which LFP channel would you like to look at?'});
+    FO.detectionchannel = FO.detectionchannel{1};
 end
+    
+%[ SleepState ] = bz_LoadStates(FO.basePath,'SleepState');
+%FO.detectionints = SleepState.ints.NREMstate;
+%FO.detectionchannel = events.detectorinfo.detectionparms.SWchannel;
 
 FO.data.lfp = bz_GetLFP(FO.detectionchannel,'basepath',FO.basePath);
 FO.data.spikes = bz_GetSpikes('basepath',FO.basePath);
