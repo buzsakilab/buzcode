@@ -34,6 +34,9 @@ elseif isstring(events) || ischar(events)
         [events,FO.eventsfilename] = bz_LoadStates(basePath,events);
         eventstype = 'states';
     end
+else
+    eventstype = 'events'; %Need a way to check type of a struct?
+    eventsname = inputname(2);
 end
 
 switch eventstype
@@ -68,6 +71,8 @@ if isfield(events,'EventExplorer')
     if isfield(events.EventExplorer,'DetectionReview')
         REVIEWDONE=true;
         FO.DetectionReview = events.EventExplorer.DetectionReview;
+    elseif isfield(events,'EventReview') %For legacy SWDetection - remove in next few days (8/15)
+        FO.DetectionReview = events.EventReview;
     end
 end
 %% Load The Data, eh?
@@ -81,9 +86,13 @@ end
 try
     FO.detectionchannel = events.detectorinfo.detectionchannel;
 catch
+    try %For legacy SWDetection - remove in next few days (8/15)
+        FO.detectionchannel = events.detectorinfo.detectionparms.SWchannel;
+    catch
     FO.detectionchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
         'Which LFP channel would you like to look at?']);
     FO.detectionchannel = str2num(FO.detectionchannel{1});
+    end
 end
     
 %[ SleepState ] = bz_LoadStates(FO.basePath,'SleepState');

@@ -12,6 +12,7 @@ numwins = 5; %number of windows to look at. determine to maximize sampling or ha
 set(findobj(FO.fig,'Type','uicontrol'),'Enable','off');
 drawnow;
 [restrictedtimes,~,~] = RestrictInts(FO.data.lfp.timestamps,FO.detectionints);
+%use InIntervals
 set(findobj(FO.fig,'Type','uicontrol'),'Enable','on');
 randevents = randsample(restrictedtimes,numwins);
 %Find any events that are within winsize of another event to remove them?
