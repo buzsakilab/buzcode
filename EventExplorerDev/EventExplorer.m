@@ -105,7 +105,7 @@ oldfig = findobj('tag','EventExplorerMaster'); close(oldfig);
 FO.fig = figure('KeyPressFcn', {@KeyDefinitions},'Position', posvar);
 set(FO.fig, 'numbertitle', 'off', 'name', ['Recording: ', FO.baseName,'. Events: ',FO.EventName]);
 set(FO.fig, 'Tag', 'EventExplorerMaster','menubar', 'none');
-set(FO.fig, 'CloseRequestFcn', {@CloseDialog}); The close function
+set(FO.fig, 'CloseRequestFcn', {@CloseDialog});
 set(FO.fig,'WindowButtonDownFcn', {@MouseClick});
 
 %From StateEditor - anything else here needed?
@@ -183,7 +183,7 @@ FO.CommentFlagPanel = uipanel('FontSize',12,...
         'Callback',@AddUserComment);
     flaggedonly = uicontrol('Parent',FO.CommentFlagPanel,'Style','checkbox',...
         'Position',[430 20 20 40],...
-        'Callback',@ShowFlagged)
+        'Callback',@ShowFlagged);
     showflagtext = uicontrol('Parent',FO.CommentFlagPanel,...
         'Position',[450 20 100 30],'style','text',...
         'string','Browse Flagged Events Only','HorizontalAlignment','left'); 
@@ -325,6 +325,8 @@ end
 function CloseDialog(obj,event)
 FO = guidata(obj);
     if isfield(FO,'eventsfilename') && isfield(FO,'FlagsAndComments')
+        %Need to check here if no changes were made using ISEQUAL(A,B) no
+        %prompt if the saved stuff is same as FO.
         button = questdlg(['Would you like to save flags/comments to ',...
             FO.eventsfilename,'?'],'Good Bye.');
         switch button
@@ -341,4 +343,5 @@ FO = guidata(obj);
                 end
         end
     end
+delete(FO.fig)
 end
