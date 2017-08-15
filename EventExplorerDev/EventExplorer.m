@@ -59,15 +59,16 @@ FO.EventTimes = exploreint;
 FO.EventName = eventsname;
 FO.basePath = basePath;
 
-%FAs and Misses if DetectionReview has already been run
+%Load EventExplorer data from events file 
 REVIEWDONE = false;
-if isfield(events,'EventReview')
-    REVIEWDONE=true;
-    FO.EventReview = events.EventReview;
-%     FO.EventReview.miss = events.EventReview.miss;
-%     FO.EventReview.falsealarm = events.EventReview.falsealarm;
-%     FO.EventReview.miss(isnan(FO.EventReview.miss))=[];
-%     FO.EventReview.falsealarm(isnan(FO.EventReview.falsealarm))=[];
+if isfield(events,'EventExplorer')
+    if isfield(events.EventExplorer,'FlagsAndComments')
+        FO.FlagsAndComments = events.EventExplorer.FlagsAndComments;
+    end
+    if isfield(events.EventExplorer,'DetectionReview')
+        REVIEWDONE=true;
+        FO.DetectionReview = events.EventExplorer.DetectionReview;
+    end
 end
 %% Load The Data, eh?
 %could put to function: EE_Initiate
@@ -80,9 +81,9 @@ end
 try
     FO.detectionchannel = events.detectorinfo.detectionchannel;
 catch
-    FO.detectionchannel = inputdlg({'No events.detectorinfo.detectionchannel found in events.mat...',...
-        'Which LFP channel would you like to look at?'});
-    FO.detectionchannel = FO.detectionchannel{1};
+    FO.detectionchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
+        'Which LFP channel would you like to look at?']);
+    FO.detectionchannel = str2num(FO.detectionchannel{1});
 end
     
 %[ SleepState ] = bz_LoadStates(FO.basePath,'SleepState');
@@ -104,7 +105,7 @@ oldfig = findobj('tag','EventExplorerMaster'); close(oldfig);
 FO.fig = figure('KeyPressFcn', {@KeyDefinitions},'Position', posvar);
 set(FO.fig, 'numbertitle', 'off', 'name', ['Recording: ', FO.baseName,'. Events: ',FO.EventName]);
 set(FO.fig, 'Tag', 'EventExplorerMaster','menubar', 'none');
-%set(FO.fig, 'CloseRequestFcn', {@CloseDialog}); The close function
+set(FO.fig, 'CloseRequestFcn', {@CloseDialog});
 set(FO.fig,'WindowButtonDownFcn', {@MouseClick});
 
 %From StateEditor - anything else here needed?
@@ -182,7 +183,7 @@ FO.CommentFlagPanel = uipanel('FontSize',12,...
         'Callback',@AddUserComment);
     flaggedonly = uicontrol('Parent',FO.CommentFlagPanel,'Style','checkbox',...
         'Position',[430 20 20 40],...
-        'Callback',@ShowFlagged)
+        'Callback',@ShowFlagged);
     showflagtext = uicontrol('Parent',FO.CommentFlagPanel,...
         'Position',[450 20 100 30],'style','text',...
         'string','Browse Flagged Events Only','HorizontalAlignment','left'); 
@@ -319,4 +320,28 @@ function ShowFlagged(obj,event)
         FO.showflagged = false;
     end
     guidata(FO.fig, FO);
+end
+
+function CloseDialog(obj,event)
+FO = guidata(obj);
+    if isfield(FO,'eventsfilename') && isfield(FO,'FlagsAndComments')
+        %Need to check here if no changes were made using ISEQUAL(A,B) no
+        %prompt if the saved stuff is same as FO.
+        button = questdlg(['Would you like to save flags/comments to ',...
+            FO.eventsfilename,'?'],'Good Bye.');
+        switch button
+            case 'Yes'
+                %Load the events file, add the field, save the events file
+                try %Only do this if the correct named structure lives in the file
+                    eventsfile = load(FO.eventsfilename,FO.EventName);
+                    eventsfile.(FO.EventName).EventExplorer.FlagsAndComments = FO.FlagsAndComments;
+                    save(FO.eventsfilename,'-struct','eventsfile',FO.EventName,'-append')
+                catch
+                    warndlg({' Save failed... ',[FO.eventsfilename,' may not ',...
+                        'contain a structure titled ',FO.EventName,'.'],...
+                        'Or you may not have sudo priviliges...?'},'Oh No!')
+                end
+        end
+    end
+delete(FO.fig)
 end

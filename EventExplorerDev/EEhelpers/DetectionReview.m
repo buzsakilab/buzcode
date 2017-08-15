@@ -1,4 +1,4 @@
-function [ EventReview ] = DetectionReview(obj,event )
+function [ DetectionReview ] = DetectionReview(obj,event )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %obj = findobj('tag','EventExplorerMaster');  
@@ -112,14 +112,14 @@ numFA = length(falsealarm);
 %Calculate total amount of time/percentage of detection time (detectionintervals) looked at
 
 %Put things in the output structure
-EventReview.lookedatwins = lookedatwins;
-EventReview.miss = miss; 
-EventReview.hit = hit;
-EventReview.falsealarm = falsealarm;
-EventReview.estMissperc = numMiss./(numHit+numMiss);
-EventReview.estFAperc = numFA./(numHit+numFA);
-EventReview.ReviewDate = today;
-EventReview.EventsType = FO.EventName;
+DetectionReview.lookedatwins = lookedatwins;
+DetectionReview.miss = miss; 
+DetectionReview.hit = hit;
+DetectionReview.falsealarm = falsealarm;
+DetectionReview.estMissperc = numMiss./(numHit+numMiss);
+DetectionReview.estFAperc = numFA./(numHit+numFA);
+DetectionReview.ReviewDate = today;
+DetectionReview.EventsType = FO.EventName;
 
 %UI: Done!  Would you like to save the results to (eventsfilename?)
 %Make function that does this: SaveResults(FO,EEoutput)
@@ -131,7 +131,7 @@ if isfield(FO,'eventsfilename')
             %Load the events file, add the field, save the events file
             try %Only do this if the correct named structure lives in the file
                 eventsfile = load(FO.eventsfilename,FO.EventName);
-                eventsfile.(FO.EventName).EventReview = EventReview;
+                eventsfile.(FO.EventName).EventExplorer.DetectionReview = DetectionReview;
                 save(FO.eventsfilename,'-struct','eventsfile',FO.EventName,'-append')
             catch
                 warndlg({' Save failed... ',[FO.eventsfilename,' may not ',...
@@ -146,7 +146,7 @@ FO.viewmode = 'events';
 FO.currentuseraction = 'none';
 FO.currevent = 1;
 set(FO.EventPanel,'Visible','off')
-FO.EventReview = EventReview;
+FO.DetectionReview = DetectionReview;
 guidata(FO.fig, FO); %Save the detection review back to GUI data
 end
 
