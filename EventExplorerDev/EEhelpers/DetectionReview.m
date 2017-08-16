@@ -5,13 +5,15 @@ function [ DetectionReview ] = DetectionReview(obj,event )
 FO = guidata(obj); 
 %% Select the time windows to look at 
 %User input for this
-numwins = 5; %number of windows to look at. determine to maximize sampling or have user input (FO.uinput.field?)
+numwins = 30; %number of windows to look at. determine to maximize sampling or have user input (FO.uinput.field?)
 %Selecting from events:
 %randevents = randsample(FO.EventTimes,numevents);
 %Selecting from random times (RestrictInts takes way too long...)
 set(findobj(FO.fig,'Type','uicontrol'),'Enable','off');
 drawnow;
-[restrictedtimes,~,~] = RestrictInts(FO.data.lfp.timestamps,FO.detectionints);
+[status,interval,index] = InIntervals(FO.data.lfp.timestamps,double(FO.detectionints));
+restrictedtimes = FO.data.lfp.timestamps(status);
+%use InIntervals
 set(findobj(FO.fig,'Type','uicontrol'),'Enable','on');
 randevents = randsample(restrictedtimes,numwins);
 %Find any events that are within winsize of another event to remove them?

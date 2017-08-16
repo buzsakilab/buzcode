@@ -1,10 +1,15 @@
-function [ EEoutput ] = EventExplorer(basePath,events )
+function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %EventExplorer is a GUI tool for exploring buzcode events and states files.
 %
 %INPUT
 %   events      Name of events in a string (i.e. 'SlowWaves') or buzcode 
-%               events structure
+%               events structure.
+%               events
 %   basePath    default: pwd
+%
+%OUTPUT
+%   EventDetectionReview    results of DetectionReview - if called with an
+%                           output, automatically runs detection review
 %
 %DLevenstein 2017
 %%
@@ -34,6 +39,9 @@ elseif isstring(events) || ischar(events)
         [events,FO.eventsfilename] = bz_LoadStates(basePath,events);
         eventstype = 'states';
     end
+else
+    eventstype = 'events'; %Need a way to check type of a struct?
+    eventsname = inputname(2);
 end
 
 switch eventstype
@@ -68,6 +76,8 @@ if isfield(events,'EventExplorer')
     if isfield(events.EventExplorer,'DetectionReview')
         REVIEWDONE=true;
         FO.DetectionReview = events.EventExplorer.DetectionReview;
+    elseif isfield(events,'EventReview') %For legacy SWDetection - remove in next few days (8/15)
+        FO.DetectionReview = events.EventReview;
     end
 end
 %% Load The Data, eh?
@@ -81,9 +91,13 @@ end
 try
     FO.detectionchannel = events.detectorinfo.detectionchannel;
 catch
+    try %For legacy SWDetection - remove in next few days (8/15)
+        FO.detectionchannel = events.detectorinfo.detectionparms.SWchannel;
+    catch
     FO.detectionchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
         'Which LFP channel would you like to look at?']);
     FO.detectionchannel = str2num(FO.detectionchannel{1});
+    end
 end
     
 %[ SleepState ] = bz_LoadStates(FO.basePath,'SleepState');
@@ -158,7 +172,7 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
                       'radiobutton',...
                       'String','events',...
                       'Position',[10 70 75 30]);
-    if REVIEWDONE
+    if REVIEWDONE %Instead of if statement, use visible false, then if REVIEWDONE turn visible true
     r2 = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
                       'String','misses',...
                       'Position',[10 40 75 30]);
@@ -168,7 +182,7 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
     end
     randbtn = uicontrol('Parent',FO.eventtypeselection,...
         'Position',[130 40 150 40],'String','Run Detection Review',...
-         'Callback',@DetectionReview);
+         'Callback',@RunDetectionReview);
 
 %The Comment/Flag Panel
 FO.showflagged = 'false';  %state of the Flagged Only checker
@@ -191,6 +205,14 @@ FO.CommentFlagPanel = uipanel('FontSize',12,...
 %Store the data in the figure - do this at the end of each function?
 guidata(FO.fig, FO);
 EventVewPlot;
+
+%If there's an output - run DetectionReview
+if nargout >0
+    DetectionReview(FO.fig);
+    obj = findobj('tag','EventExplorerMaster');  FO = guidata(obj); %get the results from the guidata
+    EventDetectionReview = FO.DetectionReview;
+end
+
 end %Gen function end. Below are callback definitions
 
 %% %%%%%%%%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -344,4 +366,9 @@ FO = guidata(obj);
         end
     end
 delete(FO.fig)
+end
+
+function RunDetectionReview(obj,event)
+    DetectionReview %Run
+    %Get the output and update miss/etc tickers
 end
