@@ -61,6 +61,12 @@ switch eventstype
         end
 
 end
+
+%For events with start/stops, use the mean of the two as a marker. In the
+%future replace with with start/stop markers
+if size(exploreint,2)==2 %For events with start/stops, use the 
+    exploreint = mean(exploreint,2);
+end
 %% 
 FO.baseName = baseName;
 FO.EventTimes = exploreint;
