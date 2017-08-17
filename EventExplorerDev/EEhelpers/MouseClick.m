@@ -26,6 +26,8 @@ function MouseClick(e, src)
                         [clickcoords 3]];
             end
             
-                      
+                    
     end
+    
+    guidata(FO.fig, FO); 
 end

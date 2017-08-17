@@ -10,9 +10,9 @@ switch FO.viewmode
     case 'events'
         timepoint = FO.EventTimes(FO.currevent);
     case 'FAs'
-        timepoint = FO.EventReview.falsealarm(FO.currevent);
+        timepoint = FO.DetectionReview.falsealarm(FO.currevent);
     case 'misses'
-        timepoint = FO.EventReview.miss(FO.currevent);
+        timepoint = FO.DetectionReview.miss(FO.currevent);
 end
 
 

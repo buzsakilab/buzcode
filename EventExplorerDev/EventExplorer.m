@@ -1,10 +1,15 @@
-function [ EEoutput ] = EventExplorer(basePath,events )
+function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %EventExplorer is a GUI tool for exploring buzcode events and states files.
 %
 %INPUT
 %   events      Name of events in a string (i.e. 'SlowWaves') or buzcode 
-%               events structure
+%               events structure.
+%               events
 %   basePath    default: pwd
+%
+%OUTPUT
+%   EventDetectionReview    results of DetectionReview - if called with an
+%                           output, automatically runs detection review
 %
 %DLevenstein 2017
 %%
@@ -34,6 +39,9 @@ elseif isstring(events) || ischar(events)
         [events,FO.eventsfilename] = bz_LoadStates(basePath,events);
         eventstype = 'states';
     end
+else
+    eventstype = 'events'; %Need a way to check type of a struct?
+    eventsname = inputname(2);
 end
 
 switch eventstype
@@ -59,15 +67,18 @@ FO.EventTimes = exploreint;
 FO.EventName = eventsname;
 FO.basePath = basePath;
 
-%FAs and Misses if DetectionReview has already been run
+%Load EventExplorer data from events file 
 REVIEWDONE = false;
-if isfield(events,'EventReview')
-    REVIEWDONE=true;
-    FO.EventReview = events.EventReview;
-%     FO.EventReview.miss = events.EventReview.miss;
-%     FO.EventReview.falsealarm = events.EventReview.falsealarm;
-%     FO.EventReview.miss(isnan(FO.EventReview.miss))=[];
-%     FO.EventReview.falsealarm(isnan(FO.EventReview.falsealarm))=[];
+if isfield(events,'EventExplorer')
+    if isfield(events.EventExplorer,'FlagsAndComments')
+        FO.FlagsAndComments = events.EventExplorer.FlagsAndComments;
+    end
+    if isfield(events.EventExplorer,'DetectionReview')
+        REVIEWDONE=true;
+        FO.DetectionReview = events.EventExplorer.DetectionReview;
+    elseif isfield(events,'EventReview') %For legacy SWDetection - remove in next few days (8/15)
+        FO.DetectionReview = events.EventReview;
+    end
 end
 %% Load The Data, eh?
 %could put to function: EE_Initiate
@@ -80,9 +91,13 @@ end
 try
     FO.detectionchannel = events.detectorinfo.detectionchannel;
 catch
-    FO.detectionchannel = inputdlg({'No events.detectorinfo.detectionchannel found in events.mat...',...
-        'Which LFP channel would you like to look at?'});
-    FO.detectionchannel = FO.detectionchannel{1};
+    try %For legacy SWDetection - remove in next few days (8/15)
+        FO.detectionchannel = events.detectorinfo.detectionparms.SWchannel;
+    catch
+    FO.detectionchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
+        'Which LFP channel would you like to look at?']);
+    FO.detectionchannel = str2num(FO.detectionchannel{1});
+    end
 end
     
 %[ SleepState ] = bz_LoadStates(FO.basePath,'SleepState');
@@ -104,7 +119,7 @@ oldfig = findobj('tag','EventExplorerMaster'); close(oldfig);
 FO.fig = figure('KeyPressFcn', {@KeyDefinitions},'Position', posvar);
 set(FO.fig, 'numbertitle', 'off', 'name', ['Recording: ', FO.baseName,'. Events: ',FO.EventName]);
 set(FO.fig, 'Tag', 'EventExplorerMaster','menubar', 'none');
-%set(FO.fig, 'CloseRequestFcn', {@CloseDialog}); The close function
+set(FO.fig, 'CloseRequestFcn', {@CloseDialog});
 set(FO.fig,'WindowButtonDownFcn', {@MouseClick});
 
 %From StateEditor - anything else here needed?
@@ -157,7 +172,7 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
                       'radiobutton',...
                       'String','events',...
                       'Position',[10 70 75 30]);
-    if REVIEWDONE
+    if REVIEWDONE %Instead of if statement, use visible false, then if REVIEWDONE turn visible true
     r2 = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
                       'String','misses',...
                       'Position',[10 40 75 30]);
@@ -167,7 +182,7 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
     end
     randbtn = uicontrol('Parent',FO.eventtypeselection,...
         'Position',[130 40 150 40],'String','Run Detection Review',...
-         'Callback',@DetectionReview);
+         'Callback',@RunDetectionReview);
 
 %The Comment/Flag Panel
 FO.showflagged = 'false';  %state of the Flagged Only checker
@@ -182,7 +197,7 @@ FO.CommentFlagPanel = uipanel('FontSize',12,...
         'Callback',@AddUserComment);
     flaggedonly = uicontrol('Parent',FO.CommentFlagPanel,'Style','checkbox',...
         'Position',[430 20 20 40],...
-        'Callback',@ShowFlagged)
+        'Callback',@ShowFlagged);
     showflagtext = uicontrol('Parent',FO.CommentFlagPanel,...
         'Position',[450 20 100 30],'style','text',...
         'string','Browse Flagged Events Only','HorizontalAlignment','left'); 
@@ -190,6 +205,14 @@ FO.CommentFlagPanel = uipanel('FontSize',12,...
 %Store the data in the figure - do this at the end of each function?
 guidata(FO.fig, FO);
 EventVewPlot;
+
+%If there's an output - run DetectionReview
+if nargout >0
+    DetectionReview(FO.fig);
+    obj = findobj('tag','EventExplorerMaster');  FO = guidata(obj); %get the results from the guidata
+    EventDetectionReview = FO.DetectionReview;
+end
+
 end %Gen function end. Below are callback definitions
 
 %% %%%%%%%%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -319,4 +342,33 @@ function ShowFlagged(obj,event)
         FO.showflagged = false;
     end
     guidata(FO.fig, FO);
+end
+
+function CloseDialog(obj,event)
+FO = guidata(obj);
+    if isfield(FO,'eventsfilename') && isfield(FO,'FlagsAndComments')
+        %Need to check here if no changes were made using ISEQUAL(A,B) no
+        %prompt if the saved stuff is same as FO.
+        button = questdlg(['Would you like to save flags/comments to ',...
+            FO.eventsfilename,'?'],'Good Bye.');
+        switch button
+            case 'Yes'
+                %Load the events file, add the field, save the events file
+                try %Only do this if the correct named structure lives in the file
+                    eventsfile = load(FO.eventsfilename,FO.EventName);
+                    eventsfile.(FO.EventName).EventExplorer.FlagsAndComments = FO.FlagsAndComments;
+                    save(FO.eventsfilename,'-struct','eventsfile',FO.EventName,'-append')
+                catch
+                    warndlg({' Save failed... ',[FO.eventsfilename,' may not ',...
+                        'contain a structure titled ',FO.EventName,'.'],...
+                        'Or you may not have sudo priviliges...?'},'Oh No!')
+                end
+        end
+    end
+delete(FO.fig)
+end
+
+function RunDetectionReview(obj,event)
+    DetectionReview %Run
+    %Get the output and update miss/etc tickers
 end

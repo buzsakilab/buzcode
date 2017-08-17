@@ -1,17 +1,19 @@
-function [ EventReview ] = DetectionReview(obj,event )
+function [ DetectionReview ] = DetectionReview(obj,event )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %obj = findobj('tag','EventExplorerMaster');  
 FO = guidata(obj); 
 %% Select the time windows to look at 
 %User input for this
-numwins = 5; %number of windows to look at. determine to maximize sampling or have user input (FO.uinput.field?)
+numwins = 30; %number of windows to look at. determine to maximize sampling or have user input (FO.uinput.field?)
 %Selecting from events:
 %randevents = randsample(FO.EventTimes,numevents);
 %Selecting from random times (RestrictInts takes way too long...)
 set(findobj(FO.fig,'Type','uicontrol'),'Enable','off');
 drawnow;
-[restrictedtimes,~,~] = RestrictInts(FO.data.lfp.timestamps,FO.detectionints);
+[status,interval,index] = InIntervals(FO.data.lfp.timestamps,double(FO.detectionints));
+restrictedtimes = FO.data.lfp.timestamps(status);
+%use InIntervals
 set(findobj(FO.fig,'Type','uicontrol'),'Enable','on');
 randevents = randsample(restrictedtimes,numwins);
 %Find any events that are within winsize of another event to remove them?
@@ -112,14 +114,14 @@ numFA = length(falsealarm);
 %Calculate total amount of time/percentage of detection time (detectionintervals) looked at
 
 %Put things in the output structure
-EventReview.lookedatwins = lookedatwins;
-EventReview.miss = miss; 
-EventReview.hit = hit;
-EventReview.falsealarm = falsealarm;
-EventReview.estMissperc = numMiss./(numHit+numMiss);
-EventReview.estFAperc = numFA./(numHit+numFA);
-EventReview.ReviewDate = today;
-EventReview.EventsType = FO.EventName;
+DetectionReview.lookedatwins = lookedatwins;
+DetectionReview.miss = miss; 
+DetectionReview.hit = hit;
+DetectionReview.falsealarm = falsealarm;
+DetectionReview.estMissperc = numMiss./(numHit+numMiss);
+DetectionReview.estFAperc = numFA./(numHit+numFA);
+DetectionReview.ReviewDate = today;
+DetectionReview.EventsType = FO.EventName;
 
 %UI: Done!  Would you like to save the results to (eventsfilename?)
 %Make function that does this: SaveResults(FO,EEoutput)
@@ -131,7 +133,7 @@ if isfield(FO,'eventsfilename')
             %Load the events file, add the field, save the events file
             try %Only do this if the correct named structure lives in the file
                 eventsfile = load(FO.eventsfilename,FO.EventName);
-                eventsfile.(FO.EventName).EventReview = EventReview;
+                eventsfile.(FO.EventName).EventExplorer.DetectionReview = DetectionReview;
                 save(FO.eventsfilename,'-struct','eventsfile',FO.EventName,'-append')
             catch
                 warndlg({' Save failed... ',[FO.eventsfilename,' may not ',...
@@ -146,7 +148,7 @@ FO.viewmode = 'events';
 FO.currentuseraction = 'none';
 FO.currevent = 1;
 set(FO.EventPanel,'Visible','off')
-FO.EventReview = EventReview;
+FO.DetectionReview = DetectionReview;
 guidata(FO.fig, FO); %Save the detection review back to GUI data
 end
 
