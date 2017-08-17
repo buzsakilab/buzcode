@@ -89,22 +89,22 @@ catch
     FO.detectionints = [0 Inf];
 end
 try
-    FO.detectionchannel = events.detectorinfo.detectionchannel;
+    FO.lookatchannel = events.detectorinfo.detectionchannel;
 catch
     try %For legacy SWDetection - remove in next few days (8/15)
-        FO.detectionchannel = events.detectorinfo.detectionparms.SWchannel;
+        FO.lookatchannel = events.detectorinfo.detectionparms.SWchannel;
     catch
-    FO.detectionchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
+    FO.lookatchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
         'Which LFP channel would you like to look at?']);
-    FO.detectionchannel = str2num(FO.detectionchannel{1});
+    FO.lookatchannel = str2num(FO.lookatchannel{1});
     end
 end
     
 %[ SleepState ] = bz_LoadStates(FO.basePath,'SleepState');
 %FO.detectionints = SleepState.ints.NREMstate;
-%FO.detectionchannel = events.detectorinfo.detectionparms.SWchannel;
+%FO.lookatchannel = events.detectorinfo.detectionparms.SWchannel;
 
-FO.data.lfp = bz_GetLFP(FO.detectionchannel,'basepath',FO.basePath);
+FO.data.lfp = bz_GetLFP(FO.lookatchannel,'basepath',FO.basePath);
 FO.data.spikes = bz_GetSpikes('basepath',FO.basePath);
 %% Set up the EventExplorer Window
 %Position for the main interface
@@ -140,10 +140,22 @@ FO.viewmode = 'events';
 
 %Text of hotkey definitions for user guidance
 
+
+%The SignalBox
+FO.SignalPanel = uipanel('FontSize',12,...
+        'Position',[.65 .7 0.25 0.15]); 
+    editLFPchan  = uicontrol('Parent',FO.SignalPanel,'Style','edit',...
+        'Position',[230 70 50 25],'String',num2str(FO.lookatchannel),...
+        'Callback',@ChangeLFPChan);
+    winsizetext = uicontrol('Parent',FO.SignalPanel,...
+        'Position',[150 70 80 18],'style','text',...
+        'string','LFP Channel:','HorizontalAlignment','left'); 
+
+
 %Set up the navigation panel
 FO.NavPanel = uipanel('FontSize',12,...
         'Position',[.65 .22 0.25 0.15]);    
-    thisevent  = uicontrol('Parent',FO.NavPanel,'Style','edit',...
+    FO.thiseventdisplay  = uicontrol('Parent',FO.NavPanel,'Style','edit',...
         'Position',[60 70 50 25],'String',num2str(FO.currevent),...
         'Callback',@GoToEvent);
     thiseventtext = uicontrol('Parent',FO.NavPanel,...
@@ -172,13 +184,15 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
                       'radiobutton',...
                       'String','events',...
                       'Position',[10 70 75 30]);
-    if REVIEWDONE %Instead of if statement, use visible false, then if REVIEWDONE turn visible true
-    r2 = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
-                      'String','misses',...
+    FO.missbutton = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
+                      'String','misses','Visible','off',...
                       'Position',[10 40 75 30]);
-    r3 = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
-                      'String','FAs',...
+    FO.FAbutton = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
+                      'String','FAs','Visible','off',...
                       'Position',[10 10 75 30]);
+    if REVIEWDONE
+        set(FO.missbutton,'Visible','on');
+        set(FO.FAbutton,'Visible','on');
     end
     randbtn = uicontrol('Parent',FO.eventtypeselection,...
         'Position',[130 40 150 40],'String','Run Detection Review',...
@@ -202,7 +216,8 @@ FO.CommentFlagPanel = uipanel('FontSize',12,...
         'Position',[450 20 100 30],'style','text',...
         'string','Browse Flagged Events Only','HorizontalAlignment','left'); 
         
-%Store the data in the figure - do this at the end of each function?
+    
+%Store the data in the figure guidata
 guidata(FO.fig, FO);
 EventVewPlot;
 
@@ -344,6 +359,14 @@ function ShowFlagged(obj,event)
     guidata(FO.fig, FO);
 end
 
+function ChangeLFPChan(obj,event)
+    FO = guidata(obj);
+    FO.lookatchannel=str2num(obj.String);
+    FO.data.lfp = bz_GetLFP(FO.lookatchannel,'basepath',FO.basePath);
+    guidata(FO.fig, FO);
+    EventVewPlot;
+end
+
 function CloseDialog(obj,event)
 FO = guidata(obj);
     if isfield(FO,'eventsfilename') && isfield(FO,'FlagsAndComments')
@@ -369,6 +392,10 @@ delete(FO.fig)
 end
 
 function RunDetectionReview(obj,event)
-    DetectionReview %Run
-    %Get the output and update miss/etc tickers
+    DetectionReview(obj); %Run
+    %Get the results
+    obj = findobj('tag','EventExplorerMaster');  FO = guidata(obj);
+    set(FO.missbutton,'Visible','on');
+    set(FO.FAbutton,'Visible','on');
+    %Update miss/etc tickers
 end

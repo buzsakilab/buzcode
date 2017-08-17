@@ -33,6 +33,8 @@ plot(FO.viewwin,inwinevents,zeros(size(inwinevents)),'o','color',[0 0.6 0])
 viewinfo.inwinevents = inwinevents;
 viewinfo.thiseventwin = thiseventwin;
 
+%UPdate event number display
+set(FO.thiseventdisplay,'String',round(FO.currevent))
 
 %Update Comment/Flag Window to reflect current event
 %these try statements are to deal with FlagsAndComments not being made yet (do better)
