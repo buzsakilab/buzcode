@@ -2,28 +2,34 @@ function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %EventExplorer is a GUI tool for exploring buzcode events and states files.
 %
 %INPUT
-%   events      Name of events in a string (i.e. 'SlowWaves') or buzcode 
-%               events structure.
-%               events
-%   basePath    default: pwd
+%   events      eventsName string (i.e. 'SlowWaves'), 
+%               to load file: basePath/baseName.eventsName.events.mat
+%                   -or- 
+%               buzcode events structure (see also buzcode wiki)
+%               Required fields: 
+%                   eventsName.timestamps  [numevents x 1] or [numevents x 2]
+%               Recommended fields:
+%                   eventsName.detectorinfo.detectionintervals
+%                   eventsName.detectorinfo.detectionchannel
+%                   
+%   basePath    basePath that holds baseName.lfp (default: pwd)
 %
 %OUTPUT
 %   EventDetectionReview    results of DetectionReview - if called with an
 %                           output, automatically runs detection review
 %
 %DLevenstein 2017
-%%
-%events = 'SlowWaves';
-%basePath = '/Users/dlevenstein/Dropbox/Research/Datasets/20140526_277um';
+%% (For development)
+% events = 'SlowWaves';
+% basePath = '/Users/dlevenstein/Dropbox/Research/Datasets/20140526_277um';
 %%
 if ~exist('basePath','var')
     basePath = pwd;
 end
 baseName = bz_BasenameFromBasepath(basePath);
 
-
 %% Select the Events
-%eventsfile = fullfile(basePath,[baseName,'.',eventsname,'.events.mat']);
+%Get the events structure
 if ~exist('events','var')
     [events,FO.eventsfilename] = bz_LoadEvents(basePath);
     eventstype = 'events';
@@ -44,10 +50,11 @@ else
     eventsname = inputname(2);
 end
 
+%Get the right info out of the events structure
 switch eventstype
     case 'events'
         exploreint = events.timestamps;
-        exploreintname = events.detectorinfo.detectorname;
+        %exploreintname = events.detectorinfo.detectorname;
 
     case 'states'
         intnames = [fieldnames(events.ints)]; %remove second term here
@@ -120,7 +127,8 @@ posvar(2) = 20;
 posvar(3) = posvar(3)-100;
 posvar(4) = posvar(4)-100;
 
-oldfig = findobj('tag','EventExplorerMaster'); close(oldfig);
+oldfig = findobj('tag','EventExplorerMaster'); 
+try close(oldfig); catch;  delete(oldfig); end;
 %Start the figure
 FO.fig = figure('KeyPressFcn', {@KeyDefinitions},'Position', posvar);
 set(FO.fig, 'numbertitle', 'off', 'name', ['Recording: ', FO.baseName,'. Events: ',FO.EventName]);
@@ -186,22 +194,32 @@ FO.NavPanel = uipanel('FontSize',12,...
 %The Reviewed Event Selection Panel
 FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible','on',...
     'SelectionChangedFcn',@(bg,event) EventTypeSelector(bg,event));
-    r1 = uicontrol(FO.eventtypeselection,'Style',...
-                      'radiobutton',...
-                      'String','events',...
-                      'Position',[10 70 75 30]);
+    eventselectiontext = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
+                      'String','events','Position',[10 70 75 30]);
     FO.missbutton = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
                       'String','misses','Visible','off',...
                       'Position',[10 40 75 30]);
     FO.FAbutton = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
                       'String','FAs','Visible','off',...
                       'Position',[10 10 75 30]);
+    FO.eventcounttxt = uicontrol(FO.eventtypeselection,'Style','text',...
+        'String',['(',num2str(length(FO.EventTimes)),' Total)'],...
+        'Position',[75 70 80 22]);
+    
+    FO.missperctxt = uicontrol(FO.eventtypeselection,'Style','text',...
+        'String','',...
+        'Position',[75 40 80 22]);
+    FO.FAperctxt = uicontrol(FO.eventtypeselection,'Style','text',...
+        'String','',...
+        'Position',[75 10 80 22]);
     if REVIEWDONE
         set(FO.missbutton,'Visible','on');
+        set(FO.missperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estMissperc,2)),'%)']);
         set(FO.FAbutton,'Visible','on');
+        set(FO.FAperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estFAperc,2)),'%)']);
     end
-    randbtn = uicontrol('Parent',FO.eventtypeselection,...
-        'Position',[130 40 150 40],'String','Run Detection Review',...
+    rundetectionbtn = uicontrol('Parent',FO.eventtypeselection,...
+        'Position',[165 40 150 40],'String','Run Detection Review',...
          'Callback',@RunDetectionReview);
 
 %The Comment/Flag Panel
@@ -401,7 +419,9 @@ function RunDetectionReview(obj,event)
     DetectionReview(obj); %Run
     %Get the results
     obj = findobj('tag','EventExplorerMaster');  FO = guidata(obj);
-    set(FO.missbutton,'Visible','on');
-    set(FO.FAbutton,'Visible','on');
+        set(FO.missbutton,'Visible','on');
+        set(FO.missperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estMissperc,2)),'%)']);
+        set(FO.FAbutton,'Visible','on');
+        set(FO.FAperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estFAperc,2)),'%)']);
     %Update miss/etc tickers
 end
