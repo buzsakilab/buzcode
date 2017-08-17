@@ -2,17 +2,24 @@ function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %EventExplorer is a GUI tool for exploring buzcode events and states files.
 %
 %INPUT
-%   events      Name of events in a string (i.e. 'SlowWaves') or buzcode 
-%               events structure.
-%               events
-%   basePath    default: pwd
+%   events      eventsName string (i.e. 'SlowWaves'), 
+%               to load file: basePath/baseName.eventsName.events.mat
+%                   -or- 
+%               buzcode events structure (see also buzcode wiki)
+%               Required fields: 
+%                   eventsName.timestamps  [numevents x 1] or [numevents x 2]
+%               Recommended fields:
+%                   eventsName.detectorinfo.detectionintervals
+%                   eventsName.detectorinfo.detectionchannel
+%                   
+%   basePath    basePath that holds baseName.lfp (default: pwd)
 %
 %OUTPUT
 %   EventDetectionReview    results of DetectionReview - if called with an
 %                           output, automatically runs detection review
 %
 %DLevenstein 2017
-%%
+%% (For development)
 %events = 'SlowWaves';
 %basePath = '/Users/dlevenstein/Dropbox/Research/Datasets/20140526_277um';
 %%
@@ -21,9 +28,8 @@ if ~exist('basePath','var')
 end
 baseName = bz_BasenameFromBasepath(basePath);
 
-
 %% Select the Events
-%eventsfile = fullfile(basePath,[baseName,'.',eventsname,'.events.mat']);
+%Get the events structure
 if ~exist('events','var')
     [events,FO.eventsfilename] = bz_LoadEvents(basePath);
     eventstype = 'events';
@@ -44,10 +50,11 @@ else
     eventsname = inputname(2);
 end
 
+%Get the right info out of the events structure
 switch eventstype
     case 'events'
         exploreint = events.timestamps;
-        exploreintname = events.detectorinfo.detectorname;
+        %exploreintname = events.detectorinfo.detectorname;
 
     case 'states'
         intnames = [fieldnames(events.ints)]; %remove second term here
