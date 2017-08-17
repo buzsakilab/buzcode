@@ -20,8 +20,8 @@ function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %
 %DLevenstein 2017
 %% (For development)
-%events = 'SlowWaves';
-%basePath = '/Users/dlevenstein/Dropbox/Research/Datasets/20140526_277um';
+events = 'SlowWaves';
+basePath = '/Users/dlevenstein/Dropbox/Research/Datasets/20140526_277um';
 %%
 if ~exist('basePath','var')
     basePath = pwd;
@@ -127,7 +127,8 @@ posvar(2) = 20;
 posvar(3) = posvar(3)-100;
 posvar(4) = posvar(4)-100;
 
-oldfig = findobj('tag','EventExplorerMaster'); close(oldfig);
+oldfig = findobj('tag','EventExplorerMaster'); 
+try close(oldfig); catch;  delete(oldfig); end;
 %Start the figure
 FO.fig = figure('KeyPressFcn', {@KeyDefinitions},'Position', posvar);
 set(FO.fig, 'numbertitle', 'off', 'name', ['Recording: ', FO.baseName,'. Events: ',FO.EventName]);
@@ -193,7 +194,7 @@ FO.NavPanel = uipanel('FontSize',12,...
 %The Reviewed Event Selection Panel
 FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible','on',...
     'SelectionChangedFcn',@(bg,event) EventTypeSelector(bg,event));
-    r1 = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
+    eventselectiontext = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
                       'String','events','Position',[10 70 75 30]);
     FO.missbutton = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
                       'String','misses','Visible','off',...
@@ -201,17 +202,24 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
     FO.FAbutton = uicontrol(FO.eventtypeselection,'Style','radiobutton',...
                       'String','FAs','Visible','off',...
                       'Position',[10 10 75 30]);
-%     FO.eventcounttxt = (FO.eventtypeselection,'Style','text',...
-%                       'String',['(',num2str(length(FO.EventTimes)),') Total'],...
-%                       'Position',[10 70 75 30]);
-    %FO.missperctxt = 
-    %FO.FAperctxt = 
+    FO.eventcounttxt = uicontrol(FO.eventtypeselection,'Style','text',...
+        'String',['(',num2str(length(FO.EventTimes)),' Total)'],...
+        'Position',[70 70 75 22]);
+    
+    FO.missperctxt = uicontrol(FO.eventtypeselection,'Style','text',...
+        'String','',...
+        'Position',[70 40 75 22]);
+    FO.FAperctxt = uicontrol(FO.eventtypeselection,'Style','text',...
+        'String','',...
+        'Position',[70 10 75 22]);
     if REVIEWDONE
         set(FO.missbutton,'Visible','on');
+        set(FO.missperctxt,'String',['(Est ',num2str(FO.DetectionReview.estMissperc),'%)']);
         set(FO.FAbutton,'Visible','on');
+        set(FO.FAperctxt,'String',['(Est ',num2str(FO.DetectionReview.estFAperc),'%)']);
     end
-    randbtn = uicontrol('Parent',FO.eventtypeselection,...
-        'Position',[140 40 150 40],'String','Run Detection Review',...
+    rundetectionbtn = uicontrol('Parent',FO.eventtypeselection,...
+        'Position',[160 40 150 40],'String','Run Detection Review',...
          'Callback',@RunDetectionReview);
 
 %The Comment/Flag Panel
@@ -411,7 +419,9 @@ function RunDetectionReview(obj,event)
     DetectionReview(obj); %Run
     %Get the results
     obj = findobj('tag','EventExplorerMaster');  FO = guidata(obj);
-    set(FO.missbutton,'Visible','on');
-    set(FO.FAbutton,'Visible','on');
+        set(FO.missbutton,'Visible','on');
+        set(FO.missperctxt,'String',['(Est ',num2str(FO.DetectionReview.estMissperc),'%)']);
+        set(FO.FAbutton,'Visible','on');
+        set(FO.FAperctxt,'String',['(Est ',num2str(FO.DetectionReview.estFAperc),'%)']);
     %Update miss/etc tickers
 end
