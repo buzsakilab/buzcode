@@ -34,7 +34,7 @@ viewinfo.inwinevents = inwinevents;
 viewinfo.thiseventwin = thiseventwin;
 
 %UPdate event number display
-set(FO.thiseventdisplay,'String',FO.currevent)
+set(FO.thiseventdisplay,'String',round(FO.currevent))
 
 %Update Comment/Flag Window to reflect current event
 %these try statements are to deal with FlagsAndComments not being made yet (do better)
