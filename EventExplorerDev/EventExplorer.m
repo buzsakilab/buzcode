@@ -20,8 +20,8 @@ function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %
 %DLevenstein 2017
 %% (For development)
-events = 'SlowWaves';
-basePath = '/Users/dlevenstein/Dropbox/Research/Datasets/20140526_277um';
+% events = 'SlowWaves';
+% basePath = '/Users/dlevenstein/Dropbox/Research/Datasets/20140526_277um';
 %%
 if ~exist('basePath','var')
     basePath = pwd;
@@ -204,22 +204,22 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
                       'Position',[10 10 75 30]);
     FO.eventcounttxt = uicontrol(FO.eventtypeselection,'Style','text',...
         'String',['(',num2str(length(FO.EventTimes)),' Total)'],...
-        'Position',[70 70 75 22]);
+        'Position',[75 70 80 22]);
     
     FO.missperctxt = uicontrol(FO.eventtypeselection,'Style','text',...
         'String','',...
-        'Position',[70 40 75 22]);
+        'Position',[75 40 80 22]);
     FO.FAperctxt = uicontrol(FO.eventtypeselection,'Style','text',...
         'String','',...
-        'Position',[70 10 75 22]);
+        'Position',[75 10 80 22]);
     if REVIEWDONE
         set(FO.missbutton,'Visible','on');
-        set(FO.missperctxt,'String',['(Est ',num2str(FO.DetectionReview.estMissperc),'%)']);
+        set(FO.missperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estMissperc,2)),'%)']);
         set(FO.FAbutton,'Visible','on');
-        set(FO.FAperctxt,'String',['(Est ',num2str(FO.DetectionReview.estFAperc),'%)']);
+        set(FO.FAperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estFAperc,2)),'%)']);
     end
     rundetectionbtn = uicontrol('Parent',FO.eventtypeselection,...
-        'Position',[160 40 150 40],'String','Run Detection Review',...
+        'Position',[165 40 150 40],'String','Run Detection Review',...
          'Callback',@RunDetectionReview);
 
 %The Comment/Flag Panel
@@ -420,8 +420,8 @@ function RunDetectionReview(obj,event)
     %Get the results
     obj = findobj('tag','EventExplorerMaster');  FO = guidata(obj);
         set(FO.missbutton,'Visible','on');
-        set(FO.missperctxt,'String',['(Est ',num2str(FO.DetectionReview.estMissperc),'%)']);
+        set(FO.missperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estMissperc,2)),'%)']);
         set(FO.FAbutton,'Visible','on');
-        set(FO.FAperctxt,'String',['(Est ',num2str(FO.DetectionReview.estFAperc),'%)']);
+        set(FO.FAperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estFAperc,2)),'%)']);
     %Update miss/etc tickers
 end
