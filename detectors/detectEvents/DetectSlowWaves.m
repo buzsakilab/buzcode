@@ -8,11 +8,11 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %   (input options not yet implemented... all set to default)
 %   'NREMInts'  -Interval of times for NREM 
 %               -(Default: loaded from SleepState.states.mat)
-%   'SWChan'   -Channel with the most robust (positively deflecting) Slow
-%               Waves. (0-Indexing a la neuroscope). 
-%               can try 'autoselect'
-%               'useold' to use channel from existing SlowWave.states.mat
-%               (Default: use SWChannel from sleep scoring)
+%   'DetectionChannel'   -Channel with the most robust (positively deflecting) 
+%               Slow Waves. (0-Indexing a la neuroscope). 
+%               (Default: 'autoselect')
+%               'useold' to use channel from existing SlowWaves.events.mat
+%               
 %   'CTXSpkGroups' -Spike groups that are in the cortex...  default: all
 %   'CTXChans' -LFP channels that are in the cortex...  default: all
 %   'sensitivity' -sensititivity (0-1) for determining LFP thresholds
@@ -60,7 +60,7 @@ p = inputParser;
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'showFig',true,@islogical);
-addParameter(p,'SWChan',[]);
+addParameter(p,'DetectionChannel','autoselect');
 addParameter(p,'NREMInts',[]);
 addParameter(p,'CTXChans','all');
 addParameter(p,'sensitivity',0.6,ratevalidation);
@@ -71,7 +71,7 @@ parse(p,varargin{:})
 FORCEREDETECT = p.Results.forceReload;
 SAVEMAT = p.Results.saveMat;
 SHOWFIG = p.Results.showFig;
-SWChann = p.Results.SWChan;
+SWChann = p.Results.DetectionChannel;
 NREMInts = p.Results.NREMInts;
 CTXChans = p.Results.CTXChans;
 NOPROMPTS = p.Results.noPrompts;
