@@ -14,22 +14,28 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %               default is to take the channels as ordered in lfp.channels
 %   'timewin'   only plot a subwindow of time
 %   'spikes'    a buzcode spikes struct to display spikes below the LFP
+%   'axhandle'  axes handle in which to put the plot
 %
 %
 %DLevenstein 2017
 %% parse the inputs!
 channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
     'channels must be numeric or "all"');
+spikedefault.spindices = [nan nan];
 
 % parse args
 p = inputParser;
 addParameter(p,'channels','all',@isnumeric)
 addParameter(p,'timewin',[0 Inf],@isnumeric)
-addParameter(p,'spikes',[],@isstruct) %should have iscellinfo function
+addParameter(p,'spikes',spikedefault,@isstruct) %should have iscellinfo function
+addParameter(p,'axhandle',gca)
+addParameter(p,'scaleLFP',1,@isnumeric)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
 spikes = p.Results.spikes;
+ax = p.Results.axhandle;
+scaleLFP = p.Results.scaleLFP;
 
 %% Channel and time stuff
 %Time Window
@@ -48,24 +54,24 @@ winspikes = spikes.spindices(:,1)>=timewin(1) & spikes.spindices(:,1)<=timewin(2
 %Space based on median absolute deviation - robust to outliers.
 channelrange = 8.*mad(single(lfp.data(windex,chindex)),1);
 lfpmidpoints = -cumsum(channelrange);
-lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)),lfpmidpoints));
+lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfpmidpoints));
 
 spikeplotrange = [1 -lfpmidpoints(1)];
 spikes.plotdata = spikes.spindices(winspikes,:);
 spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff(spikeplotrange));
 %% Do the plot
 ywinrange = fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange));
-if ~isempty(spikes)
+if ~isnan(spikes.spindices)
     ywinrange(2) = ywinrange(2)+max(spikes.plotdata(:,2));
 end
 
-plot(lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
+plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
 hold on
-plot(spikes.plotdata(:,1),spikes.plotdata(:,2),'k.')
+plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.')
 xlabel('t (s)')
 ylabel('LFP Channel')
-set(gca,'Ytick',fliplr(lfpmidpoints))
-set(gca,'yticklabels',fliplr(channels))
+set(ax,'Ytick',fliplr(lfpmidpoints))
+set(ax,'yticklabels',fliplr(channels))
 ylim(ywinrange)
 xlim(timewin)
 
