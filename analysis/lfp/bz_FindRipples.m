@@ -281,13 +281,12 @@ if strcmp(show,'on')
 	end
 end
 
-
-%% BUZCODE Struct Output
+% we need to work these into the code above instead of tacking it on here
 rips = ripples; clear ripples
-
-ripples.timestamps = rips(:,[1 3]);
-ripples.peaks = rips(:,2);            %peaktimes? could also do these as timestamps and then ripples.ints for start/stops?
-ripples.peakNormedPower = rips(:,4);  %amplitudes?
+ripples.times = rips(:,[1 3]);
+ripples.detectorName = 'bz_FindRipples';
+ripples.peaks = rips(:,2);
+ripples.peakNormedPower = rips(:,4);
 ripples.stdev = sd;
 if ~isempty(bad)
     ripples.noise.times = bad(:,[1 3]);
@@ -299,21 +298,16 @@ else
     ripples.noise.peakNormedPower = [];
 end
 
-%The detectorinto substructure
-detectorinfo.detectorname = 'bz_FindRipples';
-detectorinfo.detectiondate = today;
-detectorinfo.detectionintervals = restrict;
-detectorinfo.detectionparms = p.Results;
-detectorinfo.detectionparms = rmfield(rdetectorinfo.detectionparms,'noise');
-if isfield(detectorinfo.detectionparms,'timestamps')  
-    detectorinfo.detectionparms = rmfield(detectorinfo.detectionparms,'timestamps');
-end
-%Put it into the ripples structure
-ripples.detectorinfo = detectorinfo;
 
-%Save
+ripples.detectorParams = p.Results;
+ripples.detectorParams = rmfield(ripples.detectorParams,'noise');
+if isfield(ripples.detectorParams,'timestamps')  
+    ripples.detectorParams = rmfield(ripples.detectorParams,'timestamps');
+end
+
+
 if p.Results.saveMat
-    save([p.Results.basepath filesep basename '.ripples.events.mat'],'ripples')
+    save([p.Results.basepath filesep basename '.ripples.event.mat'],'ripples')
 end
 
 
