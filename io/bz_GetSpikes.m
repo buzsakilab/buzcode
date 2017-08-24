@@ -102,10 +102,11 @@ cluFiles = dir([basepath filesep '*.clu*']);
 resFiles = dir([basepath filesep '*.res*']);
 spkFiles = dir([basepath filesep '*.spk*']);
 
-% remove *temp* and *autosave* files files
+% remove *temp*, *autosave*, and *.clu.str files/directories
 tempFiles = zeros(length(cluFiles),1);
-for i = 1:length(cluFiles)
-    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name))
+for i = 1:length(cluFiles) 
+    dummy = strsplit(cluFiles(i).name, '.'); % Check whether the component after the last dot is a number or not. If not, exclude the file/dir. 
+    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | isempty(str2num(dummy{length(dummy)})) 
         tempFiles(i) = 1;
     end
 end
