@@ -39,16 +39,19 @@ set(FO.thiseventdisplay,'String',round(FO.currevent))
 %Update Comment/Flag Window to reflect current event
 %these try statements are to deal with FlagsAndComments not being made yet (do better)
 try iscommented = ~isempty(FO.FlagsAndComments.(FO.viewmode).comments{FO.currevent});
-catch; iscommented=false; end
+catch; iscommented=false; end;
 if iscommented 
     set(FO.eventcomment,'String',FO.FlagsAndComments.(FO.viewmode).comments{FO.currevent})
 else set(FO.eventcomment,'String','Event Comments')
 end
 
-try isflagged = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
-catch; isflagged = false; end
+try [isflagged,whichflag] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
+catch; isflagged = false; end;
 if isflagged
     set(FO.flageventbutton,'String','Unflag')
+    if strcmp(FO.viewmode,'timepoint')
+        set(FO.eventcomment,'String',FO.FlagsAndComments.(FO.viewmode).comments{whichflag})
+    end     
 else set(FO.flageventbutton,'String','Flag')
 end
 
