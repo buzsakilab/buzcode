@@ -403,7 +403,7 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
     baseName = bz_BasenameFromBasepath(basePath);
     figfolder = fullfile(basePath,'DetectionFigures');
     %Exclude badchannels
-    par = LoadParameters(basePath);
+    par = bz_getSessionInfo(basePath);
     if strcmp(trychans,'all') 
         trychans = [par.SpkGrps(:).Channels];
     end
