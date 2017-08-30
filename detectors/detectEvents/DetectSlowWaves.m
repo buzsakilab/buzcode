@@ -513,7 +513,7 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
     DELTAPeakheight = peakheights(keepPeaks);
     [~,DELTApeakIDX] = ismember(DELTApeaks,deltaLFP.timestamps);
 
-    [peakheights,GAMMAdips] = findpeaks(-gammaLFP.normamp,gammaLFP.timestamps,'MinPeakHeight',0.5,'MinPeakDistance',minwindur);
+    [peakheights,GAMMAdips] = findpeaks(-gammaLFP.normamp,gammaLFP.timestamps,'MinPeakHeight',0.3,'MinPeakDistance',minwindur);
     [GAMMAdips,keepPeaks] = RestrictInts(GAMMAdips,NREMInts);
     GAMMAdipdepth = peakheights(keepPeaks);
     [~,GAMMAdipIDX] = ismember(GAMMAdips,gammaLFP.timestamps);
@@ -540,7 +540,7 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
         sampleDELTA = 1:length(DELTApeaks);
     end
     nearpeakdelta = zeros(2.*win.*deltaLFP.samplingRate+1,nummagbins);
-    DELTAmagbins = linspace(min(DELTAPeakheight),min([max(DELTAPeakheight)-1,5]), nummagbins);
+    DELTAmagbins = linspace(min(DELTAPeakheight),min([max(DELTAPeakheight)-1,4]), nummagbins);
     for pp = 1:length(sampleDELTA)
         ss = sampleDELTA(pp);
         %Spikes around the delta
@@ -614,7 +614,8 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
     GAMMAbox=bwmorph(ratemat_byGAMMAmag<ratethresh_Hz,'close');
     GAMMAbox=bwmorph(GAMMAbox,'open');
     if sum(GAMMAbox(:))== 0   %will have issue here with no dip recordings... bad channel.
-        display('No DOWN around gamma dip.... perhaps adjust rate threshold or pick another channel?')
+        display({'No DOWN around gamma dip.... perhaps adjust rate threshold or pick another channel?',...
+            'This may also indicate nan bug in delta rate threshold... DL '})
         GAMMAdipthresh = 1.2;
         GAMMAwinthresh = 1;
         GAMMAbox = [1 1];
