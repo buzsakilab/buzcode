@@ -15,7 +15,7 @@ function spikes = bz_GetSpikes(varargin)
 %    getWaveforms    -logical (default=true) to load mean of raw waveform data
 %    forceReload     -logical (default=false) to force loading from
 %                     res/clu/spk files
-%    saveMat         -logical (default=false) to save in buzcode format
+%    saveMat         -logical (default=true) to save in buzcode format
 %    
 % OUTPUTS
 %
@@ -72,7 +72,7 @@ addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'getWaveforms',true,@islogical)
 addParameter(p,'forceReload',false,@islogical);
-addParameter(p,'saveMat',false,@islogical);
+addParameter(p,'saveMat',true,@islogical);
 
 parse(p,varargin{:})
 

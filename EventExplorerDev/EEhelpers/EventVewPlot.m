@@ -45,10 +45,13 @@ if iscommented
 else set(FO.eventcomment,'String','Event Comments')
 end
 
-try isflagged = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
-catch; isflagged = false; end
+try [isflagged,whichflag] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
+catch; isflagged = false; end;
 if isflagged
     set(FO.flageventbutton,'String','Unflag')
+    if strcmp(FO.viewmode,'timepoint')
+        set(FO.eventcomment,'String',FO.FlagsAndComments.(FO.viewmode).comments{whichflag})
+    end     
 else set(FO.flageventbutton,'String','Flag')
 end
 
