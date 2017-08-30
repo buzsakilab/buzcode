@@ -39,7 +39,7 @@ set(FO.thiseventdisplay,'String',round(FO.currevent))
 %Update Comment/Flag Window to reflect current event
 %these try statements are to deal with FlagsAndComments not being made yet (do better)
 try iscommented = ~isempty(FO.FlagsAndComments.(FO.viewmode).comments{FO.currevent});
-catch; iscommented=false; end;
+catch; iscommented=false; end
 if iscommented 
     set(FO.eventcomment,'String',FO.FlagsAndComments.(FO.viewmode).comments{FO.currevent})
 else set(FO.eventcomment,'String','Event Comments')

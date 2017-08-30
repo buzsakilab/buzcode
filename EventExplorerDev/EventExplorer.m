@@ -50,6 +50,7 @@ elseif isstring(events) || ischar(events) %for eventsName - load the buzcode eve
         eventstype = 'states';
     end
 else %for a buzcode structure
+
     eventstype = 'events'; %Need a way to check type of a struct?
     eventsname = inputname(2);
 end
@@ -159,7 +160,6 @@ FO.viewwin = subplot(3,1,2,'ButtonDownFcn',@MouseClick);
 FO.scaleLFP = 1;
 FO.winsize = 8;
 FO.currevent = 1;
-
 
 
 %Text of hotkey definitions for user guidance
