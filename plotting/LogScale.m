@@ -15,23 +15,36 @@ function [] = LogScale( whichaxis,logbase)
 
 if strcmp(whichaxis,'y') || strcmp(whichaxis,'xy')
     range = get(gca,'YLim');
-    range(1) = floor(range(1));range(2) = ceil(range(2));
-    set(gca,'YTick',[range(1):range(2)])
-    set(gca,'YTickLabels',logbase.^[range(1):range(2)])
+    range(1) = floor(range(1)); range(2) = ceil(range(2));
+    ticks = [range(1):range(2)];
+    if length(ticks)<=4
+        ticks = [range(1):0.5:range(2)];
+    end
+    
+    set(gca,'YTick',ticks)
+    set(gca,'YTickLabels',round(logbase.^ticks,3,'significant'))
 end
 
 if strcmp(whichaxis,'x') || strcmp(whichaxis,'xy')
     range = get(gca,'XLim');
-    range(1) = floor(range(1));range(2) = ceil(range(2));
-    set(gca,'XTick',[range(1):range(2)])
-    set(gca,'XTickLabels',logbase.^[range(1):range(2)])
+    range(1) = floor(range(1)); range(2) = ceil(range(2));
+    ticks = [range(1):range(2)];
+    if length(ticks)<=4
+        ticks = [range(1):0.5:range(2)];
+    end
+    set(gca,'XTick',ticks)
+    set(gca,'XTickLabels',round(logbase.^ticks,3,'significant'))
 end
 
 if strcmp(whichaxis,'z')
     range = get(gca,'ZLim');
-    range(1) = floor(range(1));range(2) = ceil(range(2));
-    set(gca,'ZTick',[range(1):range(2)])
-    set(gca,'ZTickLabels',logbase.^[range(1):range(2)])
+    range(1) = floor(range(1)); range(2) = ceil(range(2));
+    ticks = [range(1):range(2)];
+    if length(ticks)<=4
+        ticks = [range(1):0.5:range(2)];
+    end
+    set(gca,'ZTick',ticks)
+    set(gca,'ZTickLabels',round(logbase.^ticks,3,'significant'))
 end
 
 end
