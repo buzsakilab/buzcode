@@ -304,7 +304,7 @@ detectorinfo.detectorname = 'bz_FindRipples';
 detectorinfo.detectiondate = today;
 detectorinfo.detectionintervals = restrict;
 detectorinfo.detectionparms = p.Results;
-detectorinfo.detectionparms = rmfield(rdetectorinfo.detectionparms,'noise');
+detectorinfo.detectionparms = rmfield(detectorinfo.detectionparms,'noise');
 if isfield(detectorinfo.detectionparms,'timestamps')  
     detectorinfo.detectionparms = rmfield(detectorinfo.detectionparms,'timestamps');
 end
