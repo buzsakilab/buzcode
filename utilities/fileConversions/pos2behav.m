@@ -1,4 +1,4 @@
-function [behavior] = pos2behav(pos,trackingType,varargin)
+function [positionTracking] = pos2behav(pos,trackingType,varargin)
 %pos2behav - convert old .pos files/variables to buzcode 'behavior' struct.
 %
 %  USAGE
@@ -29,12 +29,12 @@ function [behavior] = pos2behav(pos,trackingType,varargin)
 %                   accepted inputs are 'led', 'optitrack', and ...
 %
 %  OUTPUT
-%    behavior       struct with the following fields
+%    positionTracking       struct with the following fields
 %                   .position      -reconstructed postions for each frame
 %                            .x
 %                            .y
 %                            .z
-%                   .units         -unit of measurement ('meters', 'cm')
+%                            .units -unit of measurement ('meters', 'cm')
 %                   .timestamps    -Nx1 vector of timestamps (relative to
 %                                   recording) that match the x,y,z positions
 %                   .samplingRate
@@ -47,9 +47,12 @@ function [behavior] = pos2behav(pos,trackingType,varargin)
 %                               .pitch
 %                               .yaw
 %                               .roll
-%                   .rotationType  -Default: 'quaternion', other option is
-%                                   euler
-%                   .description
+%                               .rotationType  -Default: 'quaternion', 
+%                                               other option is euler
+%                   .behaviorinfo
+%                       .description
+%                       .acquisitionsystem
+%                       .substructnames
 %                   .events        -Important time markers (behavioral scoring of trials, etc) 
 %
 %  Written by David Tingley, 2017
@@ -103,39 +106,40 @@ switch trackingType
         end
         timestamps = pos(:,ts);
         
-        behavior.position.x = x_coords';
-        behavior.position.y = y_coords';
-        behavior.position.z = [];
-        behavior.timestamps = timestamps;
-        behavior.samplingRate = 1000 ./ mean(diff(behavior.timestamps))./1000;
-        behavior.units = 'pixels';
-        behavior.orientation.yaw = orientation;
-        behavior.orientation.pitch = [];
-        behavior.orientation.roll = [];
-        behavior.rotationType = 'euler';
-        behavior.description = behavType;
-        behavior.trackingType = trackingType;
+        positionTracking.position.x = x_coords';
+        positionTracking.position.y = y_coords';
+        positionTracking.position.z = [];
+        positionTracking.timestamps = timestamps;
+        positionTracking.samplingRate = 1000 ./ mean(diff(positionTracking.timestamps))./1000;
+        positionTracking.position.units = 'pixels';
+        positionTracking.orientation.yaw = orientation;
+        positionTracking.orientation.pitch = [];
+        positionTracking.orientation.roll = [];
+        positionTracking.orientation.rotationType = 'euler';
+        positionTracking.behaviorinfo.description = behavType;
+        positionTracking.behaviorinfo.acquisitionsystem = trackingType;
+        positionTracking.behaviorinfo.substructnames = {'position','orientation'};
         
         if ~isempty(trials)
             t=1;
             for i=1:length(trials)
                 for j=1:length(trials{i})
-                    behavior.events.trials{t}.x = nanmean(trials{i}{j}(:,x_cols)')';
-                    behavior.events.trials{t}.y = nanmean(trials{i}{j}(:,y_cols)')';
-                    behavior.events.trials{t}.z = [];
-                    behavior.events.trials{t}.orientation.yaw = cart2pol(trials{i}{j}(:,x_cols(1))-...
+                    positionTracking.events.trials{t}.x = nanmean(trials{i}{j}(:,x_cols)')';
+                    positionTracking.events.trials{t}.y = nanmean(trials{i}{j}(:,y_cols)')';
+                    positionTracking.events.trials{t}.z = [];
+                    positionTracking.events.trials{t}.orientation.yaw = cart2pol(trials{i}{j}(:,x_cols(1))-...
                         trials{i}{j}(:,x_cols(2)),trials{i}{j}(:,y_cols(1))-trials{i}{j}(:,y_cols(2)));
-                    behavior.events.trials{t}.orientation.pitch = [];
-                    behavior.events.trials{t}.orientation.roll = [];
-                    behavior.events.trials{t}.timestamps = trials{i}{j}(:,ts_col);
-                    behavior.events.trials{t}.mapping = mapping{i}{j}(:,5);
+                    positionTracking.events.trials{t}.orientation.pitch = [];
+                    positionTracking.events.trials{t}.orientation.roll = [];
+                    positionTracking.events.trials{t}.timestamps = trials{i}{j}(:,ts_col);
+                    positionTracking.events.trials{t}.mapping = mapping{i}{j}(:,5);
                     map_c.x = nanmean(map{i}(:,x_cols)')';
                     map_c.y = nanmean(map{i}(:,y_cols)')';
                     map_c.z = [];
-                    behavior.events.map{i} = map_c;
-                    behavior.events.trialConditions(t) = i;
+                    positionTracking.events.map{i} = map_c;
+                    positionTracking.events.trialConditions(t) = i;
                     
-                    behavior.events.trialIntervals(t,:) = [trials{i}{j}(1,5);trials{i}{j}(end,5)];
+                    positionTracking.events.trialIntervals(t,:) = [trials{i}{j}(1,5);trials{i}{j}(end,5)];
                     t = 1+t;
                 end
             end
@@ -143,46 +147,47 @@ switch trackingType
                 
     case 'optitrack'
         
-        behavior.position.x = pos(:,8);
-        behavior.position.y = pos(:,10);
-        behavior.position.z = pos(:,9);
-        behavior.timestamps = pos(:,1);
-        behavior.samplingRate = 1000 ./ mean(diff(behavior.timestamps))./1000;
+        positionTracking.position.x = pos(:,8);
+        positionTracking.position.y = pos(:,10);
+        positionTracking.position.z = pos(:,9);
+        positionTracking.timestamps = pos(:,1);
+        positionTracking.samplingRate = 1000 ./ mean(diff(positionTracking.timestamps))./1000;
         if nanstd(pos(:,7)) > 10  % determine unit of measure
-            behavior.units = 'meters';
+            positionTracking.position.units = 'meters';
         else
-            behavior.units = 'mm';
+            positionTracking.position.units = 'mm';
         end
-        behavior.orientation.x = pos(:,4);
-        behavior.orientation.y = pos(:,5);
-        behavior.orientation.z = pos(:,6);
-        behavior.orientation.w = pos(:,7);
-        behavior.rotationType = 'quaternion';
-        behavior.errorPerMarker = pos(:,11);
-        behavior.description = behavType;
-        behavior.trackingType = trackingType;
+        positionTracking.orientation.x = pos(:,4);
+        positionTracking.orientation.y = pos(:,5);
+        positionTracking.orientation.z = pos(:,6);
+        positionTracking.orientation.w = pos(:,7);
+        positionTracking.orientation.rotationType = 'quaternion';
+        positionTracking.behaviorinfo.errorPerMarker = pos(:,11);
+        positionTracking.behaviorinfo.description = behavType;
+        positionTracking.behaviorinfo.acquisitionsystem = trackingType;
+        positionTracking.behaviorinfo.substructnames = {'position','orientation'};
         
          if ~isempty(trials)
             t=1;
             for i=1:length(trials)
                 for j=1:length(trials{i})
-                    behavior.events.trials{t}.x = trials{i}{j}(:,8);
-                    behavior.events.trials{t}.y = trials{i}{j}(:,10);
-                    behavior.events.trials{t}.z = trials{i}{j}(:,9);
-                    behavior.events.trials{t}.orientation.x = trials{i}{j}(:,4);
-                    behavior.events.trials{t}.orientation.y = trials{i}{j}(:,5);
-                    behavior.events.trials{t}.orientation.z = trials{i}{j}(:,6);
-                    behavior.events.trials{t}.orientation.w = trials{i}{j}(:,7);
-                    behavior.events.trials{t}.errorPerMarker = trials{i}{j}(:,11);
-                    behavior.rotationType = 'quaternion';
-                    behavior.events.trials{t}.timestamps = trials{i}{j}(:,1);
-                    behavior.events.trials{t}.mapping = mapping{i}{j}(:,13);
+                    positionTracking.events.trials{t}.x = trials{i}{j}(:,8);
+                    positionTracking.events.trials{t}.y = trials{i}{j}(:,10);
+                    positionTracking.events.trials{t}.z = trials{i}{j}(:,9);
+                    positionTracking.events.trials{t}.orientation.x = trials{i}{j}(:,4);
+                    positionTracking.events.trials{t}.orientation.y = trials{i}{j}(:,5);
+                    positionTracking.events.trials{t}.orientation.z = trials{i}{j}(:,6);
+                    positionTracking.events.trials{t}.orientation.w = trials{i}{j}(:,7);
+                    positionTracking.events.trials{t}.errorPerMarker = trials{i}{j}(:,11);
+                    positionTracking.orientation.rotationType = 'quaternion';
+                    positionTracking.events.trials{t}.timestamps = trials{i}{j}(:,1);
+                    positionTracking.events.trials{t}.mapping = mapping{i}{j}(:,13);
                     map_c.x = map{i}(:,8);
                     map_c.y = map{i}(:,10);
                     map_c.z = map{i}(:,9);
-                    behavior.events.map{i} = map_c;
-                    behavior.events.trialConditions(t) = i;
-                    behavior.events.trialIntervals(t,:) = [trials{i}{j}(1,1);trials{i}{j}(end,1)];
+                    positionTracking.events.map{i} = map_c;
+                    positionTracking.events.trialConditions(t) = i;
+                    positionTracking.events.trialIntervals(t,:) = [trials{i}{j}(1,1);trials{i}{j}(end,1)];
                     t = 1+t;
                 end
             end
