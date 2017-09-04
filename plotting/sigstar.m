@@ -231,8 +231,13 @@ function H=makeSignificanceBar(x,y,p)
     %makeSignificanceBar produces the bar and defines how many asterisks we get for a 
     %given p-value
 
-
-    if p<=1E-3
+    if p<=1E-6
+        stars='******'; 
+    elseif p<=1E-5
+        stars='*****'; 
+    elseif p<=1E-4
+        stars='****'; 
+    elseif p<=1E-3
         stars='***'; 
     elseif p<=1E-2
         stars='**';
