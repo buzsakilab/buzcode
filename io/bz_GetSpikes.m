@@ -84,8 +84,13 @@ getWaveforms = p.Results.getWaveforms;
 forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 
-% get sessionInfo info about recording, for now we'll use the xml.
-sessionInfo = LoadParameters(basepath);  % calls loadparameters if sessionInfo doesn't exist
+try
+    [sessionInfo] = bz_getSessionInfo(basePath);
+catch
+    % get sessionInfo info about recording, for now we'll use the xml.
+    sessionInfo = LoadParameters(basepath);  % calls loadparameters if sessionInfo doesn't exist
+end
+
 samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
