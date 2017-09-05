@@ -85,7 +85,7 @@ forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 
 try
-    [sessionInfo] = bz_getSessionInfo(basePath);
+    [sessionInfo] = bz_getSessionInfo(basepath);
 catch
     % get sessionInfo info about recording, for now we'll use the xml.
     sessionInfo = LoadParameters(basepath);  % calls loadparameters if sessionInfo doesn't exist
