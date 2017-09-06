@@ -298,11 +298,14 @@ else
     ripples.noise.peakNormedPower = [];
 end
 
-
-ripples.detectorParams = p.Results;
-ripples.detectorParams = rmfield(ripples.detectorParams,'noise');
-if isfield(ripples.detectorParams,'timestamps')  
-    ripples.detectorParams = rmfield(ripples.detectorParams,'timestamps');
+%The detectorinto substructure
+detectorinfo.detectorname = 'bz_FindRipples';
+detectorinfo.detectiondate = today;
+detectorinfo.detectionintervals = restrict;
+detectorinfo.detectionparms = p.Results;
+detectorinfo.detectionparms = rmfield(detectorinfo.detectionparms,'noise');
+if isfield(detectorinfo.detectionparms,'timestamps')  
+    detectorinfo.detectionparms = rmfield(detectorinfo.detectionparms,'timestamps');
 end
 
 
