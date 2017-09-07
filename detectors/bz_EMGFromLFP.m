@@ -177,7 +177,7 @@ numbins = length(timestamps);
 EMGCorr = zeros(numbins, 1);
 % tic
 counter = 1;
-for j=1:(length(a))
+for j=1:(length(xcorr_chs))
     for k=(j+1):length(xcorr_chs)
         disp([num2str(counter*2 ./ (length(xcorr_chs)*length(xcorr_chs)*length(timestamps)))])
         c1 = [];
