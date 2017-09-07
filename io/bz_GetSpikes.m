@@ -15,7 +15,7 @@ function spikes = bz_GetSpikes(varargin)
 %    getWaveforms    -logical (default=true) to load mean of raw waveform data
 %    forceReload     -logical (default=false) to force loading from
 %                     res/clu/spk files
-%    saveMat         -logical (default=false) to save in buzcode format
+%    saveMat         -logical (default=true) to save in buzcode format
 %    
 % OUTPUTS
 %
@@ -72,7 +72,7 @@ addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'getWaveforms',true,@islogical)
 addParameter(p,'forceReload',false,@islogical);
-addParameter(p,'saveMat',false,@islogical);
+addParameter(p,'saveMat',true,@islogical);
 
 parse(p,varargin{:})
 
@@ -85,7 +85,7 @@ forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 
 % get sessionInfo info about recording, for now we'll use the xml.
-sessionInfo = bz_getSessionInfo(basepath);  % calls loadparameters if sessionInfo doesn't exist
+sessionInfo = LoadParameters(basepath);  % calls loadparameters if sessionInfo doesn't exist
 samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
@@ -102,10 +102,11 @@ cluFiles = dir([basepath filesep '*.clu*']);
 resFiles = dir([basepath filesep '*.res*']);
 spkFiles = dir([basepath filesep '*.spk*']);
 
-% remove *temp* and *autosave* files files
+% remove *temp*, *autosave*, and *.clu.str files/directories
 tempFiles = zeros(length(cluFiles),1);
-for i = 1:length(cluFiles)
-    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name))
+for i = 1:length(cluFiles) 
+    dummy = strsplit(cluFiles(i).name, '.'); % Check whether the component after the last dot is a number or not. If not, exclude the file/dir. 
+    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | isempty(str2num(dummy{length(dummy)})) 
         tempFiles(i) = 1;
     end
 end
