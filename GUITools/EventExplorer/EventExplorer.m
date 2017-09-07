@@ -29,33 +29,38 @@ end
 baseName = bz_BasenameFromBasepath(basePath);
 
 %% Select the Events
-%Get the events structure
-if ~exist('events','var')
+%Get the events structure, given the events input
+if ~exist('events','var') %for no input - choose events
     [events,FO.eventsfilename] = bz_LoadEvents(basePath);
-    eventstype = 'events';
-    [~,NAME,~] = fileparts(FO.eventsfilename);
-    eventsname = NAME(length(baseName)+2:end-7); %baseName.eventsName.events
-elseif isstring(events) || ischar(events)
+    if isempty(events)
+        eventstype = 'none';
+        eventsname = 'browse';
+    else
+        eventstype = 'events';
+        [~,NAME,~] = fileparts(FO.eventsfilename);
+        eventsname = NAME(length(baseName)+2:end-7); %baseName.eventsName.events
+    end
+elseif isstring(events) || ischar(events) %for eventsName - load the buzcode events.mad
     eventsname = events;
     [events,FO.eventsfilename] = bz_LoadEvents(basePath,events);
     eventstype = 'events';
-    
     if isempty(events)
         display('no events.mat by that name, trying to find a states.mat')
         [events,FO.eventsfilename] = bz_LoadStates(basePath,events);
         eventstype = 'states';
     end
-else
+else %for a buzcode structure
+
     eventstype = 'events'; %Need a way to check type of a struct?
     eventsname = inputname(2);
 end
 
-%Get the right info out of the events structure
+%Get the right info out of the events structure, given its type
 switch eventstype
     case 'events'
         exploreint = events.timestamps;
         %exploreintname = events.detectorinfo.detectorname;
-
+        FO.viewmode = 'events';
     case 'states'
         intnames = [fieldnames(events.ints)]; %remove second term here
         [s,v] = listdlg('PromptString','Which interval type to explore?',...
@@ -66,7 +71,10 @@ switch eventstype
         catch
             exploreint = events.(exploreintname);
         end
-
+        FO.viewmode = 'events';
+    case 'none'
+        exploreint = [];
+        FO.viewmode = 'timepoint';
 end
 
 %For events with start/stops, use the mean of the two as a marker. In the
@@ -89,9 +97,16 @@ if isfield(events,'EventExplorer')
     if isfield(events.EventExplorer,'DetectionReview')
         REVIEWDONE=true;
         FO.DetectionReview = events.EventExplorer.DetectionReview;
-    elseif isfield(events,'EventReview') %For legacy SWDetection - remove in next few days (8/15)
-        FO.DetectionReview = events.EventReview;
     end
+end
+
+%Load EventExplorer metadata if it exists
+FO.EEbuzcodefilename = fullfile(basePath,[baseName,'.EventExplorer.SessionMetadata.mat']);
+if exist(FO.EEbuzcodefilename,'file')
+    load(FO.EEbuzcodefilename)
+    FO.FlagsAndComments.timepoint = EventExplorer.FlagsAndComments; 
+    %This is an issue here - how to have general saved stuff (across
+    %events) and event-specific saved stuff in events.mats.
 end
 %% Load The Data, eh?
 %could put to function: EE_Initiate
@@ -104,13 +119,9 @@ end
 try
     FO.lookatchannel = events.detectorinfo.detectionchannel;
 catch
-    try %For legacy SWDetection - remove in next few days (8/15)
-        FO.lookatchannel = events.detectorinfo.detectionparms.SWchannel;
-    catch
     FO.lookatchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
         'Which LFP channel would you like to look at?']);
     FO.lookatchannel = str2num(FO.lookatchannel{1});
-    end
 end
     
 %[ SleepState ] = bz_LoadStates(FO.basePath,'SleepState');
@@ -149,7 +160,6 @@ FO.viewwin = subplot(3,1,2,'ButtonDownFcn',@MouseClick);
 FO.scaleLFP = 1;
 FO.winsize = 8;
 FO.currevent = 1;
-FO.viewmode = 'events';
 
 
 %Text of hotkey definitions for user guidance
@@ -214,9 +224,9 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
         'Position',[75 10 80 22]);
     if REVIEWDONE
         set(FO.missbutton,'Visible','on');
-        set(FO.missperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estMissperc,2)),'%)']);
+        set(FO.missperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estMissperc.*100,2)),'%)']);
         set(FO.FAbutton,'Visible','on');
-        set(FO.FAperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estFAperc,2)),'%)']);
+        set(FO.FAperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estFAperc.*100,2)),'%)']);
     end
     rundetectionbtn = uicontrol('Parent',FO.eventtypeselection,...
         'Position',[165 40 150 40],'String','Run Detection Review',...
@@ -284,7 +294,12 @@ function NextEvent(obj,eventdata)
                 FO.currevent,'previous'); %set the current event to the closest previous flagged event
             FO.currevent = flaggedevents(eventidx+1); %next flagged event
         otherwise
-            FO.currevent=FO.currevent+1;
+            switch FO.viewmode
+                case 'timepoint'
+                    FO.currevent=FO.currevent+0.75.*FO.winsize;
+                otherwise
+                    FO.currevent=FO.currevent+1;
+            end
     end
     guidata(FO.fig, FO);
     EventVewPlot;
@@ -301,7 +316,12 @@ function PrevEvent(obj,eventdata)
                 FO.currevent,'next'); %set the current event to the closest next flagged event
             FO.currevent = flaggedevents(eventidx-1); %previous flagged event
         otherwise
-            FO.currevent=max(FO.currevent-1,1);
+            switch FO.viewmode
+                case 'timepoint'
+                    FO.currevent=FO.currevent-0.75.*FO.winsize;
+                otherwise
+                    FO.currevent=max(FO.currevent-1,1);
+            end
     end
     guidata(FO.fig, FO);
     EventVewPlot;
@@ -312,6 +332,8 @@ function RandEvent(obj,eventdata)
     switch FO.viewmode
         case 'events'
             FO.currevent=randi(length(FO.EventTimes));
+        case 'timepoint'
+            FO.currevent=randsample(FO.data.lfp.timestamps);
         otherwise
             display(['Random does not yet work for viewmode "',FO.viewmode,'"'])
     end
@@ -323,6 +345,8 @@ function GoToEvent(obj,eventdata)
     FO = guidata(obj);
     switch FO.viewmode
         case 'events'
+            FO.currevent=str2num(obj.String);
+        case 'timepoint'
             FO.currevent=str2num(obj.String);
         otherwise
             display(['GoTo does not yet work for viewmode "',FO.viewmode,'"'])
@@ -348,20 +372,37 @@ end
 
 function FlagEvent(obj,event)
     FO = guidata(obj); 
-    try  %This is to deal with case where FO.FlagsAndComments.(FO.viewmode).flags hasn't been made yet... do better
-        [isflagged,flagidx] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
-        switch isflagged
-            case true
-                FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags(flagidx)=[];
-                set(FO.flageventbutton,'String','Flag')
-            case false
-                FO.FlagsAndComments.(FO.viewmode).flags(end+1) = FO.currevent;
+
+    switch FO.viewmode
+        case 'timepoint'
+            %THis is going to be buggy with multiple timepoint.flags for
+            %timepoint.comments......
+        otherwise 
+            try  %This is to deal with case where FO.FlagsAndComments.(FO.viewmode).flags hasn't been made yet... do better
+                [isflagged,flagidx] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
+                switch isflagged
+                    case true
+                        FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags(flagidx)=[];
+                        set(FO.flageventbutton,'String','Flag')
+                    case false
+                        FO.FlagsAndComments.(FO.viewmode).flags(end+1) = FO.currevent;
+                        set(FO.flageventbutton,'String','Unflag')
+                end
+            catch %If flags haven't yet been added to FO for this viewmode
+                FO.FlagsAndComments.(FO.viewmode).flags = FO.currevent;
                 set(FO.flageventbutton,'String','Unflag')
-        end
-    catch %If flags haven't yet been added to FO for this viewmode
-        FO.FlagsAndComments.(FO.viewmode).flags = FO.currevent;
-        set(FO.flageventbutton,'String','Unflag')
+            end
+            
+            try %also flag the timepoint for events - going to be issue with comments
+                FO.FlagsAndComments.timepoint.flags(end+1) = FO.EventTimes(FO.currevent);
+                FO.FlagsAndComments.timepoint.comments{end+1} = [];
+            catch
+                FO.FlagsAndComments.timepoint.flags = FO.EventTimes(FO.currevent);
+                FO.FlagsAndComments.timepoint.comments{1} = [];
+            end
     end
+    [FO.FlagsAndComments.timepoint.flags,I] = sort(FO.FlagsAndComments.timepoint.flags);
+    FO.FlagsAndComments.timepoint.comments=FO.FlagsAndComments.timepoint.comments(I);
     FO.FlagsAndComments.(FO.viewmode).flags = sort(FO.FlagsAndComments.(FO.viewmode).flags);
     guidata(FO.fig, FO);
 end
@@ -369,7 +410,28 @@ end
 function AddUserComment(obj,event)
     FO = guidata(obj);
     usercomment = get(obj,'String');
-    FO.FlagsAndComments.(FO.viewmode).comments{FO.currevent} = usercomment;
+    switch FO.viewmode
+        case 'timepoint' %If browsing timepoints, need to record time and comment
+            try
+                FO.FlagsAndComments.timepoint.comments{end+1} = usercomment;
+                FO.FlagsAndComments.timepoint.flags(end+1) = FO.currevent;
+            catch
+                FO.FlagsAndComments.timepoint.comments{1} = usercomment;
+                FO.FlagsAndComments.timepoint.flags = FO.currevent;
+            end
+            set(FO.flageventbutton,'String','Unflag')
+        otherwise %if events/misses/FA, can just use current event number
+            FO.FlagsAndComments.(FO.viewmode).comments{FO.currevent} = usercomment;
+            try %also comment the time point (this is redundant)
+                FO.FlagsAndComments.timepoint.comments{end+1} = usercomment;
+                FO.FlagsAndComments.timepoint.flags(end+1) = FO.EventTimes(FO.currevent);
+            catch
+                FO.FlagsAndComments.timepoint.comments{1} = usercomment;
+                FO.FlagsAndComments.timepoint.flags = FO.EventTimes(FO.currevent);
+            end
+    end
+    [FO.FlagsAndComments.timepoint.flags,I] = sort(FO.FlagsAndComments.timepoint.flags);
+    FO.FlagsAndComments.timepoint.comments=FO.FlagsAndComments.timepoint.comments(I);
     guidata(FO.fig, FO);
 end
 
@@ -411,17 +473,19 @@ FO = guidata(obj);
                         'Or you may not have sudo priviliges...?'},'Oh No!')
                 end
         end
+        %Save the General EventExplorer metadata file
+        EventExplorer.FlagsAndComments = FO.FlagsAndComments.timepoint;
+        save(FO.EEbuzcodefilename,'EventExplorer')
     end
 delete(FO.fig)
 end
 
 function RunDetectionReview(obj,event)
     DetectionReview(obj); %Run
-    %Get the results
+    %Get the results and Update miss/etc tickers
     obj = findobj('tag','EventExplorerMaster');  FO = guidata(obj);
         set(FO.missbutton,'Visible','on');
         set(FO.missperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estMissperc,2)),'%)']);
         set(FO.FAbutton,'Visible','on');
         set(FO.FAperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estFAperc,2)),'%)']);
-    %Update miss/etc tickers
 end
