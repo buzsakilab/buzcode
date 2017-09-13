@@ -15,7 +15,7 @@ function [] = LogScale( whichaxis,logbase)
 
 if strcmp(whichaxis,'y') || strcmp(whichaxis,'xy')
     range = get(gca,'YLim');
-    range(1) = floor(range(1)); range(2) = ceil(range(2));
+    range(1) = round(range(1)); range(2) = round(range(2));
     ticks = [range(1):range(2)];
     if length(ticks)<=4
         ticks = [range(1):0.5:range(2)];
@@ -27,7 +27,7 @@ end
 
 if strcmp(whichaxis,'x') || strcmp(whichaxis,'xy')
     range = get(gca,'XLim');
-    range(1) = floor(range(1)); range(2) = ceil(range(2));
+    range(1) = round(range(1)); range(2) = round(range(2));
     ticks = [range(1):range(2)];
     if length(ticks)<=4
         ticks = [range(1):0.5:range(2)];
@@ -38,7 +38,7 @@ end
 
 if strcmp(whichaxis,'z')
     range = get(gca,'ZLim');
-    range(1) = floor(range(1)); range(2) = ceil(range(2));
+    range(1) = round(range(1)); range(2) = round(range(2));
     ticks = [range(1):range(2)];
     if length(ticks)<=4
         ticks = [range(1):0.5:range(2)];
