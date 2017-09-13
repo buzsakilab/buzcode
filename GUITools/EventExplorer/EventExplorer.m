@@ -214,9 +214,9 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
         'Position',[75 10 80 22]);
     if REVIEWDONE
         set(FO.missbutton,'Visible','on');
-        set(FO.missperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estMissperc,2)),'%)']);
+        set(FO.missperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estMissperc.*100,2)),'%)']);
         set(FO.FAbutton,'Visible','on');
-        set(FO.FAperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estFAperc,2)),'%)']);
+        set(FO.FAperctxt,'String',['(Est ',num2str(round(FO.DetectionReview.estFAperc.*100,2)),'%)']);
     end
     rundetectionbtn = uicontrol('Parent',FO.eventtypeselection,...
         'Position',[165 40 150 40],'String','Run Detection Review',...
