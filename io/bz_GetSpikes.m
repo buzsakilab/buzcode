@@ -212,9 +212,9 @@ for i=1:length(cluFiles)
            spikes.rawWaveform{count} = wvforms(bb,:);
            spikes.maxWaveformCh(count) = spkGrpChans(bb);  
            %Regions (needs waveform peak)
-           if isfield(sessionInfo,'region') %from sessionInfo
+           if isfield(sessionInfo,'region') %if there is regions field in your metadata
                 spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)};
-           elseif isfield(sessionInfo,'Units') %from xml via Loadparamteres
+           elseif isfield(sessionInfo,'Units') %if no regions, but unit region from xml via Loadparamteres
                 %Find the xml Unit that matches group/cluster
                 unitnum = cellfun(@(X,Y) X==spikes.shankID(count) && Y==spikes.cluID(count),...
                     {sessionInfo.Units(:).spikegroup},{sessionInfo.Units(:).cluster});

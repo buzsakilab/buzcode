@@ -152,4 +152,8 @@ for i = 1:nIntervals
         lfp(i).interval(2) = length(lfp(i).timestamps)/lfp(i).samplingRate;
         lfp(i).duration = (lfp(i).interval(i,2)-lfp(i).interval(i,1));
     end
+    
+    if isfield(xml,'region') & isfield(xml,'channels')
+        lfp(i).region = xml.region(ismember(xml.channels,channels));
+    end
 end
