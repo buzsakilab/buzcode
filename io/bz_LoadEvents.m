@@ -16,9 +16,12 @@ baseName = bz_BasenameFromBasepath(basePath);
 
 if ~exist('eventsName','var')
     allEventsFiles = dir(fullfile(basePath,[baseName,'.','*','.events.mat']));
-         [s,v] = listdlg('PromptString','Which events.mat would you like to load?',...
-                         'ListString',{allEventsFiles.name},'SelectionMode','single');
-    eventsfilestoload = allEventsFiles(s).name;
+    [s,v] = listdlg('PromptString','Which events.mat would you like to load?',...
+                 'ListString',{allEventsFiles.name},'SelectionMode','single');
+    if isempty(s)
+        events = []; filename = [];
+        return
+    end
     filename = fullfile(basePath,allEventsFiles(s).name);
 else
     filename = fullfile(basePath,[baseName,'.',eventsName,'.events.mat']);
@@ -40,6 +43,13 @@ if numel(varsInFile)==1
 else
     warning('Your .events.mat has multiple variables/structures in it... wtf.')
     events = eventstruct;
+end
+
+%Check that the events structure meets buzcode standards
+[isEvents] = bz_isEvents(events);
+switch isEvents
+    case false
+        warning('Your events structure does not meet buzcode standards. Sad.')
 end
 
 end
