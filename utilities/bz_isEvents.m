@@ -1,6 +1,6 @@
-function [isEvent] = bz_isEvent(event)
+function [isEvent] = bz_isEvents(event)
 % USAGE
-% [isEvent] = bz_isEvent(event)
+% [isEvent] = bz_isEvents(event)
 % 
 % INPUT
 %       event   - struct with the following fields
