@@ -15,6 +15,8 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %   'timewin'   only plot a subwindow of time
 %   'spikes'    a buzcode spikes struct to display spikes below the LFP
 %   'axhandle'  axes handle in which to put the plot
+%   'scaleLFP'  multiplicative factor to scale the y range of LFP
+%   'scalespikes' size of spike points (default:5)
 %
 %
 %DLevenstein 2017
@@ -30,12 +32,14 @@ addParameter(p,'timewin',[0 Inf],@isnumeric)
 addParameter(p,'spikes',spikedefault,@isstruct) %should have iscellinfo function
 addParameter(p,'axhandle',gca)
 addParameter(p,'scaleLFP',1,@isnumeric)
+addParameter(p,'scalespikes',5,@isnumeric)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
 spikes = p.Results.spikes;
 ax = p.Results.axhandle;
 scaleLFP = p.Results.scaleLFP;
+scalespikes = p.Results.scalespikes;
 
 %% Channel and time stuff
 %Time Window
@@ -67,7 +71,7 @@ end
 
 plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
 hold on
-plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.')
+plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.','markersize',scalespikes)
 xlabel('t (s)')
 ylabel('LFP Channel')
 set(ax,'Ytick',fliplr(lfpmidpoints))
