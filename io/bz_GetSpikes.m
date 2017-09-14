@@ -84,8 +84,13 @@ getWaveforms = p.Results.getWaveforms;
 forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 
-% get sessionInfo info about recording, for now we'll use the xml.
-sessionInfo = LoadParameters(basepath);  % calls loadparameters if sessionInfo doesn't exist
+try
+    [sessionInfo] = bz_getSessionInfo(basepath);
+catch
+    % get sessionInfo info about recording, for now we'll use the xml.
+    sessionInfo = LoadParameters(basepath);  % calls loadparameters if sessionInfo doesn't exist
+end
+
 samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
@@ -94,6 +99,13 @@ nChannels = sessionInfo.nChannels;
 if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') && forceReload == false
     disp('loading spikes from cellinfo file..')
     load([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'])
+    %Check that the spikes structure fits cellinfo requirements
+    [iscellinfo] = bz_isCellInfo(spikes);
+    switch iscellinfo
+        case false
+            warning(['The spikes structure in baseName.spikes.cellinfo.mat ',...
+                'does not fit buzcode standards. Sad.'])
+    end
 else % do the below then filter by inputs...
     
 disp('loading spikes from clu/res/spk files..')
