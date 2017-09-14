@@ -19,6 +19,7 @@ function parameters = LoadParameters(filename)
 
 % updated for compatibility by David Tingley 02/2017
 % updated for compatibility by Rachel Swanson 05/28/2017
+% updated for compatibility by Daniel Levenstein 09/2017
 
 if nargin < 1 % if we're especially lazy, we assume there is one XML in the current working directory....
 %    xml = dir('*xml'); 
@@ -101,6 +102,7 @@ else
 end
 
 parameters.nChannels = str2num(p.acquisitionSystem.nChannels);
+parameters.channels = [0:parameters.nChannels-1]; %assumes 0-indexing a la neuroscope, and that all channels are used.
 parameters.nBits = str2num(p.acquisitionSystem.nBits);
 parameters.rates.lfp = str2num(p.fieldPotentials.lfpSamplingRate);
 parameters.rates.wideband = str2num(p.acquisitionSystem.samplingRate);
@@ -207,6 +209,23 @@ try %some xml may not have p.programs.program.... if so, ignore all of this
             assert(strcmp(plugins{pp}.parameters.parameter.name,'badchannels'),...
                 'There is a plugin ''badchannels'', but the parameter name is not ''badchannels''')
             parameters.badchannels = str2num(plugins{pp}.parameters.parameter.value);
+        end
+        
+        if strcmp(pluginnames{pp},'regions')
+            %Regions should be a plugin in the xml, with a group per region
+            %with the region name and a list of channels separated
+            %by a space or comma. This is temporary while we get metadata ironed out
+            %-DL
+            parameters.region = cell(1,parameters.nChannels);
+            numregions = length(plugins{pp}.parameters.parameter);
+            for rr = 1:numregions
+                regionname = plugins{pp}.parameters.parameter{rr}.name;
+                if strcmp(regionname,'regionname') %"default" is 'regionname'
+                    continue
+                end
+                regionchans = str2num(plugins{pp}.parameters.parameter{rr}.value);
+                parameters.region(ismember(parameters.channels,regionchans)) = {regionname};
+            end
         end
     end
 end
