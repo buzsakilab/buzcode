@@ -102,7 +102,9 @@ else
 end
 
 parameters.nChannels = str2num(p.acquisitionSystem.nChannels);
-parameters.channels = [0:parameters.nChannels-1]; %assumes 0-indexing a la neuroscope, and that all channels are used.
+%channel list assumes 0-indexing a la neuroscope, and that all channels are used.
+%In the future, should think about this...
+parameters.channels = [0:parameters.nChannels-1]; 
 parameters.nBits = str2num(p.acquisitionSystem.nBits);
 parameters.rates.lfp = str2num(p.fieldPotentials.lfpSamplingRate);
 parameters.rates.wideband = str2num(p.acquisitionSystem.samplingRate);
