@@ -15,7 +15,7 @@ function [iscellinfo] = bz_isCellInfo(cellinfo)
 
 
 if isfield(cellinfo,'UID') && isfield(cellinfo,'sessionName') && isfield(cellinfo,'region') % check that fields exist
-     if ischar(cellinfo.sessionName) && isvector(cellinfo.UID) && isvector(spikes.region)
+     if ischar(cellinfo.sessionName) && isvector(cellinfo.UID) && isvector(cellinfo.region)
          iscellinfo = true;
      else
          warning('one of the required fields for a cellinfo type is not formatted correctly')
