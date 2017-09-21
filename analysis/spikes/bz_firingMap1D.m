@@ -123,7 +123,7 @@ firingMaps.rateMaps = rateMap;
 firingMaps.countMaps = countMap;
 firingMaps.phaseMaps = phaseMap;
 firingMaps.occupancy = occuMap;
-
+firingMaps.dateRun = date;
 if saveMat
    save([firingMaps.sessionName '.firingMaps.cellinfo.mat'],'firingMaps'); 
 end
