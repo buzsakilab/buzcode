@@ -14,7 +14,7 @@ if ~exist(figfolder,'dir')
 end
 
 
-set(gcf,'TickDir','out')
+%set(gcf,'TickDir','out')
 
 set(gcf,'PaperOrientation','landscape');
 set(gcf,'PaperUnits','normalized');
