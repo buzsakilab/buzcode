@@ -84,12 +84,9 @@ getWaveforms = p.Results.getWaveforms;
 forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 
-try
-    [sessionInfo] = bz_getSessionInfo(basepath);
-catch
-    % get sessionInfo info about recording, for now we'll use the xml.
-    sessionInfo = LoadParameters(basepath);  % calls loadparameters if sessionInfo doesn't exist
-end
+
+[sessionInfo] = bz_getSessionInfo(basepath);
+
 
 samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
@@ -268,7 +265,17 @@ if ~strcmp(spikeGroups,'all')
 end
 %% filter by region input
 if ~isempty(region)
+    if ~isfield(spikes,'region') %if no region information in metadata
+        error(['You selected to load cells from region "',region,...
+            '", but there is no region information in your sessionInfo'])
+    end
+    
   toRemove = ~ismember(spikes.region,region);
+    if sum(toRemove)==length(spikes.UID) %if no cells from selected region
+        warning(['You selected to load cells from region "',region,...
+            '", but none of your cells are from that region'])
+    end
+  
     spikes.UID(toRemove) = [];
     for r = 1:length(toRemove)
         if toRemove(r) == 1
