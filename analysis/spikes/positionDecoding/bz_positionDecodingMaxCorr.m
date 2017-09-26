@@ -52,17 +52,18 @@ saveMat = p.Results.saveMat;
 %% set up data format and popinfo struct that will be returned
 
 
-positionDecodingBayesian.UID = spikes.UID;
-positionDecodingBayesian.region = spikes.region;
-positionDecodingBayesian.sessionName = spikes.sessionName; % session name
+positionDecodingMaxCorr.UID = spikes.UID;
+positionDecodingMaxCorr.region = spikes.region;
+positionDecodingMaxCorr.sessionName = spikes.sessionName; % session name
 
 conditions = unique(behavior.events.trialConditions);
 nCells = length(spikes.times);
 positionSamplingRate = behavior.samplingRate;
 
 % find a better way to get spike phase relationship...
-[firingMaps] = bz_firingMap1D(spikes.times,behavior,lfp,5);
-
+[firingMaps] = bz_firingMap1D(spikes,behavior,lfp,5);
+[b a] = butter(3,[4/626 12/625],'bandpass');
+theta_phases = angle(hilbert(FiltFiltM(b,a,double(lfp.data))));
 % iterate through conditions and compile spike trains and spike-phase
 % trains
 for cond = conditions
@@ -72,6 +73,7 @@ for cond = conditions
         trial = trials(t);
         spk_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000)); % assumes intervals are in seconds, rounds to nearest millisecond
         phase_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000));
+        
         for cell = 1:nCells
             if ~isempty(firingMaps.phaseMaps{cond}{cell})
                 f = find(firingMaps.phaseMaps{cond}{cell}(:,2)==t);
@@ -95,6 +97,8 @@ for cond = conditions
             ,behavior.events.trials{trial}.mapping,1:(nPos-1)/nBins:length(...
             behavior.events.trials{trial}.x)); % the -1 gaurantees the length to be longer than the above spk/phase trains
         position{cond}{t} = position{cond}{t}(1:length(spk_trains{cond}{t}));
+        take = FindInInterval(lfp.timestamps,intervals(t,:));
+        theta{cond}{t} = makeLength(theta_phases(take(1):take(2)),length(position{cond}{t}));
     end
 end
 
@@ -111,10 +115,12 @@ for cond = conditions
             phase_trains_smooth=[];
             rates_trains_smooth = [];
             position_train = [];
+            theta_train = [];
             for t = 1:length(phase_trains{cond})-1
                 phase_trains_smooth=[phase_trains_smooth; circ_smoothTS(phase_trains{cond}{r(t)}(cell,:),wind,'method','mean','exclude',0)];
                 rates_trains_smooth = [rates_trains_smooth; smooth(spk_trains{cond}{r(t)}(cell,:),wind)*wind];
                 position_train = [position_train; position{cond}{r(t)}'];
+                theta_train = [theta_train, theta{cond}{r(t)}];
             end
             phase_trains_smooth_train(cell,:) = phase_trains_smooth;
             rates_trains_smooth_train(cell,:) = rates_trains_smooth;
@@ -122,17 +128,30 @@ for cond = conditions
                 circ_smoothTS(phase_trains{cond}{r(end)}(cell,:),wind,'method','mean','exclude',0)];
             rates_trains_smooth_test(cell,:) = [...
                 smooth(spk_trains{cond}{r(end)}(cell,:),wind)*wind];
+            
         end
         position_test = position{cond}{r(end)};
+        theta_test = theta{cond}{r(end)};
         
         %% rate coding model
         cl = max_correlation_coefficient_CL;
-        cl = train(cl,rates_trains_smooth_train,round(position_train));
+        cl = train(cl,[rates_trains_smooth_train; theta_train],round(position_train));
         
         for ts = 1:length(position_test)
-           yfit_rate(ts) = test(cl,round(rates_trains_smooth_test(:,ts))); 
+           yfit_rate(ts) = test(cl,[round(rates_trains_smooth_test(:,ts));theta_test(ts)]); 
         end
         struct.mse_rate = mean((yfit_rate-position_test).^2);
+        % chance rate
+        rr = randperm(length(theta_train));
+        rrr = randperm(length(theta_test));
+        cl = max_correlation_coefficient_CL;
+        cl = train(cl,[rates_trains_smooth_train(:,rr); theta_train],round(position_train));
+        
+        for ts = 1:length(position_test)
+           yfit_chance_rate(ts) = test(cl,[round(rates_trains_smooth_test(:,rrr(ts)));theta_test(ts)]); 
+        end
+        struct.mse_chance_rate = mean((yfit_chance_rate-position_test).^2);
+        
         %% phase coding model
         
         % discretize phase_trains here...
@@ -150,41 +169,41 @@ for cond = conditions
         
         phase_trains_smooth_train_cos(phase_trains_smooth_train_cos==0)=nan;
         phase_trains_smooth_test_cos(phase_trains_smooth_test_cos==0)=nan;
-        phase_trains_smooth_train_cos = discretize(phase_trains_smooth_train_cos,-pi:.1:pi);
-        phase_trains_smooth_test_cos = discretize(phase_trains_smooth_test_cos,-pi:.1:pi);
+        phase_trains_smooth_train_cos = discretize(phase_trains_smooth_train_cos,-1:.1:1);
+        phase_trains_smooth_test_cos = discretize(phase_trains_smooth_test_cos,-1:.1:1);
         phase_trains_smooth_train_cos(isnan(phase_trains_smooth_train_cos))=0;
         phase_trains_smooth_test_cos(isnan(phase_trains_smooth_test_cos))=0;
         
         phase_trains_smooth_train_sin(phase_trains_smooth_train_sin==0)=nan;
         phase_trains_smooth_test_sin(phase_trains_smooth_test_sin==0)=nan;
-        phase_trains_smooth_train_sin = discretize(phase_trains_smooth_train_sin,-pi:.1:pi);
-        phase_trains_smooth_test_sin = discretize(phase_trains_smooth_test_sin,-pi:.1:pi);
+        phase_trains_smooth_train_sin = discretize(phase_trains_smooth_train_sin,-1:.1:1);
+        phase_trains_smooth_test_sin = discretize(phase_trains_smooth_test_sin,-1:.1:1);
         phase_trains_smooth_train_sin(isnan(phase_trains_smooth_train_sin))=0;
         phase_trains_smooth_test_sin(isnan(phase_trains_smooth_test_sin))=0;
         
         % non-transformed circular decoding
         cl = max_correlation_coefficient_CL;
-        cl = train(cl,phase_trains_smooth_train,round(position_train));
+        cl = train(cl,[phase_trains_smooth_train; theta_train],round(position_train));
         
         for ts = 1:length(position_test)
-           yfit_circ(ts) = test(cl,phase_trains_smooth_test(:,ts)); 
+           yfit_circ(ts) = test(cl,[phase_trains_smooth_test(:,ts);theta_test(ts)]); 
         end
         struct.mse_phase = mean((yfit_circ-position_test).^2);
         
         % cos and sin transformed circular decoding
         cl = max_correlation_coefficient_CL;
-        cl = train(cl,phase_trains_smooth_train_cos,round(position_train));
+        cl = train(cl,[phase_trains_smooth_train_cos; theta_train],round(position_train));
         
         for ts = 1:length(position_test)
-           yfit_cos(ts) = test(cl,phase_trains_smooth_test_cos(:,ts)); 
+           yfit_cos(ts) = test(cl,[phase_trains_smooth_test_cos(:,ts);theta_test(ts)]); 
         end
         struct.mse_phase_cos = mean((yfit_cos-position_test).^2);
         
         cl = max_correlation_coefficient_CL;
-        cl = train(cl,phase_trains_smooth_train_sin,round(position_train));
+        cl = train(cl,[phase_trains_smooth_train_sin; theta_train],round(position_train));
         
         for ts = 1:length(position_test)
-           yfit_sin(ts) = test(cl,phase_trains_smooth_test_sin(:,ts)); 
+           yfit_sin(ts) = test(cl,[phase_trains_smooth_test_sin(:,ts);theta_test(ts)]); 
         end
         struct.mse_phase_sin = mean((yfit_sin-position_test).^2);
         
@@ -192,12 +211,23 @@ for cond = conditions
         cl = max_correlation_coefficient_CL;
         all_phase_train = [phase_trains_smooth_train_cos;phase_trains_smooth_train_sin];
         all_phase_test =  [phase_trains_smooth_test_cos;phase_trains_smooth_test_sin];
-        cl = train(cl,all_phase_train,round(position_train));
+        cl = train(cl,[all_phase_train; theta_train],round(position_train));
         
         for ts = 1:length(position_test)
-           yfit_circ_all(ts) = test(cl,all_phase_test(:,ts)); 
+           yfit_circ_all(ts) = test(cl,[all_phase_test(:,ts);theta_test(ts)]); 
         end
         struct.mse_phase_all = mean((yfit_circ_all-position_test).^2);
+        
+        % chance phase
+        cl = max_correlation_coefficient_CL;
+        all_phase_train = [phase_trains_smooth_train_cos;phase_trains_smooth_train_sin];
+        all_phase_test =  [phase_trains_smooth_test_cos;phase_trains_smooth_test_sin];
+        cl = train(cl,[all_phase_train(:,rr); theta_train],round(position_train));
+        
+        for ts = 1:length(position_test)
+           yfit_chance(ts) = test(cl,[all_phase_test(:,rrr(ts));theta_test(ts)]); 
+        end
+        struct.mse_chance = mean((yfit_chance-position_test).^2);
         
         %% put data into struct/table
         struct.tau = wind;
@@ -206,15 +236,41 @@ for cond = conditions
         struct.trialOrder = r;
         positionDecodingMaxCorr.results = [positionDecodingMaxCorr.results;struct2table(struct)];
         if plotting
+            clf
             subplot(2,2,1)
+             t_rate = varfun(@mean,positionDecodingMaxCorr.results,'InputVariables','mse_rate',...
+            'GroupingVariables',{'tau','condition'});
+            t_phase = varfun(@mean,positionDecodingMaxCorr.results,'InputVariables','mse_phase_all',...
+            'GroupingVariables',{'tau','condition'});
+            t_chance = varfun(@mean,positionDecodingMaxCorr.results,'InputVariables','mse_chance',...
+            'GroupingVariables',{'tau','condition'});
+            t_chance_s = varfun(@std,positionDecodingMaxCorr.results,'InputVariables','mse_chance',...
+            'GroupingVariables',{'tau','condition'});
+            t_chance_rate = varfun(@mean,positionDecodingMaxCorr.results,'InputVariables','mse_chance_rate',...
+            'GroupingVariables',{'tau','condition'});
+            t_chance_s_rate = varfun(@std,positionDecodingMaxCorr.results,'InputVariables','mse_chance_rate',...
+            'GroupingVariables',{'tau','condition'});
+            t_rate_s = varfun(@std,positionDecodingMaxCorr.results,'InputVariables','mse_rate',...
+            'GroupingVariables',{'tau','condition'});
+            t_phase_s = varfun(@std,positionDecodingMaxCorr.results,'InputVariables','mse_phase_all',...
+            'GroupingVariables',{'tau','condition'});
+            tab = join(join(t_rate,t_phase),t_chance);
+            tab_s = join(join(t_rate_s,t_phase_s),t_chance_s);
+            rows = find(tab.condition==cond);
+
             title('MaxCorr decoding of pos, r-rate, g-phase')
 %             iterRows = positionDecodingMaxCorr.iter == iter;
-            plot(positionDecodingMaxCorr.results.tau,...
-                positionDecodingMaxCorr.results.mse_rate,'r')
-            hold on
-            plot(positionDecodingMaxCorr.results.tau,...
-                positionDecodingMaxCorr.results.mse_phase_all,'g')
-            hold off
+%             plot(positionDecodingMaxCorr.results.tau,...
+%                 positionDecodingMaxCorr.results.mse_rate,'r')
+%             hold on
+%             plot(positionDecodingMaxCorr.results.tau,...
+%                 positionDecodingMaxCorr.results.mse_phase_all,'g')
+%             hold off
+            boundedline(tab.tau,t_chance_rate.mean_mse_chance_rate(rows),t_chance_s_rate.std_mse_chance_rate(rows),'k')
+            boundedline(tab.tau,tab.mean_mse_chance(rows),tab_s.std_mse_chance(rows),'k')
+            boundedline(tab.tau,tab.mean_mse_phase_all(rows),tab_s.std_mse_phase_all(rows),'g')
+            boundedline(tab.tau,tab.mean_mse_rate(rows),tab_s.std_mse_rate(rows),'r')
+            set(gca,'xscale','log')
             subplot(2,2,2)
             plot(positionDecodingMaxCorr.results.tau,...
                 positionDecodingMaxCorr.results.mse_phase_cos,'g')
