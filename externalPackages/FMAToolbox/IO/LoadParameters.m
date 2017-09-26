@@ -196,13 +196,14 @@ try
 catch
 %if no units in the .xml..... well probably not using them anyway, eh?
 end
-%% For added plugins (such as badchannels)
+%% For added plugins (such as badchannels, regions)
 try %some xml may not have p.programs.program.... if so, ignore all of this
     plugins = p.programs.program;
     pluginnames = cellfun(@(X) X.name,plugins,'uniformoutput',false);
     %Run through each plugin and check if it matches something we know what
     %to do with, feel free to add more things here for your own purposes
     for pp = 1:length(pluginnames)
+        
         if strcmp(pluginnames{pp},'badchannels')
             %Badchannels should be a plugin in the xml, with a single
             %parameter "badchannels" and a list of bad channels separated
