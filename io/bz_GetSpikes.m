@@ -16,6 +16,7 @@ function spikes = bz_GetSpikes(varargin)
 %    forceReload     -logical (default=false) to force loading from
 %                     res/clu/spk files
 %    saveMat         -logical (default=false) to save in buzcode format
+%    noPrompts       -logical to supress any user prompts
 %    
 % OUTPUTS
 %
@@ -73,6 +74,7 @@ addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'getWaveforms',true,@islogical)
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'saveMat',false,@islogical);
+addParameter(p,'noPrompts',false,@islogical);
 
 parse(p,varargin{:})
 
@@ -83,6 +85,7 @@ basepath = p.Results.basepath;
 getWaveforms = p.Results.getWaveforms;
 forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
+noPrompts = p.Results.noPrompts;
 
 
 [sessionInfo] = bz_getSessionInfo(basepath);
@@ -103,7 +106,15 @@ if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') 
             warning(['The spikes structure in baseName.spikes.cellinfo.mat ',...
                 'does not fit buzcode standards. Sad.'])
     end
-else % do the below then filter by inputs...
+    
+else % do the below then filter by inputs... (Load from clu/res/fet)
+    
+    if ~noPrompts %Inform the user that they should save a file for later
+        savebutton = questdlg(['Would you like to save your spikes in ',...
+            sessionInfo.FileName,'.spikes.cellinfo.mat?  ',...
+            'This will save significant load time later.']);
+        if strcmp(savebutton,'Yes'); saveMat = true; end
+    end
     
 disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
