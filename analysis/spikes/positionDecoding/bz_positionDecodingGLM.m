@@ -108,10 +108,10 @@ end
 
 % collapse across trials..
 for cond = conditions
-%    phase_trains{cond} = cell2mat(phase_trains{cond});
-%    spk_trains{cond} = cell2mat(spk_trains{cond});
-% this was a bad idea because it lead to smoothing across trial boundaries,
-% fixed below by smoothing first, then concatenating trials...
+% %    phase_trains{cond} = cell2mat(phase_trains{cond});
+% %    spk_trains{cond} = cell2mat(spk_trains{cond});
+% % this was a bad idea because it lead to smoothing across trial boundaries,
+% % fixed below by smoothing first, then concatenating trials...
    position{cond} = cell2mat(position{cond});
 end
 
@@ -123,8 +123,9 @@ end
 disp('running models...')
 for cond = conditions
 % train/test data & cross validation needs to get worked in eventually
-train = 1:length(position{cond});
-test = 1:length(position{cond});
+r = randperm(length(position{cond}));
+train = r(1:round(length(r)/3));
+test = r(round(length(r)/3):end);
     warning off
     for wind = smoothingRange
        for cell = 1:nCells 

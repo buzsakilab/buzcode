@@ -115,7 +115,7 @@ for cond = conditions
             for t = 1:length(phase_trains{cond})-1
                 phase_trains_smooth=[phase_trains_smooth; circ_smoothTS(phase_trains{cond}{r(t)}(cell,:),wind,'method','mean','exclude',0)];
                 rates_trains_smooth = [rates_trains_smooth; smooth(spk_trains{cond}{r(t)}(cell,:),wind)*wind];
-                position_train = [position_train; position{cond}{r(t)}'];
+                position_train = [position_train; circ_smoothTS(position{cond}{r(t)}',wind,'method','mean','exclude',0)];
             end
             phase_trains_smooth_train(cell,:) = phase_trains_smooth;
             rates_trains_smooth_train(cell,:) = rates_trains_smooth;
