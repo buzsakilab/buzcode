@@ -55,8 +55,8 @@ end
 winspikes = spikes.spindices(:,1)>=timewin(1) & spikes.spindices(:,1)<=timewin(2);
 %% Calculate and implement spacing between channels
 
-%Space based on median absolute deviation - robust to outliers.
-channelrange = 8.*mad(single(lfp.data(windex,chindex)),1);
+%Space based on median absolute deviation over entire recording - robust to outliers.
+channelrange = 10.*mad(single(lfp.data(:,chindex)),1);
 lfpmidpoints = -cumsum(channelrange);
 lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfpmidpoints));
 

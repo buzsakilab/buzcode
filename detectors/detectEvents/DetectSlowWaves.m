@@ -403,7 +403,7 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
     baseName = bz_BasenameFromBasepath(basePath);
     figfolder = fullfile(basePath,'DetectionFigures');
     %Exclude badchannels
-    par = LoadParameters(basePath);
+    par = bz_getSessionInfo(basePath);
     if strcmp(trychans,'all') 
         trychans = [par.SpkGrps(:).Channels];
     end
@@ -685,6 +685,26 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
         xlabel('t (relative to GA Dip)');ylabel({'GA Dip Amplitude', '(modZ)'})
         colorbar
         xlim([-0.7 0.7])
+
+%% Figure for lab meeting - illustrating threshold procedure
+% xwin = [-0.5 0.5];
+% exampledelta = [7,13,20];
+% figure
+% for ee = 1:length(exampledelta)
+% subplot(6,3,ee+3)
+%     plot(timebins,normrate_DELTA(:,exampledelta(ee)))
+%     hold on
+%     plot(xwin,ratethresh.*[1 1],'r--')
+%     xlim(xwin);ylim([0 1.5])
+%     ylabel('Mean Pop Rate (mean^-^1)');xlabel('t - aligned to delta peak (s)')
+% subplot(6,3,ee)
+%     plot(linspace(timebins(1),timebins(end),length(deltapower_byDELTAmag(:,exampledelta(ee)))),...
+%         deltapower_byDELTAmag(:,exampledelta(ee)),'k','linewidth',2)
+%     title(['Delta Peak: ',num2str(DELTAmagbins(exampledelta(ee)))])
+%     xlim(xwin);ylim([-2 3.5])
+%     ylabel('Delta-Filtered LFP');
+% end
+% NiceSave('ThresholdIllustration',basePath,baseName)
         
 end
 

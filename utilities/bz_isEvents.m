@@ -21,7 +21,7 @@ if isfield(events,'detectorinfo') && isfield(events,'timestamps') % check that f
      if isstruct(events.detectorinfo) && isvector(events.timestamps) 
          % check that sub fields exist
          if isfield(events.detectorinfo,'detectorname') && isfield(events.detectorinfo,'detectionparms') ...
-                 && isfield(events.detectorinfo,'detectioninterval') && isfield(events.detectorinfo,'detectiondate')
+                 && isfield(events.detectorinfo,'detectionintervals') && isfield(events.detectorinfo,'detectiondate')
             isEvents = true;
          else
              isEvents = false;
