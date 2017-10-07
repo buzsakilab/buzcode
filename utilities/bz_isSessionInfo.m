@@ -42,6 +42,14 @@ if isfield(SessionInfo,'depth')
          isSessionInfo = false;
      end
 end
+if isfield(SessionInfo,'spikeGroups')
+     if isstruct(SessionInfo.spikeGroups) % should we go deeper here to check the struct?
+         isSessionInfo = true;
+     else
+         warning('.spikeGroups field is not formatted correctly')
+         isSessionInfo = false;
+     end
+end
 if isfield(SessionInfo,'FileName')
      if ischar(SessionInfo.FileName) 
          isSessionInfo = true;
