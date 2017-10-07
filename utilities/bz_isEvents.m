@@ -24,6 +24,7 @@ if isfield(events,'detectorinfo') && isfield(events,'timestamps') % check that f
                  && isfield(events.detectorinfo,'detectionintervals') && isfield(events.detectorinfo,'detectiondate')
             isEvents = true;
          else
+             warning('one of the required fields for an event type is not formatted correctly')
              isEvents = false;
          end
          
