@@ -139,7 +139,7 @@ if wvformExtract & ~exist(spkname)  % only create .spk file if it doesn't alread
         catch
             disp(['Error extracting spike at sample ' int2str(double(spktimes(j))) '. Saving as zeros']);
             disp(['Time range of that spike was: ' num2str(double(spktimes(j))-sbefore) ' to ' num2str(double(spktimes(j))+safter) ' samples'])
-            wvforms = zeros(valsperwave,1);
+            wvforms = zeros(valsperwave,1,'int16');
         end
         if rem(j,50000) == 0
             disp([num2str(j) ' out of ' num2str(length(spktimes)) ' done'])
