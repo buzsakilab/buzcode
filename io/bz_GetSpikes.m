@@ -174,7 +174,7 @@ end
 count = 1;
 
 for i=1:length(cluFiles) 
-    disp(['working on ' spkFiles(i).name])
+    disp(['working on ' cluFiles(i).name])
     
     temp = strsplit(cluFiles(i).name,'.');
     shankID = str2num(temp{length(temp)}); %shankID is the spikegroup number
