@@ -3,7 +3,7 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
 % USAGE
 %
 % [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,basename,wvformExtract,saveFiles,numCores)
-% 
+%
 % INPUTS
 %
 % shank - the shank number (as a number, not text) equalling the name of
@@ -14,7 +14,7 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
 % basename - shared file name of .dat and .xml (default is last part of
 %            current directory path, ie most immediate folder name)
 % wvformExtract - binary (0 or 1) to choose whether to extract raw waveforms
-% saveFiles - binary (0 or 1) to choose whether to save clu, res, fet, wav(.spk) 
+% saveFiles - binary (0 or 1) to choose whether to save clu, res, fet, wav(.spk)
 %             files or just return them as outputs
 % numCores  - double between 1 and inf that sets the number of cores for a
 %             parloop to run (set 2-12 on SSD or RAID0 systems, set to 1
@@ -31,15 +31,15 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
 %
 %Converts .kwik/kwx files from Klusta into klusters-compatible
 % fet,res,clu,spk files.  Works on a single shank of a recording, assumes a
-% 16bit .dat and an .xml file is present in "basepath" (home folder) and 
+% 16bit .dat and an .xml file is present in "basepath" (home folder) and
 % that they are named basename.dat and basename.xml.  Also assumes that
 % subdirectories in that basepath are made for each shank with names
 % specified by numbers (ie 1,2,3,4..8).  In each shank folder should be
 % .kwik and .kwx files made by klusta with names as follows:
-% basename_sh[shankumber].kwik/kwx. 
+% basename_sh[shankumber].kwik/kwx.
 %
 %
-% Brendon Watson 2016 
+% Brendon Watson 2016
 % edited by David Tingley 1/2017
 % edited by Aza and Antonio 7/2017
 
@@ -47,11 +47,11 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
 % addRequired(p,'shank',@isnumeric)
 % addRequired(p,'basepath',@isstr)
 % addRequired(p,'basename',@isstr)
-% 
+%
 % addParameter(p,'saveFiles',[],@isnumeric)
 % addParameter(p,'numCores',[1],@isnumeric)
 % p.parse(varargin{:})
-% 
+%
 % shank = p.Results.shank;
 % basepath = p.Results.basepath;
 % saveFiles = p.Results.saveFiles;
@@ -59,7 +59,7 @@ function [fet clu spktimes wav]= ConvertKlusta2Matlab(shank,basepath,...
 % basename = p.Results.basename;
 
 
-% 
+%
 % Handle inputs
 if ~exist('shank','var')
     shank = 1;
@@ -75,7 +75,7 @@ if ~exist('numCores','var');
 end
 if ~exist('basename','var');
     [~,basename] = fileparts(pwd);
-elseif strcmp(basename, 'lfpfile') 
+elseif strcmp(basename, 'lfpfile')
     d = dir('*lfp');
     basename = d.name(1:end-4);
 end
@@ -84,7 +84,7 @@ if saveFiles % make file names
     cluname = fullfile(basepath,[basename '.clu.' num2str(shank)]);
     resname = fullfile(basepath,[basename '.res.' num2str(shank)]);
     fetname = fullfile(basepath,[basename '.fet.' num2str(shank)]);
-    spkname = fullfile(basepath,[basename '.spk.' num2str(shank)]); 
+    spkname = fullfile(basepath,[basename '.spk.' num2str(shank)]);
 end
 
 % Start grabbing data
@@ -114,7 +114,7 @@ channellist = h5readatt(tkwik,['/channel_groups/' num2str(shank)],'channel_order
 spktimes = h5read(tkwik,['/channel_groups/' num2str(shank) '/spikes/time_samples']);
 
 %% spike extraction from dat
-wav = []; 
+wav = [];
 tsampsperwave = (sbefore+safter);
 ngroupchans = length(channellist);
 valsperwave = tsampsperwave * ngroupchans;
@@ -122,30 +122,61 @@ if wvformExtract & ~exist(spkname)  % only create .spk file if it doesn't alread
     disp('loading from .dat file')
     dat=memmapfile(datpath,'Format','int16');
     wvforms_all = zeros(length(spktimes),valsperwave,'int16');
-    delete(gcp('nocreate')); parpool(numCores)
-    parfor j=1:length(spktimes)
-        try
-            byteList = [];
-            for i = 1:length(channellist)
-                ind1 = (double(spktimes(j)).*totalch); % correction for problems with high values
-                ind11 = int64(ind1) - int64(sbefore.*totalch) + 1;
-                ind2 = (double(spktimes(j)).*totalch);
-                ind22 = int64(ind2) + int64(safter.*totalch);
-                ind = ind11:ind22;
-                
-                byteList = [byteList; ind(double(channellist(i)):totalch:end)];
+    
+    if numCores>1 % if using multiple cores, start parfor loop
+        delete(gcp('nocreate')); parpool(numCores)
+        parfor j=1:length(spktimes)
+            try
+                byteList = [];
+                for i = 1:length(channellist)
+                    ind1 = (double(spktimes(j)).*totalch); % correction for problems with high values
+                    ind11 = int64(ind1) - int64(sbefore.*totalch) + 1;
+                    ind2 = (double(spktimes(j)).*totalch);
+                    ind22 = int64(ind2) + int64(safter.*totalch);
+                    ind = ind11:ind22;
+                    
+                    byteList = [byteList; ind(double(channellist(i)):totalch:end)];
+                end
+                wvforms = dat.data(byteList);
+            catch
+                disp(['Error extracting spike at sample ' int2str(double(spktimes(j))) '. Saving as zeros']);
+                disp(['Time range of that spike was: ' num2str(double(spktimes(j))-sbefore) ' to ' num2str(double(spktimes(j))+safter) ' samples'])
+                wvforms = zeros(valsperwave,1,'int16');
             end
-            wvforms = dat.data(byteList);
-        catch
-            disp(['Error extracting spike at sample ' int2str(double(spktimes(j))) '. Saving as zeros']);
-            disp(['Time range of that spike was: ' num2str(double(spktimes(j))-sbefore) ' to ' num2str(double(spktimes(j))+safter) ' samples'])
-            wvforms = zeros(valsperwave,1,'int16');
+            if rem(j,50000) == 0
+                disp([num2str(j) ' out of ' num2str(length(spktimes)) ' done'])
+            end
+            wvforms_all(j,:)=wvforms(:);
         end
-        if rem(j,50000) == 0
-            disp([num2str(j) ' out of ' num2str(length(spktimes)) ' done'])
+        
+    else % if we are using only one core, use a regular for loop
+        for j=1:length(spktimes)
+            try
+                byteList = [];
+                for i = 1:length(channellist)
+                    ind1 = (double(spktimes(j)).*totalch); % correction for problems with high values
+                    ind11 = int64(ind1) - int64(sbefore.*totalch) + 1;
+                    ind2 = (double(spktimes(j)).*totalch);
+                    ind22 = int64(ind2) + int64(safter.*totalch);
+                    ind = ind11:ind22;
+                    
+                    byteList = [byteList; ind(double(channellist(i)):totalch:end)];
+                end
+                wvforms = dat.data(byteList);
+            catch
+                disp(['Error extracting spike at sample ' int2str(double(spktimes(j))) '. Saving as zeros']);
+                disp(['Time range of that spike was: ' num2str(double(spktimes(j))-sbefore) ' to ' num2str(double(spktimes(j))+safter) ' samples'])
+                wvforms = zeros(valsperwave,1,'int16');
+            end
+            if rem(j,50000) == 0
+                disp([num2str(j) ' out of ' num2str(length(spktimes)) ' done'])
+            end
+            wvforms_all(j,:)=wvforms(:);
         end
-        wvforms_all(j,:)=wvforms(:);
+        
     end
+    
+    
     clear dat
     wvforms_all = reshape(wvforms_all',size(wvforms_all,1)*size(wvforms_all,2),1);
     wav = reshape(wvforms_all,ngroupchans,tsampsperwave,[]);
@@ -165,7 +196,7 @@ fet = fets';
 
 %% writing to clu, res, fet, spk
 if saveFiles
-
+    
     %clu
     for i=1:length(kwikinfo.Groups)  % sometimes .kwik has more groups than clu (empty?)..
         group(i) = h5readatt(tkwik,kwikinfo.Groups(i).Name,'cluster_group');
@@ -194,12 +225,12 @@ if saveFiles
     end
     
     clu = cat(1,length(unique(clu)),double(clu));
-    fid=fopen(cluname,'w'); 
+    fid=fopen(cluname,'w');
     fprintf(fid,'%.0f\n',clu);
     fclose(fid);
     clear fid
-
-    fid=fopen(resname,'w'); 
+    
+    fid=fopen(resname,'w');
     fprintf(fid,'%.0f\n',spktimes);
     fclose(fid);
     clear fid
@@ -208,10 +239,10 @@ if saveFiles
     %spk
     
     if wvformExtract & ~exist(spkname)
-        fid=fopen(spkname,'w'); 
+        fid=fopen(spkname,'w');
         fwrite(fid,wvforms_all,'int16');
         fclose(fid);
-        clear fid 
+        clear fid
     end
     disp(['Shank ' num2str(shank) ' done'])
 end
@@ -224,7 +255,7 @@ end
 nFeatures = size(Fet, 2);
 formatstring = '%d';
 for ii=2:nFeatures
-  formatstring = [formatstring,'\t%d'];
+    formatstring = [formatstring,'\t%d'];
 end
 formatstring = [formatstring,'\n'];
 
@@ -236,7 +267,7 @@ if isinf(BufSize)
 else
     nBuf = floor(size(Fet,1)/BufSize)+1;
     
-    for i=1:nBuf 
+    for i=1:nBuf
         BufInd = [(i-1)*nBuf+1:min(i*nBuf,size(Fet,1))];
         fprintf(outputfile,formatstring,round(Fet(BufInd,:)'));
     end
