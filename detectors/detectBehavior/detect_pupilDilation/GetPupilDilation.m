@@ -82,6 +82,10 @@ if SAVEVID
     pupdiamVid.FrameRate = 1./(0.015.*savevidfr);
     open(pupdiamVid);
 end
+
+if exist(savefile,'file')
+    PREVIOUSDETECT = true;
+end
 %%
 %Load in the video
 pupilvidobj = VideoReader(vidName);
@@ -113,7 +117,7 @@ end
     end
     vidframe_orig = vidframe; %Hold on to the original image for later
     
-     meanvid = meanvid+single(vidframe_orig)./NumberOfFrames;
+    meanvid = meanvid+single(vidframe_orig)./NumberOfFrames;
     
     %USER: Define the full eye mask: trace the eye
     if ~exist('eyemask','var')        
@@ -307,8 +311,8 @@ if SAVEVID; close(pupdiamVid); end
 
 %% Load the analogin for the timestamps
 
-timepulses = LoadBinary(analogName,'nChannels',1,'precision','uint16');
-%LoadBinary('uint16')
+timepulses = bz_LoadBinary(analogName,'nChannels',1,'precision','uint16');
+%bz_LoadBinary('uint16')
 
 sf_pulse = 1./20000; %Sampling Frequency of the .abf file
 t_pulse = [1:length(timepulses)]'.*sf_pulse;

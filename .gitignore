@@ -59,3 +59,9 @@ Temporary Items
 *.m~
 #Vim and other text editor tmp files
 *.swp
+
+*.mexa64
+
+externalPackages/xmltree-2.0/@xmltree/private/xml_findstr.mexa64
+
+*.mexmaci64

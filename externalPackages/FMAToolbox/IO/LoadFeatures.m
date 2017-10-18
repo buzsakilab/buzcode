@@ -8,7 +8,7 @@ function [Fet, nFeatures] = LoadFeatures(FileName,varargin);
 Fp = fopen(FileName, 'r');
 
 if Fp==-1
-    error(['Could not open file ' lsFileName]);
+    error(['Could not open file ' FileName]);
 end
 
 

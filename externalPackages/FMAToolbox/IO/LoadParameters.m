@@ -19,14 +19,27 @@ function parameters = LoadParameters(filename)
 
 % updated for compatibility by David Tingley 02/2017
 % updated for compatibility by Rachel Swanson 05/28/2017
+% updated for compatibility by Daniel Levenstein 09/2017
 
 if nargin < 1 % if we're especially lazy, we assume there is one XML in the current working directory....
-   xml = dir('*xml'); 
-   filename = xml.name;
+%    xml = dir('*xml'); 
+%    filename = xml.name;
+    filename = pwd; %if no input filename is basepath and you're looking for basename.xml
 end
 
 if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the folder location instead of an actual xml file
-    d = dir(fullfile(filename, '*xml'));
+    d = dir(fullfile(filename, '*xml')); 
+    
+    if length(d)>1 %if multiple .xmls, pick the one that matches baseName
+        baseName = bz_BasenameFromBasepath(filename);
+        correctxmlfilename = cellfun(@(X) strcmp(X,[baseName,'.xml']),{d.name});
+        d = d(correctxmlfilename);
+        display(['Multiple .xml files in this folder, trying ',baseName,'.xml'])
+    end
+    if isempty(d) %if no .xmls - you have a problem
+        error(['No .xml in ',filename])
+    end 
+    
     filename = fullfile(filename, d.name);
 end
 
@@ -89,6 +102,9 @@ else
 end
 
 parameters.nChannels = str2num(p.acquisitionSystem.nChannels);
+%channel list assumes 0-indexing a la neuroscope, and that all channels are used.
+%In the future, should think about this...
+parameters.channels = [0:parameters.nChannels-1]; 
 parameters.nBits = str2num(p.acquisitionSystem.nBits);
 parameters.rates.lfp = str2num(p.fieldPotentials.lfpSamplingRate);
 parameters.rates.wideband = str2num(p.acquisitionSystem.samplingRate);
@@ -134,9 +150,16 @@ try
                 parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group(a).channel{b});
             end 
         elseif iscell(p.anatomicalDescription.channelGroups.group)
-            for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
-                parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
-            end 
+            if iscell(p.anatomicalDescription.channelGroups.group{a}.channel)
+                for b = 1:length(p.anatomicalDescription.channelGroups.group{a}.channel)
+                    parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
+                end 
+            elseif isvector(p.anatomicalDescription.channelGroups.group{a}.channel)
+                parameters.AnatGrps(a).Channels = p.anatomicalDescription.channelGroups.group{a}.channel;
+            else
+                warning('Anatomy Groups seems to have an issue, eh?..') 
+            end
+
         end
     end
     for a = 1:parameters.spikeGroups.nGroups
@@ -155,6 +178,58 @@ try
         end
     end
 catch
-   warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
+  warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
+end
+
+%% Unit Info - will generally just get passed through in bz_GetSpikes
+try
+    numunits = length(p.units.unit);
+    for uu = 1:numunits
+        parameters.Units(uu).spikegroup = str2num(p.units.unit{uu}.group);
+        parameters.Units(uu).cluster = str2num(p.units.unit{uu}.cluster);
+        parameters.Units(uu).structure = p.units.unit{uu}.structure;
+        parameters.Units(uu).type = p.units.unit{uu}.type;
+        parameters.Units(uu).isolationDistance = str2num(p.units.unit{uu}.isolationDistance);
+        parameters.Units(uu).quality = p.units.unit{uu}.quality;
+        parameters.Units(uu).notes = p.units.unit{uu}.notes;
+    end
+catch
+%if no units in the .xml..... well probably not using them anyway, eh?
+end
+%% For added plugins (such as badchannels, regions)
+try %some xml may not have p.programs.program.... if so, ignore all of this
+    plugins = p.programs.program;
+    pluginnames = cellfun(@(X) X.name,plugins,'uniformoutput',false);
+    %Run through each plugin and check if it matches something we know what
+    %to do with, feel free to add more things here for your own purposes
+    for pp = 1:length(pluginnames)
+        
+        if strcmp(pluginnames{pp},'badchannels')
+            %Badchannels should be a plugin in the xml, with a single
+            %parameter "badchannels" and a list of bad channels separated
+            %by a space. This is temporary while we get metadata ironed out
+            %-DL
+            assert(strcmp(plugins{pp}.parameters.parameter.name,'badchannels'),...
+                'There is a plugin ''badchannels'', but the parameter name is not ''badchannels''')
+            parameters.badchannels = str2num(plugins{pp}.parameters.parameter.value);
+        end
+        
+        if strcmp(pluginnames{pp},'regions')
+            %Regions should be a plugin in the xml, with a group per region
+            %with the region name and a list of channels separated
+            %by a space or comma. This is temporary while we get metadata ironed out
+            %-DL
+            parameters.region = cell(1,parameters.nChannels);
+            numregions = length(plugins{pp}.parameters.parameter);
+            for rr = 1:numregions
+                regionname = plugins{pp}.parameters.parameter{rr}.name;
+                if strcmp(regionname,'regionname') %"default" is 'regionname'
+                    continue
+                end
+                regionchans = str2num(plugins{pp}.parameters.parameter{rr}.value);
+                parameters.region(ismember(parameters.channels,regionchans)) = {regionname};
+            end
+        end
+    end
 end
 

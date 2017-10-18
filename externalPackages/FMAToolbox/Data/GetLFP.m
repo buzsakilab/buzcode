@@ -106,6 +106,9 @@ for i = 1:nIntervals,
 	start = intervals(i,1);
 	% Load data
 	data = LoadBinary(filename,'duration',duration,'frequency',DATA.rates.lfp,'nchannels',nChannels,'start',start,'channels',channels);
+    if isinteger(data)
+        error('GetLFP does not work with integer data - use bz_GetLFP instead');
+    end
 	t = start:(1/DATA.rates.lfp):(start+(length(data)-1)/DATA.rates.lfp);t=t';
 	lfp = [lfp ; t data];
 	indices = [indices ; i*ones(size(t))];

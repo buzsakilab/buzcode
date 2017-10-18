@@ -1,6 +1,6 @@
  function [PhaseLockingData] = bz_PhaseModulation(varargin)
 % USAGE
-%[phasedistros,phasebins,phasestats,h] = bz_PhaseModulation(spikes,lfp,passband,intervals,samplingRate,method,plotting)
+%[PhaseLockingData] = bz_PhaseModulation(varargin)
 % 
 % INPUTS
 % spikes        -cell array where each element is a vector of
@@ -59,7 +59,7 @@ addParameter(p,'method','hilbert',@isstr)
 addParameter(p,'plotting',true,@islogical)
 addParameter(p,'numBins',180,@isnumeric)
 addParameter(p,'powerThresh',2,@isnumeric)
-addParameter(p,'saveData',false,@islogical)
+addParameter(p,'saveMat',false,@islogical)
 
 parse(p,varargin{:})
 
@@ -73,7 +73,7 @@ method = p.Results.method;
 plotting = p.Results.plotting;
 numBins = p.Results.numBins;
 powerThresh = p.Results.powerThresh;
-saveData = p.Results.saveData;
+saveMat = p.Results.saveMat;
 
 
 %% Get phase for every time point in LFP
@@ -111,7 +111,7 @@ end
 %% update intervals to remove sub-threshold power periods
 disp('finding intervals below power threshold...')
 thresh = mean(power) + std(power)*powerThresh;
-minWidth = samplingRate./passband(2) * 2; % set the minimum width to two cycles
+minWidth = (samplingRate./passband(2)) * 2; % set the minimum width to two cycles
 
 below=find(power<thresh);
 if max(diff(diff(below))) == 0
@@ -146,7 +146,7 @@ for a = 1:length(spikes)
     bools = InIntervals(spikes{a},intervals);
     s =spikes{a}(bools);
 %     s = spikes{a};
-    if isempty(s)
+    if isempty(s) 
         phasedistros(:,a) = zeros(numBins,1);
         phasestats.m(a) = nan;
         phasestats.r(a) = nan;
@@ -218,8 +218,8 @@ PhaseLockingData = v2struct(phasedistros,phasebins,...
                             phasestats,spkphases,...
                             detectorName, detectorParams);
 
-if saveData
- save([lfp.Filename(1:end-4) '.PhaseLockingData.cellinfo.mat']);
+if saveMat
+ save([lfp.Filename(1:end-4) '.PhaseLockingData.cellinfo.mat'],'PhaseLockingData');
 end
 
 end

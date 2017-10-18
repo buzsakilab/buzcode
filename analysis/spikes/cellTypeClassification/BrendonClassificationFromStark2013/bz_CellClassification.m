@@ -103,6 +103,10 @@ for a = 1:size(MaxWaves,2)
     minpos = minpos(1);
     [maxval,maxpos] = max(thiswave);
         [dummy,maxpos] = max(thiswave(minpos+1:end));
+        if isempty(maxpos)
+            warning('Your Waveform may be erroneous')
+            maxpos = 1
+        end
         maxpos=maxpos(1);
         maxpos = maxpos+minpos;
         tp(a) = maxpos-minpos; %In number of samples
@@ -161,6 +165,7 @@ end
 %%
 if SAVEFIG
     figure
+    subplot(2,2,1)
         plot(CellClass.detectionparms.TroughPeakMs(CellClass.pE),...
             CellClass.detectionparms.SpikeWidthMs(CellClass.pE),'k.')
         hold on
@@ -169,11 +174,21 @@ if SAVEFIG
         axis tight
         plot(CellClass.detectionparms.PyrBoundary(:,1),...
             CellClass.detectionparms.PyrBoundary(:,2))
+        xlim([0 max([x+0.1;2])])
+        ylim([0 max([y+0.1;2])])
         xb = get(gca,'XLim');
         yb = get(gca,'YLim');
         plot(xb,[m*xb(1)+b m*xb(2)+b])
         xlabel('Trough to Peak Time (ms)')
         ylabel('Spike Width (ms)')
+        title([baseName,': Cell Classification'])
+        
+    subplot(2,2,2)
+        plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pE),'color',[0 0.6 0])
+        hold on
+        plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pI),'color',[0.6 0 0])
+        axis tight
+        xlabel('t (ms)')
         
         NiceSave('CellClassification',figfolder,baseName)
 end

@@ -24,7 +24,7 @@ function [ specvarcorr,specbyvar ] = bz_LFPSpecToExternalVar( LFP,extvar,specpar
 %       .ncyc       number of wavelet cycles (recommended: ~5)
 %      -if type: 'FFT'-
 %       .winsize (s)
-%       .overlap
+%       .noverlap
 %   figparms    (optional) parameters for the figure
 %       .plotname   nametag for the saved figure
 %       .figfolder  folder to save the figure in
@@ -114,19 +114,34 @@ switch specparms.varnorm
         warning('Your variable normalization input is wrong...')
 end
 
+%Make spectrogram and extvar on the same time points
+switch length(extvar.timestamps) >= length(spectimestamps)
+    case true  %If fewer timepointes in the spectrogram, 
+               %time to spec timepoints that are close to vardatatimepoints
+        %Find closest variable time point for each spectrogram time point
+        specatvartimes = interp1(extvar.timestamps,extvar.timestamps,spectimestamps,'nearest');
+        specatvartimes = unique(specatvartimes(~isnan(specatvartimes)));
+        %Remove any doubles/nans (i.e. intervals where there are no extvar timepoints
+        vardata = interp1(extvar.timestamps,vardata,specatvartimes,'nearest');
+        interpspec = interp1(spectimestamps,spec',specatvartimes,'nearest');
+    case false %If fewer timepointes in extvar, interp time to extvar
+        interpspec = interp1(spectimestamps,spec',extvar.timestamps,'nearest');
+end
 %Get nearest value of extvar (behavior) for each point in the spectrogram
-interpvar_LFP = interp1(extvar.timestamps,vardata,spectimestamps);
-
+%vardata = interp1(extvar.timestamps,vardata,spectimestamps);
+%Get the nearest value of the spectrogram for each timepoint in extvar (behavior)
+%interpspec = interp1(spectimestamps,spec',extvar.timestamps,'nearest');
 %% Binned Spectrogram
-binedges = linspace(0,1,specparms.numvarbins+1);
+varmin = min(vardata);varmax=max(vardata);
+binedges = linspace(varmin,varmax,specparms.numvarbins+1);
 specbyvar.varbins = binedges(1:specparms.numvarbins)+0.5.*diff(binedges([1 2]));
 specbyvar.mean = zeros(specparms.nfreqs,specparms.numvarbins);
 specbyvar.std = zeros(specparms.nfreqs,specparms.numvarbins);
 for bb = 1:specparms.numvarbins
-    inbinidx = interpvar_LFP>=binedges(bb) & interpvar_LFP<=binedges(bb+1);
-    inbinspec = spec(:,inbinidx);
-    specbyvar.mean(:,bb) = mean(inbinspec,2);
-    specbyvar.std(:,bb) = std(inbinspec,[],2);
+    inbinidx = vardata>=binedges(bb) & vardata<=binedges(bb+1);
+    inbinspec = interpspec(inbinidx,:);
+    specbyvar.mean(:,bb) = mean(inbinspec,1)';
+    specbyvar.std(:,bb) = std(inbinspec,[],1)';
 end
 
 %% power-signal correlation for each frequency
@@ -135,16 +150,18 @@ sigthresh = 0.05; %Significance threshold (pvalue)
 %     corr(interpvar_LFP(~isnan(interpvar_LFP)),...
 %     spec(:,~isnan(interpvar_LFP))','type','spearman');
 [specvarcorr.corr,specvarcorr.pval] = ...
-    corr(interpvar_LFP,spec','rows','complete','type','spearman');
+    corr(vardata,interpspec,'rows','complete','type','spearman');
 corrsig = specvarcorr.pval<=sigthresh;
 
 %% Figure
 if exist('figparms','var')  %This whole figure thing can be better.
 varcolormap=makeColorMap([0 0 0],[0.8 0 0],specparms.numvarbins);
 
+var4plot = (extvar.data-varmin)./(varmax-varmin);
+
 figure
 subplot(2,1,1)
-    plot(extvar.timestamps,2*extvar.data-2,'k') %assumes 0-1 normalization... to fix later
+    plot(extvar.timestamps,2*var4plot-2,'k.') %assumes 0-1 normalization... to fix later
     hold on
     imagesc(spectimestamps,log2(specvarcorr.freqs),spec)
     axis tight
@@ -198,7 +215,7 @@ subplot(6,3,18)
         case 'percentile'
             plot(sort(vardata),sort(extvar.data),'r')
         case 'none'
-            hist(interpvar_LFP(~isnan(interpvar_LFP)),specbyvar.varbins)
+            hist(vardata(~isnan(vardata)),specbyvar.varbins)
     end
     colorbar
     xlim(binedges([1 end]))
@@ -207,6 +224,8 @@ subplot(6,3,18)
     
 NiceSave(['SpecByVar',figparms.plotname],figparms.figfolder,figparms.baseName)
 end
-
+colormap jet
 end
+
+
 
