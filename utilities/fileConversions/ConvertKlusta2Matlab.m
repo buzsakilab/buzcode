@@ -146,17 +146,8 @@ if wvformExtract & ~exist(spkname)  % only create .spk file if it doesn't alread
             if rem(j,50000) == 0
                 disp([num2str(j) ' out of ' num2str(length(spktimes)) ' done'])
             end
-<<<<<<< HEAD
-            wvforms = dat.data(byteList);
-        catch
-            disp(['Error extracting spike at sample ' int2str(double(spktimes(j))) '. Saving as zeros']);
-            disp(['Time range of that spike was: ' num2str(double(spktimes(j))-sbefore) ' to ' num2str(double(spktimes(j))+safter) ' samples'])
-            wvforms = zeros(valsperwave,1,'int16');
-=======
             wvforms_all(j,:)=wvforms(:);
->>>>>>> origin/master
         end
-        
     else % if we are using only one core, use a regular for loop
         for j=1:length(spktimes)
             try
