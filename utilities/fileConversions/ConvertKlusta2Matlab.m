@@ -148,7 +148,6 @@ if wvformExtract & ~exist(spkname)  % only create .spk file if it doesn't alread
             end
             wvforms_all(j,:)=wvforms(:);
         end
-        
     else % if we are using only one core, use a regular for loop
         for j=1:length(spktimes)
             try
@@ -193,6 +192,8 @@ end
 fets = h5read(tkwx,['/channel_groups/' num2str(shank) '/features_masks']);
 fets = double(squeeze(fets(1,:,:)));
 fet = fets';
+fetMultiplier = double(intmax('int32'))/max(abs(fets(:))); % masked klustakwik has small floats that need to be expanded before rounding below
+fet = fet .* fetMultiplier;
 
 %% writing to clu, res, fet, spk
 if saveFiles
