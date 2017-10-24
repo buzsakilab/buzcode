@@ -256,7 +256,7 @@ end
         puparea(ff) = nan;
         %Stuff so plot doesn't crash
         pam = 1;
-        out_a(pam).BoundingBox = [0 0 0 0];
+        out_a(pam).BoundingBox = [0 0 1 1];
     else
 
         % Select larger area
