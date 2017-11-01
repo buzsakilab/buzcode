@@ -93,7 +93,7 @@ isoMaxTresh = 2000;
 lratioMaxThresh = 1000;
 
 % Do Merging?
-doMerge = 0;
+doMerge = 1;
 % overwrite clu file
 rewriteclu= 1;
 % Write a log file?
