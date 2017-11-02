@@ -4,36 +4,40 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %and a dip in gamma power.
 %
 %INPUTS
-%   basePath  
-%   (input options not yet implemented... all set to default)
-%   'NREMInts'  -Interval of times for NREM 
-%               -(Default: loaded from SleepState.states.mat)
-%   'DetectionChannel'   -Channel with the most robust (positively deflecting) 
-%               Slow Waves. (0-Indexing a la neuroscope). 
-%               (Default: 'autoselect')
-%               'useold' to use channel from existing SlowWaves.events.mat
+%   basePath    -basePath for the recording file, in buzcode format:
+%                   whateverPath/baseName/
+%               folder must include files:
+%                   baseName.lfp
+%                   baseName.sessionInfo.mat -or- baseName.xml
+%               recommended (will prompt if not included unless 'noPrompts')
+%                   baseName.spikes.cellinfo.mat (or clu/res/fet)
+%                   baseName.SleepState.states.mat
 %               
-%   'CTXSpkGroups' -Spike groups that are in the cortex...  default: all
-%   'CTXChans' -LFP channels that are in the cortex...  default: all
-%   'sensitivity' -sensititivity (0-1) for determining LFP thresholds
-%                   gamma/delta thresholds set at the minimal peak 
-%                   magnitude for which mean-normalized pop rate drops
-%                   below the sensitivity value
-%                   lower sensitivity will result in fewer False Positives,
-%                   but more Missed slow waves. (default 0.6)
-%   'filterparms' structure with fields
+%   (options)
+%   'NREMInts'          -Interval of times for NREM 
+%                       -(Default: loaded from SleepState.states.mat, detect if not exist)
+%   'DetectionChannel'  -Channel with the most robust Slow Waves. (0-Indexing a la neuroscope). 
+%                       -(Default: 'autoselect')
+%                        'useold' to use channel from existing SlowWaves.events.mat              
+%   'noSpikes'          -true/false - set to true to not use spike information
+%                        (default: false)
+%   'CTXChans'          -LFP channels that are in the cortex...  default: all
+%   'sensitivity'       -sensititivity (0-1) for determining LFP thresholds
+%                        gamma/delta thresholds set at the minimal peak 
+%                        magnitude for which mean-normalized pop rate drops
+%                        below the sensitivity value
+%                        lower sensitivity will result in fewer False Positives,
+%                        but more Missed slow waves. (default 0.6)
+%   'filterparms'       -filtering parameters structure with fields:
 %           .deltafilter    [low high] bounds (default: [0.5 8]Hz)
 %           .gammafilter    [low high] bounds (default: [100 400]Hz)
 %           .gammasmoothwin  window for smoothing gamma power (default: 0.08 s)
 %           .gammanormwin    window for normalizing gamma power (default: 20s)
-%   'showFig'   -true/false show a quality control figure (default: true)
-%   'saveMat'   -logical (default=true) to save in buzcode format
-%   'forceReload' -logical (default: false) to redetect (add option to use
-%                   old parameters like channels...)
-%   'noPrompts'    -true/false disable any user prompts (default false)
+%   'showFig'           -true/false show a quality control figure (default: true)
+%   'saveMat'           -logical (default=true) to save in buzcode format
+%   'forceReload'       -logical (default: false) to re-detect
+%   'noPrompts'         -true/false disable any user prompts (default: false)
 %
-%detectionparms : minOFF,mininterOFF, peakthresh (STD), peakdist (currently
-%hardcoded)
 %
 %OUTPUTS
 %   SlowWaves    a buzcode structure
@@ -60,6 +64,7 @@ p = inputParser;
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'showFig',true,@islogical);
+addParameter(p,'noSpikes',false,@islogical);
 addParameter(p,'DetectionChannel','autoselect');
 addParameter(p,'NREMInts',[]);
 addParameter(p,'CTXChans','all');
@@ -71,10 +76,11 @@ parse(p,varargin{:})
 FORCEREDETECT = p.Results.forceReload;
 SAVEMAT = p.Results.saveMat;
 SHOWFIG = p.Results.showFig;
-SWChann = p.Results.DetectionChannel;
+SWChan = p.Results.DetectionChannel;
 NREMInts = p.Results.NREMInts;
 CTXChans = p.Results.CTXChans;
 NOPROMPTS = p.Results.noPrompts;
+NOSPIKES = p.Results.noSpikes;
 ratethresh = p.Results.sensitivity;
 filterparms = p.Results.filterparms;
 
@@ -83,10 +89,7 @@ if ~exist('basePath','var')
     basePath = pwd;
 end
 
-%Put this as optional input... with option to only use delta/gamma, for
-%comparing quality
-
-
+%Put this as optional input...
 minwindur = 0.04;
 joinwindur = 0.01;
 %% File Management
@@ -98,12 +101,18 @@ if exist(savefile,'file') && ~FORCEREDETECT
     SlowWaves = bz_LoadEvents(basePath,'SlowWaves');
     return
 end
-%% Collect all the Necessary Pieces of Information
-%Spikes in the CTX Spike Groups - assumes region ('CTX')
-spikes = bz_GetSpikes('basepath',basePath,'region','CTX');
-allspikes = sort(cat(1,spikes.times{:}));
+%% Collect all the Necessary Pieces of Information: Spikes, States, LFP
 
-%Sleep Scoring (for NREM)
+%Spikes in the CTX Spike Groups - assumes region ('CTX')
+if ~NOSPIKES
+    spikes = bz_GetSpikes('basepath',basePath,'region','CTX');
+    %Here: if no spike files found - prompt user for mode NOSPIKES
+    allspikes = sort(cat(1,spikes.times{:}));
+else
+    spikes = 'NOSPIKES'; allspikes = 'NOSPIKES';
+end
+
+%Sleep Scoring (for NREM). Load, Prompt if doesn't exist
 [SleepState] = bz_LoadStates(basePath,'SleepState');
 if isempty(SleepState) && isempty(NREMInts)
     button = questdlg(['SleepState.states.mat does not exist, '...
@@ -125,35 +134,32 @@ else
     NREMInts = SleepState.ints.NREMstate;
 end
    
-%LFP in the detection channel
-if ~isfield(SleepState.detectorparams,'SWchannum') && isempty(SWChann)
-    CHANSELECT = 'userinput';
-    SWChann = input('Which channel shows the most robust (positive polarity) slow waves?');
-elseif isempty(SWChann) %&& ismember(SleepState.detectorparams.SWchannum,CTXChans)
-    CHANSELECT = 'SleepScoreSWchan';
-    SWChann = SleepState.detectorparams.SWchannum;
-elseif strcmp(SWChann,'manualselect')
-    CHANSELECT = 'manual';
-    %run SW channel selection routine: subfunction below (ManChanSelect)
-elseif strcmp(SWChann,'autoselect')
-    CHANSELECT = 'auto';
-    %run SW channel selection routine: subfunction below (AutoChanSelect)
-    SWChann = AutoChanSelect(CTXChans,basePath,NREMInts,spikes);
-elseif strcmp(SWChann,'useold')
-    SlowWaves = bz_LoadEvents(basePath,'SlowWaves');
-    CHANSELECT = SlowWaves.detectorinfo.detectionparms.CHANSELECT;
-    try
-        SWChann = SlowWaves.detectorinfo.detectionchannel;
-    catch %remove this tomorrow (8/15)
-        SWChann = SlowWaves.detectorinfo.detectionparms.SWchannel;
-    end
-    clear SlowWaves
-else
-    CHANSELECT = 'userinput';
+%Which channel should be used for detection?
+switch SWChan
+    case 'autoselect'	%Automated selection
+        CHANSELECT = 'auto';
+        SWChan = AutoChanSelect(CTXChans,basePath,NREMInts,spikes);
+    case 'useold'       %Use from existing SlowWaves.events.mat
+        SlowWaves = bz_LoadEvents(basePath,'SlowWaves');
+        CHANSELECT = SlowWaves.detectorinfo.detectionparms.CHANSELECT;
+        SWChan = SlowWaves.detectorinfo.detectionchannel;
+        clear SlowWaves
+    otherwise 
+        if isnumeric(SWChan)    %If user has entered channel number
+            CHANSELECT = 'userinput';
+        else
+            SWChan = inputdlg(['Which LFP channel would you like to ',...
+                'use for detection? (0-index a la neuroscope)'],...
+                'DetectionChannel',1);
+            CHANSELECT = 'userinput';
+            assert(isnumeric(SWChan),'Your SW channel should be a number, eh?');
+        end     %Add: option to use SleepState.detectorparams.SWchannum?
 end
-lfp = bz_GetLFP(SWChann,'basepath',basePath);
+        
+%Load the LFP
+lfp = bz_GetLFP(SWChan,'basepath',basePath);
 
-%% Filter the LFP: delta, gamma
+%% Filter the LFP: delta, high gamma 
 display('Filtering LFP')
 deltaLFP = bz_Filter(lfp,'passband',filterparms.deltafilter,'filter','fir1','order',1);
 deltaLFP.normamp = NormToInt(deltaLFP.data,'modZ',NREMInts,deltaLFP.samplingRate);
@@ -313,7 +319,7 @@ subplot(6,1,5)
     
     xlim(samplewin)
     set(gca,'xticklabel',[]);  set(gca,'ytick',[])
-    ylabel({'LFP',['Chan: ',num2str(SWChann)]})
+    ylabel({'LFP',['Chan: ',num2str(SWChan)]})
     
 subplot(6,1,4)
     bar(tspike_NREM,synchmat_NREM,'facecolor',[0.5 0.5 0.5])
@@ -344,15 +350,15 @@ subplot(6,1,4)
    box off
     xlim(samplewin)
     plot(GAMMAdips,-GAMMAdipdepth,'go')
-plot(DELTApeaks,DELTApeakheight,'bo')
-%plot(SWpeaks,SWpeakmag,'ko')
-plot(GAMMAwins',-thresholds.GAMMAwinthresh.*ones(size(GAMMAwins')),'g')
-plot(DELTAwins',thresholds.DELTAwinthresh.*ones(size(DELTAwins')),'b')
+    plot(DELTApeaks,DELTApeakheight,'bo')
+    %plot(SWpeaks,SWpeakmag,'ko')
+    plot(GAMMAwins',-thresholds.GAMMAwinthresh.*ones(size(GAMMAwins')),'g')
+    plot(DELTAwins',thresholds.DELTAwinthresh.*ones(size(DELTAwins')),'b')
 
-plot(samplewin,-thresholds.GAMMAwinthresh.*[1 1],'g:')
-plot(samplewin,thresholds.DELTAwinthresh.*[1 1],'b:')
-plot(samplewin,-thresholds.GAMMAdipthresh.*[1 1],'g--')
-plot(samplewin,thresholds.DELTApeakthresh.*[1 1],'b--')
+    plot(samplewin,-thresholds.GAMMAwinthresh.*[1 1],'g:')
+    plot(samplewin,thresholds.DELTAwinthresh.*[1 1],'b:')
+    plot(samplewin,-thresholds.GAMMAdipthresh.*[1 1],'g--')
+    plot(samplewin,thresholds.DELTApeakthresh.*[1 1],'b--')
 
     
 NiceSave('SlowOscillation',figfolder,baseName)
@@ -372,7 +378,7 @@ SlowWaves.detectorinfo.detectorname = 'DetectSlowWaves';
 SlowWaves.detectorinfo.detectionparms = detectionparms;
 SlowWaves.detectorinfo.detectiondate = today;
 SlowWaves.detectorinfo.detectionintervals = NREMInts;
-SlowWaves.detectorinfo.detectionchannel = SWChann;
+SlowWaves.detectorinfo.detectionchannel = SWChan;
 
 if SAVEMAT
     save(savefile,'SlowWaves')
@@ -384,10 +390,10 @@ if ~NOPROMPTS
     button = questdlg('Would you like to open EventExplorer to check Detection Quality?');
     switch button
         case 'Yes'
-            EventExplorer(basePath,SlowWaves );
+            EventExplorer(basePath,SlowWaves);
     end
 end
-%Prompt user here to check detection with EventExplorer
+
 end
 
 
@@ -413,14 +419,17 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
     
     %Calculate binned spike rate for correlation with gamma/anticorrelation
     %with LFP
-    dt = 0.005; %dt = 5ms
-    overlap = 8; %Overlap = 8 dt
-    winsize = dt*overlap; %meaning windows are 40ms big (previously 30)
-    [spikemat,t_spkmat,spindices] = SpktToSpkmat(spikes.times, [], dt,overlap);
-    synchmat = sum(spikemat>0,2);
-    ratemat = sum(spikemat,2);
-    [t_spkmat,inNREMidx] = RestrictInts(t_spkmat,NREMInts); %Replace with InInterval
-    synchmat = synchmat(inNREMidx);
+    if strcmp(spikes,'NOSPIKES'); NOSPIKES=true; end
+    if ~NOSPIKES
+        dt = 0.005; %dt = 5ms
+        overlap = 8; %Overlap = 8 dt
+        winsize = dt*overlap; %meaning windows are 40ms big (previously 30)
+        [spikemat,t_spkmat,spindices] = SpktToSpkmat(spikes.times, [], dt,overlap);
+        synchmat = sum(spikemat>0,2);
+        ratemat = sum(spikemat,2);
+        [t_spkmat,inNREMidx] = RestrictInts(t_spkmat,NREMInts); %Replace with InInterval
+        synchmat = synchmat(inNREMidx);
+    end
     
   %%  
     for cc = 1:length(trychans)
@@ -443,10 +452,12 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
         gammaLFPcorr(cc) = corr(lowpassLFP.data,trygammaLFP.amp,'type','spearman');
         
         %Find LFP at rate time points and calculate correlation
-        lowpasslfp.ratetimes = interp1(lowpassLFP.timestamps,lowpassLFP.data,t_spkmat,'nearest');
-        trygammaLFP.ratetimes = interp1(lowpassLFP.timestamps,trygammaLFP.amp,t_spkmat,'nearest');
-        lowpassspikecorr(cc) = corr(lowpasslfp.ratetimes,synchmat,'type','spearman');
-        gammaspikecorr(cc) = corr(trygammaLFP.ratetimes,synchmat,'type','spearman');
+        if ~NOSPIKES
+            lowpasslfp.ratetimes = interp1(lowpassLFP.timestamps,lowpassLFP.data,t_spkmat,'nearest');
+            trygammaLFP.ratetimes = interp1(lowpassLFP.timestamps,trygammaLFP.amp,t_spkmat,'nearest');
+            lowpassspikecorr(cc) = corr(lowpasslfp.ratetimes,synchmat,'type','spearman');
+            gammaspikecorr(cc) = corr(trygammaLFP.ratetimes,synchmat,'type','spearman');
+        end
         
        
         %Save a small window for plotting
@@ -463,14 +474,17 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
 
     
     %%
-    %[~,usechanIDX] = min(gammaLFPcorr);
-    [~,usechanIDX] = min(lowpassspikecorr.*gammaspikecorr);
+    if NOSPIKES
+        [~,usechanIDX] = min(gammaLFPcorr);
+        [~,sortcorr] = sort(gammaLFPcorr);
+    else
+        [~,usechanIDX] = min(lowpassspikecorr.*gammaspikecorr);
+        [~,sortcorr] = sort(lowpassspikecorr.*gammaspikecorr);
+    end
     usechan = trychans(usechanIDX);
     
     display(['Selected Channel: ',num2str(usechan)])
     
-    %[~,sortcorr] = sort(gammaLFPcorr);
-    [~,sortcorr] = sort(lowpassspikecorr.*gammaspikecorr);
     %% Figure
 
     
@@ -548,13 +562,13 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
         reltime = [reltime; allspikes(nearpeakspikes)-DELTApeaks(ss)];
         spkpeakheight = [spkpeakheight; DELTAPeakheight(ss).*ones(sum(nearpeakspikes),1)];
         %Delta around the delta
-        [~,groupidx] = min(abs(DELTAPeakheight(ss)-DELTAmagbins));
+        [~,groupidx] = min(abs(DELTAPeakheight(ss)-DELTAmagbins)); %Which row (magnitude) is this peak in?
         nearpeakdelta(:,groupidx) =nansum([nearpeakdelta(:,groupidx), ...
             deltaLFP.normamp(DELTApeakIDX(ss)+[-1.*deltaLFP.samplingRate:deltaLFP.samplingRate])],2);
     end
     peakmagdist = hist(DELTAPeakheight(sampleDELTA),DELTAmagbins);
-    spikehitmat = hist3([reltime,spkpeakheight],{timebins,DELTAmagbins});
-    ratemat_byDELTAmag = bsxfun(@(A,B) A./B./mean(diff(timebins))./numcells,spikehitmat,peakmagdist);
+    spikehistmat = hist3([reltime,spkpeakheight],{timebins,DELTAmagbins});
+    ratemat_byDELTAmag = bsxfun(@(A,B) A./B./mean(diff(timebins))./numcells,spikehistmat,peakmagdist);
     deltapower_byDELTAmag = bsxfun(@(A,B) A./B,nearpeakdelta,peakmagdist);
     
     %GAMMA
@@ -580,8 +594,8 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
             gammaLFP.normamp(GAMMAdipIDX(ss)+[-1.*gammaLFP.samplingRate:gammaLFP.samplingRate])],2);
     end
     peakmagdist = hist(GAMMAdipdepth(sampleGAMMA),GAMMAmagbins);
-    spikehitmat = hist3([reltime,spkpeakheight],{timebins,GAMMAmagbins});
-    ratemat_byGAMMAmag = bsxfun(@(A,B) A./B./mean(diff(timebins))./numcells,spikehitmat,peakmagdist);
+    spikehistmat = hist3([reltime,spkpeakheight],{timebins,GAMMAmagbins});
+    ratemat_byGAMMAmag = bsxfun(@(A,B) A./B./mean(diff(timebins))./numcells,spikehistmat,peakmagdist);
     gammapower_byGAMMAmag = bsxfun(@(A,B) A./B,neardipgamma,peakmagdist);
     %% Find Thresholds as values where spike rate falls below threshold
     %Set the rate threshold to halfway between that at the delta peak and
