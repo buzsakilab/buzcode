@@ -116,8 +116,11 @@ end
 % inherit required fields from spikes cellinfo struct
 firingMaps.UID = spikes.UID;
 firingMaps.sessionName = spikes.sessionName;
+try
 firingMaps.region = spikes.region; 
-
+catch
+   warning('spikes.region is missing') 
+end
 % backwards compatible but we'll eventually want to change this...
 firingMaps.rateMaps = rateMap;
 firingMaps.countMaps = countMap;
