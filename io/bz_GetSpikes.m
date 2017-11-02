@@ -109,7 +109,7 @@ if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') 
     
 else % do the below then filter by inputs... (Load from clu/res/fet)
     
-    if ~noPrompts %Inform the user that they should save a file for later
+    if ~noPrompts & saveMat == 0 %Inform the user that they should save a file for later
         savebutton = questdlg(['Would you like to save your spikes in ',...
             sessionInfo.FileName,'.spikes.cellinfo.mat?  ',...
             'This will save significant load time later.']);
@@ -174,7 +174,7 @@ end
 count = 1;
 
 for i=1:length(cluFiles) 
-    disp(['working on ' spkFiles(i).name])
+    disp(['working on ' cluFiles(i).name])
     
     temp = strsplit(cluFiles(i).name,'.');
     shankID = str2num(temp{length(temp)}); %shankID is the spikegroup number
