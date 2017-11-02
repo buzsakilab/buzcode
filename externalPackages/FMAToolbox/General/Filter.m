@@ -128,5 +128,6 @@ switch(type),
 end
 filtered(:,1) = samples(:,1);
 for i = 2:size(samples,2),
-	filtered(:,i) = FiltFiltM(b,a,samples(:,i));
+ 	filtered(:,i) = FiltFiltM(b,a,samples(:,i)); % wotan
+%    filtered(:,i) = filtfilt(b, a, samples(:, i));
 end

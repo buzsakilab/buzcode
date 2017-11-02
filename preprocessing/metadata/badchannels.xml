@@ -1,0 +1,14 @@
+<?xml version='1.0'?>
+<parameter>
+ <program>
+  <name>badchannels</name>
+  <parameters>
+   <parameter>
+    <name>badchannels</name>
+    <value/>
+    <status>Mandatory</status>
+   </parameter>
+  </parameters>
+  <help/>
+ </program>
+</parameter>

@@ -270,10 +270,10 @@ if FileExistsIn([baseName,'.eegstates.mat'])
             catch
                 try
                     %First try Anton's LoadBinary - this is not in buzcode
-                    eeg = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+                    eeg = LoadBinary([baseName, suffix], Chs+1, nCh, [], 'int16', 'single');
                 catch
                     %Otherwise try to use Micheal Zugaro
-                    eeg = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
+                    eeg = LoadBinaryIn([baseName, suffix], 'channels', Chs+1, 'nChannels', nCh)';
                     eeg = double(eeg);
                 end
                 
@@ -319,7 +319,7 @@ else
         
         inputFig = figure('Position', [280   453   550   250], 'MenuBar', 'none', 'numbertitle', 'off', 'name', [baseName, ' channel selection']);
         warning('off', 'MATLAB:hg:default_child_strategy:IllegalPermutation')
-        annotation('textbox',  'Position', [0.02, 0.87, 0.9, 0.07], 'string', ['\bf\fontsize{10}Please choose up to 3 eeg channels (base 1, nCh = ', int2str(nCh), '):'], 'EdgeColor', 'none');
+        annotation('textbox',  'Position', [0.02, 0.87, 0.9, 0.07], 'string', ['\bf\fontsize{10}Please choose up to 3 eeg channels (base 0, nCh = ', int2str(nCh), '):'], 'EdgeColor', 'none');
         Channels1 = uicontrol('style', 'edit', 'FontSize', 10, 'Units', 'Normalized', 'Position', [0.37, 0.75, 0.45, 0.08],'String',defaultchans);
         set(Channels1, 'HorizontalAlignment', 'left');
         
@@ -388,12 +388,12 @@ else
         
         try
             %First try Anton's LoadBinary
-            eeg1 = LoadBinary([baseName, suffix], Chs, nCh, [], 'int16', 'single');
+            eeg1 = LoadBinary([baseName, suffix], Chs+1, nCh, [], 'int16', 'single');
         catch
             %Otherwise try to use Micheal Zugaro
-            eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs, 'nChannels', nCh)';
+            eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs+1, 'nChannels', nCh)';
             eeg1 = single(eeg1);
-%         end
+         end
         disp('Done.');
         for i = 1:length(Chs)
             
@@ -503,12 +503,12 @@ else
                 else
                     try
                         %First try Anton's LoadBinary
-                        meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+                        meeg = LoadBinary([baseName, suffix], mChs+1, nCh, [], 'int16', 'single');
                     catch
                         %Otherwise try to use Micheal Zugaro
-                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
+                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs+1, 'nChannels', nCh)';
                         meeg = single(meeg);
-%                     end
+                    end
                 end
                 meeg = abs(zscore(meeg')');
                 meeg = sum(meeg, 1);
@@ -532,10 +532,10 @@ else
                 else
                     try
                         %First try Anton's LoadBinary
-                        meeg = LoadBinary([baseName, suffix], mChs, nCh, [], 'int16', 'single');
+                        meeg = LoadBinary([baseName, suffix], mChs+1, nCh, [], 'int16', 'single');
                     catch
                         %Otherwise try to use Micheal Zugaro
-                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs, 'nChannels', nCh)';
+                        meeg = LoadBinaryIn([baseName, suffix], 'channels', mChs+1, 'nChannels', nCh)';
                         meeg = single(meeg);
                     end
                 end
