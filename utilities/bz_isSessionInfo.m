@@ -1,9 +1,9 @@
 function [isSessionInfo] = bz_isSessionInfo(SessionInfo)
 % USAGE
-% [isSessionInfo] = bz_isSessionInfo(event)
+% [isSessionInfo] = bz_isSessionInfo(SessionInfo)
 % 
 % INPUT
-%       event   - struct with the following fields
+%       SessionInfo   - struct with the following fields
 %                   .channels
 %                   .region
 %                   .depth

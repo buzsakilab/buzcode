@@ -4,7 +4,7 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %and a dip in gamma power.
 %
 %INPUTS
-%   basePath    -basePath for the recording file, in buzcode format:
+%   basePath    -(default: pwd) basePath for the recording file, in buzcode format:
 %                   whateverPath/baseName/
 %               folder must include files:
 %                   baseName.lfp
@@ -15,17 +15,17 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %               
 %   (options)
 %   'NREMInts'          -Interval of times for NREM 
-%                       -(Default: loaded from SleepState.states.mat, detect if not exist)
+%                       -(Default: loaded from SleepState.states.mat, 
+%                                   run SleepScoreMaster if not exist)
 %   'DetectionChannel'  -Channel with the most robust Slow Waves. (0-Indexing a la neuroscope). 
 %                       -(Default: 'autoselect')
 %                        'useold' to use channel from existing SlowWaves.events.mat              
 %   'noSpikes'          -true/false - set to true to not use spike information
 %                        (default: false)
-%   'CTXChans'          -LFP channels that are in the cortex...  default: all
+%   'CTXChans'          -LFP channels that are in the cortex...  
+%                        default: from baseName.sessionInfo.mat or xml
 %   'sensitivity'       -sensititivity (0-1) for determining LFP thresholds
-%                        gamma/delta thresholds set at the minimal peak 
-%                        magnitude for which mean-normalized pop rate drops
-%                        below the sensitivity value
+%                        sensitivity for setting gamma/delta thresholds.
 %                        lower sensitivity will result in fewer False Positives,
 %                        but more Missed slow waves. (default 0.6)
 %   'filterparms'       -filtering parameters structure with fields:
@@ -49,7 +49,7 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %TO DO
 %-incorporate multiple channels for detection of slow wave, which is robust
 %on all (deep) lfp channels in the local cortical population
-%update input parameter list
+%-update input parameter list
 %% Defaults and Parms
 ratevalidation = @(x) x>0 & x<1;
 filterparmsvalidate = @(x) isstruct(x) & all(isfield(x,...
@@ -408,12 +408,12 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
     display('Detecting best channel for slow wave detection...')
     baseName = bz_BasenameFromBasepath(basePath);
     figfolder = fullfile(basePath,'DetectionFigures');
-    %Exclude badchannels
+
     par = bz_getSessionInfo(basePath);
     if strcmp(trychans,'all') 
-        trychans = [par.SpkGrps(:).Channels];
+        trychans = par.channels;
     end
-    if isfield(par,'badchannels')
+    if isfield(par,'badchannels')     %Exclude badchannels
     	trychans = setdiff(trychans,par.badchannels);
     end
     
@@ -433,9 +433,7 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
     
   %%  
     for cc = 1:length(trychans)
-
         display(['Trying Channel ',num2str(cc),' of ',num2str(length(trychans))])
-        %Load the LFPs
         chanlfp = bz_GetLFP(trychans(cc),'basepath',basePath);
         %Filter in gamma
         gammafilter = [100 512];
@@ -477,6 +475,7 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
     if NOSPIKES
         [~,usechanIDX] = min(gammaLFPcorr);
         [~,sortcorr] = sort(gammaLFPcorr);
+        lowpassspikecorr = nan;gammaspikecorr = nan;
     else
         [~,usechanIDX] = min(lowpassspikecorr.*gammaspikecorr);
         [~,sortcorr] = sort(lowpassspikecorr.*gammaspikecorr);
@@ -486,8 +485,6 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
     display(['Selected Channel: ',num2str(usechan)])
     
     %% Figure
-
-    
     figure('name',[baseName,' Slow Wave Channel Selection'])
     subplot(2,2,1)
         hist(gammaLFPcorr)
@@ -503,12 +500,14 @@ function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
         plot(alllfp.timestamps,alllfp.data(:,usechanIDX),'k')
         axis tight
         box off
-        
+    
+    if ~NOSPIKES  %the following plot relies on spikes  
     subplot(2,2,3)
-    plot(lowpassspikecorr,gammaspikecorr,'k.')
-    hold on
+        plot(lowpassspikecorr,gammaspikecorr,'k.')
+        hold on
     	plot(lowpassspikecorr(usechanIDX),gammaspikecorr(usechanIDX),'ro')
         xlabel('Spike-Delta Correlation');ylabel('Spike-Gamma Power Correlation')
+    end
         
     NiceSave('SlowWaveChannelSelect',figfolder,baseName)
 end
