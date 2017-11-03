@@ -38,8 +38,8 @@ bz_isSessionInfo(sessionInfo);
 %Here: prompt user to add any missing sessionInfo fields and save
 if ~isfield(sessionInfo,'region')
     regionadd = questdlg(['Your sessionInfo is missing regions, ',...
-        'would you like to add them?']);
-    if strcmp(regionadd,'Yes')
+        'would you like to add them? [Y/n]']);
+    if strcmp(regionadd,'Yes') | strcmp(regionadd,'')
         [ sessionInfo ] = bz_sessionInfoGUI( sessionInfo );
         SIexist = false; 
     end
@@ -51,8 +51,8 @@ end
 %xml
 if ~noPrompts && ~SIexist %Inform the user that they should save a file for later
     savebutton = questdlg(['Would you like to save your sessionInfo in ',...
-        filename]);
-    if strcmp(savebutton,'Yes'); save(filename,'sessionInfo'); end
+        filename '? [Y/n]']);
+    if strcmp(savebutton,'Yes') | strcmp(savebutton,''); save(filename,'sessionInfo'); end
 end
 
 end
