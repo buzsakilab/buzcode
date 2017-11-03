@@ -16,7 +16,7 @@ end
 newstruct.anotherregion = true; numregions = 0;
 while newstruct.anotherregion
     %Make the template structure
-    tempstruct.loadexisting = { {'uigetfile(''*.sessionInfo.mat'')'} };
+    tempstruct.Load_Existing = { {'uigetfile(''*.sessionInfo.mat'')'} };
     tempstruct.(['regionname',num2str(numregions)]) = ...
         { 'HPC/CTX/other?' ,['Region ',num2str(numregions),' Tag']};
     tempstruct.(['regionchans',num2str(numregions)]) = ...
@@ -28,8 +28,8 @@ while newstruct.anotherregion
     newstruct = StructDlg(tempstruct,'Add Region Info.');
     
     %For loading from an existing sessionInfo
-    if newstruct.loadexisting
-        oldsessionInfo = load(newstruct.loadexisting);
+    if ~strcmp(newstruct.Load_Existing,'*.sessionInfo.mat')
+        oldsessionInfo = load(newstruct.Load_Existing);
         sessionInfo.region = oldsessionInfo.sessionInfo.region;
         return %return the sessionInfo with regions from old file...
     end
@@ -49,7 +49,7 @@ while newstruct.anotherregion
 end
 
 %Add the regions to the sessionInfo structure
-sessionInfo.region = cell(1,sessionInfo.nChannels);
+sessionInfo.region = repmat({''},1,sessionInfo.nChannels);
 for rr = 1:numregions
     regionname = newstruct.(['regionname',num2str(rr-1)]);
     regionchans = newstruct.(['regionchans',num2str(rr-1)]);

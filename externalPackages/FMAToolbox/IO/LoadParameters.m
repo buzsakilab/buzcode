@@ -219,7 +219,7 @@ try %some xml may not have p.programs.program.... if so, ignore all of this
             %with the region name and a list of channels separated
             %by a space or comma. This is temporary while we get metadata ironed out
             %-DL
-            parameters.region = cell(1,parameters.nChannels);
+            parameters.region = repmat({''},1,sessionInfo.nChannels);
             numregions = length(plugins{pp}.parameters.parameter);
             for rr = 1:numregions
                 regionname = plugins{pp}.parameters.parameter{rr}.name;

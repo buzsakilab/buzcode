@@ -52,10 +52,7 @@ end
 if ~noPrompts && ~SIexist %Inform the user that they should save a file for later
     savebutton = questdlg(['Would you like to save your sessionInfo in ',...
         filename]);
-    if strcmp(savebutton,'Yes'); saveMat = true; end
+    if strcmp(savebutton,'Yes'); save(filename,'sessionInfo'); end
 end
 
-if saveMat
-    save(filename,'sessionInfo')
-end
 end
