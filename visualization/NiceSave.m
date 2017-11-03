@@ -1,6 +1,12 @@
 function [  ] = NiceSave(figname,figfolder,baseName,figtype)
-%NiceSave(figname,baseName,recname) formats the figure for best viewing
+%NiceSave(figname,figfolder,baseName,figtype) formats the figure for best viewing
 %and saves it as a .pdf in figfolder with name recname_figname.pdf
+%
+%INPUTS
+%   figname     string with title of figure
+%   figfolder   folder to save figure to
+%   baseName    name of the recording ([] for none)
+%   figtype     (optional)
 %
 %DLevenstein Fall 2016
 %%

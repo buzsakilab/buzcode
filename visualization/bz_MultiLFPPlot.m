@@ -29,7 +29,7 @@ spikedefault.spindices = [nan nan];
 p = inputParser;
 addParameter(p,'channels','all',@isnumeric)
 addParameter(p,'timewin',[0 Inf],@isnumeric)
-addParameter(p,'spikes',spikedefault,@isstruct) %should have iscellinfo function
+addParameter(p,'spikes',spikedefault) %should have iscellinfo function
 addParameter(p,'axhandle',gca)
 addParameter(p,'scaleLFP',1,@isnumeric)
 addParameter(p,'scalespikes',5,@isnumeric)
@@ -40,6 +40,10 @@ spikes = p.Results.spikes;
 ax = p.Results.axhandle;
 scaleLFP = p.Results.scaleLFP;
 scalespikes = p.Results.scalespikes;
+
+if isempty(spikes)
+    spikes = spikedefault;
+end
 
 %% Channel and time stuff
 %Time Window

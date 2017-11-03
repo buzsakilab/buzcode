@@ -43,6 +43,7 @@ end
 
 int = round(int*sf); %Convert intervals from seconds to indices 
 int(int==0)=1; %Turn time=0 to the first indexed datapoint
+int(isinf(int))=size(data,1);
 
 %Make vector that is nans at times not in the intervals
 int_data = nan(size(data));
