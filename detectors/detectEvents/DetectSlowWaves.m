@@ -23,7 +23,7 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %   'noSpikes'          -true/false - set to true to not use spike information
 %                        (default: false)
 %   'CTXChans'          -LFP channels that are in the cortex...  
-%                        default: from baseName.sessionInfo.mat or xml
+%                        default: region 'CTX' from baseName.sessionInfo.mat or xml
 %   'sensitivity'       -sensititivity (0-1) for determining LFP thresholds
 %                        sensitivity for setting gamma/delta thresholds.
 %                        lower sensitivity will result in fewer False Positives,
@@ -106,8 +106,18 @@ end
 %Spikes in the CTX Spike Groups - assumes region ('CTX')
 if ~NOSPIKES
     spikes = bz_GetSpikes('basepath',basePath,'region','CTX');
-    %Here: if no spike files found - prompt user for mode NOSPIKES
-    allspikes = sort(cat(1,spikes.times{:}));
+    if isempty(spikes)
+        button = questdlg({['No spikes found (baseName.spikes.cellinfo.mat or clu/res/fet), '...
+            'would you like to run in ''noSpikes'' mode?'],...
+            '(Not recommended, lower sensitivity neded for good detection quality with no spikes)'},...
+            'DetectSlowWaves Needs Spikes',...
+            'Yes','No','Cancel','Yes');
+        if strcmp(button,'Yes')
+            spikes = 'NOSPIKES'; allspikes = 'NOSPIKES';
+        end
+    else
+        allspikes = sort(cat(1,spikes.times{:}));
+    end
 else
     spikes = 'NOSPIKES'; allspikes = 'NOSPIKES';
 end
@@ -138,7 +148,7 @@ end
 switch SWChan
     case 'autoselect'	%Automated selection
         CHANSELECT = 'auto';
-        SWChan = AutoChanSelect(CTXChans,basePath,NREMInts,spikes);
+        [SWChan,CTXChans] = AutoChanSelect(CTXChans,basePath,NREMInts,spikes);
     case 'useold'       %Use from existing SlowWaves.events.mat
         SlowWaves = bz_LoadEvents(basePath,'SlowWaves');
         CHANSELECT = SlowWaves.detectorinfo.detectionparms.CHANSELECT;
@@ -404,14 +414,28 @@ end
 
 
 %% Channel Selection Functions
-function usechan = AutoChanSelect(trychans,basePath,NREMInts,spikes)
+function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes)
     display('Detecting best channel for slow wave detection...')
     baseName = bz_BasenameFromBasepath(basePath);
     figfolder = fullfile(basePath,'DetectionFigures');
-
-    par = bz_getSessionInfo(basePath);
-    if strcmp(trychans,'all') 
-        trychans = par.channels;
+    
+    par = bz_getSessionInfo(basePath); %Load the metadata
+    if strcmp(trychans,'all') %ie the user hasn't manually entered channels
+        regions = unique(par.region);
+        if length(regions)==1 && strcmp(regions,'')
+            %If there are no regions, use all (tell user)
+            display('No region in sessionInfo, using all channels')
+            trychans = par.channels;
+        elseif length(regions)>0 && any(strcmp(regions,'CTX')) 
+            %If there's a region 'CTX', use those channels
+            trychans = par.channels(strcmp(par.region,'CTX'));
+        elseif length(regions)>0 && ~any(strcmp(regions,'CTX')) 
+            %If there are regions, but not CTX, allow user to selet regions
+            [s,v] = listdlg('PromptString','No ''CTX'', which region to use? :',...
+                'SelectionMode','multiple',...
+                'ListString',regions)
+            trychans = par.channels(ismember(par.region,regions(s)));
+        end
     end
     if isfield(par,'badchannels')     %Exclude badchannels
     	trychans = setdiff(trychans,par.badchannels);
