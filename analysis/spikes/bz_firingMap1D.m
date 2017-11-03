@@ -43,6 +43,7 @@ saveMat = p.Results.saveMat;
 for tt =1:length(unique(behavior.events.trialConditions))
     trials = find(behavior.events.trialConditions==tt);
     rateMap{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
+    rateMap_box{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
     rateMap_unsmooth{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
     countMap{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
     occuMap{tt} = zeros(length(trials),length(behavior.events.map{tt}.x));
@@ -98,6 +99,9 @@ for tt =1:length(unique(behavior.events.trialConditions))
 %                   mean(occuMap{tt})'.*(1/behavior.samplingRate),tau);
         end
     end
+    rateMap{tt}(isnan(rateMap{tt})) = 0;
+    rateMap_box{tt}(isnan(rateMap_box{tt})) = 0;
+    rateMap_unsmooth{tt}(isnan(rateMap_unsmooth{tt})) = 0;
 end
 
 %% restructure into cell info data type
