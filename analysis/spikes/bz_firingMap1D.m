@@ -42,9 +42,6 @@ saveMat = p.Results.saveMat;
 % start processing
 for tt =1:length(unique(behavior.events.trialConditions))
     trials = find(behavior.events.trialConditions==tt);
-    rateMap{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
-    rateMap_box{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
-    rateMap_unsmooth{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
     countMap{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
     occuMap{tt} = zeros(length(trials),length(behavior.events.map{tt}.x));
     if ~isempty(behavior.events.map{tt})
@@ -77,24 +74,27 @@ for tt =1:length(unique(behavior.events.trialConditions))
                     abs(behavior.events.trials{trials(m)}.y(mm)-behavior.events.map{tt}.y));
                 occuMap{tt}(m,b) = occuMap{tt}(m,b) + 1;
             end
-            occuMap{tt}(m,:) = medfilt1(occuMap{tt}(m,:),tau);
+            occuMap{tt}(m,:) = medfilt1(occuMap{tt}(m,:),4);
         end
     end
 end
 
 for tt =1:length(unique(behavior.events.trialConditions))
-     trials = find(behavior.events.trialConditions==tt);
+    rateMap{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
+    rateMap_box{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
+    rateMap_unsmooth{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
+    trials = find(behavior.events.trialConditions==tt);
     for i = 1:length(spikes.times)
         numTrials = length(trials);
         for t = 1:length(trials)
 %             rateMap{tt}(i,t,:) = smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
 %                 (smooth(occuMap{tt},tau)*(1/behavior.samplingRate)./numTrials);
             rateMap{tt}(i,t,:) = Smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
-                (Smooth(mean(occuMap{tt}),2*tau)*(1/behavior.samplingRate));
+                (Smooth((occuMap{tt}(t,:)),tau)*(1/behavior.samplingRate));
             rateMap_box{tt}(i,t,:) = smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
-                (smooth(mean(occuMap{tt}),2*tau)*(1/behavior.samplingRate));
+                (Smooth((occuMap{tt}(t,:)),tau)*(1/behavior.samplingRate));
             rateMap_unsmooth{tt}(i,t,:) = (squeeze(countMap{tt}(i,t,:)))./ ...
-                (Smooth(mean(occuMap{tt}),2*tau)*(1/behavior.samplingRate));
+                (Smooth((occuMap{tt}(t,:)),tau)*(1/behavior.samplingRate));
 %               rateMap{tt}(i,t,:) = Smooth(squeeze(countMap{tt}(i,t,:))./...
 %                   mean(occuMap{tt})'.*(1/behavior.samplingRate),tau);
         end
