@@ -80,10 +80,10 @@ for tt =1:length(unique(behavior.events.trialConditions))
 end
 
 for tt =1:length(unique(behavior.events.trialConditions))
+    trials = find(behavior.events.trialConditions==tt);
     rateMap{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
     rateMap_box{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
     rateMap_unsmooth{tt} = zeros(length(spikes.times),length(trials),length(behavior.events.map{tt}.x));
-    trials = find(behavior.events.trialConditions==tt);
     for i = 1:length(spikes.times)
         numTrials = length(trials);
         for t = 1:length(trials)
