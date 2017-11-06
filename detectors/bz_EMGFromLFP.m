@@ -89,7 +89,7 @@ display('Calculating EMGFromLFP from High Frequency LFP Correlation')
 
 %% get basics about.lfp/lfp file
 
-xml = LoadParameters(basePath); % now using the updated version
+xml = bz_getSessionInfo(basePath); % now using the updated version
 if exist([basePath '/' xml.FileName '.lfp'])
     lfpFile = [basePath '/' xml.FileName '.lfp'];
 elseif exist([basePath '/' xml.FileName '.eeg'])

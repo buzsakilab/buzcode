@@ -27,21 +27,20 @@ elseif isempty(basepath)
     basepath = cd;
 end
 basename = bz_BasenameFromBasepath(basepath);
-metadataname = fullfile(basepath,[basename,'.SessionMetadata.mat']);
+BWmetadataname = fullfile(basepath,[basename,'.SessionMetadata.mat']);
 xmlname = fullfile(basepath,[basename,'.xml']);
+sessionInfoname = fullfile(basepath,[basename,'.sessionInfo.mat']);
 
 %% Setup
-if exist(metadataname,'file')
+if exist(BWmetadataname,'file')
     display('Getting info from SessionMetadata.mat')
-    load(metadataname);
+    load(BWmetadataname);
     
     nchannels = SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels;
     oldsamplerate = SessionMetadata.ExtracellEphys.Parameters.SampleRate;
     newsamplerate = SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate;
-elseif exist(xmlname,'file')
-    display(['Getting info from .xml, ',...
-        'you might want to make a SessionMetadata.mat...'])
-    parameters = LoadParameters(xmlname);
+elseif exist(xmlname,'file') || exist(sessionInfoname,'file')
+    parameters = bz_getSessionInfo(basepath);
     
     nchannels = parameters.nChannels;
     oldsamplerate = parameters.rates.wideband;
