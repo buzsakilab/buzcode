@@ -70,7 +70,7 @@ end
 
 if ~isempty(p.spikeDetection),
 	parameters.spikeGroups.nGroups = length(p.spikeDetection.channelGroups.group);
-	if parameters.spikeGroups.nGroups == 1,
+	if parameters.spikeGroups.nGroups == 1,   %if there's a single spike group
 		parameters.spikeGroups.nSamples = str2num(p.spikeDetection.channelGroups.group.nSamples);
 		channels = p.spikeDetection.channelGroups.group.channels.channel;
 		if isa(channels,'cell'),
@@ -79,7 +79,12 @@ if ~isempty(p.spikeDetection),
 			end
 		else
 			parameters.spikeGroups.groups{1} = str2num(channels);
-		end
+        end
+        
+        %%%%%%%bug fix for xml tree mishandling single spike group
+         temp = p.spikeDetection.channelGroups.group;
+         p.spikeDetection.channelGroups = rmfield(p.spikeDetection.channelGroups,'group');
+         p.spikeDetection.channelGroups.group{1} = temp;  
 	else
 		for group = 1:parameters.spikeGroups.nGroups,
             if isfield(p.spikeDetection.channelGroups.group{group},'nSamples')
