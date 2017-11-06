@@ -14,9 +14,12 @@ function [lfp] = bz_GetLFP(varargin)
 %                        list of channels to load (use keyword 'all' for all)
 %                        channID is 0-indexing, a la neuroscope
 %  Name-value paired inputs:
-%    basename           -base file name to load
 %    basepath           - folder in which .lfp file will be found (default
 %                           is pwd)
+%                           folder should follow buzcode standard:
+%                           whateverPath/baseName
+%                           and contain file baseName.lfp
+%    basename           -base file name to load
 %    intervals          -list of time intervals [0 10; 20 30] to read from 
 %                           the LFP file (default is [0 inf])
 %
