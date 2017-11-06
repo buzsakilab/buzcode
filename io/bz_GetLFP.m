@@ -110,8 +110,9 @@ else
    lfp.Filename = [basename '.lfp'];
 end
 
-%% things we can parse from xml file
-xml = LoadParameters(fullfile(basepath,[basename '.xml']));
+%% things we can parse from sessionInfo or xml file
+%xml = LoadParameters(fullfile(basepath,[basename '.xml']));
+xml = bz_getSessionInfo(basepath);
 nChannels = xml.nChannels;
 try
     samplingRate = xml.lfpSampleRate;
