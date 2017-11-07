@@ -49,7 +49,7 @@ end
 bz_isSessionInfo(sessionInfo);
 
 %Here: prompt user to add any missing sessionInfo fields and save
-if ~isfield(sessionInfo,'region')
+if ~isfield(sessionInfo,'region') && ~noPrompts
     regionadd = questdlg(['Your sessionInfo is missing regions, ',...
         'would you like to add them?'],'Add Regions?','Yes');
     if strcmp(regionadd,'Yes')
