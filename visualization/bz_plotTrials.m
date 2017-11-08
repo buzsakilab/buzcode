@@ -20,11 +20,11 @@ if isempty(condition)
         ff = find(behavior.events.trialConditions==tt);
 
         for t = 1:length(ff)
-        scatter(behavior.events.trials{ff(t)}.x,behavior.events.trials{ff(t)}.y,[],color,'.')
+        scatter(behavior.events.trials{ff(t)}.x,behavior.events.trials{ff(t)}.z,[],color,'.')
         hold on
         if endPoints
-        scatter(behavior.events.trials{ff(t)}.x(1),behavior.events.trials{ff(t)}.y(1),'.g')
-        scatter(behavior.events.trials{ff(t)}.x(end),behavior.events.trials{ff(t)}.y(end),'.r')
+        scatter(behavior.events.trials{ff(t)}.x(1),behavior.events.trials{ff(t)}.z(1),'.g')
+        scatter(behavior.events.trials{ff(t)}.x(end),behavior.events.trials{ff(t)}.z(end),'.r')
         end
         hold on
         end
@@ -36,11 +36,11 @@ else
         ff = find(behavior.events.trialConditions==condition);
 
         for t = 1:length(ff)
-        scatter(behavior.events.trials{ff(t)}.x,behavior.events.trials{ff(t)}.y,[],color,'.')
+        scatter(behavior.events.trials{ff(t)}.x,behavior.events.trials{ff(t)}.z,[],color,'.')
         hold on
         if endPoints
-        scatter(behavior.events.trials{ff(t)}.x(1),behavior.events.trials{ff(t)}.y(1),'.g')
-        scatter(behavior.events.trials{ff(t)}.x(end),behavior.events.trials{ff(t)}.y(end),'.r')
+        scatter(behavior.events.trials{ff(t)}.x(1),behavior.events.trials{ff(t)}.z(1),'.g')
+        scatter(behavior.events.trials{ff(t)}.x(end),behavior.events.trials{ff(t)}.z(end),'.r')
         hold on
         end
         end
