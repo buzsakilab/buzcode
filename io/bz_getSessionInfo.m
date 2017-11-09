@@ -1,5 +1,6 @@
 function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 
+
 %% inputs and defaults
 p = inputParser;
 addParameter(p,'noPrompts',false,@islogical);
@@ -47,8 +48,8 @@ end
     
     
 %% Save sessionInfo file   
-%Here: prompt user to save basePath/baseName.sessionInfo.mat if loaded from
-%xml
+%Prompt user to save basePath/baseName.sessionInfo.mat 
+%if loaded from xml or changed
 if ~noPrompts && ~SIexist %Inform the user that they should save a file for later
     savebutton = questdlg(['Would you like to save your sessionInfo in ',...
         filename]);
