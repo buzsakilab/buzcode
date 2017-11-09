@@ -19,6 +19,11 @@
 %     'duration'    duration in s of each xcorrelogram (default = 2)
 %    =========================================================================
 %
+%
+%  OUTPUT
+%   ccg         [timesamps x groups x groups] matrix, where ccg(t,y,z) is
+%               the t'th time bin of the histogram of event group z 
+%               centered around event group y
 %  SEE
 %
 %    See also ShortTimeCCG.
