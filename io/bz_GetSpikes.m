@@ -58,10 +58,6 @@ function spikes = bz_GetSpikes(varargin)
 %
 %
 % written by David Tingley, 2017
-
-% TODO
-% - integrate session sessionInfodata in place of xml-LoadParameters
-% - get 'region' input working with session sessionInfodata
 %% Deal With Inputs 
 spikeGroupsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
     'spikeGroups must be numeric or "all"');
