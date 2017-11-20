@@ -45,6 +45,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'ThetaChannels' A vector list of channels that may be chosen for Theta
 %                   signal
 %   'rejectChannels' A vector of channels to exclude from the analysis
+%   'noPrompts'     (default:false) an option to not prompt user of things
 %
 %OUTPUT
 %   StateIntervals  structure containing start/end times (seconds) of
@@ -154,6 +155,7 @@ addParameter(p,'NotchTheta',defaultNotchTheta)
 addParameter(p,'SWChannels',defaultNotchTheta)
 addParameter(p,'ThetaChannels',defaultNotchTheta)
 addParameter(p,'rejectChannels',[]);
+addParameter(p,'noPrompts',false);
 
 parse(p,varargin{:})
 %Clean up this junk...
@@ -169,6 +171,7 @@ NotchTheta = p.Results.NotchTheta;
 SWChannels = p.Results.SWChannels;
 ThetaChannels = p.Results.ThetaChannels;
 rejectChannels = p.Results.rejectChannels;
+noPrompts = p.Results.noPrompts;
 
 
 %% Database File Management 
@@ -249,14 +252,16 @@ save(bz_sleepstatepath,'SleepState');
 
 display(['Sleep Score ',recordingname,': Complete!']);
 %Prompt user here to manually check detection with TheStateEditor
-str = input('Would you like to check detection with TheStateEditor? [Y/N] ','s');
-switch str
-    case {'Y','y',''}
-        TheStateEditor([basePath,filesep,recordingname])
-    case {'N','n'}
-    otherwise
-        display('Unknown input..... you''ll have to load TheStateEditor on your own')
+if ~noPrompts
+    str = input('Would you like to check detection with TheStateEditor? [Y/N] ','s');
+    switch str
+        case {'Y','y',''}
+            TheStateEditor([basePath,filesep,recordingname])
+        case {'N','n'}
+        otherwise
+            display('Unknown input..... you''ll have to load TheStateEditor on your own')
+    end
 end
-end
+
 end
 

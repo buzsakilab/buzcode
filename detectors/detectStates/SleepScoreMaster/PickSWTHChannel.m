@@ -254,7 +254,7 @@ SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,params);
 
 
 if saveFiles
-    %Save in buzcodeformat
+    %Need to update to Save in buzcode format for lfp.mat
     save(matfilename,'SleepScoreLFP');
 end
 
