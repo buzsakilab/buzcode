@@ -80,6 +80,12 @@ conv_w = .010/binSize;  % 10ms window
 alpha = 0.001; %high frequency cut off, must be .001 for causal p-value matrix
 plotit = true;
 sorted = false;
+
+if length(varargin) ==1 && iscell(varargin{1})
+    varargin = varargin{1};
+end
+
+
 % Parse options
 for i = 1:2:length(varargin),
     if ~isa(varargin{i},'char'),
@@ -104,14 +110,10 @@ for i = 1:2:length(varargin),
             
         case 'cells',
             cells = varargin{i+1};
-            if ~IsPositiveInteger(cells),
-                error('Incorrect value for property ''cells'' ');
-            end
+          
         case 'conv_w',
             conv_w = varargin{i+1};
-            if ~IsPositiveInteger(conv_w),
-                error('Incorrect value for property ''conv_w''');
-            end
+           
         case 'alpha',
             alpha = varargin{i+1};
             if ~isa(alpha,'numeric'),

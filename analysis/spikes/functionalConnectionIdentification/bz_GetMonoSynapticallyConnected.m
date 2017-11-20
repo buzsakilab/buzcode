@@ -57,5 +57,5 @@ spikes = bz_GetSpikes('basepath',basepath);
 spikeIDs = [spikes.shankID(spikes.spindices(:,2))' spikes.cluID(spikes.spindices(:,2))' spikes.spindices(:,2)];
 
 %call main script
-mono_res = bz_MonoSynConvClick (spikeIDs,spikes.spindices(:,1));
+mono_res = bz_MonoSynConvClick (spikeIDs,spikes.spindices(:,1),varargin);
 end
