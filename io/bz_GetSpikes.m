@@ -9,7 +9,7 @@ function spikes = bz_GetSpikes(varargin)
 %
 %    spikeGroups     -vector subset of shank IDs to load (Default: all)
 %    region          -string region ID to load neurons from specific region
-%                     (requires sessionInfodata file or units->structures in xml)
+%                     (requires sessionInfo file or units->structures in xml)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
 %    getWaveforms    -logical (default=true) to load mean of raw waveform data

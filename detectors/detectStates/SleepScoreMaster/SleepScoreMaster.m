@@ -249,5 +249,14 @@ save(bz_sleepstatepath,'SleepState');
 
 display(['Sleep Score ',recordingname,': Complete!']);
 %Prompt user here to manually check detection with TheStateEditor
+str = input('Would you like to check detection with TheStateEditor? [Y/N] ','s');
+switch str
+    case {'Y','y',''}
+        TheStateEditor([basePath,filesep,recordingname])
+    case {'N','n'}
+    otherwise
+        display('Unknown input..... you''ll have to load TheStateEditor on your own')
+end
+end
 end
 
