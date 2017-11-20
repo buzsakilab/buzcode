@@ -35,7 +35,7 @@ else
 end
 
 %% FMA
-Par = LoadParameters(xmlfilename);
+Par = bz_getSessionInfo(basePath);
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
 
