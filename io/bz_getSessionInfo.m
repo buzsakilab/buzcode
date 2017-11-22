@@ -1,10 +1,14 @@
 function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 %[sessionInfo] = bz_getSessionInfo(basePath) loads the sessionInfo metadata
-%for the recording in basePath. If no baseName.sessionInfo.mat exists,
-%loads from the xml.
+%for the recording in basePath. basePath should be in the format:
+%       /whateverPath/baseName/
+%           a file  basePath/baseName.sessionInfo.mat
+%           or      basePath/baseName.xml
+%           should exist.
+%If no baseName.sessionInfo.mat exists, loads from the xml.
 %
 %INPUT
-%   basePath
+%   basePath            directory: '/whatevetPath/baseName/'
 %   (options)
 %       'noPrompts'     (default: false) prevents prompts about
 %                       saving/adding metadata
@@ -59,9 +63,12 @@ if editGUI
 elseif ~isfield(sessionInfo,'region') && ~noPrompts
     regionadd = questdlg(['Your sessionInfo is missing regions, ',...
         'would you like to add them?'],'Add Regions?','Yes');
-    if strcmp(regionadd,'Yes')
-        [ sessionInfo ] = bz_sessionInfoGUI(sessionInfo,'Regions');
-        SIexist = false; 
+    switch regionadd
+        case 'Yes'
+            [sessionInfo] = bz_sessionInfoGUI(sessionInfo,'Regions');
+            SIexist = false; 
+        case 'Cancel'
+            return
     end
 end
     
@@ -72,8 +79,11 @@ end
 if ~noPrompts && ~SIexist %Inform the user that they should save a file for later
     savebutton = questdlg(['Would you like to save your sessionInfo in ',...
         filename '?'],'Save sessionInfo?','Yes');
-    if strcmp(savebutton,'Yes')
-        save(filename,'sessionInfo'); 
+    switch savebutton
+        case 'Yes'
+            save(filename,'sessionInfo'); 
+        case 'Cancel'
+            return
     end
 end
 
