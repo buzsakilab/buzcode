@@ -262,6 +262,8 @@ if ~strcmp(spikeGroups,'all')
     spikes.region = removeEmptyCells(spikes.region);
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
+    
+    if getWaveforms
     for r = 1:length(toRemove)
         if toRemove(r) == 1
          spikes.rawWaveform{r} = [];
@@ -269,6 +271,7 @@ if ~strcmp(spikeGroups,'all')
     end
     spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
     spikes.maxWaveformCh(toRemove) = [];
+    end
 end
 %% filter by region input
 if ~isempty(region)
@@ -294,6 +297,8 @@ if ~isempty(region)
     spikes.region = removeEmptyCells(spikes.region);
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
+    
+    if getWaveforms
     if isfield(spikes,'rawWaveform')
         for r = 1:length(toRemove)
             if toRemove(r) == 1
@@ -302,6 +307,7 @@ if ~isempty(region)
         end
         spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
         spikes.maxWaveformCh(toRemove) = [];
+    end
     end
 end
 %% filter by UID input
@@ -318,6 +324,8 @@ if ~isempty(UID)
     spikes.region = removeEmptyCells(spikes.region);
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
+    
+    if getWaveforms
     for r = 1:length(toRemove)
         if toRemove(r) == 1
          spikes.rawWaveform{r} = [];
@@ -325,6 +333,7 @@ if ~isempty(UID)
     end
     spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
     spikes.maxWaveformCh(toRemove) = [];
+    end
 end
 
 %% Generate spindices matrics
