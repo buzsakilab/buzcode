@@ -1,4 +1,4 @@
-function [coherogram,phase,t,f] = MTCoherogram(lfp1,lfp2,varargin)
+function [coherogram,phase,t,f] = bz_MTCoherogram(lfp1,lfp2,varargin)
 
 %MTCoherogram - Compute LFP coherogram by multi-taper estimation.
 %
