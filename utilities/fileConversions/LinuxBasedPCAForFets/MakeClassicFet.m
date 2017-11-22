@@ -1,21 +1,21 @@
-function MakeClassicFet(basename,dirname)
+function MakeClassicFet(basename,basePath)
 
 %get basic input params if not there
 if ~exist('basename','var')
     [~,basename] = fileparts(cd);
 end
 if ~exist('dirname','var')
-    dirname = cd;
+    basePath = cd;
 end
 
-cd(dirname)
+cd(basePath)
 
 % if already .fets, move them to a new folder called "PreviousFets"
-d = dir(fullfile(dirname,[basename '.fet.*']));
+d = dir(fullfile(basePath,[basename '.fet.*']));
 if ~isempty(d);
-    mkdir(fullfile(dirname,'PreviousFets'))
+    mkdir(fullfile(basePath,'PreviousFets'))
     for a = 1:length(d);
-        movefile(fullfile(dirname,d(a).name),fullfile(dirname,'PreviousFets',d(a).name));
+        movefile(fullfile(basePath,d(a).name),fullfile(basePath,'PreviousFets',d(a).name));
     end
 end
 
@@ -25,7 +25,8 @@ end
 %end
 
 if ~exist([basename '.fil'])
-    xml =  LoadParameters([basename '.xml']);
+    %xml =  LoadParameters([basename '.xml']);
+    xml = bz_getSessionInfo(basePath);
     inname = [basename '.dat'];
     outname = [basename '.fil'];
     numch = num2str(xml.nChannels);
@@ -42,7 +43,7 @@ end
 
 %get xml
 if ~exist('xml','var')
-    xml = LoadParameters([basename '.xml']);
+    xml = bz_getSessionInfo(basePath);
 end
 nGrps = length(xml.SpkGrps);
 
