@@ -45,5 +45,12 @@ else
     events = eventstruct;
 end
 
+%Check that the events structure meets buzcode standards
+[isEvents] = bz_isEvents(events);
+switch isEvents
+    case false
+        warning('Your events structure does not meet buzcode standards. Sad.')
+end
+
 end
 

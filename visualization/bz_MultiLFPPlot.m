@@ -15,6 +15,8 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %   'timewin'   only plot a subwindow of time
 %   'spikes'    a buzcode spikes struct to display spikes below the LFP
 %   'axhandle'  axes handle in which to put the plot
+%   'scaleLFP'  multiplicative factor to scale the y range of LFP
+%   'scalespikes' size of spike points (default:5)
 %
 %
 %DLevenstein 2017
@@ -27,15 +29,21 @@ spikedefault.spindices = [nan nan];
 p = inputParser;
 addParameter(p,'channels','all',@isnumeric)
 addParameter(p,'timewin',[0 Inf],@isnumeric)
-addParameter(p,'spikes',spikedefault,@isstruct) %should have iscellinfo function
+addParameter(p,'spikes',spikedefault) %should have iscellinfo function
 addParameter(p,'axhandle',gca)
 addParameter(p,'scaleLFP',1,@isnumeric)
+addParameter(p,'scalespikes',5,@isnumeric)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
 spikes = p.Results.spikes;
 ax = p.Results.axhandle;
 scaleLFP = p.Results.scaleLFP;
+scalespikes = p.Results.scalespikes;
+
+if isempty(spikes)
+    spikes = spikedefault;
+end
 
 %% Channel and time stuff
 %Time Window
@@ -51,8 +59,8 @@ end
 winspikes = spikes.spindices(:,1)>=timewin(1) & spikes.spindices(:,1)<=timewin(2);
 %% Calculate and implement spacing between channels
 
-%Space based on median absolute deviation - robust to outliers.
-channelrange = 8.*mad(single(lfp.data(windex,chindex)),1);
+%Space based on median absolute deviation over entire recording - robust to outliers.
+channelrange = 10.*mad(single(lfp.data(:,chindex)),1);
 lfpmidpoints = -cumsum(channelrange);
 lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfpmidpoints));
 
@@ -67,7 +75,7 @@ end
 
 plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
 hold on
-plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.')
+plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.','markersize',scalespikes)
 xlabel('t (s)')
 ylabel('LFP Channel')
 set(ax,'Ytick',fliplr(lfpmidpoints))

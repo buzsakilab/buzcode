@@ -1,11 +1,11 @@
-function keep_con = PlotMonoSyn(ccgR,sig_con,Pred,Bounds,completeIndex,binSize,duration)
+function keep_con = bz_PlotMonoSyn(ccgR,sig_con,Pred,Bounds,completeIndex,binSize,duration)
 
 
 % Manual sorting
-%click to keep the ccg (turns pink)
+%click to delete the ccg (turns pink)
 
 
-keep_con = [];
+keep_con = sig_con;
 window  =false(size(ccgR,1),1);
 window(ceil(length(window)/2) - round(.004/binSize): ceil(length(window)/2) + round(.004/binSize)) = true;
 halfBins = round(duration/binSize/2);
@@ -76,7 +76,9 @@ for i=1:length(allcel)
             targ=completeIndex(completeIndex(:,3)==tcel,1:2);
             xlabel(['sh: ' num2str(targ(1)) ' cell '  num2str(targ(2))]);
             
-            if any(keep_con(:)) && ismember(prs(j,:),keep_con,'rows')
+            
+            %the bad ones are in pink
+            if  ~ismember(prs(j,:),keep_con,'rows')
                 set(ha(j),'Color',[1 .75 .75])
                 
             end
@@ -130,20 +132,20 @@ end
         
         
         clr = get(obj,'Color');
-        if sum(clr == [1 1 1])==3%if white (ie bad), set to pink (synapse), remember as good
+        if sum(clr == [1 1 1])==3%if white (ie synapse), set to pink (bad), remember as bad
             set(obj,'Color',[1 .75 .75])
             
             
             
             
-            keep_con = [keep_con;prs(axdata,:)];
+          
+            
+               keep_con(ismember(keep_con,prs(axdata,:),'rows'),:)=[];
             
             
-            
-            
-        elseif sum(clr == [1 .75 .75])==3%if pink, set to white, set back to bad
+        elseif sum(clr == [1 .75 .75])==3%if pink, set to white, set to good
             set(obj,'Color',[1 1 1])
-            keep_con(ismember(keep_con,prs(axdata,:),'rows'),:)=[];
+           keep_con = [keep_con;prs(axdata,:)];
         end
     end
 end

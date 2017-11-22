@@ -1,4 +1,4 @@
-function [isEvent] = bz_isEvents(event)
+function [isEvents] = bz_isEvents(events)
 % USAGE
 % [isEvent] = bz_isEvents(event)
 % 
@@ -17,21 +17,22 @@ function [isEvent] = bz_isEvents(event)
 % written by david tingley, 2017
 
 
-if isfield(event,'detectorinfo') && isfield(event,'timestamps') % check that fields exist
-     if isstruct(event.detectorinfo) && isvector(event.timestamps) 
+if isfield(events,'detectorinfo') && isfield(events,'timestamps') % check that fields exist
+     if isstruct(events.detectorinfo) && isvector(events.timestamps) 
          % check that sub fields exist
-         if isfield(event.detectorinfo,'detectorname') && isfield(event.detectorinfo,'detectionparms') ...
-                 && isfield(event.detectorinfo,'detectioninterval') && isfield(event.detectorinfo,'detectiondate')
-            isEvent = true;
+         if isfield(events.detectorinfo,'detectorname') && isfield(events.detectorinfo,'detectionparms') ...
+                 && isfield(events.detectorinfo,'detectionintervals') && isfield(events.detectorinfo,'detectiondate')
+            isEvents = true;
          else
-             isEvent = false;
+             warning('one of the required fields for an event type is not formatted correctly')
+             isEvents = false;
          end
          
      else
          warning('one of the required fields for an event type is not formatted correctly')
-         isEvent = false;
+         isEvents = false;
      end
 else
     warning('one of the required fields for an event type does not exist')
-    isEvent = false;
+    isEvents = false;
 end

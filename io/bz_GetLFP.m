@@ -14,9 +14,12 @@ function [lfp] = bz_GetLFP(varargin)
 %                        list of channels to load (use keyword 'all' for all)
 %                        channID is 0-indexing, a la neuroscope
 %  Name-value paired inputs:
-%    basename           -base file name to load
 %    basepath           - folder in which .lfp file will be found (default
 %                           is pwd)
+%                           folder should follow buzcode standard:
+%                           whateverPath/baseName
+%                           and contain file baseName.lfp
+%    basename           -base file name to load
 %    intervals          -list of time intervals [0 10; 20 30] to read from 
 %                           the LFP file (default is [0 inf])
 %
@@ -110,8 +113,8 @@ else
    lfp.Filename = [basename '.lfp'];
 end
 
-%% things we can parse from xml file
-xml = LoadParameters(fullfile(basepath,[basename '.xml']));
+%% things we can parse from sessionInfo or xml file
+xml = bz_getSessionInfo(basepath);
 nChannels = xml.nChannels;
 try
     samplingRate = xml.lfpSampleRate;
@@ -128,7 +131,7 @@ if strcmp(channels,'all')
 end
 
 %% get the data
-disp('loading file...')
+disp('loading LFP file...')
 nIntervals = size(intervals,1);
 % returns lfp/bz format
 for i = 1:nIntervals
@@ -151,5 +154,9 @@ for i = 1:nIntervals
     if lfp(i).interval(2) == inf
         lfp(i).interval(2) = length(lfp(i).timestamps)/lfp(i).samplingRate;
         lfp(i).duration = (lfp(i).interval(i,2)-lfp(i).interval(i,1));
+    end
+    
+    if isfield(xml,'region') && isfield(xml,'channels')
+        lfp(i).region = xml.region(ismember(xml.channels,channels));
     end
 end
