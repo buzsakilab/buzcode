@@ -1,0 +1,337 @@
+<html><head><title>StructDlg </title>
+<!-- $Revision$  $Date$ -->
+<html xmlns:mwsh="http://www.mathworks.com/namespace/mcode/v1/syntaxhighlight.dtd">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>StructDlg</title>
+      <meta name="generator" content="MATLAB 7.0.1">
+      <meta name="date" content="2004-11-23">
+      <meta name="m-file" content="testdlg"><style>
+body {
+  background-color: white;
+  margin:10px;
+}
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+pre.codeinput {
+  margin-left: 30px;
+}
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.showbuttons {
+  margin-left: 30px;
+  border: solid black 2px;
+  padding: 4px;
+  background: #EBEFF3;
+}
+
+pre.codeoutput {
+  color: gray;
+  font-style: italic;
+}
+pre.error {
+  color: red;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows.  On Gecko-based browsers, the shrink-to-fit doesn't work. */ 
+p,h1,h2,div {
+  /* for MATLAB's browser */
+  width: 600px;
+  /* for Mozilla, but the "width" tag overrides it anyway */
+  max-width: 600px;
+  /* for IE */
+  width:expression(document.body.clientWidth > 620 ? "600px": "auto" );
+}</style>
+
+
+<!-- HEADSTUFF -->
+<link rel=stylesheet href="docstyle1.css" type="text/css">
+</head>
+<body bgcolor=#ffffff>
+<a name="448776">
+
+<!-- NAVBARTOP -->
+<table border=0 width="100%" cellpadding=0 cellspacing=0><tr>
+<!--<td valign=baseline bgcolor="#e7ebf7"><b>MATLAB Function Reference</b></td>
+<td valign=baseline bgcolor="#e7ebf7" align=right><a href="plot.html"><img src="b_prev.gif" alt="Previous page" border=0></a>&nbsp;&nbsp;&nbsp;<a href="plotbrowser.html"><img src="b_next.gif" alt="Next Page" border=0></a></td>-->
+</tr>
+</table><font size=+3 color="#990000">StructDlg</font>
+
+<!-- FNAME:StructDlg --><a name="448776"></a>
+<!-- SYNCHTO: func_by_.html -->
+
+<!-- H2 --><a name="449474"></a><br>
+<p><a name="157465"></a>A structure based GUI definition</p>
+<a name="syntax"></a><!-- H2 -->
+<a name="157466"></a><p><font size=+1 color="#990000"><b>Syntax</b></font>
+<br class="hdr">
+<ul class=continued><li class=continued><pre>
+<a name="157467"></a>UserInput = StructDlg(struct_def)
+<a name="157469"></a>UserInput = StructDlg(struct_def,title)
+<a name="236728"></a>UserInput = StructDlg(struct_def,title,default_values,position)
+</pre></li></ul>
+<a name="description"></a><!-- H2 --><a name="208973"></a><p><font size=+1 color="#990000"><b>Description</b></font><br class="hdr">
+ <code>StructDlg(struct_def)</code> creates a modal dialog box that contains a user interface (UI) control for each of the <code>struct_def</code> fields.
+ In its simple form, <code>StructDlg</code> serves as a structure-based alternative to INPUTDLG and it is a convenient method for
+ browsing and changing structure values (e.g. when the structure contains parameters).<BR>
+ In its advanced form, <code>StructDlg</code> allows for a quick and convenient text based definition of a GUI that may contain many styles of UI controls such as edit, popup menus, radio buttons, toggles and more. 
+
+<P>
+When <code>structdlg</code> is called the GUI is created and the user can set the values of the different UI controls (such as edit controls, radio buttons, popup menus, etc.)<BR> 
+When the user is satisfied with his selections, he presses an OK button which closes the GUI. <code>structdlg</code> then returns a structure with the 
+same field names as <code>struct_def</code>. The value of each field in the returned structure contains the value of the UI control of the same name.
+<P>The <code>title</code> of the dialog box may be specified by adding a second string argument. The <code>dflt_P</code> argument is a structure 
+that contains default values for the fields' values.
+These values will override  the default values specified in <code>struct_def</code>.
+Note that the <code>dflt_P</code> argument should contain the default values ONLY, not the entire
+definition as specified in <code>struct_def</code>. This is useful for allowing user-specific defaults that override the
+'factory defaults'. A 4-element <code>position</code> vector can be specified by the forth argument. Position units are given in characters.</p>
+
+<P>
+NOTE: A <code>cancel</code> button was added alongside the <code>OK</code> and <code>reset</code> buttons. 
+When the <code>cancel</code> button is pressed <code>StructDlg</code> returns an empty matrix, <code>[]</code>.
+The <code>cancel</code> button was added after the figures for this manual were prepared. Therefore, it does not appear in the following examples.
+</P>
+
+<a name="examples"></a><a name="exmpl_sec"></a><!-- H2 --><a name="157478"></a><p><font size=+1 color="#990000"><b>Examples</b></font>
+<br class="hdr">
+The name of each field of <code>struct_def</code> is the default label of the corresponding input field (underscores are presented as spaces).
+In their simple form, <code>struct_def</code> fields may contain numeric values (limited to 2D matrixes) or single line strings.
+For example:
+<pre class="codeinput">
+S.Duration      = 10;
+S.Time_Out      = 20;
+S.Weight_Matrix = [0.3 0.4; 3.4 9.1; 10 0.4];
+S.Comment       = <span class="string">''</span>;
+P = StructDlg(S,<span class="string">'Parameters'</span>);
+</pre>
+<P>The above example creates the following dialog box:</p>
+<P><img src="Untitled-1a.jpg" alt="" align=bottom></p>
+
+<P>After the user makes some changes to the fields' values and presses the OK button <code>StructDlg</code> returns the following structure:</p>
+<pre class="codeinput">disp(P)</pre>
+<pre class="codeoutput">         Duration: 12
+         Time_Out: 21
+    Weight_Matrix: [3x2 double]
+          Comment: 'This is a test'
+</pre>
+<P>
+For allowing more UI control styles and options the value of each <code>struct_def</code> field can be set to a cell array of up to four elements:
+   <BR><code>{ value/definition    labels    limits    protected_flag }</code> <BR>
+The first element determines the type (edit, radio button, pop-up menu and more) of the control and its default value.<BR>
+The second element allows overriding the default label (the field name). Any occurrence of an asterisk ('*') in the label is replaced with the field name. 
+This is useful when you want to add a text to the default label. For example, '* (kHz)' will add the unit KHz to the label. 
+This field is optional and merely changes the label of the UI control. 
+The empty string can be used to indicate that the default label should be used.<BR>
+The third element can be used to specify limits to legal values that can be entered by the user. This is useful for numerical edit fields (see below.)<BR>
+The forth element is a logical element (0/1). Setting this element to 1 causes the UI control to be protected (disabled.) 
+The user can right-click 
+on that control to unprotect (enable) it. This is useful when you want to indicate that the user should think before changing the current value 
+of the control.
+Below are detailed examples of how to create all the styles and types of controls that <code>structdlg</code> supports.
+
+ <P>
+<B>Numeric values</FONT></B>: Limited to 2D matrixes of any size (including the empty matrix). The default value can
+         be a numeric vector/matrix or a string that contains a valid Matlab expression whose evaluation yields a numeric
+         2D matrix. In the later case, you must specify the limits so <code>StructDlg</code> will interpret the field as a numeric field instead of a free string.
+		 Note that both <code>[]</code> and <code>[-Inf Inf]</code> indicate unlimited values.
+
+<pre class="codeinput">
+S.center_frequency = { 2000 <span class="string">'* (Hz)'</span> [30 50000] };<span class="comment">%  default of 2000, allowed range:[30 50000].</span>
+S.my_parameter     =   43  ;<span class="comment">                  %  default of 43, no limits.</span>
+S.size_of_matrix   = { [4 12] <span class="string">''</span> [1 Inf] };<span class="comment">   %  default of [4 12], allowed range:[1 Inf].</span>
+P = StructDlg(S,<span class="string">'My title'</span>)</pre>
+
+<P>The above example creates the following dialog box:</p>
+<P><img src="structdlg-1.jpg" alt="" align=bottom></p>
+
+<P>Placing the cursor over any of the numeric fields shows the allowed range:</p>
+<P><img src="structdlg-2.jpg" alt="" align=bottom></p>
+
+<P>The dialog box prevents typing invalid input:</p>
+<P><img src="structdlg-3.jpg" alt="" align=bottom></p>
+
+<P>Clicking the right mouse button over <B>any</B> field allows for undoing the last edit or reseting to the default value: </p>
+<P><img src="structdlg-4.jpg" alt="" align=bottom></p>
+
+<P><code>StructDlg</code> returns a structure with the same field names as the definition structure, not the label names. The value of each field reflects the input value entered by the user.</p>
+<pre class="codeoutput">
+P = 
+    center_frequency: 2000
+        my_parameter: 43
+      size_of_matrix: [4 12]
+</pre>
+<p>Note: The values the user enters to the dialog box for numeric fields are being 'eval'-uated, so inputs such as <code>(sin(0.34)+2)^my_func(34.2)</code> or <code>zeros(3,3)</code> are possible.<BR>
+As described before numeric UI controls may be also defined using the short notation:<BR>
+<pre class="codeinput">S.my_parameter     = 5; 
+S.my_matrix        = [1 3; 4 5];</pre>
+
+<br class="hdr">
+<font><B>Free Strings</FONT></B>: Limited to a one line string (no string arrays). If no default is required, use the empty
+         string (''), otherwise the field will be treated as a numeric field.
+<pre class="codeinput">S.User_name = {<span class="string">''</span>};
+S.Comment = <span class="string">'No comment'</span>;
+</pre>
+
+<br class="hdr">
+<font><B><p>Radio buttons</FONT></B>: The definition includes a string that contains the options separated by <code>'|'</code>. The option that the user chooses will become the value of that field in the returned structure. A Default option can be specified by enclosing it with curly
+brackets. The chosen option is converted to a numeric value if possible.</p>
+
+<pre class="codeinput">
+clear <span class="string">S</span>;
+S.colormap = {<span class="string">'hsv|{gray}|hot|bone|pink'</span>};
+S.samprate = {<span class="string">'11500|22000|{44000}'</span>, <span class="string">'Sampling rate (Hz)'</span>};
+P = StructDlg(S)</pre>
+
+<p>Shows the following dialog box:</p>
+<p><img src="structdlg-11.jpg" alt="" align=bottom></p>
+
+
+<pre class="codeoutput">
+P = 
+         colormap: 'gray'
+         samprate: 44000
+</pre>
+
+<br class="hdr">
+<font><B><p>Pop-up menu</font></B>: The definition includes a Cell-array of single strings. The chosen option will be the value
+         of that field in P. A default option can be specified by enclosing it with curly brackets. The chosen
+         string is converted to a numeric value if possible.
+</p>
+<pre class="codeinput">clear <span class="string">S</span>;
+S.Sampling_rate = { {<span class="string">'12207'</span> <span class="string">'24414'</span> <span class="string">'48828'</span> <span class="string">'{97656}'</span>} , <span class="string">'* (Hz)'</span>};
+S.Filter_type = { {<span class="string">'bartlett'</span> <span class="string">'{chebwin}'</span> <span class="string">'hamming'</span>} };
+P = StructDlg(S)
+</pre>
+
+<p>Shows the following dialog box:</p>
+<p><img src="structdlg-12.jpg" alt="" align=bottom></p>
+
+<pre class="codeoutput">
+P = 
+    Sampling_rate: 97656
+      Filter_type: 'chebwin'
+</pre>
+
+
+<br class="hdr">
+<font><B><p>Check box</font></B>: The definition is in the form: {'0' '1'}.                
+A default value may be specified by the curly brackets.</p>
+<pre class="codeinput">S.use_filter = { {<span class="string">'0'</span>,<span class="string">'{1}'</span>} };
+</pre>
+
+<br class="hdr">
+<font><B><p>File Name Dialogs</font></B>: The definition includes a cell of one string that must start with one of the following command identifiers: <code>'uigetfile'</code>,  <code>'uiputfile'</code> or <code>'uigetdir'</code>.
+The command identifier may be followed by any arguments that are allowed by that Matlab command. <BR>
+Use <code>'help uigetfile'</code>, <code>'help uiputfile'</code> and  <code>'help uigetdir'</code> to learn more about those options.
+The user is able to specify the file name directly by typing it, or to press a small push-button that 
+pops up the appropriate Matlab's dialog box.<BR>
+If the user made a multi-file selection, the returned value of that field will be a cell array whose elements are the file names selected concatenated with their directory name.
+</p>
+<pre class="codeinput">clear <span class="string">S</span>
+S.parameters_file = { {<span class="string">'uigetfile(''c:\temp\*.mat'')'</span>} };
+P = StructDlg(S);
+</pre>
+<p><code>uigetfile</code> is called after the push-button is pressed:</p>
+<p><img src="structdlg-13.jpg" alt="" align=bottom></p>
+
+<br class="hdr">
+<font><B><p>Dependent Fields</font></b>: (For numeric fields only) A numeric field may include a reference to the value of                  
+another numeric field. This is done using a reserved word 'this' to refer to the structure.
+</p>
+<pre class="codeinput">clear <span class="string">S</span>
+S.Window_size       = { 512 <span class="string">''</span> [10 1000] };
+S.Overlap           = {<span class="string">'this.Window_size / 2'</span> <span class="string">''</span> [0 Inf]}; <span class="comment">%  Note that a non-empty limits indicator is needed in order to indicate that this is a numeric field.</span>
+P = structdlg(S);
+</pre>
+
+<p>Notes: The value of the dependent field will be automatically updated when the values of the referenced
+         fields changes. The automatically changed value will blink twice to alert the user. The user is then able
+         to undo the automatic change using the mouse's right-click.</p>
+<p><img src="structdlg-31.jpg" alt="" align=bottom></p>
+
+
+
+<br class="hdr">
+<font><B><p>Sub-Structure</font></b>: S may contain substructures of the same format.  
+</p>
+<pre class="codeinput">clear <span class="string">S</span>;
+S.Input_file  = { {<span class="string">'uigetfile(''c:\*.xls'')'</span>} };
+S.Output_file = { {<span class="string">'uiputfile(''c:\*.txt'')'</span>} };
+S.Title       = { [<span class="string">'Population results as of '</span> date] <span class="string">''</span>};
+S.Replace_NaNs_with_zeros = { {<span class="string">'{0}'</span> <span class="string">'1'</span>} };
+S.Analysis_parameters.Method = { {<span class="string">'Linear'</span> <span class="string">'{exponential}'</span> <span class="string">'logistic'</span>} };
+S.Analysis_parameters.Window_size = { 50 <span class="string">''</span> [5 100] };
+S.Analysis_parameters.Theta = { <span class="string">'min(this.Window_size, 10)'</span> <span class="string">''</span> [0 100] };
+P = StructDlg(S,<span class="string">'Populattion analysis'</span>);
+</pre>
+
+<p><img src="structdlg-21.jpg" alt="" align=bottom></p>
+
+<p>The current values of the sub-structure can be viewed by placing the mouse over the push-button.</p>
+<p><img src="structdlg-22.jpg" alt="" align=bottom></p>
+
+<p>The user can press a push-button that calls <code>'StructDlg'</code> recursively for the sub-structure.</p>
+<p><img src="structdlg-24.jpg" alt="" align=bottom></p>
+
+<p>After a while, we can ask again for user input.
+This time, the default values will be the ones the user specified previously.</p>
+<pre class="codeinput">
+new_P = StructDlg(S,<span class="string">'Populattion analysis'</span>,P);
+</pre>
+
+
+<br class="hdr">
+<font><B><p>Note</font></b>: It is not possible for
+a sub-structure field to reference fields in other sub-structures,                     or in other structure levels. It is
+possible for a field to reference fields in                     sub-structures of lower levels; however, this is highly 
+discouraged. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br>
+<!-- Last updated: Wed Aug 25 22:37:27 2004 -->
+</body>
+</html>
+
+

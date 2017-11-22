@@ -143,7 +143,7 @@ behav.orientation.rw = pos(:,8);
 behav.timestamps = pos(:,1);
 behav.errorPerMarker = pos(:,9);
 behav.frameCount = pos(:,10);
-save([fbasename '.tracking.behavior.mat','behav')
+save([fbasename '.tracking.behavior.mat'],'behav')
 
 end
 

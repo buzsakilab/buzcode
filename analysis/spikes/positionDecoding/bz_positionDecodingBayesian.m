@@ -60,7 +60,7 @@ nCells = length(spikes.times);
 positionSamplingRate = behavior.samplingRate;
 
 % find a better way to get spike phase relationship...
-[rateMap countMap occuMap phaseMap] = bz_firingMap1D(spikes.times,behavior,lfp,5);
+[firingMaps] = bz_firingMap1D(spikes,behavior,lfp,5);
 
 % iterate through conditions and compile spike trains and spike-phase
 % trains
@@ -72,12 +72,12 @@ for cond = conditions
         spk_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000)); % assumes intervals are in seconds, rounds to nearest millisecond
         phase_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000));
         for cell = 1:nCells
-            if ~isempty(phaseMap{cond}{cell})
-                f = find(phaseMap{cond}{cell}(:,2)==t);
+            if ~isempty(firingMaps.phaseMaps{cond}{cell})
+                f = find(firingMaps.phaseMaps{cond}{cell}(:,2)==t);
                 if ~isempty(f)
                 for s=1:length(f)
-                    phase_trains{cond}{t}(cell,ceil(phaseMap{cond}{cell}(f(s),5)*1000)) = ...
-                        phaseMap{cond}{cell}(f(s),end);
+                    phase_trains{cond}{t}(cell,ceil(firingMaps.phaseMaps{cond}{cell}(f(s),5)*1000)) = ...
+                        firingMaps.phaseMaps{cond}{cell}(f(s),end);
                 end
                 end
             end
@@ -115,7 +115,7 @@ for cond = conditions
             for t = 1:length(phase_trains{cond})-1
                 phase_trains_smooth=[phase_trains_smooth; circ_smoothTS(phase_trains{cond}{r(t)}(cell,:),wind,'method','mean','exclude',0)];
                 rates_trains_smooth = [rates_trains_smooth; smooth(spk_trains{cond}{r(t)}(cell,:),wind)*wind];
-                position_train = [position_train; position{cond}{r(t)}'];
+                position_train = [position_train; circ_smoothTS(position{cond}{r(t)}',wind,'method','mean','exclude',0)];
             end
             phase_trains_smooth_train(cell,:) = phase_trains_smooth;
             rates_trains_smooth_train(cell,:) = rates_trains_smooth;
@@ -225,12 +225,12 @@ for cond = conditions
     end
     end
     disp(['finished with condition: ' num2str(cond) ' out of ' num2str(length(conditions)) ' total'])
+    if saveMat 
+        save([spikes.sessionName '.positionDecodingBayesian.popinfo.mat'],'positionDecodingBayesian') 
+    end
 end
 
 positionDecodingBayesion.dataRun = date;
 
-if saveMat 
-   save([spikes.sessionName '.positionDecodingBayesian.popinfo.mat'],'positionDecodingBayesian') 
-end
 
 

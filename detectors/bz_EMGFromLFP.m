@@ -89,7 +89,7 @@ display('Calculating EMGFromLFP from High Frequency LFP Correlation')
 
 %% get basics about.lfp/lfp file
 
-xml = LoadParameters(basePath); % now using the updated version
+xml = bz_getSessionInfo(basePath); % now using the updated version
 if exist([basePath '/' xml.FileName '.lfp'])
     lfpFile = [basePath '/' xml.FileName '.lfp'];
 elseif exist([basePath '/' xml.FileName '.eeg'])
@@ -155,7 +155,7 @@ end;
 
 %% Read and filter channel
 % read channels
- % loadParameters returns 0 indexed (neuroscope) channels, 
+ % bz_sessionInfo is 0 indexed (neuroscope) channels, 
                            % but Loadbinary.m takes 1-indexed channel #'s
 lfp = bz_LoadBinary(lfpFile ,'nChannels',nChannels,'channels',xcorr_chs+1,...
     'start',restrict(1),'duration',diff(restrict)); %read and convert to mV    
@@ -177,7 +177,7 @@ numbins = length(timestamps);
 EMGCorr = zeros(numbins, 1);
 % tic
 counter = 1;
-for j=1:(length(a))
+for j=1:(length(xcorr_chs))
     for k=(j+1):length(xcorr_chs)
         disp([num2str(counter*2 ./ (length(xcorr_chs)*length(xcorr_chs)*length(timestamps)))])
         c1 = [];

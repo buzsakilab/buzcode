@@ -41,7 +41,10 @@ function mono_res = bz_MonoSynConvClick (spikeIDs,spiketimes,varargin)
 %%%  mono_res.binSize = binSize;
 %%%  mono_res.duration = duration;
 %%%  mono_res.manualEdit = visual confirmation of connections
-%%%
+%%%  mono_res.Pcausal = probability of getting more excess in the causal than anticausal direction;
+%%%  mono_res.FalsePositive = FalsePositive rate from English et al., 2017;
+%%%  mono_res.TruePositive = TruePositive rate from English et al., 2017;
+
 %%%  EXAMPLE:
 %%%
 %%%  mono_res = bz_MonoSynConvClick (spikesIDs,spiketimes,'binsize',.0005,'duration',.2, ...
@@ -50,14 +53,19 @@ function mono_res = bz_MonoSynConvClick (spikeIDs,spiketimes,varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%get synapse matrix
+%get experimentally validated probabilities
 
 
-fil = which('MonoSynConvClick3');
+fil = which('bz_MonoSynConvClick');
 sl = regexp(fil,'/');
 fil = fil(1:sl(end));
-v = load([fil 'ProbSynMat.mat']);
-
+  foundMat = false;
+if exist([fil 'ProbSynMat.mat'],'file')==2
+    v = load([fil 'ProbSynMat.mat']);
+    foundMat = true;
+else
+    warning('You do not have the ProbSynMat matrix describing the likelihood of experimentally validated connectivty given excess syncrony')
+end
 
 
 %parse inputs
@@ -72,6 +80,12 @@ conv_w = .010/binSize;  % 10ms window
 alpha = 0.001; %high frequency cut off, must be .001 for causal p-value matrix
 plotit = true;
 sorted = false;
+
+if length(varargin) ==1 && iscell(varargin{1})
+    varargin = varargin{1};
+end
+
+
 % Parse options
 for i = 1:2:length(varargin),
     if ~isa(varargin{i},'char'),
@@ -96,14 +110,10 @@ for i = 1:2:length(varargin),
             
         case 'cells',
             cells = varargin{i+1};
-            if ~IsPositiveInteger(cells),
-                error('Incorrect value for property ''cells'' ');
-            end
+          
         case 'conv_w',
             conv_w = varargin{i+1};
-            if ~IsPositiveInteger(conv_w),
-                error('Incorrect value for property ''conv_w''');
-            end
+           
         case 'alpha',
             alpha = varargin{i+1};
             if ~isa(alpha,'numeric'),
@@ -237,24 +247,24 @@ for refcellID=1:max(IDindex)
         
         Pcausal(refcellID,cell2ID) = pvals_causal;
         Pcausal(cell2ID,refcellID) = pvals_causalud;
-        
-        if any(Pval(postbins,cell2ID,refcellID)<.001)
+        if foundMat
+            if any(Pval(postbins,cell2ID,refcellID)<.001)
+                
+                FP =  v.ProbSyn.FalsePositive((histc(pvals_causalud,v.ProbSyn.thres))>0);
+                TP =  v.ProbSyn.TruePositive((histc(pvals_causalud,v.ProbSyn.thres))>0);
+                TruePositive(cell2ID,refcellID) = TP;
+                FalsePositive(cell2ID,refcellID) = FP;
+            end
             
-            FP =  v.ProbSyn.FalsePositive((histc(pvals_causalud,v.ProbSyn.thres))>0);
-            TP =  v.ProbSyn.TruePositive((histc(pvals_causalud,v.ProbSyn.thres))>0);
-            TruePositive(cell2ID,refcellID) = TP;
-            FalsePositive(cell2ID,refcellID) = FP;
-        end
-        
-        
-        if any(Pval(postbins,refcellID,cell2ID)<.001)
             
-            FP =  v.ProbSyn.FalsePositive((histc(pvals_causal,v.ProbSyn.thres))>0);
-            TP =  v.ProbSyn.TruePositive((histc(pvals_causal,v.ProbSyn.thres))>0);
-            TruePositive(refcellID,cell2ID) = TP;
-            FalsePositive(refcellID,cell2ID) = FP;
+            if any(Pval(postbins,refcellID,cell2ID)<.001)
+                
+                FP =  v.ProbSyn.FalsePositive((histc(pvals_causal,v.ProbSyn.thres))>0);
+                TP =  v.ProbSyn.TruePositive((histc(pvals_causal,v.ProbSyn.thres))>0);
+                TruePositive(refcellID,cell2ID) = TP;
+                FalsePositive(refcellID,cell2ID) = FP;
+            end
         end
-        
         
         %check which is bigger
         if (any(sigud(prebins)) && sigpre)
@@ -306,8 +316,13 @@ mono_res.duration = duration;
 %mono_res.spikeIDs = spikeIDs;
 mono_res.ManuelEdit = plotit;
 mono_res.conv_w = conv_w;
+mono_res.Pcausal = Pcausal;
+
+
+if foundMat
 mono_res.FalsePositive = FalsePositive;
 mono_res.TruePositive = TruePositive;
-mono_res.Pcausal = Pcausal;
+
+end
 
 end

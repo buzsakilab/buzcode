@@ -9,13 +9,14 @@ function spikes = bz_GetSpikes(varargin)
 %
 %    spikeGroups     -vector subset of shank IDs to load (Default: all)
 %    region          -string region ID to load neurons from specific region
-%                     (requires sessionInfodata file or units->structures in xml)
+%                     (requires sessionInfo file or units->structures in xml)
 %    UID             -vector subset of UID's to load 
 %    basepath        -path to recording (where .dat/.clu/etc files are)
 %    getWaveforms    -logical (default=true) to load mean of raw waveform data
 %    forceReload     -logical (default=false) to force loading from
 %                     res/clu/spk files
-%    saveMat         -logical (default=true) to save in buzcode format
+%    saveMat         -logical (default=false) to save in buzcode format
+%    noPrompts       -logical to supress any user prompts
 %    
 % OUTPUTS
 %
@@ -57,10 +58,6 @@ function spikes = bz_GetSpikes(varargin)
 %
 %
 % written by David Tingley, 2017
-
-% TODO
-% - integrate session sessionInfodata in place of xml-LoadParameters
-% - get 'region' input working with session sessionInfodata
 %% Deal With Inputs 
 spikeGroupsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
     'spikeGroups must be numeric or "all"');
@@ -72,7 +69,8 @@ addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'getWaveforms',true,@islogical)
 addParameter(p,'forceReload',false,@islogical);
-addParameter(p,'saveMat',true,@islogical);
+addParameter(p,'saveMat',false,@islogical);
+addParameter(p,'noPrompts',false,@islogical);
 
 parse(p,varargin{:})
 
@@ -83,9 +81,12 @@ basepath = p.Results.basepath;
 getWaveforms = p.Results.getWaveforms;
 forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
+noPrompts = p.Results.noPrompts;
 
-% get sessionInfo info about recording, for now we'll use the xml.
-sessionInfo = LoadParameters(basepath);  % calls loadparameters if sessionInfo doesn't exist
+
+[sessionInfo] = bz_getSessionInfo(basepath);
+
+
 samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
@@ -94,7 +95,22 @@ nChannels = sessionInfo.nChannels;
 if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') && forceReload == false
     disp('loading spikes from cellinfo file..')
     load([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'])
-else % do the below then filter by inputs...
+    %Check that the spikes structure fits cellinfo requirements
+    [iscellinfo] = bz_isCellInfo(spikes);
+    switch iscellinfo
+        case false
+            warning(['The spikes structure in baseName.spikes.cellinfo.mat ',...
+                'does not fit buzcode standards. Sad.'])
+    end
+    
+else % do the below then filter by inputs... (Load from clu/res/fet)
+    
+    if ~noPrompts & saveMat == 0 %Inform the user that they should save a file for later
+        savebutton = questdlg(['Would you like to save your spikes in ',...
+            sessionInfo.FileName,'.spikes.cellinfo.mat?  ',...
+            'This will save significant load time later.']);
+        if strcmp(savebutton,'Yes'); saveMat = true; end
+    end
     
 disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
@@ -154,7 +170,7 @@ end
 count = 1;
 
 for i=1:length(cluFiles) 
-    disp(['working on ' spkFiles(i).name])
+    disp(['working on ' cluFiles(i).name])
     
     temp = strsplit(cluFiles(i).name,'.');
     shankID = str2num(temp{length(temp)}); %shankID is the spikegroup number
@@ -200,9 +216,9 @@ for i=1:length(cluFiles)
            spikes.rawWaveform{count} = wvforms(bb,:);
            spikes.maxWaveformCh(count) = spkGrpChans(bb);  
            %Regions (needs waveform peak)
-           if isfield(sessionInfo,'region') %from sessionInfo
+           if isfield(sessionInfo,'region') %if there is regions field in your metadata
                 spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)};
-           elseif isfield(sessionInfo,'Units') %from xml via Loadparamteres
+           elseif isfield(sessionInfo,'Units') %if no regions, but unit region from xml via Loadparamteres
                 %Find the xml Unit that matches group/cluster
                 unitnum = cellfun(@(X,Y) X==spikes.shankID(count) && Y==spikes.cluID(count),...
                     {sessionInfo.Units(:).spikegroup},{sessionInfo.Units(:).cluster});
@@ -246,6 +262,8 @@ if ~strcmp(spikeGroups,'all')
     spikes.region = removeEmptyCells(spikes.region);
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
+    
+    if getWaveforms
     for r = 1:length(toRemove)
         if toRemove(r) == 1
          spikes.rawWaveform{r} = [];
@@ -253,10 +271,21 @@ if ~strcmp(spikeGroups,'all')
     end
     spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
     spikes.maxWaveformCh(toRemove) = [];
+    end
 end
 %% filter by region input
 if ~isempty(region)
+    if ~isfield(spikes,'region') %if no region information in metadata
+        error(['You selected to load cells from region "',region,...
+            '", but there is no region information in your sessionInfo'])
+    end
+    
   toRemove = ~ismember(spikes.region,region);
+    if sum(toRemove)==length(spikes.UID) %if no cells from selected region
+        warning(['You selected to load cells from region "',region,...
+            '", but none of your cells are from that region'])
+    end
+  
     spikes.UID(toRemove) = [];
     for r = 1:length(toRemove)
         if toRemove(r) == 1
@@ -268,6 +297,8 @@ if ~isempty(region)
     spikes.region = removeEmptyCells(spikes.region);
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
+    
+    if getWaveforms
     if isfield(spikes,'rawWaveform')
         for r = 1:length(toRemove)
             if toRemove(r) == 1
@@ -276,6 +307,7 @@ if ~isempty(region)
         end
         spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
         spikes.maxWaveformCh(toRemove) = [];
+    end
     end
 end
 %% filter by UID input
@@ -292,6 +324,8 @@ if ~isempty(UID)
     spikes.region = removeEmptyCells(spikes.region);
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
+    
+    if getWaveforms
     for r = 1:length(toRemove)
         if toRemove(r) == 1
          spikes.rawWaveform{r} = [];
@@ -299,6 +333,7 @@ if ~isempty(UID)
     end
     spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
     spikes.maxWaveformCh(toRemove) = [];
+    end
 end
 
 %% Generate spindices matrics
@@ -306,10 +341,11 @@ numcells = length(spikes.UID);
 for cc = 1:numcells
     groups{cc}=spikes.UID(cc).*ones(size(spikes.times{cc}));
 end
-alltimes = cat(1,spikes.times{:}); groups = cat(1,groups{:}); %from cell to array
-[alltimes,sortidx] = sort(alltimes); groups = groups(sortidx); %sort both
-spikes.spindices = [alltimes groups];
-
+if numcells>0
+    alltimes = cat(1,spikes.times{:}); groups = cat(1,groups{:}); %from cell to array
+    [alltimes,sortidx] = sort(alltimes); groups = groups(sortidx); %sort both
+    spikes.spindices = [alltimes groups];
+end
 
 
 
