@@ -1,13 +1,19 @@
 function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 %[sessionInfo] = bz_getSessionInfo(basePath) loads the sessionInfo metadata
-%for the recording in basePath. If no baseName.sessionInfo.mat exists,
-%loads from the xml.
+%for the recording in basePath. basePath should be in the format:
+%       /whateverPath/baseName/
+%           a file  basePath/baseName.sessionInfo.mat
+%           or      basePath/baseName.xml
+%           should exist.
+%If no baseName.sessionInfo.mat exists, loads from the xml.
 %
 %INPUT
-%   basePath
+%   basePath            directory: '/whatevetPath/baseName/'
 %   (options)
 %       'noPrompts'     (default: false) prevents prompts about
 %                       saving/adding metadata
+%       'editGUI'       (default: false) opens a GUI to edit select
+%                       sessionInfo fields (beta, please add/improve!)
 %
 %OUTPUT
 %   sessionInfo         metadata structure
@@ -16,8 +22,10 @@ function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 %% inputs and defaults
 p = inputParser;
 addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'editGUI',false,@islogical);
 parse(p,varargin{:})
 noPrompts = p.Results.noPrompts;
+editGUI = p.Results.editGUI;
 
 if ~exist('basePath','var')
     basePath = pwd;
@@ -49,24 +57,33 @@ end
 bz_isSessionInfo(sessionInfo);
 
 %Here: prompt user to add any missing sessionInfo fields and save
-if ~isfield(sessionInfo,'region') && ~noPrompts
+if editGUI
+    [ sessionInfo ] = bz_sessionInfoGUI(sessionInfo);
+    SIexist = false;
+elseif ~isfield(sessionInfo,'region') && ~noPrompts
     regionadd = questdlg(['Your sessionInfo is missing regions, ',...
         'would you like to add them?'],'Add Regions?','Yes');
-    if strcmp(regionadd,'Yes')
-        [ sessionInfo ] = bz_sessionInfoGUI( sessionInfo );
-        SIexist = false; 
+    switch regionadd
+        case 'Yes'
+            [sessionInfo] = bz_sessionInfoGUI(sessionInfo,'Regions');
+            SIexist = false; 
+        case 'Cancel'
+            return
     end
 end
     
     
 %% Save sessionInfo file   
-%Here: prompt user to save basePath/baseName.sessionInfo.mat if loaded from
-%xml
+%Prompt user to save basePath/baseName.sessionInfo.mat 
+%if loaded from xml or changed
 if ~noPrompts && ~SIexist %Inform the user that they should save a file for later
     savebutton = questdlg(['Would you like to save your sessionInfo in ',...
         filename '?'],'Save sessionInfo?','Yes');
-    if strcmp(savebutton,'Yes'); 
-        save(filename,'sessionInfo'); 
+    switch savebutton
+        case 'Yes'
+            save(filename,'sessionInfo'); 
+        case 'Cancel'
+            return
     end
 end
 

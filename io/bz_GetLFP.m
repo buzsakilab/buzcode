@@ -114,7 +114,6 @@ else
 end
 
 %% things we can parse from sessionInfo or xml file
-%xml = LoadParameters(fullfile(basepath,[basename '.xml']));
 xml = bz_getSessionInfo(basepath);
 nChannels = xml.nChannels;
 try
