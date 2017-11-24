@@ -372,7 +372,7 @@ else
     
     
     if ~iscell(Chs)
-        if sum(Chs > 0 & Chs <= nCh) ~= length(Chs) | isempty(Chs)
+        if sum(Chs >= 0 & Chs <= nCh) ~= length(Chs) | isempty(Chs)
             b = msgbox('Error: Incorrect channel selection. Quiting now. Bye bye.');
             uiwait(b);
             return;
