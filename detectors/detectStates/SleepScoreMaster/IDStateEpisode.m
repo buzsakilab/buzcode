@@ -13,7 +13,7 @@ function [ STATEints ] = IDStateEpisode(STATEints,maxintdur,minSTATEdur)
 
 [STATEints] = MergeSeparatedInts_ss(STATEints,maxintdur);
 STATElengths = STATEints(:,2)-STATEints(:,1);
-STATEints = STATEints(STATElengths>minSTATEdur,:);
+STATEints = STATEints(STATElengths>=minSTATEdur,:);
 
 
 
