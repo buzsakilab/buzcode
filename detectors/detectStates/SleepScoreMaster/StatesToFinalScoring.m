@@ -78,9 +78,9 @@ MAInREM = MAIntervals(MAInREM,:);
 MAIntervals = MAIntervals(realMA,:);
 
 %% Save: buzcode format
-SleepState.intsRaw.NREMstate = NREMints;
-SleepState.intsRaw.REMstate = REMints;
-SleepState.intsRaw.WAKEstate = WAKEIntervals;
+SleepState.ints.NREMstate = NREMints;
+SleepState.ints.REMstate = REMints;
+SleepState.ints.WAKEstate = WAKEIntervals;
 
 SleepState.intsWatson2016.WAKEpisodes = episodeintervals{1};
 SleepState.intsWatson2016.NREMepisodes = episodeintervals{2};
