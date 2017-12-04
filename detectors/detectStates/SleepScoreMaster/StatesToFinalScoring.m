@@ -44,19 +44,22 @@ AllNewNREMEpisodes = [];%will populate this list with snippets of interrupted ep
 
 REMints = sortrows(REMints);
 [~,NREMwRemInside] = InIntervals(REMints(:,1),episodeintervals{2});
-badnrem = unique(NREMwRemInside);
-for nix = length(badnrem):-1:1%backwards bc will be cutting out episodes
-    tnrem = badnrem(nix);
+
+NREMwRemInside(NREMwRemInside == 0) = [];
+badNrem = unique(NREMwRemInside);
+for nix = length(badNrem):-1:1%backwards bc will be cutting out episodes
+    tnrem = badNrem(nix);
     thisNREMint = episodeintervals{2}(tnrem,:);
     OrigNREMEpisodes(tnrem,:) = [];%delete bad episodes from permanent list
     
-    whichREMinThisNREM = find(NREMwRemInside == tnrem);
+    whichREMinThisNREM = InIntervals(REMints(:,1),thisNREMint);
+    whichREMinThisNREM = find(whichREMinThisNREM);
     for rix = 1:length(whichREMinThisNREM)
         tREM = whichREMinThisNREM(rix);
-        newNREMint = [thisNREMint(1,1) REMints(tREM,1)];
+        newNREMint = [thisNREMint(1,1) REMints(tREM,1)];%keep segment of NREM before start of REM
         AllNewNREMEpisodes = cat(1,AllNewNREMEpisodes,newNREMint);
         
-        thisNREMint = [REMints(tREM,2) thisNREMint(1,2)];%for next cycle, shortened now
+        thisNREMint = [REMints(tREM,2) thisNREMint(1,2)];%NREM remaining after REM, for next cycle
     end
     AllNewNREMEpisodes = cat(1,AllNewNREMEpisodes,thisNREMint);%toss on whatever's left at the end
 end

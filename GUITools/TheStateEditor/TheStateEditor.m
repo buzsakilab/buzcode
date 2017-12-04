@@ -2194,7 +2194,8 @@ if ~isfield(SleepState,'AutoScoreInts') && strcmp(SleepState.detectorname,'Sleep
     display('   saving old states as SleepState.AutoScoreInts')
     SleepState.AutoScoreInts = SleepState.ints;
 end
-SleepState.ints = SleepState_new.ints;
+SleepState.intsRaw = SleepState_new.intsRaw;
+SleepState.intsWatson2016 = SleepState_new.intsWatson2016;
 
 %Save the results!
 save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState')
@@ -2362,10 +2363,10 @@ else
         load([path,name])
         stateslen = size(FO.to,1);
         states = zeros(1,stateslen);
-        states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
-        states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
-        states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
-        states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
+        states(find(inttoboolIn(SleepState.intsRaw.WAKEstate))) = 1;
+        states(find(inttoboolIn(SleepState.intsRaw.MAstate))) = 2;
+        states(find(inttoboolIn(SleepState.intsRaw.NREMstate))) = 3;
+        states(find(inttoboolIn(SleepState.intsRaw.REMstate))) = 5;
         states = cat(2,states,zeros(1,numel(FO.States)-length(states)));
         FO.States = states;
     else
