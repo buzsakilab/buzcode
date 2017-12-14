@@ -57,7 +57,7 @@ function [coherence,f,s] = MTCoherence (lfp1,lfp2,varargin)
 % it under the terms of the GNU General Public License as published by
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
-
+warning('This function has been deprecated, and will be removed in the future. Try using bz_MTCoherogram.m')
 % Make sure chronux is installed and functional
 CheckChronux;
 

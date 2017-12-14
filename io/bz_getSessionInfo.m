@@ -1,10 +1,14 @@
 function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 %[sessionInfo] = bz_getSessionInfo(basePath) loads the sessionInfo metadata
-%for the recording in basePath. If no baseName.sessionInfo.mat exists,
-%loads from the xml.
+%for the recording in basePath. basePath should be in the format:
+%       /whateverPath/baseName/
+%           a file  basePath/baseName.sessionInfo.mat
+%           or      basePath/baseName.xml
+%           should exist.
+%If no baseName.sessionInfo.mat exists, loads from the xml.
 %
 %INPUT
-%   basePath
+%   basePath            directory: '/whatevetPath/baseName/'
 %   (options)
 %       'noPrompts'     (default: false) prevents prompts about
 %                       saving/adding metadata
