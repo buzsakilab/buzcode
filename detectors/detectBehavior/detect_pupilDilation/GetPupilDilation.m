@@ -79,7 +79,18 @@ end
 if exist(savefile,'file')
     PREVIOUSDETECT = true;  %not used yet: should be used to load old? or use old params?
 end
-%%
+
+%% Parameters
+
+unstablemeanthresh = 0.75;  %how many modSTDs from the median can the median go
+unstablestdthresh = 0.15;
+unstablewindow = 10; %window of frames around detected unstable frames to denote as unstable
+
+pupilsizethresh = 5; %Pupil must be larger than this many pixels
+pupilmaxsize = 5;   %maximum pupil size (in median-normalized units)
+                    %this is for plotting purposes only, for now,
+
+%% The Meat
 %Load in the video
 pupilvidobj = VideoReader(vidName);
 NumberOfFrames = pupilvidobj.NumberOfFrames;
@@ -144,17 +155,14 @@ for ff = 1:NumberOfFrames
         eyepixels = double(vidframe(eyemask))./255; 
         
         %Calcaulte thresholds for unstable frames based on first frame stats
-        unstablemeanthresh = 0.6; %std
-        unstablestdthresh = 0.15;
-        eyerange = mean(eyepixels)+unstablemeanthresh.*std(eyepixels).*[-1 1];
-        blinkstdthresh = std(eyepixels)+unstablestdthresh.*[-1 1];
+        eyerange = median(eyepixels)+unstablemeanthresh.*1.4826.*mad(eyepixels).*[-1 1];
+        blinkstdthresh = 1.4826.*mad(eyepixels)+unstablestdthresh.*[-1 1];
         
         intensitybins = linspace(0,1,40);
         pupilhist = hist(pupilpixels,intensitybins);
         irishist = hist(irispixels,intensitybins);
         eyehist = hist(eyepixels,intensitybins);
         
-        pupilsizethresh = 10; %Pupil must be larger than this many pixels
         %Starting intensity threshold: 2.5std above mean pupil
         intensitythresh = mean(pupilpixels)+1.*std(pupilpixels); 
         x = 1;
@@ -188,11 +196,11 @@ for ff = 1:NumberOfFrames
      
     %% Unstable Frame Detection
     %Detect blinking very large/small avgerage/std eye pixel intensity
-    unstablewindow = 10; %window of frames around detected unstable frames to denote as unstable
+
     
     %Mean/std of the eye pixels for unstable detection
-    meaneyepixel(ff) = mean(double(vidframe(eyemask))./255);
-    stdeyepixel(ff) = std(double(vidframe(eyemask))./255);
+    meaneyepixel(ff) = median(double(vidframe(eyemask))./255);
+    stdeyepixel(ff) = 1.4826.*mad(double(vidframe(eyemask))./255);
      
     %display(['Mean: ',num2str(meaneyepixel(ff)),'.   Range: ',num2str(eyerange)])
     if meaneyepixel(ff) < eyerange(1) || meaneyepixel(ff) > eyerange(2) ||...
@@ -227,7 +235,7 @@ for ff = 1:NumberOfFrames
     
     pupil=bwareaopen(pupil,pupilsizethresh);
     pupil=imfill(pupil,'holes');
-    if SAVEVID && mod(ff,savevidfr)==0; 
+    if SAVEVID && mod(ff,savevidfr)==0
         subplot(4,4,12);imagesc(pupil);
         set(gca,'ytick',[]);set(gca,'xtick',[]);
     end
@@ -263,7 +271,8 @@ for ff = 1:NumberOfFrames
     %% Plotting the pupil and detection
     if SAVEVID && mod(ff,savevidfr)==0;  
         subplot(2,2,1)
-            imagesc(vidframe_orig);
+            imagesc(vidframe_orig)
+            %title(baseName)
             %caxis([0 255])
             hold on
             plot(eyeline(:,1),eyeline(:,2),'b:','linewidth',0.5)
@@ -274,22 +283,24 @@ for ff = 1:NumberOfFrames
             hold off
     end
     
-   if SAVEVID && mod(ff,savevidfr)==0;  
+   if SAVEVID && mod(ff,savevidfr)==0
        subplot(4,1,4)
-           yrange = [0 max(puparea)];
+           %yrange = [0 max(puparea)]; max normlization
            windur = 3000; %frames
            earlypoint = max(1,ff-windur);
-           plot(earlypoint:ff,(puparea(earlypoint:ff)-yrange(1))./diff(yrange),'k')
+           %plot(earlypoint:ff,(puparea(earlypoint:ff)-yrange(1))./diff(yrange),'k')
+           plot(earlypoint:ff,puparea(earlypoint:ff)./nanmedian(puparea),'k')
            hold on
-           plot(ff,puparea(ff),'ro')
+           %plot(ff,puparea(ff),'ro')
            plot(unstableframes,zeros(size(unstableframes)),'r.','markersize',10)
            hold off
            xlim([earlypoint ff])
+           ylabel({'Pup. Area', '(med.^-^1)'})
            %if yrange(1)~=yrange(2); ylim([min(puparea) max(puparea)]); end
-           ylim([0 1])
+           ylim([0 pupilmaxsize])
    end
      
-   if SAVEVID && mod(ff,savevidfr)==0;
+   if SAVEVID && mod(ff,savevidfr)==0
        imgFrame = getframe(gcf);
        writeVideo(pupdiamVid,imgFrame.cdata);
    end
@@ -300,51 +311,66 @@ if SAVEVID; close(pupdiamVid); end
 
 
 %% Load the analogin for the timestamps
+if ~exist(analogName,'file')
+    warning('No analogin.dat file, using timestamps in frames')
+    sf_eff = 50;
+    timestamps = 1:NumberOfFrames;
+    pulset = nan;
+else
+    timepulses = bz_LoadBinary(analogName,'nChannels',1,'precision','uint16');
+    %bz_LoadBinary('uint16')
 
-timepulses = bz_LoadBinary(analogName,'nChannels',1,'precision','uint16');
-%bz_LoadBinary('uint16')
+    sf_pulse = 1./20000; %Sampling Frequency of the .abf file
+    t_pulse = [1:length(timepulses)]'.*sf_pulse;
 
-sf_pulse = 1./20000; %Sampling Frequency of the .abf file
-t_pulse = [1:length(timepulses)]'.*sf_pulse;
-
-pulsethreshold =1e4;  %Adjust this later to set based on input.
-%Find where pulse channel crosses in the upward direction
-pulseonsets = find(diff(timepulses>pulsethreshold)==1); 
-pulset = t_pulse(pulseonsets);
+    pulsethreshold =1e4;  %Adjust this later to set based on input.
+    %Find where pulse channel crosses in the upward direction
+    pulseonsets = find(diff(timepulses>pulsethreshold)==1); 
+    pulset = t_pulse(pulseonsets);
 
 
-minpulsedur = 0.003; %Remove double/noise crossings
-shortpulses=diff(pulset)<(minpulsedur);
-pulset(shortpulses) = [];
+    minpulsedur = 0.003; %Remove double/noise crossings
+    shortpulses=diff(pulset)<(minpulsedur);
+    pulset(shortpulses) = [];
 
-interpulse = diff(pulset);
-sf_eff = 1./mean(interpulse);
+    interpulse = diff(pulset);
+    sf_eff = 1./mean(interpulse);
 
-%Check that frame duration is constant up to tolerance (no skipped frames)
-tol = 0.001;
+    %Check that frame duration is constant up to tolerance (no skipped frames)
+    tol = 0.001;
 
-if range(interpulse)>tol
-    warning('Frame rate is not constant...')
+    if range(interpulse)>tol
+        warning('Frame rate is not constant...')
+    end
+
+    % longpulses=diff(pulset)>(2.*expectedpulserate);
+    % pulset(longpulses) = [];
+
+    %hist(diff(pulset))
+
+
+    %% Check that the number of identified pulses = the number of frames
+    if length(pulset)~=length(puparea); 
+        display('WARNING: NUMBER OF FRAMES DON"T MATCH!!!    v sad.');%keyboard; 
+    end
+
+    %% Align the timestamps
+    trange = pulset([1 end]);
+    numframes = length(puparea);
+    t_interp = linspace(trange(1),trange(2),numframes)';
+
+    %%
+    timestamps = pulset(1:NumberOfFrames);
+
+    %Estimate and check sampling frequency of the camera
+    
 end
-
-% longpulses=diff(pulset)>(2.*expectedpulserate);
-% pulset(longpulses) = [];
-
-%hist(diff(pulset))
-
-
-%% Check that the number of identified pulses = the number of frames
-if length(pulset)~=length(puparea); 
-    display('WARNING: NUMBER OF FRAMES DON"T MATCH!!!    v sad.');%keyboard; 
-end
-
-
-
-%% Estimate and check sampling frequency of the camera
-
 
 
 %% Smooth and normalize the pupil diameter trace
+
+%Find unstable intervals
+
 
 %0-1 Normalize, smooth the pupil area trace 
 %(make window in units of seconds or figure out the best # frames)
@@ -352,23 +378,56 @@ smoothwin_s = 0.5;  %s
 %smoothwin = 10;  %frames
 smoothwin_frames = round(smoothwin_s.*sf_eff); %Calculate window in frames 
 puparea_raw = puparea; %In units of pixels
-puparea = smooth(puparea,smoothwin_frames,'moving'); %,'rloess'); %try rloess method... needs percentage of total points span
+
+% if exist('movmedian','builtin')
+%     puparea = movmedian(puparea,smoothwin_frames,'omitnan');
+% else
+%    warning('Function movmedian not detected, I recommend you upgrade to R2016a')
+    puparea = smooth(puparea,smoothwin_frames,'moving'); %,'rloess'); 
+    %try rloess method... needs percentage of total points span
+% end
 %Long unstable epochs should be kept nan.....
-maxarea = max(puparea);
-puparea = puparea./maxarea;
+% maxarea = max(puparea);
+% puparea = puparea./maxarea;
+puparea = puparea./nanmedian(puparea);
 
 %% Linearly interpolate bad frames of duration less than some window...
 
+%Have user manually browse check/mark unstable frames (make general browse
+%and mark GUI)
 
 
-%% Align the timestamps
-trange = pulset([1 end]);
-numframes = length(puparea);
-t_interp = linspace(trange(1),trange(2),numframes)';
 
-%%
-timestamps = pulset(1:NumberOfFrames);
-data = puparea;
+
+
+%% Behavior struct for saving
+
+pupildilation.samplingRate = sf_eff;
+pupildilation.timestamps = timestamps;
+pupildilation.data = puparea;
+
+pupildilation.t_pulse = pulset; 
+pupildilation.puparea_pxl = puparea_raw;
+
+pupildilation.unstabledetection.eyepixelmean = meaneyepixel;
+pupildilation.unstabledetection.eyepixelstd = stdeyepixel;
+pupildilation.unstabledetection.unstableframes = unstableframes;
+
+pupildilation.pupilxy = pupcoords;
+
+pupildilation.detectorname = 'GetPupilDilation';
+pupildilation.detectiondate = today('datetime');
+pupildilation.detectorparms.mask = eyemask;
+pupildilation.detectorparms.intensitythresh = intensitythresh;
+pupildilation.detectorparms.unstablewindow = unstablewindow;
+pupildilation.detectorparms.blinkstdthresh = blinkstdthresh;
+pupildilation.detectorparms.eyerange = eyerange;
+
+
+save(savefile,'pupildilation')
+
+
+
 
 %% Detection Quality Control Figure
 figure
@@ -379,7 +438,7 @@ figure
         plot(timestamps(unstableframes),zeros(size(unstableframes)),'r.','markersize',10)
         hold on
         set(gca,'xticklabel',[])
-        ylabel({'Pupil Diameter','(max^-^1)'})
+        ylabel({'Pupil Diameter','(medd^-^1)'})
         xlim(t_pulse([1 end]))
     subplot(4,1,4)
         plot(t_pulse,timepulses,'k')
@@ -417,35 +476,6 @@ figure
         title(baseName)
         
 NiceSave('PupilDetection',figfolder,baseName)
-
-
-
-%% Behavior struct for saving
-
-pupildilation.samplingRate = sf_eff;
-pupildilation.timestamps = timestamps;
-pupildilation.data = data;
-
-pupildilation.t_pulse = pulset; 
-pupildilation.puparea_pxl = puparea_raw;
-
-pupildilation.eyepixelmean = meaneyepixel;
-pupildilation.eyepixelstd = stdeyepixel;
-pupildilation.unstableframes = unstableframes;
-
-pupildilation.pupilxy = pupcoords;
-
-pupildilation.detectorname = 'GetPupilDilation';
-pupildilation.detectiondate = today('datetime');
-pupildilation.detectorparms.mask = eyemask;
-pupildilation.detectorparms.intensitythresh = intensitythresh;
-pupildilation.detectorparms.unstablewindow = unstablewindow;
-pupildilation.detectorparms.blinkstdthresh = blinkstdthresh;
-pupildilation.detectorparms.eyerange = eyerange;
-
-
-save(savefile,'pupildilation')
-
 
 end
 
