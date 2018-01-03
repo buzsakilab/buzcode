@@ -1,13 +1,45 @@
-function [SleepState,durationparams] = StatesToFinalScoring(WAKEints,NREMints,REMints)
+function [SleepState,SleepStateEpisodes,durationparams] = StatesToFinalScoring(WAKEints,NREMints,REMints)
 % Takes sleep state data as a series of raw intervals and imposes max and
 % min durations and interruption criteria to make WAKE, NREM, REM Episodes,
 % Packets, Microarousals and Microarusals in REM.
 %
 % INPUTS
+% - WAKEints - startstop pairs (nx2 array) of second numbers of starts and
+%   ends respectively of periods of wake-like state.  These can be broken
+%   later into wake, microarousal and other mini wake-like states
+% - NREMints - startstop pairs (nx2 array) of second numbers of starts and
+%   ends respectively of periods of NREM state
+% - REMints - startstop pairs (nx2 array) of second numbers of starts and
+%   ends respectively of periods of REM state
 %
 % OUTPUTS
+% - SleepStates - Struct array of relatively less processed epochs relative
+%   to SleepStateEpisodes.  Fields are WAKEstate, NREMstate and REMstate.
+%   - NREMstate: NREMstate same as the input NREMints  
+%   - REMstate: REMstate same as the input REMints  
+%   - WAKEstate: input WAKEints that are longer than the microarousal duration (100s at the writing of 
+%       this comment)
 %
-% Called in TheStateEditor saveStates function
+% - SleepStateEpisodes - Struct array of relatively more processed epochs
+%   with minimum durations and maximum interruptions imposed.  Fields below
+%   - WAKEpisodes: WAKEints inputs with at least [minWAKEEpisodeDuration] 
+%   long and without interruptions more than [maxWAKEEpisodeInterruption]
+%   - NREMepisodes
+%   - REMepisodes
+%   - NREMpackets
+%   - MAstate
+%   - MAInREM 
+% 
+
+SleepStateEpisodes.states.WAKEpisodes = episodeintervals{1};
+SleepStateEpisodes.states.NREMepisodes = episodeintervals{2};
+SleepStateEpisodes.states.REMepisodes = episodeintervals{3};
+SleepStateEpisodes.states.NREMpackets = packetintervals;
+SleepStateEpisodes.states.MAstate = MAIntervals;
+SleepStateEpisodes.states.MAInREM = MAInREM;
+
+%
+% Called in [SleepScoreMaster] and [TheStateEditor saveStates function]  
 % Dan Levenstein & Brendon Watson 2016
 
 minPacketDuration = 30;
@@ -77,17 +109,20 @@ realMA = setdiff(1:size(MAIntervals,1),MAInREM);
 MAInREM = MAIntervals(MAInREM,:);
 MAIntervals = MAIntervals(realMA,:);
 
-%% Save: buzcode format
-SleepState.intsRaw.NREMstate = NREMints;
-SleepState.intsRaw.REMstate = REMints;
-SleepState.intsRaw.WAKEstate = WAKEIntervals;
+%% Other wake-like states, Wake-like interruptions of sleep
 
-SleepState.intsWatson2016.WAKEpisodes = episodeintervals{1};
-SleepState.intsWatson2016.NREMepisodes = episodeintervals{2};
-SleepState.intsWatson2016.REMepisodes = episodeintervals{3};
-SleepState.intsWatson2016.NREMpackets = packetintervals;
-SleepState.intsWatson2016.MAstate = MAIntervals;
-SleepState.intsWatson2016.MAInREM = MAInREM;
+
+%% Save: buzcode format
+SleepState.states.NREMstate = NREMints;
+SleepState.states.REMstate = REMints;
+SleepState.states.WAKEstate = WAKEIntervals;
+
+SleepStateEpisodes.states.WAKEpisodes = episodeintervals{1};
+SleepStateEpisodes.states.NREMepisodes = episodeintervals{2};
+SleepStateEpisodes.states.REMepisodes = episodeintervals{3};
+SleepStateEpisodes.states.NREMpackets = packetintervals;
+SleepStateEpisodes.states.MAstate = MAIntervals;
+SleepStateEpisodes.states.MAInREM = MAInREM;
 
 
 

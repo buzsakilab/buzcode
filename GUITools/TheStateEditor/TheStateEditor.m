@@ -2167,11 +2167,20 @@ guidata(FO.fig, FO);
 end
 
 function saved = saveStates
+% Should change this:
+% save tottally raw states vector!
+% also save SleepState.state.mat and SleepStateEpisodes.state.mat
+% keep old vs new as well, sure
+% Give user question of whether to impose minimum MA onto
+% SleepState.state.mat?
+
+%get figure and figure data
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj);
 FO = guidata(obj(end));
 baseName = FO.baseName;
 basePath = FO.basePath;
 
+%re-process states for storage
 sints = IDXtoINT_In( FO.States,5);%convert to start-stop intervals
 % Join states into episodes
 NREMints = sints{3};
@@ -4844,7 +4853,7 @@ NREMints = stateintervals{2};
 REMints = stateintervals{3};
 WAKEints = stateintervals{1};
 
-[SleepState_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints);
+[SleepState_new,SleepStateEpisodes_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints);
 
 % update plot and data in TheStateEditor GUI
 stateslen = size(FO.to,1);
@@ -4857,6 +4866,7 @@ states(find(inttoboolIn(SleepState_new.ints.REMstate))) = 5;
 states = cat(2,states,zeros(1,length(FO.to)-length(states)));%pad to make sure is long enough
 
 FO.States = states;
+FO.StateEpisodes = SleepStateEpisodes_new;
 guidata(FO.fig,FO);
 modifyStates(1, states, 0);
 

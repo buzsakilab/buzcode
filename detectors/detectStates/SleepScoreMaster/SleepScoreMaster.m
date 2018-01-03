@@ -47,7 +47,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'rejectChannels' A vector of channels to exclude from the analysis
 %   'noPrompts'     (default:false) an option to not prompt user of things
 %
-%OUTPUT
+%OUTPUT 
+%   !CHANGE THIS!
 %   StateIntervals  structure containing start/end times (seconds) of
 %                   NREM, REM, WAKE states and episodes. states is the 
 %                   "raw" state scoring. episodes are joined episodes of 
@@ -189,6 +190,7 @@ end
 sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
 %Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
+bz_sleepstateepisodespath = fullfile(savefolder,[recordingname,'.SleepStateEpisodes.states.mat']);
 
 
 %% Get channels not to use
@@ -242,13 +244,22 @@ WAKEints = stateintervals{1};
 
 [SleepState,durationparams] = StatesToFinalScoring(NREMints,WAKEints,REMints);
 
-%bzStyle
+%Saving SleepStates (more but not totally raw) - bzStyle
 SleepState.detectorparams.SWchannum = SleepScoreLFP.SWchanID;
 SleepState.detectorparams.THchannum = SleepScoreLFP.THchanID;
 SleepState.detectorparams.durationparams = durationparams;
 SleepState.detectorname = 'SleepScoreMaster';
 SleepState.detectiondate = today;
 save(bz_sleepstatepath,'SleepState');
+
+%Saving SleepStateEpisodes (most interpreted/processed) - bzStyle
+SleepStateEpisodes.detectorparams.SWchannum = SleepScoreLFP.SWchanID;
+SleepStateEpisodes.detectorparams.THchannum = SleepScoreLFP.THchanID;
+SleepStateEpisodes.detectorparams.durationparams = durationparams;
+SleepStateEpisodes.detectorname = 'SleepScoreMaster';
+SleepStateEpisodes.detectiondate = today;
+save(bz_sleepstateepisodespath,'SleepState');
+
 
 display(['Sleep Score ',recordingname,': Complete!']);
 %Prompt user here to manually check detection with TheStateEditor
