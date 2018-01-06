@@ -14,6 +14,9 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %                   baseName.SleepState.states.mat
 %               
 %   (options)
+%   'lfp'               -A buzcode-style lfp structure... if you would
+%                        rather just input the lfp instead of loading from
+%                        basepath
 %   'NREMInts'          -Interval of times for NREM 
 %                       -(Default: loaded from SleepState.states.mat, 
 %                                   run SleepScoreMaster if not exist)
@@ -68,6 +71,7 @@ addParameter(p,'showFig',true,@islogical);
 addParameter(p,'noSpikes',false,@islogical);
 addParameter(p,'DetectionChannel','autoselect');
 addParameter(p,'NREMInts',[]);
+addParameter(p,'lfp',[]);
 addParameter(p,'CTXChans','all');
 addParameter(p,'sensitivity',0.6,ratevalidation);
 addParameter(p,'noPrompts',false,@islogical);
@@ -84,6 +88,7 @@ NOPROMPTS = p.Results.noPrompts;
 NOSPIKES = p.Results.noSpikes;
 ratethresh = p.Results.sensitivity;
 filterparms = p.Results.filterparms;
+lfp = p.Results.lfp;
 
 %Defaults
 if ~exist('basePath','var')
@@ -133,25 +138,27 @@ else
 end
 
 %Sleep Scoring (for NREM). Load, Prompt if doesn't exist
-[SleepState] = bz_LoadStates(basePath,'SleepState');
-if isempty(SleepState) && isempty(NREMInts)
-    button = questdlg(['SleepState.states.mat does not exist, '...
-        'would you like to run SleepScoreMaster?'],...
-        'DetectSlowWaves Needs NREM',...
-        'Yes','No, use all timepoints','Cancel','Yes');
-    switch button
-        case 'Yes'
-            SleepState = SleepScoreMaster(basePath);
-            display('Please double check quality of sleep scoring in the StateScoreFigures folder')
-            NREMInts = SleepState.ints.NREMstate;
-        case 'No, use all timepoints'
-            NREMInts = [0 Inf];
-            SleepState.detectorparams.empty = [];
-        case 'Cancel'
-            return
+if isempty(NREMInts)
+    [SleepState] = bz_LoadStates(basePath,'SleepState');
+    if isempty(SleepState) && isempty(NREMInts)
+        button = questdlg(['SleepState.states.mat does not exist, '...
+            'would you like to run SleepScoreMaster?'],...
+            'DetectSlowWaves Needs NREM',...
+            'Yes','No, use all timepoints','Cancel','Yes');
+        switch button
+            case 'Yes'
+                SleepState = SleepScoreMaster(basePath);
+                display('Please double check quality of sleep scoring in the StateScoreFigures folder')
+                NREMInts = SleepState.ints.NREMstate;
+            case 'No, use all timepoints'
+                NREMInts = [0 Inf];
+                SleepState.detectorparams.empty = [];
+            case 'Cancel'
+                return
+        end
+    else
+        NREMInts = SleepState.ints.NREMstate;
     end
-else
-    NREMInts = SleepState.ints.NREMstate;
 end
    
 %Which channel should be used for detection?
@@ -177,7 +184,9 @@ switch SWChan
 end
         
 %Load the LFP
-lfp = bz_GetLFP(SWChan,'basepath',basePath);
+if isempty(lfp)
+    lfp = bz_GetLFP(SWChan,'basepath',basePath);
+end
 
 %% Filter the LFP: delta, high gamma 
 display('Filtering LFP')
