@@ -82,7 +82,7 @@ end
 
 %% Parameters
 
-unstablemeanthresh = 0.75;  %how many modSTDs from the median can the median go
+unstablemeanthresh = 0.7;  %how many modSTDs from the median can the median go
 unstablestdthresh = 0.15;
 unstablewindow = 10; %window of frames around detected unstable frames to denote as unstable
 
