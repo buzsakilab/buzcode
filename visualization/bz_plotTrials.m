@@ -7,7 +7,7 @@ addRequired(p,'behavior',@isstruct);
 addParameter(p,'condition',[],@isnumeric);
 addParameter(p,'color',[0 0 0],@isvector);
 addParameter(p,'endPoints',true,@islogical);
-addParameter(p,'endPoints',1,@isnumeric);
+addParameter(p,'spacing',1,@isnumeric);
 parse(p,varargin{:})
 behavior = p.Results.behavior;
 condition = p.Results.condition;
