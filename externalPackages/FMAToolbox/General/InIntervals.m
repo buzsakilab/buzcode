@@ -62,7 +62,7 @@ if isempty(values)
     status=[];
     interval=[];
     index=[];
-    break
+    return
 end
 
 if size(values,1) == 1,
