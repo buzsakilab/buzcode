@@ -8,6 +8,10 @@ function [positionDecodingMaxCorr] = bz_positionDecodingMaxCorr(varargin)
 %
 %   behavior
 %   
+%   lfp
+%
+%   smoothingRange
+%
 %   plotting   
 %   
 %   saveMat
@@ -61,7 +65,7 @@ nCells = length(spikes.times);
 positionSamplingRate = behavior.samplingRate;
 
 % find a better way to get spike phase relationship...
-[firingMaps] = bz_firingMap1D(spikes,behavior,lfp,5);
+[firingMaps] = bz_firingMap1D(spikes,behavior,5);
 [b a] = butter(3,[4/626 12/625],'bandpass');
 theta_phases = angle(hilbert(FiltFiltM(b,a,double(lfp.data))));
 % iterate through conditions and compile spike trains and spike-phase
