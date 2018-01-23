@@ -67,7 +67,7 @@ positionSamplingRate = behavior.samplingRate;
 % find a better way to get spike phase relationship...
 [firingMaps] = bz_firingMap1D(spikes,behavior,5);
 [phaseMaps] = bz_phaseMap1D(spikes,behavior,lfp,5);
-[b a] = butter(3,[4/626 12/625],'bandpass');
+[b a] = butter(3,[4/625 12/625],'bandpass');
 theta_phases = angle(hilbert(FiltFiltM(b,a,double(lfp.data))));
 % iterate through conditions and compile spike trains and spike-phase
 % trains
@@ -246,7 +246,7 @@ for cond = conditions
             subplot(2,2,1)
             t_rate = varfun(@mean,positionDecodingMaxCorr.results,'InputVariables','mse_rate',...
             'GroupingVariables',{'tau','condition'});
-            t_phase = varfun(@mean,positionDecodingMaxCorr.results,'InputVariables','mse_phase_all',...
+            t_phase = varfun(@mean,positionDecodingMaxCorr.results,'InputVariables','mse_phase',...
             'GroupingVariables',{'tau','condition'});
             t_phase_cos = varfun(@mean,positionDecodingMaxCorr.results,'InputVariables','mse_phase_cos',...
             'GroupingVariables',{'tau','condition'});
@@ -262,7 +262,7 @@ for cond = conditions
             'GroupingVariables',{'tau','condition'});
             t_rate_s = varfun(@std,positionDecodingMaxCorr.results,'InputVariables','mse_rate',...
             'GroupingVariables',{'tau','condition'});
-            t_phase_s = varfun(@std,positionDecodingMaxCorr.results,'InputVariables','mse_phase_all',...
+            t_phase_s = varfun(@std,positionDecodingMaxCorr.results,'InputVariables','mse_phase',...
             'GroupingVariables',{'tau','condition'});
             t_phase_cos_s = varfun(@std,positionDecodingMaxCorr.results,'InputVariables','mse_phase_cos',...
             'GroupingVariables',{'tau','condition'});
@@ -284,9 +284,9 @@ for cond = conditions
             boundedline(tab.tau,tab.mean_mse_chance(rows),tab_s.std_mse_chance(rows),'k')
             boundedline(tab.tau,tab.mean_mse_phase_cos(rows),tab_s.std_mse_phase_cos(rows),'g')
             boundedline(tab.tau,tab.mean_mse_rate(rows),tab_s.std_mse_rate(rows),'r')
-            set(gca,'xscale','log')
+%             set(gca,'xscale','log')
             subplot(2,2,2)
-            boundedline(tab.tau,tab.mean_mse_phase_all(rows),tab_s.std_mse_phase_all(rows),'.g')
+            boundedline(tab.tau,tab.mean_mse_phase(rows),tab_s.std_mse_phase(rows),'.g')
             boundedline(tab.tau,tab.mean_mse_phase_sin(rows),tab_s.std_mse_phase_sin(rows),'--g')
             boundedline(tab.tau,tab.mean_mse_phase_cos(rows),tab_s.std_mse_phase_cos(rows),'g')
 %             subplot(2,2,3)
