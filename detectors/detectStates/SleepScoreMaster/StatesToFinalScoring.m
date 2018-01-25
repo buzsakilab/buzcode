@@ -45,8 +45,8 @@ function [SleepState,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEint
 if ~exist('DetectorName','var')
     DetectorName = 'NotSpecified';
 end
-if ~exist('DetectorName','var')
-    DetectorName = 'NotSpecified';
+if ~exist('DetectionParams','var')
+    DetectionParams = [];
 end
 minPacketDuration = 30;
 minWAKEEpisodeDuration = 20;

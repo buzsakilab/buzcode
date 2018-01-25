@@ -287,10 +287,10 @@ if FileExistsIn([baseName,'.eegstates.mat'])
     end
     if exist([baseName,'.SleepState.states.mat'],'file')
        load([baseName,'.SleepState.states.mat'])
-       stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate)) max(max(SleepState.ints.MAstate))]); 
+       stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate))]); 
        states = zeros(1,stateslen);
        states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
-       states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
+%        states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
        states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
        states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
        states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
@@ -618,7 +618,7 @@ else
        stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate)) max(max(SleepState.ints.MAstate))]); 
        states = zeros(1,stateslen);
        states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
-       states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
+%        states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
        states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
        states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
        states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
@@ -651,7 +651,7 @@ if exist([baseName,'-states.mat'],'file')
 end
 
 
-end%function end
+end
 
 
 function StateEditorSetup(f, MP, States, eeg, baseName, FO, eegFS)
@@ -2219,10 +2219,17 @@ if exist(fullfile(basePath,[baseName '.SleepState.states.mat']),'file')
         SleepState.AutoScoreInts = SleepState_saved.AutoScoreInts;
     end
     clear SleepState_saved
-elseif ~isfield(SleepState,'AutoScoreInts') && strcmp(SleepState.detectorname,'SleepScoreMaster.m');
-    display('Original State Scoring from SleepScoreMaster detected...')
-    display('   saving old states as SleepState.AutoScoreInts')
-    SleepState.AutoScoreInts = SleepState.ints;
+end
+if ~isfield(SleepState,'AutoScoreInts') 
+    if isfield(SleepState,'detectorinfo')
+        if isfield(SleepState.detectorinfo,'detectorname')
+            if strcmp(SleepState.detectorinfo.detectorname,'SleepScoreMaster.m');
+                display('Original State Scoring from SleepScoreMaster detected...')
+                display('   saving old states as SleepState.AutoScoreInts')
+                SleepState.AutoScoreInts = SleepState.ints;
+            end
+        end
+    end
 end
 
 %Save the results!
@@ -3983,18 +3990,18 @@ end
 f = (select - 1)'*Fs/nFFT;
 nFreqRanges = size(FreqRange,1);
 %if (FreqRange(end)<Fs/2)
-    if nFreqRanges==1
-        select = find(f>FreqRange(1) & f<FreqRange(end));
-        f = f(select);
-        nFreqBins = length(select);
-    else
-        select=[];
-        for i=1:nFreqRanges
-            select=cat(1,select,find(f>FreqRange(i,1) & f<FreqRange(i,2)));
-        end
-        f = f(select);
-        nFreqBins = length(select);
+if nFreqRanges==1
+    select = find(f>FreqRange(1) & f<FreqRange(end));
+    f = f(select);
+    nFreqBins = length(select);
+else
+    select=[];
+    for i=1:nFreqRanges
+        select=cat(1,select,find(f>FreqRange(i,1) & f<FreqRange(i,2)));
     end
+    f = f(select);
+    nFreqBins = length(select);
+end
 %end
 end
 
@@ -4839,7 +4846,7 @@ else%if not, try to generate
     %save
     histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
 end
-
+end
 
 function [states,StateIntervals] = ReClusterStates_In(obj,ev)
 % Wrapper around functions ClusterStates_DetermineStates and
