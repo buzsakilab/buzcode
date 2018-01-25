@@ -1,22 +1,24 @@
-function [INT, IDX, t_IDX] = ClusterStates_DetermineStates(SleepScoreMetrics,MinWinParams,histsandthreshs)
+function [INT, IDX, t_IDX, MinTimeWindowParams] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParams,histsandthreshs)
 % can input histsandthreshs from externally if needed... ie via manual
 % selection in stateeditor
 
 %% Basic parameters
 % Min Win Parameters (s)
 if exist('MinWinParams','var')
-     v2struct(MinWinParams)
+     v2struct(MinTimeWindowParams)
 % 	fn = fieldnames(MinWinParams);
 %     for a = 1:length(fn);
 %         eval([fn{a} '=MinWinParams.' fn{a} ';']);
 %     end
 else%defaults as follows:
-    minSWS = 6;
-    minWnexttoREM = 6;
-    minWinREM = 6;       
-    minREMinW = 6;
-    minREM = 6;
-    minWAKE = 6;
+    minSWSsecs = 6;
+    minWnexttoREMsecs = 6;
+    minWinREMsecs = 6;       
+    minREMinWsecs = 6;
+    minREMsecs = 6;
+    minWAKEsecs = 6;
+    MinTimeWindowParams = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,...
+        minREMinWsecs,minREMsecs,minWAKEsecs);
 end
 
 % handling variables for determining thresholds/cutoffs
@@ -60,7 +62,7 @@ INT = IDXtoINT_ss(IDX,3);
 %SWS  (to NonMOV)
 Sints = INT{2};
 Slengths = Sints(:,2)-Sints(:,1);
-shortSints = {Sints(find(Slengths<=minSWS),:)};
+shortSints = {Sints(find(Slengths<=minSWSsecs),:)};
 shortSidx = INTtoIDX_ss(shortSints,length(IDX));
 %Change Short SWS to Wake
 IDX(shortSidx==1) = 1;   
@@ -77,7 +79,7 @@ WRtrans = find((trans)==2);
 WRtrans = union(WRtransON,WRtransOFF); %On or offset are RW
 %Find WAKE intervals that border REM and are less than min
 Wlengths = Wints(:,2)-Wints(:,1);
-shortWRints = find(Wlengths(WRtrans)<=minWnexttoREM);
+shortWRints = find(Wlengths(WRtrans)<=minWnexttoREMsecs);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Wints(shortWRints,:)};
 shortWRidx = INTtoIDX_ss(shortWRints,length(IDX));
@@ -97,7 +99,7 @@ WRtrans = find((trans)==2);
 WRtrans = intersect(WRtransON,WRtransOFF); %Both onset and offset are RW
 %Find WAKE intervals that border REM and are less than min
 Wlengths = Wints(:,2)-Wints(:,1);
-shortWRints = find(Wlengths(WRtrans)<=minWinREM);
+shortWRints = find(Wlengths(WRtrans)<=minWinREMsecs);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Wints(shortWRints,:)};
 shortWRidx = INTtoIDX_ss(shortWRints,length(IDX));
@@ -118,7 +120,7 @@ WRtrans = find((trans)==-2);
 WRtrans = intersect(WRtransON,WRtransOFF); %Both onset and offset are RW
 %Find WAKE intervals that border REM and are less than min
 Rlengths = Rints(:,2)-Rints(:,1);
-shortWRints = find(Rlengths(WRtrans)<=minREMinW);
+shortWRints = find(Rlengths(WRtrans)<=minREMinWsecs);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Rints(shortWRints,:)};
 shortWRidx = INTtoIDX_ss(shortWRints,length(IDX));
@@ -129,7 +131,7 @@ INT = IDXtoINT_ss(IDX,3);
 %REM (only applies to REM in the middle of SWS)    (to WAKE)
 Rints = INT{3};
 Rlengths = Rints(:,2)-Rints(:,1);
-shortRints = {Rints(find(Rlengths<=minREM),:)};
+shortRints = {Rints(find(Rlengths<=minREMsecs),:)};
 shortRidx = INTtoIDX_ss(shortRints,length(IDX));
 
 IDX(shortRidx==1) = 1;
@@ -139,7 +141,7 @@ INT = IDXtoINT_ss(IDX,3);
 %WAKE   (to SWS)     essentiall a minimum MA time
 Wints = INT{1};
 Wlengths = Wints(:,2)-Wints(:,1);
-shortWints = {Wints(find(Wlengths<=minWAKE),:)};
+shortWints = {Wints(find(Wlengths<=minWAKEsecs),:)};
 shortWidx = INTtoIDX_ss(shortWints,length(IDX));
 IDX(shortWidx==1) = 2;
 
@@ -148,7 +150,7 @@ INT = IDXtoINT_ss(IDX,3);
 %SWS  (to NonMOV)
 Sints = INT{2};
 Slengths = Sints(:,2)-Sints(:,1);
-shortSints = {Sints(find(Slengths<=minSWS),:)};
+shortSints = {Sints(find(Slengths<=minSWSsecs),:)};
 shortSidx = INTtoIDX_ss(shortSints,length(IDX));
 %Change Short SWS to Wake
 IDX(shortSidx==1) = 1;   

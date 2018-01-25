@@ -1,4 +1,4 @@
-function [SleepState,SleepStateEpisodes,durationparams] = StatesToFinalScoring(WAKEints,NREMints,REMints)
+function [SleepState,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,DetectorName,DetectionParams)
 % Takes sleep state data as a series of raw intervals and imposes max and
 % min durations and interruption criteria to make WAKE, NREM, REM Episodes,
 % Packets, Microarousals and Microarusals in REM.
@@ -11,15 +11,22 @@ function [SleepState,SleepStateEpisodes,durationparams] = StatesToFinalScoring(W
 %   ends respectively of periods of NREM state
 % - REMints - startstop pairs (nx2 array) of second numbers of starts and
 %   ends respectively of periods of REM state
-%
+% - DetectorName - function that detected NREM, WAKE, REM states... 
+%   essentially the calling function in most cases, such as 
+%   SleepScoreMaster or TheStateEditor
+% - DetectionParams - Parameters used by  
+% 
 % OUTPUTS
-% - SleepStates - Struct array of relatively less processed epochs relative
-%   to SleepStateEpisodes.  Fields are WAKEstate, NREMstate and REMstate.
-%   - NREMstate: NREMstate same as the input NREMints  
-%   - REMstate: REMstate same as the input REMints  
-%   - WAKEstate: input WAKEints that are longer than the microarousal duration (100s at the writing of 
-%       this comment)
+% - SleepState - Struct array of relatively less processed epochs relative
+%   to SleepStateEpisodes.  
+%   - .ints contains start-stop pair intervals in subfields: WAKEstate, 
+%         NREMstate and REMstate.
+%       - NREMstate: NREMstate same as the input NREMints  
+%       - REMstate: REMstate same as the input REMints  
+%       - WAKEstate: input WAKEints that are longer than the microarousal duration (100s at the writing of 
+%           this comment)
 %
+% 
 % - SleepStateEpisodes - Struct array of relatively more processed epochs
 %   with minimum durations and maximum interruptions imposed.  Fields below
 %   - WAKEpisodes: WAKEints inputs with at least [minWAKEEpisodeDuration] 
@@ -31,17 +38,16 @@ function [SleepState,SleepStateEpisodes,durationparams] = StatesToFinalScoring(W
 %   - MAInREM 
 % 
 
-SleepStateEpisodes.states.WAKEpisodes = episodeintervals{1};
-SleepStateEpisodes.states.NREMepisodes = episodeintervals{2};
-SleepStateEpisodes.states.REMepisodes = episodeintervals{3};
-SleepStateEpisodes.states.NREMpackets = packetintervals;
-SleepStateEpisodes.states.MAstate = MAIntervals;
-SleepStateEpisodes.states.MAInREM = MAInREM;
-
 %
-% Called in [SleepScoreMaster] and [TheStateEditor saveStates function]  
+% Called in [SleepScoreMaster] and [TheStateEditor "saveStates" & "ReClusterStates_In" functions]  
 % Dan Levenstein & Brendon Watson 2016
 
+if ~exist('DetectorName','var')
+    DetectorName = 'NotSpecified';
+end
+if ~exist('DetectorName','var')
+    DetectorName = 'NotSpecified';
+end
 minPacketDuration = 30;
 minWAKEEpisodeDuration = 20;
 minNREMEpisodeDuration = 20;
@@ -53,7 +59,7 @@ maxWAKEEpisodeInterruption = 40;
 maxNREMEpisodeInterruption = maxMicroarousalDuration;
 maxREMEpisodeInterruption = 40;
 
-durationparams = v2struct(minPacketDuration, minWAKEEpisodeDuration,...
+detectionparams_episodes = v2struct(minPacketDuration, minWAKEEpisodeDuration,...
     minNREMEpisodeDuration, minREMEpisodeDuration,...
     maxMicroarousalDuration,...
     maxWAKEEpisodeInterruption, maxNREMEpisodeInterruption,...
@@ -70,13 +76,12 @@ WAKEIntervals = WAKEints(WAKElengths>maxMicroarousalDuration,:);
 [episodeintervals{2}] = IDStateEpisode(NREMints,maxNREMEpisodeInterruption,minNREMEpisodeDuration);
 [episodeintervals{3}] = IDStateEpisode(REMints,maxREMEpisodeInterruption,minREMEpisodeDuration);
 
-%% Exclude REM from NREM episodes that had bridged non-NREM periods!
+%% Exclude REM from NREM Episodes (ie if the NREM Episode included REM and not just MA)
 OrigNREMEpisodes = episodeintervals{2};%this will be a list of acceptable episodes
 AllNewNREMEpisodes = [];%will populate this list with snippets of interrupted episodds
 
 REMints = sortrows(REMints);
-[~,NREMwRemInside] = InIntervals(REMints(:,1),episodeintervals{2});
-
+[~,NREMwRemInside] = InIntervals(REMints(:,1),double(episodeintervals{2}));%NREMs have REM inside
 NREMwRemInside(NREMwRemInside == 0) = [];
 badNrem = unique(NREMwRemInside);
 for nix = length(badNrem):-1:1%backwards bc will be cutting out episodes
@@ -86,7 +91,7 @@ for nix = length(badNrem):-1:1%backwards bc will be cutting out episodes
     
     whichREMinThisNREM = InIntervals(REMints(:,1),thisNREMint);
     whichREMinThisNREM = find(whichREMinThisNREM);
-    for rix = 1:length(whichREMinThisNREM)
+    for rix = 1:length(whichREMinThisNREM)%for every REM inside this NREM
         tREM = whichREMinThisNREM(rix);
         newNREMint = [thisNREMint(1,1) REMints(tREM,1)];%keep segment of NREM before start of REM
         AllNewNREMEpisodes = cat(1,AllNewNREMEpisodes,newNREMint);
@@ -112,17 +117,26 @@ MAIntervals = MAIntervals(realMA,:);
 %% Other wake-like states, Wake-like interruptions of sleep
 
 
-%% Save: buzcode format
-SleepState.states.NREMstate = NREMints;
-SleepState.states.REMstate = REMints;
-SleepState.states.WAKEstate = WAKEIntervals;
+%% Output: buzcode format
+% Output 1: 
+SleepState.ints.NREMstate = NREMints;
+SleepState.ints.REMstate = REMints;
+SleepState.ints.WAKEstate = WAKEIntervals;
+SleepState.detectorinfo.detectorname = DetectorName;
+SleepState.detectorinfo.detectionparams = DetectionParams;
+SleepState.detectorinfo.detectiondate = datestr(today,'yyyy-mm-dd');
 
-SleepStateEpisodes.states.WAKEpisodes = episodeintervals{1};
-SleepStateEpisodes.states.NREMepisodes = episodeintervals{2};
-SleepStateEpisodes.states.REMepisodes = episodeintervals{3};
-SleepStateEpisodes.states.NREMpackets = packetintervals;
-SleepStateEpisodes.states.MAstate = MAIntervals;
-SleepStateEpisodes.states.MAInREM = MAInREM;
+% Output 2:
+SleepStateEpisodes.ints.NREMepisode = episodeintervals{2};
+SleepStateEpisodes.ints.REMepisode = episodeintervals{3};
+SleepStateEpisodes.ints.WAKEepisode = episodeintervals{1};
+SleepStateEpisodes.ints.NREMpacket = packetintervals;
+SleepStateEpisodes.ints.MAstate = MAIntervals;
+SleepStateEpisodes.ints.MA_REM = MAInREM;
+SleepStateEpisodes.detectorinfo.detectionparams.StateDetectionParams = DetectionParams;
+SleepStateEpisodes.detectorinfo.detectionparams.EpisodeDetectionParams= detectionparams_episodes;
+SleepStateEpisodes.detectorinfo.detector = ['StatesToFinalScoring.m'];
+SleepStateEpisodes.detectorinfo.detectiondate = datestr(today,'yyyy-mm-dd');
 
 
 
