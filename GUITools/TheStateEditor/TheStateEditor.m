@@ -2391,10 +2391,10 @@ else
 %         stateslen = max([max(max(StateIntervals.NREMstate)) max(max(StateIntervals.REMstate)) max(max(StateIntervals.WAKEstate)) ]); 
         stateslen = size(FO.to,1);
         states = zeros(1,stateslen);
-        states(find(inttoboolIn(StateIntervals.WAKEstate))) = 1;
-        states(find(inttoboolIn(StateIntervals.MAstate))) = 2;
-        states(find(inttoboolIn(StateIntervals.NREMstate))) = 3;
-        states(find(inttoboolIn(StateIntervals.REMstate))) = 5;
+        states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
+        %states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
+        states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
+        states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
         states = cat(2,states,zeros(1,numel(FO.States)-length(states)));
         FO.States = states;
     else %Andres original TheStateEditor format

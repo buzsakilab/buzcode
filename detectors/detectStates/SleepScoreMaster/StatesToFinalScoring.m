@@ -114,9 +114,6 @@ realMA = setdiff(1:size(MAIntervals,1),MAInREM);
 MAInREM = MAIntervals(MAInREM,:);
 MAIntervals = MAIntervals(realMA,:);
 
-%% Other wake-like states, Wake-like interruptions of sleep
-
-
 %% Output: buzcode format
 % Output 1: 
 SleepState.ints.NREMstate = NREMints;
