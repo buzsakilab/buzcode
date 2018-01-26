@@ -116,7 +116,7 @@ switch(type),
 			[b a] = cheby2(order,ripple,stopband/nyquist,'stop');
 		end
 	case 'fir1'
-        a = 1;
+        	a = 1;
 		if ~isempty(passband)
 			if passband(1) == 0
 				b = fir1(order,passband(2)/nyquist,'low');
