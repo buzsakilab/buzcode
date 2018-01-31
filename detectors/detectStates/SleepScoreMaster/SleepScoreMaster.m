@@ -47,7 +47,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'rejectChannels' A vector of channels to exclude from the analysis
 %   'noPrompts'     (default:false) an option to not prompt user of things
 %
-%OUTPUT
+%OUTPUT 
+%   !CHANGE THIS!
 %   StateIntervals  structure containing start/end times (seconds) of
 %                   NREM, REM, WAKE states and episodes. states is the 
 %                   "raw" state scoring. episodes are joined episodes of 
@@ -62,13 +63,14 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 
 %% Parameter setting
 % Min Win Parameters (s): basic detection paramaters (seconds)
-minSWS = 6;
-minWnexttoREM = 6;
-minWinREM = 6;       
-minREMinW = 6;
-minREM = 6;
-minWAKE = 6;
-MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE);
+minSWSsecs = 6;
+minWnexttoREMsecs = 6;
+minWinREMsecs = 6;       
+minREMinWsecs = 6;
+minREMsecs = 6;
+minWAKEsecs = 6;
+MinTimeWindowParams = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,...
+    minREMinWsecs,minREMsecs,minWAKEsecs);
 
 %% Recording Selection
 %if recname is 'select' or something
@@ -189,6 +191,7 @@ end
 sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
 %Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
+bz_sleepstateepisodespath = fullfile(savefolder,[recordingname,'.SleepStateEpisodes.states.mat']);
 
 
 %% Get channels not to use
@@ -228,30 +231,44 @@ display('Quantifying metrics for state scoring')
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
-[stateintervals,stateIDX,~] = ClusterStates_DetermineStates(...
-                                           SleepScoreMetrics,MinWinParams);
+[stateintervals,stateIDX,~,MinTimeWindowParams] = ClusterStates_DetermineStates(...
+                                           SleepScoreMetrics,MinTimeWindowParams);
 
 %% MAKE THE STATE SCORE OUTPUT FIGURE
 ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
                                 
-%% JOIN STATES INTO EPISODES
 
+%% RECORD PARAMETERS
+DetectionParams = p.Results;
+fn = fieldnames(MinTimeWindowParams);
+for fidx = 1:length(fn)
+    tf = fn{fidx};
+    eval(['DetectionParams.' tf ' = MinTimeWindowParams. ' tf ';'])
+end
+fn = fieldnames(SleepScoreMetrics);
+for fidx = 1:length(fn)
+    tf = fn{fidx};
+    eval(['DetectionParams.' tf ' = SleepScoreMetrics. ' tf ';'])
+end
+
+%% JOIN STATES INTO EPISODES
+%convert to expected format
 NREMints = stateintervals{2};
 REMints = stateintervals{3};
 WAKEints = stateintervals{1};
 
-[SleepState,durationparams] = StatesToFinalScoring(NREMints,WAKEints,REMints);
+% Extract states, Episodes, properly organize params etc, prep for final saving
+[SleepState,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,'SleepScoreMaster.m',DetectionParams);
 
-%bzStyle
-SleepState.detectorparams.SWchannum = SleepScoreLFP.SWchanID;
-SleepState.detectorparams.THchannum = SleepScoreLFP.THchanID;
-SleepState.detectorparams.durationparams = durationparams;
-SleepState.detectorname = 'SleepScoreMaster';
-SleepState.detectiondate = today;
+%Saving SleepStates (more but not totally raw) - bzStyle
 save(bz_sleepstatepath,'SleepState');
+%Saving SleepStateEpisodes (most interpreted/processed) - bzStyle
+save(bz_sleepstateepisodespath,'SleepStateEpisodes');
+
 
 display(['Sleep Score ',recordingname,': Complete!']);
-%Prompt user here to manually check detection with TheStateEditor
+
+%% PROMPT USER TO MANUALLY CHECK DETECTION WITH THESTATEEDITOR
 if ~noPrompts
     str = input('Would you like to check detection with TheStateEditor? [Y/N] ','s');
     switch str
