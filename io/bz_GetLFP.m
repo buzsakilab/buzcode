@@ -114,12 +114,12 @@ else
 end
 
 %% things we can parse from sessionInfo or xml file
-xml = bz_getSessionInfo(basepath);
-nChannels = xml.nChannels;
+sessionInfo = bz_getSessionInfo(basepath);
+nChannels = sessionInfo.nChannels;
 try
-    samplingRate = xml.lfpSampleRate;
+    samplingRate = sessionInfo.lfpSampleRate;
 catch
-     samplingRate = xml.rates.lfp; % old ugliness we need to get rid of
+     samplingRate = sessionInfo.rates.lfp; % old ugliness we need to get rid of
 end
 
 %% Channel load options
@@ -156,7 +156,7 @@ for i = 1:nIntervals
         lfp(i).duration = (lfp(i).interval(i,2)-lfp(i).interval(i,1));
     end
     
-    if isfield(xml,'region') && isfield(xml,'channels')
-        lfp(i).region = xml.region(lfp(i).channels); % match region order to channel order..
+    if isfield(sessionInfo,'region') && isfield(sessionInfo,'channels')
+        lfp(i).region = sessionInfo.region(ismember(sessionInfo.channels,lfp(i).channels)); % match region order to channel order..
     end
 end
