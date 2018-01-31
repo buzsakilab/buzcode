@@ -157,6 +157,6 @@ for i = 1:nIntervals
     end
     
     if isfield(xml,'region') && isfield(xml,'channels')
-        lfp(i).region = xml.region(ismember(xml.channels,channels));
+        lfp(i).region = xml.region(lfp(i).channels); % match region order to channel order..
     end
 end
