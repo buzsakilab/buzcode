@@ -2179,15 +2179,15 @@ basePath = FO.basePath;
 %grab parameters for storage
 % load detectionparameters if not loaded when user pressed "a" in ViewAutoScoreThresholds
 if isfield(FO,'AutoScore')
-    if isfield(FO.AutoScore,'detectionparams')
-        dp = F0.AutoScore.detectionparams;
+    if isfield(FO.AutoScore,'detectionparms')
+        dp = F0.AutoScore.detectionparms;
     end
 end
 if ~exist('dp','var')
     % load([baseName '.SleepScoreMetrics.LFP.mat'])
     load([baseName '.SleepState.states.mat'])
-    dp = SleepState.detectorinfo.detectionparams;
-    v2struct(dp)
+    dp = SleepState.detectorinfo.detectionparms;
+    v2struct(dp)  %What is being pulled out here? There's no way to find which variables are expected...
 end
 
 %re-process states for storage
@@ -2196,18 +2196,9 @@ sints = IDXtoINT_In( FO.States,5);%convert to start-stop intervals
 NREMints = sints{3};
 REMints = sints{5};
 WAKEints = sints{1};
-[SleepState_new,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,'TheStateEditor.m',dp);% FO.States
+[SleepState_new,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,dp);% FO.States
 SleepState.ints = SleepState_new.ints;
-SleepState.detectorinfo.detectionparams.LastManualUpdate = datestr(today,'yyyy-mm-dd');
-
-% Not sure I understand if this is still necessary code 1/2018 -BW
-% % Save to SleepState.states .mat file with proper formatting etc
-% SleepState = bz_LoadStates(basePath,'SleepState'); %load old scoring
-% if isempty(SleepState) %If no SleepState saved
-%    display('No previous SleepState.states.mat file detected, saving anew')
-%    SleepState.detectorname = 'TheStateEditor';
-%    SleepState.detectiondate = datestr(today,'yyyy-mm-dd');
-% end
+SleepState.detectorinfo.detectionparms.LastManualUpdate = datestr(today,'yyyy-mm-dd');
 
         
 % Save original autoscoreints from SleepScoreMaster
@@ -4644,14 +4635,14 @@ baseName = FO.baseName;
 load([baseName '.SleepState.states.mat'])
 paramsAvailBool = 0;
 if isfield(SleepState,'detectorinfo');
-    if isfield(SleepState.detectorinfo,'detectionparams')
+    if isfield(SleepState.detectorinfo,'detectionparms')
         paramsAvailBool = 1;
     end
 end
 if paramsAvailBool
-    F0.AutoScore.detectionparams =  SleepState.detectorinfo.detectionparams;
+    F0.AutoScore.detectionparms =  SleepState.detectorinfo.detectionparms;
 else
-    F0.AutoScore.detectionparams = [];
+    F0.AutoScore.detectionparms = [];
 end
 
 
@@ -4764,7 +4755,7 @@ function histsandthreshs = SSHistogramsAndThresholds_In(baseName)
 % Get initial histograms and thresholds as calculated by SleepScoreMaster.m
 
 load([baseName '.SleepState.states.mat']);
-dp = SleepState.detectorinfo.detectionparams;
+dp = SleepState.detectorinfo.detectionparms;
 if isfield(dp,'histsandthreshs')%if already exists, just take from saved data
     histsandthreshs = dp.histsandthreshs;
 else%if not, try to generate 
@@ -4863,21 +4854,16 @@ baseName = FO.baseName;
 
 % load detectionparameters if not loaded when user pressed "a" in ViewAutoScoreThresholds
 if isfield(FO,'AutoScore')
-    if isfield(FO.AutoScore,'detectionparams')
-        dp = F0.AutoScore.detectionparams;
+    if isfield(FO.AutoScore,'detectionparms')
+        dp = F0.AutoScore.detectionparms;
     end
 end
 if ~exist('dp','var')
     % load([baseName '.SleepScoreMetrics.LFP.mat'])
     load([baseName '.SleepState.states.mat'])
-    dp = SleepState.detectorinfo.detectionparams;
+    dp = SleepState.detectorinfo.detectionparms;
     v2struct(dp)
 end
-
-% Get parameters ready for expectation of ClusterStates_DetermineStates
-MinWinParams = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,minREMinWsecs,minREMsecs,minWAKEsecs);
-SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
-    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,recordingname);
 
 % grab user-entered thresholds from GUI, for final input to DetermineStates
 swthresh = get(FO.AutoClusterFig.swline,'XData');
@@ -4892,7 +4878,7 @@ FO.AutoScore.histsandthreshs.THthresh = THthresh;
 
 % Execute scoring - USE SleepScore toolbox functions
 [stateintervals,~,~] = ClusterStates_DetermineStates(...
-                                           SleepScoreMetrics,MinWinParams,FO.AutoScore.histsandthreshs);
+                                           dp.SleepScoreMetrics,dp.MinTimeWindowParms,FO.AutoScore.histsandthreshs);
 % Use StatesToFinalScoring really just to apply minima
 NREMints = stateintervals{2};
 REMints = stateintervals{3};

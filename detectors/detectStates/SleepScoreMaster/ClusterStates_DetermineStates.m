@@ -1,15 +1,11 @@
-function [INT, IDX, t_IDX, MinTimeWindowParams] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParams,histsandthreshs)
+function [INT, IDX, t_IDX, MinTimeWindowParms] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParms,histsandthreshs)
 % can input histsandthreshs from externally if needed... ie via manual
 % selection in stateeditor
 
 %% Basic parameters
 % Min Win Parameters (s)
-if exist('MinWinParams','var')
-     v2struct(MinTimeWindowParams)
-% 	fn = fieldnames(MinWinParams);
-%     for a = 1:length(fn);
-%         eval([fn{a} '=MinWinParams.' fn{a} ';']);
-%     end
+if exist('MinTimeWindowParms','var')
+     v2struct(MinTimeWindowParms)
 else%defaults as follows:
     minSWSsecs = 6;
     minWnexttoREMsecs = 6;
@@ -17,7 +13,7 @@ else%defaults as follows:
     minREMinWsecs = 6;
     minREMsecs = 6;
     minWAKEsecs = 6;
-    MinTimeWindowParams = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,...
+    MinTimeWindowParms = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,...
         minREMinWsecs,minREMsecs,minWAKEsecs);
 end
 

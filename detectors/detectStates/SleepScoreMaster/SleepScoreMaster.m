@@ -63,14 +63,12 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 
 %% Parameter setting
 % Min Win Parameters (s): basic detection paramaters (seconds)
-minSWSsecs = 6;
-minWnexttoREMsecs = 6;
-minWinREMsecs = 6;       
-minREMinWsecs = 6;
-minREMsecs = 6;
-minWAKEsecs = 6;
-MinTimeWindowParams = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,...
-    minREMinWsecs,minREMsecs,minWAKEsecs);
+MinTimeWindowParms.minSWSsecs = 6;
+MinTimeWindowParms.minWnexttoREMsecs = 6;
+MinTimeWindowParms.minWinREMsecs = 6;       
+MinTimeWindowParms.minREMinWsecs = 6;
+MinTimeWindowParms.minREMsecs = 6;
+MinTimeWindowParms.minWAKEsecs = 6;
 
 %% Recording Selection
 %if recname is 'select' or something
@@ -231,25 +229,16 @@ display('Quantifying metrics for state scoring')
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
-[stateintervals,stateIDX,~,MinTimeWindowParams] = ClusterStates_DetermineStates(...
-                                           SleepScoreMetrics,MinTimeWindowParams);
+[stateintervals,stateIDX,~,MinTimeWindowParms] = ClusterStates_DetermineStates(...
+                                           SleepScoreMetrics,MinTimeWindowParms);
 
 %% MAKE THE STATE SCORE OUTPUT FIGURE
 ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
                                 
-
-%% RECORD PARAMETERS
-DetectionParams = p.Results;
-fn = fieldnames(MinTimeWindowParams);
-for fidx = 1:length(fn)
-    tf = fn{fidx};
-    eval(['DetectionParams.' tf ' = MinTimeWindowParams. ' tf ';'])
-end
-fn = fieldnames(SleepScoreMetrics);
-for fidx = 1:length(fn)
-    tf = fn{fidx};
-    eval(['DetectionParams.' tf ' = SleepScoreMetrics. ' tf ';'])
-end
+%% RECORD PARAMETERS from scoring
+detectionparms.userinputs = p.Results;
+detectionparms.MinTimeWindowParms = MinTimeWindowParms;
+detectionparms.SleepScoreMetrics = SleepScoreMetrics;
 
 %% JOIN STATES INTO EPISODES
 %convert to expected format
@@ -258,7 +247,7 @@ REMints = stateintervals{3};
 WAKEints = stateintervals{1};
 
 % Extract states, Episodes, properly organize params etc, prep for final saving
-[SleepState,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,'SleepScoreMaster.m',DetectionParams);
+[SleepState,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,detectionparms,'SleepScoreMaster');
 
 %Saving SleepStates (more but not totally raw) - bzStyle
 save(bz_sleepstatepath,'SleepState');
