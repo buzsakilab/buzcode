@@ -157,6 +157,6 @@ for i = 1:nIntervals
     end
     
     if isfield(sessionInfo,'region') && isfield(sessionInfo,'channels')
-        lfp(i).region = sessionInfo.region(ismember(sessionInfo.channels,channels));
+        lfp(i).region = sessionInfo.region(lfp(i).channels); % match region order to channel order..
     end
 end
