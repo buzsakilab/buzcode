@@ -2214,7 +2214,7 @@ end
 if ~isfield(SleepState,'AutoScoreInts') 
     if isfield(SleepState,'detectorinfo')
         if isfield(SleepState.detectorinfo,'detectorname')
-            if strcmp(SleepState.detectorinfo.detectorname,'SleepScoreMaster.m');
+            if strcmp(SleepState.detectorinfo.detectorname,'SleepScoreMaster.m')
                 display('Original State Scoring from SleepScoreMaster detected...')
                 display('   saving old states as SleepState.AutoScoreInts')
                 SleepState.AutoScoreInts = SleepState.ints;

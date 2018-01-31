@@ -130,11 +130,11 @@ SleepStateEpisodes.ints.NREMepisode = episodeintervals{2};
 SleepStateEpisodes.ints.REMepisode = episodeintervals{3};
 SleepStateEpisodes.ints.WAKEepisode = episodeintervals{1};
 SleepStateEpisodes.ints.NREMpacket = packetintervals;
-SleepStateEpisodes.ints.MAstate = MAIntervals;
+SleepStateEpisodes.ints.MA = MAIntervals;
 SleepStateEpisodes.ints.MA_REM = MAInREM;
 SleepStateEpisodes.detectorinfo.detectionparms.StateDetectionParms = detectionparms;
 SleepStateEpisodes.detectorinfo.detectionparms.EpisodeDetectionParms= detectionparms_episodes;
-SleepStateEpisodes.detectorinfo.detectorname = ['StatesToFinalScoring.m'];
+SleepStateEpisodes.detectorinfo.detectorname = detectorname;
 SleepStateEpisodes.detectorinfo.detectiondate = datestr(today,'yyyy-mm-dd');
 
 
