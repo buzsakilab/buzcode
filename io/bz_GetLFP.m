@@ -115,7 +115,6 @@ end
 
 %% things we can parse from sessionInfo or xml file
 xml = bz_getSessionInfo(basepath);
-nChannels = xml.nChannels;
 try
     samplingRate = xml.lfpSampleRate;
 catch
@@ -127,7 +126,7 @@ end
 %indexing), we could also add options for this to be select region or spike
 %group from the xml...
 if strcmp(channels,'all')
-    channels = 0:(nChannels-1);
+    channels = xml.channels;
 end
 
 %% get the data
@@ -143,7 +142,7 @@ for i = 1:nIntervals
     % load....
     lfp(i).data = bz_LoadBinary([basepath filesep lfp.Filename],...
         'duration',double(lfp(i).duration),...
-                  'frequency',samplingRate,'nchannels',nChannels,...
+                  'frequency',samplingRate,'nchannels',xml.nChannels,...
                   'start',double(lfp(i).interval(1)),'channels',channels+1);
     lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRate):...
                         (lfp(i).interval(1)+(length(lfp(i).data)-1)/...
@@ -157,6 +156,7 @@ for i = 1:nIntervals
     end
     
     if isfield(xml,'region') && isfield(xml,'channels')
-        lfp(i).region = xml.region(ismember(xml.channels,lfp(i).channels)); % match region order to channel order..
+        [~,~,regionidx] = intersect(lfp(i).channels,xml.channels,'stable');
+        lfp(i).region = xml.region(regionidx); % match region order to channel order..
     end
 end
