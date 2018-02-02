@@ -52,6 +52,7 @@ specslope.winsize = winsize;
 
 specslope.rsq = rsq;
 specslope.resid = yresid;
+specslope.freqs = spec.freqs;
 
 
 %% Figure

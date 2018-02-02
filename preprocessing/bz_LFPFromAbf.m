@@ -82,10 +82,23 @@ sessionInfo.chanNames = file_info.recChNames(chanNums);
 sessionInfo.channels = 0:sessionInfo.nChannels - 1;
 sessionInfo.Date = file_info.uFileStartDate;
 sessionInfo.abfSampleRate = 1./(si*10^-6);
-sessionInfo.lfpSampleRate = 1000;
+sessionInfo.lfpSampleRate = 1250;
 sessionInfo.Amplification = 1000;
 sessionInfo.spikeGroups.groups{1} = sessionInfo.channels;
 sessionInfo.spikeGroups.nGroups = 1;
+sessionInfo.file_info = file_info;
+
+%Calculate the resampling ratios
+[up,down] = rat(sessionInfo.lfpSampleRate/sessionInfo.abfSampleRate);
+
+%Sweeps
+numsweeps = length(file_info.sweepStartInPts);
+if numsweeps>1
+    raw_data = reshape(permute(raw_data,[1 3 2]),[],4);
+    sessionInfo.sweeps_dt = [ceil(file_info.sweepStartInPts.*up./down) ...
+        ceil((file_info.sweepStartInPts+file_info.sweepLengthInPts).*up./down)-1];
+    sessionInfo.sweeps_s = (sessionInfo.sweeps_dt-1)./sessionInfo.lfpSampleRate;
+end
 
 sessionInfoname = fullfile(basePath,[baseName,'.sessionInfo.mat']);
 save(sessionInfoname,'sessionInfo'); 
@@ -94,7 +107,6 @@ save(sessionInfoname,'sessionInfo');
 lfpname = fullfile(basePath,[baseName '.lfp']);
 outputFile = fopen(lfpname,'w');
 
-[up,down] = rat(sessionInfo.lfpSampleRate/sessionInfo.abfSampleRate);
 resampled = resample(raw_data(:,chanNums),up,down);
 resampled = resampled.*sessionInfo.Amplification;
 
@@ -102,3 +114,4 @@ count = fwrite(outputFile,resampled','int16');
 
 end
 
+%%
