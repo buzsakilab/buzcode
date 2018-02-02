@@ -115,11 +115,10 @@ end
 
 %% things we can parse from sessionInfo or xml file
 sessionInfo = bz_getSessionInfo(basepath);
-nChannels = sessionInfo.nChannels;
 try
     samplingRate = sessionInfo.lfpSampleRate;
 catch
-     samplingRate = sessionInfo.rates.lfp; % old ugliness we need to get rid of
+    samplingRate = sessionInfo.rates.lfp; % old ugliness we need to get rid of
 end
 
 %% Channel load options
@@ -127,7 +126,7 @@ end
 %indexing), we could also add options for this to be select region or spike
 %group from the xml...
 if strcmp(channels,'all')
-    channels = 0:(nChannels-1);
+    channels = sessionInfo.channels;
 end
 
 %% get the data
@@ -143,7 +142,7 @@ for i = 1:nIntervals
     % load....
     lfp(i).data = bz_LoadBinary([basepath filesep lfp.Filename],...
         'duration',double(lfp(i).duration),...
-                  'frequency',samplingRate,'nchannels',nChannels,...
+                  'frequency',samplingRate,'nchannels',sessionInfo.nChannels,...
                   'start',double(lfp(i).interval(1)),'channels',channels+1);
     lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRate):...
                         (lfp(i).interval(1)+(length(lfp(i).data)-1)/...
@@ -157,6 +156,7 @@ for i = 1:nIntervals
     end
     
     if isfield(sessionInfo,'region') && isfield(sessionInfo,'channels')
-        lfp(i).region = sessionInfo.region(ismember(sessionInfo.channels,lfp(i).channels)); % match region order to channel order..
+        [~,~,regionidx] = intersect(lfp(i).channels,sessionInfo.channels,'stable');
+        lfp(i).region = sessionInfo.region(regionidx); % match region order to channel order..
     end
 end
