@@ -1,4 +1,4 @@
-% function CutDatFragment(fname,timeperiod)
+function CutDatFragment(fname,timeperiod)
 % Creating a new dat file from a fragment of an original dat file
 % INPUTs
 % fname: filename of original dat
@@ -7,11 +7,14 @@
 %
 % Original by Antonio Ruiz
 % Modified by Peter Petersen
+%
+% function should be run from the directory of the dat files
+% It assumes an info.rhd in the directory
+%
+% fname = 'Peter_MS13_171130_143907';
+% timeperiod = [0,44*60+9];
 
-fname = 'Peter_MS13_171130_143907';
-timeperiod = [0,44*60+9];
-
-Intan_rec_info = read_Intan_RHD2000_file_Peter(pwd);
+Intan_rec_info = read_Intan_RHD2000_file(fullfile(pwd,'info.rhd'));
 
 ch = length(Intan_rec_info.amplifier_channels);
 sr = Intan_rec_info.frequency_parameters.amplifier_sample_rate;
