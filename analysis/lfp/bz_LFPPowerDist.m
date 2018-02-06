@@ -1,4 +1,4 @@
-function [ output_args ] = LFPPowerDist( LFP,varargin )
+function [ output_args ] = bz_LFPPowerDist( LFP,varargin )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %
