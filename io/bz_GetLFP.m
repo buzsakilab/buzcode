@@ -59,8 +59,7 @@ function [lfp] = bz_GetLFP(varargin)
 % expand channel selection options (i.e. region or spikegroup)
 % add forcereload
 %% Parse the inputs!
-channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
-    'channels must be numeric or "all"');
+channelsValidation = @(x) isnumeric(x) || strcmp(x,'all')
 
 % parse args
 p = inputParser;
