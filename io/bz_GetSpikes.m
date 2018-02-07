@@ -16,7 +16,7 @@ function spikes = bz_GetSpikes(varargin)
 %    forceReload     -logical (default=false) to force loading from
 %                     res/clu/spk files
 %    saveMat         -logical (default=false) to save in buzcode format
-%    noPrompts       -logical to supress any user prompts
+%    noPrompts       -logical (default=false) to supress any user prompts
 %    
 % OUTPUTS
 %
@@ -84,7 +84,7 @@ saveMat = p.Results.saveMat;
 noPrompts = p.Results.noPrompts;
 
 
-[sessionInfo] = bz_getSessionInfo(basepath);
+[sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
 
 
 samplingRate = sessionInfo.rates.wideband;
