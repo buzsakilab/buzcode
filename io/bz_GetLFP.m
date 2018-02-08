@@ -22,6 +22,7 @@ function [lfp] = bz_GetLFP(varargin)
 %    basename           -base file name to load
 %    intervals          -list of time intervals [0 10; 20 30] to read from 
 %                           the LFP file (default is [0 inf])
+%    noPrompts          -logical (default) to supress any user prompts
 %
 %  OUTPUT
 %
@@ -59,7 +60,8 @@ function [lfp] = bz_GetLFP(varargin)
 % expand channel selection options (i.e. region or spikegroup)
 % add forcereload
 %% Parse the inputs!
-channelsValidation = @(x) isnumeric(x) || strcmp(x,'all')
+
+channelsValidation = @(x) isnumeric(x) || strcmp(x,'all');
 
 % parse args
 p = inputParser;
@@ -70,10 +72,13 @@ addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
+addParameter(p,'noPrompts',false,@islogical);
+
 parse(p,varargin{:})
 basename = p.Results.basename;
 channels = p.Results.channels;
 basepath = p.Results.basepath;
+noPrompts = p.Results.noPrompts;
 
 % doing this so you can use either 'intervals' or 'restrict' as parameters to do the same thing
 intervals = p.Results.intervals;
@@ -113,7 +118,9 @@ else
 end
 
 %% things we can parse from sessionInfo or xml file
-xml = bz_getSessionInfo(basepath);
+xml = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
+nChannels = xml.nChannels;
+
 try
     samplingRate = xml.lfpSampleRate;
 catch
