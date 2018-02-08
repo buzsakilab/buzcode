@@ -70,9 +70,9 @@ t = (0:length(signal)-1)*si;
 
 spec = zeros(nfreqs,length(t));
 for f_i = 1:nfreqs
-    if mod(f_i,10) == 1;
-        display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
-    end
+%     if mod(f_i,10) == 1;
+%         display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
+%     end
     spec(f_i,:) = WaveFilt(signal,freqs(f_i),ncyc,si);
 end
 

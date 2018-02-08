@@ -15,7 +15,7 @@ function [tort,freq,MI] = CFCtort(LFPtheta,signals,frecs1,frecs2,Fs,band)
 %           freq     = frequency of maximun amplitude modulation (preferred frequency)
 %           MI       = modulation index
 
-%%%% Antonio Fernández-Ruiz, 2014.
+%%%% Antonio Fernï¿½ndez-Ruiz, 2014.
 
 %% 
 Nptos=size(signals,1);
@@ -84,18 +84,18 @@ for i=1:Nsenalesamp
 end
 
 %%
-figure
-for isen=1:Nsenalesamp
-dibujar=abs(tort(:,:,isen));
-subplot(1,Nsenalesamp,isen); hold on;
-%surf(frecs1,frecs2,zeros(size(dibujar')), dibujar', 'EdgeColor', 'none', 'FaceColor', 'flat');
-contourf(frecs1,frecs2,dibujar',20);shading('flat');
-colorbar ('SouthOutside'); 
-%title(signals)
-xlim([frecs1(1) frecs1(end)])
-ylim([frecs2(1) frecs2(end)])
-if isen>1
-    set(gca,'YTick',[]);
-end
-end
+% figure
+% for isen=1:Nsenalesamp
+% dibujar=abs(tort(:,:,isen));
+% subplot(1,Nsenalesamp,isen); hold on;
+% %surf(frecs1,frecs2,zeros(size(dibujar')), dibujar', 'EdgeColor', 'none', 'FaceColor', 'flat');
+% contourf(frecs1,frecs2,dibujar',20);shading('flat');
+% colorbar ('SouthOutside'); 
+% %title(signals)
+% xlim([frecs1(1) frecs1(end)])
+% ylim([frecs2(1) frecs2(end)])
+% if isen>1
+%     set(gca,'YTick',[]);
+% end
+% end
 

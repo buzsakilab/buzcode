@@ -6,8 +6,10 @@ t = (0:(size(LFPtheta,1)-1))'/Fs;
 % Find theta epochs  
 
 % Theta parameters using Hilbert transform
-theta = filtsig(LFPtheta, 1000/Fs, [phaseBand(1) phaseBand(2) phaseBand(3) phaseBand(4)]/1000);
+[b a] = butter(3,[phaseBand(1)/(Fs/2) phaseBand(2)/(Fs/2)],'bandpass');
+% theta = filtsig(LFPtheta, 1000/Fs, [phaseBand(1) phaseBand(2) phaseBand(3) phaseBand(4)]/1000);
 %theta = filtsig(LFPtheta, 1000/Fs, [2 4 12 14]/1000); default for theta
+theta = FiltFiltM(b,a,LFPtheta);
 hilb = hilbert(theta);
 thetaP = angle(hilb);
 %thetaH = abs(hilb);
@@ -55,25 +57,25 @@ for j=1:length(plotsignals)
 end
 clims = max(maxall(abs(cmats_sig)))*[-1 1];
 
-figure
-axs = zeros(length(plotsignals),2);
-imgs = zeros(length(plotsignals),2);
-lines = zeros(length(plotsignals),2);
-axs(1,1) = subplot(1,length(plotsignals),1);
-for j=1:length(plotsignals)
-    axs(j,1) = subplot(1,length(plotsignals),j);
-    imgs(j,1) = imagesc([midpoints(xtheta(1:2)) 4*pi-midpoints(xtheta(1:2))]*180/pi, fspec(plotfreqs([1 end])), cmats_sig(:,[1:end 1:end],j,1), clims);
-    set(gca, 'YDir', 'normal', 'XLim', [0 720], 'XTick', 0:180:720);
-    hold on;
-    lines(j+1,1) = plot([midpoints(xtheta) midpoints(xtheta)+2*pi]*180/pi, (cos([midpoints(xtheta) midpoints(xtheta)]) - 1)*10 + 150, 'k--');
-    hold off;
-if j>1
-    set(gca,'YTick',[]);
-end
-end
+% figure
+% axs = zeros(length(plotsignals),2);
+% imgs = zeros(length(plotsignals),2);
+% lines = zeros(length(plotsignals),2);
+% axs(1,1) = subplot(1,length(plotsignals),1);
+% for j=1:length(plotsignals)
+%     axs(j,1) = subplot(1,length(plotsignals),j);
+%     imgs(j,1) = imagesc([midpoints(xtheta(1:2)) 4*pi-midpoints(xtheta(1:2))]*180/pi, fspec(plotfreqs([1 end])), cmats_sig(:,[1:end 1:end],j,1), clims);
+%     set(gca, 'YDir', 'normal', 'XLim', [0 720], 'XTick', 0:180:720);
+%     hold on;
+%     lines(j+1,1) = plot([midpoints(xtheta) midpoints(xtheta)+2*pi]*180/pi, (cos([midpoints(xtheta) midpoints(xtheta)]) - 1)*10 + 150, 'k--');
+%     hold off;
+% if j>1
+%     set(gca,'YTick',[]);
+% end
+% end
 
 %% cuantifications
-phases=0:11.612:360; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% poner esto en función de thetabins no asi 
+phases=0:11.612:360; %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% poner esto en funciï¿½n de thetabins no asi 
 fc1v=abs(freqs-band(1));
 fc1= find (fc1v==min(fc1v)); 
 fc2v=abs(freqs-band(2));
