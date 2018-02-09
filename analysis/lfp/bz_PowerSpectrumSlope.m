@@ -24,6 +24,7 @@ spec.freqs = logspace(0.5,2,200);
 winsize_sf = winsize .*lfp.samplingRate;
 noverlap_sf = noverlap.*lfp.samplingRate;
 [spec.data,~,spec.timestamps] = spectrogram(single(lfp.data),winsize_sf,noverlap_sf,spec.freqs,lfp.samplingRate);
+
 spec.amp = log10(abs(spec.data));
 
 %% Fit the slope of the power spectrogram
@@ -115,6 +116,7 @@ figure
         
         
 end
+
 
 end
 
