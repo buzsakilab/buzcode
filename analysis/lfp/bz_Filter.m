@@ -191,8 +191,9 @@ elseif BUZCODE %BUZCODE has samples as a data structure
     filtered.timestamps = samples.timestamps;
     for i = 1:size(samples.data,2),
         filtered.data(:,i) = FiltFiltM(b,a,double(samples.data(:,i)));
-        filtered.amp(:,i) = abs(hilbert(filtered.data(:,i)));
-        filtered.phase(:,i) = angle(hilbert(filtered.data(:,i)));
+	hilb = hilbert(filtered.data(:,i));
+        filtered.amp(:,i) = abs(hilb);
+        filtered.phase(:,i) = angle(hilb);
     end
     filtered.filterparms.passband = passband;
     filtered.filterparms.stopband = stopband;

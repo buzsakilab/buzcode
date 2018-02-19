@@ -10,7 +10,7 @@ function IsolDist = IsolationDistance(Fet, ClusterSpikes, m)
 %           m:             squared mahalanobis distances, default is to
 %                          calculate them directly
 %
-% Created by Ken Harris
+% Created by Ken Harris (Schmitzer-Torbert et al., 2005)
 % edited by David Tingley 2017 to calculate IsoDist for clusters with > 1/2
 % of all spikes 
 
