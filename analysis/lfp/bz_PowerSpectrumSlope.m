@@ -1,7 +1,10 @@
 function [specslope,spec] = bz_PowerSpectrumSlope(lfp,dt,winsize)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
-%Gao, Peterson, Voytek 2016
+%[specslope,spec] = bz_PowerSpectrumSlope(lfp,dt,winsize) calculates the slope of the (log-log)
+%power spectrogram. This simple metric reflects E-I ratio and cortical state.
+%see Gao, Peterson, Voytek 2016
+%
+%DLevenstein 2018
+%%
 
 %%
 % winsize = 4; 
