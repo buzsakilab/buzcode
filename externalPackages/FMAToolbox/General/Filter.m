@@ -115,18 +115,20 @@ switch(type),
 		else
 			[b a] = cheby2(order,ripple,stopband/nyquist,'stop');
 		end
-	case 'fir1',
-		if ~isempty(passband),
-			if passband(1) == 0,
-				[b a] = fir1(order,passband(2)/nyquist,'low');
+	case 'fir1'
+        	a = 1;
+		if ~isempty(passband)
+			if passband(1) == 0
+				b = fir1(order,passband(2)/nyquist,'low');
 			else
-				[b a] = fir1(order,passband/nyquist);
+				b = fir1(order,passband/nyquist);
 			end
 		else
-			[b a] = fir1(order,stopband/nyquist,'stop');
+			b = fir1(order,stopband/nyquist,'stop');
 		end
 end
 filtered(:,1) = samples(:,1);
 for i = 2:size(samples,2),
-	filtered(:,i) = FiltFiltM(b,a,samples(:,i));
+ 	filtered(:,i) = FiltFiltM(b,a,samples(:,i)); % wotan
+%    filtered(:,i) = filtfilt(b, a, samples(:, i));
 end

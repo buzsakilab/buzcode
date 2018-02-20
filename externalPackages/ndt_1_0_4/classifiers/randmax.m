@@ -12,7 +12,11 @@ function [vals inds equal_max_val_inds] = randmax(X)
 if size(X, 1) == 1
     X = X';
 end
-
+if size(X, 1) == 1
+    [vals inds] = max(X);
+    equal_max_val_inds = 1;
+    return
+end
 equal_max_values = 0;
 
 

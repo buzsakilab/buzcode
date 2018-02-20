@@ -39,7 +39,7 @@ mergename = fbasename;
 
 for i = 1:2:length(varargin),
   if ~isa(varargin{i},'char'),
-    error(['Parameter ' num2str(i+3) ' is not a property (type ''help LoadBinary'' for details).']);
+    error(['Parameter ' num2str(i+3) ' is not a property (type ''help bz_LoadBinary'' for details).']);
   end
   switch(lower(varargin{i})),
     case 'mergename',

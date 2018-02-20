@@ -146,7 +146,7 @@ for a = 1:length(spikes)
     bools = InIntervals(spikes{a},intervals);
     s =spikes{a}(bools);
 %     s = spikes{a};
-    if isempty(s)
+    if isempty(s) 
         phasedistros(:,a) = zeros(numBins,1);
         phasestats.m(a) = nan;
         phasestats.r(a) = nan;
@@ -219,7 +219,7 @@ PhaseLockingData = v2struct(phasedistros,phasebins,...
                             detectorName, detectorParams);
 
 if saveMat
- save([lfp.Filename(1:end-4) '.PhaseLockingData.cellinfo.mat']);
+ save([lfp.Filename(1:end-4) '.PhaseLockingData.cellinfo.mat'],'PhaseLockingData');
 end
 
 end

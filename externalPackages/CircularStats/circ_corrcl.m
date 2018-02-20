@@ -38,9 +38,9 @@ end
 n = length(alpha);
 
 % compute correlation coefficent for sin and cos independently
-rxs = corr(x,sin(alpha));
-rxc = corr(x,cos(alpha));
-rcs = corr(sin(alpha),cos(alpha));
+rxs = corr(x,sin(alpha),'rows','complete');
+rxc = corr(x,cos(alpha),'rows','complete');
+rcs = corr(sin(alpha),cos(alpha),'rows','complete');
 
 % compute angular-linear correlation (equ. 27.47)
 rho = sqrt((rxc^2 + rxs^2 - 2*rxc*rxs*rcs)/(1-rcs^2));

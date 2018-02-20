@@ -1,6 +1,6 @@
 function data = LoadBinary_Down_ss(filename,varargin)
 
-%LoadBinary - Load data from a multiplexed binary file.
+% LoadBinary - Load data from a multiplexed binary file.
 %
 %  Reading a subset of the data can be done in two different manners: either
 %  by specifying start time and duration (more intuitive), or by indicating

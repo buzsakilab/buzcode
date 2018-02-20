@@ -15,7 +15,7 @@ function filtered = bz_Filter(samples,varargin)
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
-%     'passband'    pass frequency range
+%     'passband'    pass frequency range. [0 X] for low-pass, [X inf] for highpass
 %     'stopband'    stop frequency range
 %     'order'       filter order (number of cycles, default = 4)
 %     'ripple'      filter ripple (default = 20)
@@ -153,18 +153,24 @@ switch(type),
 		if ~isempty(passband),
 			if passband(1) == 0,
 				[b a] = cheby2(order,ripple,passband(2)/nyquist,'low');
+            elseif passband(2) == inf
+                [b a] = cheby2(order,ripple,passband(1)/nyquist,'high');
 			else
 				[b a] = cheby2(order,ripple,passband/nyquist);
 			end
 		else
 			[b a] = cheby2(order,ripple,stopband/nyquist,'stop');
-		end
+        end
+        warning('Cheby2 is often numerically unstable - if you get NaNs, use the ''fir1'' argument to bz_Filter');
 	case 'fir1',
         %Order input to fir1 needs to be in samples, not cycles
 		if ~isempty(passband),
 			if passband(1) == 0,
                 filt_order = round(order*2*nyquist./passband(2));    
 				[b a] = fir1(filt_order,passband(2)/nyquist,'low');
+            elseif passband(2) == inf
+                filt_order = round(order*2*nyquist./passband(1));    
+				[b a] = fir1(filt_order,passband(1)/nyquist,'high');
             else
                 filt_order = round(order*2*nyquist./passband(1));  
 				[b a] = fir1(filt_order,passband/nyquist);
@@ -185,8 +191,9 @@ elseif BUZCODE %BUZCODE has samples as a data structure
     filtered.timestamps = samples.timestamps;
     for i = 1:size(samples.data,2),
         filtered.data(:,i) = FiltFiltM(b,a,double(samples.data(:,i)));
-        filtered.amp(:,i) = abs(hilbert(filtered.data(:,i)));
-        filtered.phase(:,i) = angle(hilbert(filtered.data(:,i)));
+	hilb = hilbert(filtered.data(:,i));
+        filtered.amp(:,i) = abs(hilb);
+        filtered.phase(:,i) = angle(hilb);
     end
     filtered.filterparms.passband = passband;
     filtered.filterparms.stopband = stopband;

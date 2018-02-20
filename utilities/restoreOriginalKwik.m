@@ -48,6 +48,7 @@ if ~isempty(tkwik)
         H5L.copy(fid,kwikinfo_original.Groups(g).Name,...
                         fid,[kwikinfo_main.Name '/' clust],...
                         'H5P_DEFAULT','H5P_DEFAULT')
+            h5writeatt(tkwik,kwikinfo_main.Groups(g).Name,'cluster_group',3)
         catch
             disp([ clust ' cluster group already exists'])
         end

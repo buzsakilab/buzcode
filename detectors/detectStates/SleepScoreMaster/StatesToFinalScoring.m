@@ -4,26 +4,26 @@ minPacketDuration = 30;
 maxMicroarousalDuration = 100;
 
 maxEpisodeDuration = 40;
-minSWSEpisodeDuration = 20;
+minNREMEpisodeDuration = 20;
 minWAKEEpisodeDuration = 20;
 minREMEpisodeDuration = 20;
 
 durationparams.minPacketDuration = minPacketDuration;
 durationparams.maxMicroarousalDuration = maxMicroarousalDuration;
 durationparams.maxEpisodeDuration = maxEpisodeDuration;
-durationparams.minSWSEpisodeDuration = minSWSEpisodeDuration;
+durationparams.minNREMEpisodeDuration = minNREMEpisodeDuration;
 durationparams.minWAKEEpisodeDuration = minWAKEEpisodeDuration;
 durationparams.minREMEpisodeDuration = minREMEpisodeDuration;
 
 
-SWSlengths = NREMints(:,2)-NREMints(:,1);
-packetintervals = NREMints(SWSlengths>=minPacketDuration,:);
+NREMlengths = NREMints(:,2)-NREMints(:,1);
+packetintervals = NREMints(NREMlengths>=minPacketDuration,:);
 
 WAKElengths = WAKEints(:,2)-WAKEints(:,1);
 MAIntervals = WAKEints(WAKElengths<=maxMicroarousalDuration,:);
 WAKEIntervals = WAKEints(WAKElengths>maxMicroarousalDuration,:);
 
-[episodeintervals{2}] = IDStateEpisode(NREMints,maxEpisodeDuration,minSWSEpisodeDuration);
+[episodeintervals{2}] = IDStateEpisode(NREMints,maxEpisodeDuration,minNREMEpisodeDuration);
 [episodeintervals{1}] = IDStateEpisode(WAKEints,maxEpisodeDuration,minWAKEEpisodeDuration);
 [episodeintervals{3}] = IDStateEpisode(REMints,maxEpisodeDuration,minREMEpisodeDuration);
 

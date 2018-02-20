@@ -89,7 +89,7 @@ display('Calculating EMGFromLFP from High Frequency LFP Correlation')
 
 %% get basics about.lfp/lfp file
 
-xml = LoadParameters(basePath); % now using the updated version
+xml = bz_getSessionInfo(basePath); % now using the updated version
 if exist([basePath '/' xml.FileName '.lfp'])
     lfpFile = [basePath '/' xml.FileName '.lfp'];
 elseif exist([basePath '/' xml.FileName '.eeg'])
@@ -155,9 +155,9 @@ end;
 
 %% Read and filter channel
 % read channels
- % loadParameters returns 0 indexed (neuroscope) channels, 
+ % bz_sessionInfo is 0 indexed (neuroscope) channels, 
                            % but Loadbinary.m takes 1-indexed channel #'s
-lfp = LoadBinary(lfpFile ,'nChannels',nChannels,'channels',xcorr_chs+1,...
+lfp = bz_LoadBinary(lfpFile ,'nChannels',nChannels,'channels',xcorr_chs+1,...
     'start',restrict(1),'duration',diff(restrict)); %read and convert to mV    
 
 % Filter first in high frequency band to remove low-freq physiologically

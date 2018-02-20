@@ -203,7 +203,7 @@ firstpulstime_abf = pulset(1);
 
 %% Load the analogin for the timestamps (pulses in intan)
 
-timepulses = LoadBinary(analogName,'nChannels',1,'precision','uint16');
+timepulses = bz_LoadBinary(analogName,'nChannels',1,'precision','uint16');
 
 sf_pulse = 1./20000; %Sampling Frequency of the .abf file
 t_pulse = [1:length(timepulses)]'.*sf_pulse;

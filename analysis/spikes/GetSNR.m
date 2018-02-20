@@ -1,4 +1,3 @@
-
 % it would be nice to write something like this for the new file format....?
 
 % function SNR = GetSNR(iClust,varargin)
