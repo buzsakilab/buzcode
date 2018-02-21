@@ -3,19 +3,20 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 % [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveMat)
 %
 % INPUTS
-%       basePath      - string combination of basepath and basename of recording
-%                           example: '/animal/recording/recording01'
+%       basePath            - string combination of basepath and basename of recording
+%                             example: '/animal/recording/recording01'
 %
 %   (Optional)
-%       'restrict'         - interval of time (relative to recording) to sleep score
+%       'restrict'          - interval of time (relative to recording) to sleep score
 %                            default = [0 inf]
 %       'specialChannels'   - vector of 'special' channels that you DO want to use for EMGCorr calc (will be added to those auto-selected by spike group)
 %       'rejectChannels'    - vector of 'bad' channels that you DO NOT want to use for EMGCorr calc
 %       'restrictChannels'  - use only these channels (Neuroscope numbers)
-%       'saveMat'         true/false - default:true
-%       'saveLocation'      default: basePath
-%       'overwrite'         true/false - overwrite saved EMGFromLFP.LFP.mat
-%                           default: false
+%       'saveMat'           - true/false - default:true
+%       'saveLocation'      - default: basePath
+%       'overwrite'         - true/false - overwrite saved EMGFromLFP.LFP.mat
+%                             default: false
+%       'samplingFrequency' - desired sampling rate for EMG output
 %       
 %
 % OUTPUTS
@@ -54,7 +55,7 @@ addParameter(p,'restrict',[0 inf],@isnumeric)
 addParameter(p,'specialChannels',[],@isnumeric)
 addParameter(p,'rejectChannels',[],@isnumeric)
 addParameter(p,'restrictChannels',[],@isnumeric)
-addParameter(p,'saveMat',1,@isnumeric)
+addParameter(p,'saveMat',true,@islogical)
 addParameter(p,'saveLocation','',@isstr)
 addParameter(p,'overwrite',true,@islogical)
 addParameter(p,'samplingFrequency',2,@isnumeric)
