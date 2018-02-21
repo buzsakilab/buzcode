@@ -218,7 +218,7 @@ disp(['After duration test: ' num2str(size(ripples,1)) ' events.']);
 bad = [];
 if ~isempty(noise)
 	% Filter, square, and pseudo-normalize (divide by signal stdev) noise
-	squaredNoise = bz_Filter(double(noise),'passband',passband).^2;
+	squaredNoise = bz_Filter(double(noise),'filter','butter','passband',passband,'order', 3).^2;
 	window = ones(windowLength,1)/windowLength;
 	normalizedSquaredNoise = unity(Filter0(window,sum(squaredNoise,2)),sd,[]);
 	excluded = logical(zeros(size(ripples,1),1));
