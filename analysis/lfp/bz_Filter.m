@@ -93,7 +93,7 @@ for i = 1:2:length(varargin),
 
 		case 'filter',
 			type = lower(varargin{i+1});
-			if ~isstring_FMAT(type,'cheby2','fir1'),
+			if ~isstring_FMAT(type,'cheby2','fir1','butter'),
 				error(['Unknown filter type ''' type ''' (type ''help <a href="matlab:help Filter">Filter</a>'' for details).']);
 			end
 
@@ -178,7 +178,13 @@ switch(type),
         else
             filt_order = round(order*2*nyquist./stopband(1));
 			[b a] = fir1(filt_order,stopband/nyquist,'stop');
-		end
+        end
+    case 'butter'
+        if ~isempty(passband)
+            [b a] = butter(order,[passband(1)/nyquist passband(2)/nyquist],'bandpass');
+        else
+            [b a] = butter(order,stopband(1)/nyquist,'stop');
+        end
 end
 
 

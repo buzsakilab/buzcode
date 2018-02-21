@@ -88,6 +88,7 @@ if isstr(varargin{1})  % if first arg is basepath
     addRequired(p,'channel',@isnumeric)    
     parse(p,varargin{:})
     basename = bz_BasenameFromBasepath(p.Results.basepath);
+    basepath = p.Results.basepath;
     lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
     signal = bz_FilterLFP(double(lfp.data),'passband',[130 200]);
     timestamps = lfp.timestamps;
@@ -97,6 +98,8 @@ elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     parse(p,varargin{:})
     signal = bz_FilterLFP(double(p.Results.lfp),'passband',[130 200]);
     timestamps = p.Results.timestamps;
+    basepath = pwd;
+    basename = bz_BasenameFromBasepath(basepath);
 end
 
 % assign parameters (either defaults or given)
@@ -313,7 +316,7 @@ ripples.detectorinfo = detectorinfo;
 
 %Save
 if p.Results.saveMat
-    save([p.Results.basepath filesep basename '.ripples.events.mat'],'ripples')
+    save([basepath filesep basename '.ripples.events.mat'],'ripples')
 end
 
 
