@@ -210,8 +210,9 @@ end
 % end
 
 detectorName = 'bz_PhaseModulation';
+channels = lfp.channels;
 detectorParams = v2struct(intervals,samplingRate,method,plotting,numBins,...
-    passband,powerThresh,lfp.channels);
+    passband,powerThresh,channels);
 
 PhaseLockingData = v2struct(phasedistros,phasebins,...
                             phasestats,spkphases,...
