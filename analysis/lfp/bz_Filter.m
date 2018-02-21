@@ -80,8 +80,7 @@ for i = 1:2:length(varargin),
 			passband = varargin{i+1};
 			if ~isdvector(passband,'#2','>=0'),
 				error('Incorrect value for ''passband'' (type ''help <a href="matlab:help Filter">Filter</a>'' for details).');
-			end
-
+            end
 		case 'stopband',
 			if ~isempty(passband),
 				error('Cannot specify both a passband and stopband (type ''help <a href="matlab:help Filter">Filter</a>'' for details).');
@@ -89,8 +88,7 @@ for i = 1:2:length(varargin),
 			stopband = varargin{i+1};
 			if ~isdvector(stopband,'#2','>=0'),
 				error('Incorrect value for ''stopband'' (type ''help <a href="matlab:help Filter">Filter</a>'' for details).');
-			end
-
+            end
 		case 'filter',
 			type = lower(varargin{i+1});
 			if ~isstring_FMAT(type,'cheby2','fir1','butter'),

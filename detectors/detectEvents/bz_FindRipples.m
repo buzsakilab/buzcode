@@ -57,7 +57,7 @@ function [ripples] = bz_FindRipples(varargin)
 %                                      to the detector
 % SEE ALSO
 %
-%    See also bz_FilterLFP, bz_RippleStats, bz_SaveRippleEvents, bz_PlotRippleStats.
+%    See also bz_Filter, bz_RippleStats, bz_SaveRippleEvents, bz_PlotRippleStats.
 
 % Copyright (C) 2004-2011 by Michaël Zugaro, initial algorithm by Hajime Hirase
 % edited by David Tingley, 2017
@@ -79,6 +79,7 @@ addParameter(p,'show','off',@isstr)
 addParameter(p,'thresholds',[2 5],@isivector)
 addParameter(p,'durations',[30 100],@isnumeric)
 addParameter(p,'restrict',[],@isnumeric)
+addParameter(p,'passband',[130 200],@isnumeric)
 addParameter(p,'stdev',[],@isnumeric)
 addParameter(p,'noise',[],@ismatrix)
 addParameter(p,'saveMat',false,@islogical);
@@ -89,14 +90,16 @@ if isstr(varargin{1})  % if first arg is basepath
     parse(p,varargin{:})
     basename = bz_BasenameFromBasepath(p.Results.basepath);
     basepath = p.Results.basepath;
+    passband = p.Results.passband;
     lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
-    signal = bz_FilterLFP(double(lfp.data),'passband',[130 200]);
+    signal = bz_Filter(double(lfp.data),'filter','butter','passband',passband,'order', 3);
     timestamps = lfp.timestamps;
 elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     addRequired(p,'lfp',@isnumeric)
     addRequired(p,'timestamps',@isnumeric)
     parse(p,varargin{:})
-    signal = bz_FilterLFP(double(p.Results.lfp),'passband',[130 200]);
+    passband = p.Results.passband;
+    signal = bz_Filter(double(p.Results.lfp),'filter','butter','passband',passband,'order', 3);
     timestamps = p.Results.timestamps;
     basepath = pwd;
     basename = bz_BasenameFromBasepath(basepath);
@@ -215,7 +218,7 @@ disp(['After duration test: ' num2str(size(ripples,1)) ' events.']);
 bad = [];
 if ~isempty(noise)
 	% Filter, square, and pseudo-normalize (divide by signal stdev) noise
-	squaredNoise = bz_FilterLFP(double(noise),'passband',[130 200]).^2;
+	squaredNoise = bz_Filter(double(noise),'passband',passband).^2;
 	window = ones(windowLength,1)/windowLength;
 	normalizedSquaredNoise = unity(Filter0(window,sum(squaredNoise,2)),sd,[]);
 	excluded = logical(zeros(size(ripples,1),1));
