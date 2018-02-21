@@ -112,7 +112,7 @@ else
 end
     
 binScootS = 1 ./ samplingFrequency;
-binScootSamps = Fs*binScootS;
+binScootSamps = round(Fs*binScootS); % must be integer, or error on line 190
 corrChunkSz = 20; %for batch-processed correlations
 
 
