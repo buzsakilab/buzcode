@@ -39,7 +39,7 @@ function filtered = FilterLFP(lfp,varargin)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
-warning('this function is now deprecated, try using bz_FilterLFP.')
+error('this function is now deprecated, try using bz_Filter.')
 
 % Default values
 passband = [4 10];
