@@ -237,7 +237,18 @@ if ~isempty(noise)
     
     %% lets try to also remove EMG artifact?
     
-    
+    sessionInfo = bz_getSessionInfo;
+    load([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
+    excluded = logical(zeros(size(ripples,1),1));
+    for i = 1:size(ripples,1)
+       [a ts] = min(abs(ripples(i,1)-EMGFromLFP.timestamps)); % get closest sample
+       if EMGFromLFP.data(ts) > .25
+           excluded(i) = 1;           
+       end
+    end
+    bad = sortrows([bad; ripples(excluded,:)]);
+    ripples = ripples(~excluded,:);
+    disp(['After EMG noise removal: ' num2str(size(ripples,1)) ' events.']);
 
 end
 
