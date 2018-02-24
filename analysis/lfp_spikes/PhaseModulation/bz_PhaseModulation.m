@@ -217,6 +217,9 @@ detectorParams = v2struct(intervals,samplingRate,method,plotting,numBins,...
 PhaseLockingData = v2struct(phasedistros,phasebins,...
                             phasestats,spkphases,...
                             detectorName, detectorParams);
+PhaseLockingData.region = spikes.region;
+PhaseLockingData.UID = spikes.UID;
+PhaseLockingData.sessionName = spikes.sessionName;
 
 if saveMat
  save([lfp.Filename(1:end-4) '.PhaseLockingData.cellinfo.mat'],'PhaseLockingData');
