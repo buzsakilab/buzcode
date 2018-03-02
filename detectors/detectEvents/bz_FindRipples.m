@@ -244,9 +244,10 @@ if EMG
         [EMGFromLFP] = bz_EMGFromLFP(pwd,'samplingFrequency',10,'savemat',false);
     end
     excluded = logical(zeros(size(ripples,1),1));
+    EMGThresh = prctile(EMGFromLFP.data,90);
     for i = 1:size(ripples,1)
        [a ts] = min(abs(ripples(i,1)-EMGFromLFP.timestamps)); % get closest sample
-       if EMGFromLFP.data(ts) > .5
+       if EMGFromLFP.data(ts) > EMGThresh
            excluded(i) = 1;           
        end
     end
