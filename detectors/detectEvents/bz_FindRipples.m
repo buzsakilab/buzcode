@@ -46,7 +46,7 @@ function [ripples] = bz_FindRipples(varargin)
 % OUTPUT
 %
 %    ripples        buzcode format .event. struct with the following fields
-%                   .times             Nx2 matrix of start/stop times for
+%                   .timestamps        Nx2 matrix of start/stop times for
 %                                      each ripple
 %                   .detectorName      string ID for detector function used
 %                   .peaks             Nx1 matrix of peak power timestamps 
