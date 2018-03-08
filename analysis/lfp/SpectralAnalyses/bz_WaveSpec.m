@@ -1,4 +1,4 @@
-function [freqs,t,spec] = bz_WaveSpec(signal,frange,nfreqs,ncyc,si,space)
+function [wavespec] = bz_WaveSpec(lfp,varargin)
 %[freqs,t,spec] = WaveSpec(signal,frange,nfreqs,ncyc,si,space) calculates the 
 %wavelet transform of a signal with nfreqs frequencies in the range frange 
 %[fmin fmax]. Spacing between frequencies can be 'lin' or 'log'.
@@ -7,26 +7,36 @@ function [freqs,t,spec] = bz_WaveSpec(signal,frange,nfreqs,ncyc,si,space)
 %
 %
 %INPUT
-%   signal  [Nt x 1] 
-%       (Optional) cell array of [Nt x 1] time series
-%   frange  [low frequency, high frequency]
-%   nfreqs  number of frequencies to divide your signal into
-%   ncyc    number of cycles in your wavelet (recommend: 5)
-%   si      sampling interval (1/sampling frequency)
-%   space   'log' or 'lin'  spacing of your frequencies
+%    lfp            a buzcode structure with fields lfp.data,
+%                                                   lfp.timestamps
+%                                                   lfp.samplingRate
+%                   -lfp can also be a [t x 1] timeseries signal. in which
+%                   case you need to input 'samplingRate'
+%    <options>      optional list of property-value pairs (see table below)
+%
+%    =========================================================================
+%     Properties    Values
+%    -------------------------------------------------------------------------
+%       'frange'	[low frequency, high frequency]     (default: [1 100])
+%       'nfreqs'  	number of frequencies               (default: 100
+%       'ncyc'      number of cycles in your wavelet    (default: 5)
+%       'space'     'log' or 'lin'  spacing of f's      (default: 'log')
+%       'samplingRate' (only if input is not a buzcode structure)
+%       'intervals'  ADD THIS - ability to spec intervals
+%    =========================================================================
 %
 %OUTPUT
-%   freqs
-%   t
-%   spec    spectrogram!
+%   wavespec            buzcode-style structure
+%       .data           [t x nfreqs] your spectrogram
+%       .timestamps     [t x 1] timestamps
+%       .freqs          frequencies of each column
+%       .samplingRate   (Hz)
+%       .filterparms    a structure that holds the parameters used for
+%                       filtering, for future reference
 %
-%
-%
-%
+
 %TO DO:
-%   -Log frequency response wavelets? (new function)
 %   -Matricise For loop?
-%   -Add LaTeX formula to comments
 %   -Don't need to FFT every freq...
 %   -update t output for if LFP is a cell array
 %
@@ -39,22 +49,53 @@ function [freqs,t,spec] = bz_WaveSpec(signal,frange,nfreqs,ncyc,si,space)
 %
 %Last Updated: 10/9/15
 %DLevenstein
-%%
-if isempty(signal)
-    freqs=[]; t=[]; spec=signal;
+%% Parse the inputs
+
+%Parameters
+parms = inputParser;
+addParameter(parms,'frange',[1 100],@isnumeric);
+addParameter(parms,'nfreqs',100,@isnumeric);
+addParameter(parms,'ncyc',5,@isnumeric);
+addParameter(parms,'space','log');
+addParameter(parms,'samplingRate',[]);
+
+parse(parms,varargin{:})
+frange = parms.Results.frange;
+nfreqs = parms.Results.nfreqs;
+ncyc = parms.Results.ncyc;
+space = parms.Results.space;
+samplingRate = parms.Results.samplingRate;
+
+
+%lfp input
+if isstruct(lfp)
+    data = lfp.data;
+    timestamps = lfp.timestamps;
+    samplingRate = lfp.samplingRate;
+elseif isempty(lfp)
+    wavespec = lfp;
     return
+elseif iscell(lfp) %for multiple trials
+    celllengths = cellfun(@length,lfp);
+    data = vertcat(lfp{:});
+elseif isnumeric(lfp)
+    data = lfp;
+    timestamps = [1:length(lfp)]'./samplingRate;
 end
 
-if iscell(signal)
-    celllengths = cellfun(@length,signal);
-    signal = vertcat(signal{:});
+si = 1./samplingRate;
+
+
+%%
+
+
+
+
+if ~isa(data,'single') || ~isa(data,'double')
+    data = single(data);
 end
 
-if ~isa(signal,'single') | ~isa(signal,'double')
-    signal = single(signal);
-end
-
-
+%Frequencies
 fmin = frange(1);
 fmax = frange(2);
 if strcmp(space,'log')
@@ -66,19 +107,32 @@ else
     display('Frequency spacing must be "lin" or "log".')
 end
 
-t = (0:length(signal)-1)*si;
 
-spec = zeros(nfreqs,length(t));
+%Filter with wavelets
+spec = zeros(length(timestamps),nfreqs);
 for f_i = 1:nfreqs
 %     if mod(f_i,10) == 1;
 %         display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
-%     end
-    spec(f_i,:) = WaveFilt(signal,freqs(f_i),ncyc,si);
+%     end   
+    wavelet = MorletWavelet(freqs(f_i),ncyc,si);
+    spec(:,f_i) = FConv(wavelet',data);
 end
 
 if exist('celllengths','var')
     spec = mat2cell(spec,nfreqs,celllengths);
 end
+
+%% Output in buzcode format
+
+wavespec.data = spec;
+wavespec.timestamps = timestamps;
+wavespec.freqs = freqs;
+wavespec.samplingRate = samplingRate;
+wavespec.filterparms.ncyc = ncyc;
+wavespec.filterparms.nfreqs = nfreqs;
+wavespec.filterparms.frange = frange;
+wavespec.filterparms.space = space;
+
     
 
 end
