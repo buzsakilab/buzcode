@@ -52,7 +52,7 @@ if nargin < 3
 end
 
 if nBootstrap == 0
-	[m,r1] = circ_mean(angles);
+	[m] = circ_mean(angles);
     [r1] = circ_r(angles);
 	[r2] = circ_r(wrap(2*angles));
 	delta = (1-r2)/(2*r1^2);
