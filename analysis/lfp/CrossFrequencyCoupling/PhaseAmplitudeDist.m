@@ -1,21 +1,11 @@
 function [ phaseamplitudemap,ampfreqs,phasecenters ] = PhaseAmplitudeDist( LFP,phaserange,amprange,int,sf_LFP )
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
+%
+%DLevenstein 2016
+%THIS FUNCTION NEEDS DOCUMENTATION, I/O IMPROVEMENTS
 %% DEV
-%datasetfolder = '/Users/dlevenstein/Dropbox/Research/Datasets/BWData/';
-%recname = '20140526_277um';
-% recname = 'Dino_061814_mPFC';
- %figfolder = '/Users/dlevenstein/Dropbox/Research/Current Projects/TransitionsAndSpindles/AnalysisFigsMats/Spindle LFP/';
-% 
- %load([datasetfolder,recname,'/',recname,'_LFP.mat'])
- %load([datasetfolder,recname,'/',recname,'_StateIntervals.mat'])
-% 
-% 
- %int = StateIntervals.Spindles;
- %sf_LFP = 1250;
-% 
- %phaserange = [10 20];
- %amprange = [24 256];
+
 
 nfreqs = 100;
 ncyc = 7;
@@ -41,7 +31,7 @@ LFP_int = IsolateEpochs2(LFP,int,edgebuffer,sf_LFP);
 LFPphase_int = IsolateEpochs2(LFP_phase,int,edgebuffer,sf_LFP);
 
 %% Wavelet Transform LFP in intervals
-[ampfreqs,~,spec_int] = WaveSpec(LFP_int,amprange,nfreqs,ncyc,1/sf_LFP,'log');
+[ampfreqs,~,spec_int] = bz_WaveSpec(LFP_int,amprange,nfreqs,ncyc,1/sf_LFP,'log');
 spec_int = cellfun(@(X) abs(X),spec_int,'UniformOutput',false);
 %Remove Buffers
 spec_int = cellfun(@(X) X(:,edgebuffer_si:end-edgebuffer_si),spec_int,'UniformOutput',false);
