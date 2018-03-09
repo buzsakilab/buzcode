@@ -17,6 +17,8 @@ function [tort,freq,MI] = CFCtort(LFPtheta,signals,frecs1,frecs2,Fs,band)
 
 %%%% Antonio Fern�ndez-Ruiz, 2014.
 
+% THIS IS A TEST OF GIT FUNCTIONALITY
+
 %% 
 Nptos=size(signals,1);
 Nsenalesamp=size(signals,2); 
