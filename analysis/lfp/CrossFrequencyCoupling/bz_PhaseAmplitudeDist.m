@@ -18,6 +18,8 @@ function [phaseamplitudemap,ampfreqs,phasecenters] = bz_PhaseAmplitudeDist(lfp,p
 %                               'ncyc' for wavelet parameters
 %                               'interval' interval on which to calculate
 %                               other filter parameters
+%                               'phasesignal' option for other signal to be
+%                                               used as phase information
 %    =========================================================================
 %
 %OUTPUT
