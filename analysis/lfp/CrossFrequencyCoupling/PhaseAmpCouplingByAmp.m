@@ -15,6 +15,7 @@ function [ ampbins,phasebins,sig2powerskew,sig2prefangle,phaseamphist ] = PhaseA
 %
 %
 %DLevenstein Fall 2016
+%THIS FUNCTION NEEDS DOCUMENTATION, I/O IMPROVEMENTS
 %%
 
 phasebins = linspace(-pi,pi,numbins+1);
