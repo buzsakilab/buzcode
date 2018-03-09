@@ -6,7 +6,7 @@ function [lfp] = bz_GetLFP(varargin)
 %
 %  USAGE
 %
-%    [lfp] = GetLFP(channels,<options>)
+%    [lfp] = bz_GetLFP(channels,<options>)
 %
 %  INPUTS
 %
