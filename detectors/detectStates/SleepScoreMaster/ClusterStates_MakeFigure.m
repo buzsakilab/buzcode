@@ -87,13 +87,14 @@ clusterfig = figure('visible','off');
         xlim(viewwin)
         xlabel('t (s)')
         
-	saveas(clusterfig,[figloc,recordingname,'_ClusterResults'],'jpeg')
+	saveas(clusterfig,[figloc,recordingname,'_SSResults'],'jpeg')
         
 
         
 %% didn't get this far yet as far as importing variables etc...
 %% ... gotta keep going, get NREMtimes etc
-IDX = INTtoIDX_ss(states,length(broadbandSlowWave));
+IDX = INTtoIDX_ss(states,max(t_clus));
+IDX(1:t_clus(1)-1)=[];
 NREMtimes = (broadbandSlowWave >swthresh);
 
 %% Figure: Split REM/Arousal  
@@ -140,7 +141,7 @@ figure
         plot(THthresh*[1 1],EMGthresh*[0 1],'r','LineWidth',1)
         plot([0 1],EMGthresh*[1 1],'r','LineWidth',1)
 
-saveas(gcf,[figloc,recordingname,'_clust2'],'jpeg')
+saveas(gcf,[figloc,recordingname,'_SSCluster2D'],'jpeg')
 %saveas(gcf,['/Users/dlevenstein/Code Library/SleepScoreDevelopment/StateScoreFigures/','ThetaEMGExample'],'jpeg')
 %% Figure: Clustering
 colormat = [[0 0 0];[0 0 1];[1 0 0]];
@@ -157,9 +158,9 @@ figure
       
 	subplot(3,3,1)
         hold on
-        bar(histbins,pcahist,'FaceColor','none','barwidth',0.9,'linewidth',2)
-        plot([swthresh swthresh],[0 max(pcahist)],'r')
-        xlabel('PC 1')
+        bar(swhistbins,swhist,'FaceColor','none','barwidth',0.9,'linewidth',2)
+        plot([swthresh swthresh],[0 max(swhist)],'r')
+        xlabel('Slow Wave')
         title('Step 1: Broadband for NREM')
 	subplot(3,3,4)
         hold on
@@ -174,7 +175,7 @@ figure
         xlabel('Theta')
         title('Step 3: Theta for REM')
         
-	saveas(gcf,[figloc,recordingname,'_clust'],'jpeg')
+	saveas(gcf,[figloc,recordingname,'_SSCluster3D'],'jpeg')
 %saveas(gcf,['/Users/dlevenstein/Code Library/SleepScoreDevelopment/StateScoreFigures/','clust'],'jpeg')    
   %% Figure: Duration Distributions
 %   Wstateintervalss = stateintervals{1};
