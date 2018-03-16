@@ -57,13 +57,14 @@ end
 
 switch specparms.type
     case 'wavelet'
-        %Calcualte the Wavelet Transform
-        [specvarcorr.freqs,~,spec] = bz_WaveSpec(single(LFP.data),...
-            specparms.frange,specparms.nfreqs,specparms.ncyc,...
-            1/LFP.samplingRate,specparms.space);
+        %Calculate the Wavelet Transform
+        % specvarcorr.freqs = wavespec.freqs; spec = wavespec.data
+        wavespec = bz_WaveSpec(LFP, 'frange', specparms.frange, 'nfreqs', specparms.nfreqs, 'ncyc', specparms.ncyc, 'space', specparms.space);
         spectimestamps = LFP.timestamps; %Wavelet timestamp are same as LFP        
 
-        specbyvar.freqs = specvarcorr.freqs;
+        specbyvar.freqs = wavespec.freqs;
+        specvarcorr.freqs = wavespec.freqs;
+        spec = wavespec.data;
         
 	case 'FFT'
         %Calculate the frequences to use
@@ -78,7 +79,8 @@ switch specparms.type
         
         %Calculate the FFT spectrogram parameters - covert from s to sf
         winsize = specparms.winsize*LFP.samplingRate;
-        noverlap = specparms.noverlap*LFP.samplingRate; %Might want to calaulte overlap based on pupil...?
+        noverlap = specparms.noverlap*LFP.samplingRate; 
+        
         %Calculate the FFT spectrogram
         [spec,~,spectimestamps] = spectrogram(single(LFP.data),...
             winsize,noverlap,specvarcorr.freqs,LFP.samplingRate);
@@ -123,9 +125,9 @@ switch length(extvar.timestamps) >= length(spectimestamps)
         specatvartimes = unique(specatvartimes(~isnan(specatvartimes)));
         %Remove any doubles/nans (i.e. intervals where there are no extvar timepoints
         vardata = interp1(extvar.timestamps,vardata,specatvartimes,'nearest');
-        interpspec = interp1(spectimestamps,spec',specatvartimes,'nearest');
+        interpspec = interp1(spectimestamps,spec,specatvartimes,'nearest');
     case false %If fewer timepointes in extvar, interp time to extvar
-        interpspec = interp1(spectimestamps,spec',extvar.timestamps,'nearest');
+        interpspec = interp1(spectimestamps,spec,extvar.timestamps,'nearest');
 end
 %Get nearest value of extvar (behavior) for each point in the spectrogram
 %vardata = interp1(extvar.timestamps,vardata,spectimestamps);
@@ -163,7 +165,7 @@ figure
 subplot(2,1,1)
     plot(extvar.timestamps,2*var4plot-2,'k.') %assumes 0-1 normalization... to fix later
     hold on
-    imagesc(spectimestamps,log2(specvarcorr.freqs),spec)
+    imagesc(spectimestamps,log2(specvarcorr.freqs),spec')
     axis tight
     %hold on
     axis xy
@@ -183,7 +185,7 @@ subplot(2,3,4)
     plot(log2(specvarcorr.freqs(corrsig)),specvarcorr.corr(corrsig),'.r')
     plot(log2(specvarcorr.freqs([1 end])),[0 0],'r--')
     LogScale('x',2)
-    xlabel('Frequency (f)');ylabel('Pupil-Power Correlation (rho)')
+    xlabel('Frequency (f)');ylabel('Signal-Power Correlation (rho)')
     axis tight
     
 subplot(2,3,5)

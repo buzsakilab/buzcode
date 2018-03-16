@@ -1,10 +1,9 @@
 function [wavespec] = bz_WaveSpec(lfp,varargin)
-%[freqs,t,spec] = WaveSpec(lfp) calculates the 
+%[wavespec] = bz_WaveSpec(lfp,varargin) calculates the 
 %wavelet transform of a signal with nfreqs frequencies in the range frange 
 %[fmin fmax]. Spacing between frequencies can be 'lin' or 'log'.
 %Time-frequency resolution is defined by ncyc, the number of cycles in each
 %wavelet. Uses Morlet (Gabor) wavelet.
-%
 %
 %INPUT
 %    lfp            a buzcode structure with fields lfp.data,
@@ -34,7 +33,7 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %       .filterparms    a structure that holds the parameters used for
 %                       filtering, for future reference
 %
-
+%
 %TO DO:
 %   -Matricise For loop?
 %   -Don't need to FFT every freq...
@@ -69,7 +68,7 @@ samplingRate = parms.Results.samplingRate;
 
 %lfp input
 if isstruct(lfp)
-    data = lfp.data;
+    data = lfp.data; 
     timestamps = lfp.timestamps;
     samplingRate = lfp.samplingRate;
 elseif isempty(lfp)
