@@ -91,13 +91,11 @@ clusterfig = figure('visible','off');
         
 
         
-%% didn't get this far yet as far as importing variables etc...
-%% ... gotta keep going, get NREMtimes etc
+%% Figure: Split REM/Arousal  
 IDX = INTtoIDX_ss(states,max(t_clus));
 IDX(1:t_clus(1)-1)=[];
 NREMtimes = (broadbandSlowWave >swthresh);
 
-%% Figure: Split REM/Arousal  
 figure
 	subplot(3,2,1)
         hold on

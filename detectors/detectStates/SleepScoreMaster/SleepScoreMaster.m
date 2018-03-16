@@ -222,7 +222,7 @@ display('Quantifying metrics for state scoring')
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
-[stateintervals,stateIDX,~,MinTimeWindowParms] = ClusterStates_DetermineStates(...
+[ints,idx,MinTimeWindowParms] = ClusterStates_DetermineStates(...
                                            SleepScoreMetrics,MinTimeWindowParms);
 
 
@@ -232,9 +232,8 @@ detectionparms.userinputs = p.Results;
 detectionparms.MinTimeWindowParms = MinTimeWindowParms;
 detectionparms.SleepScoreMetrics = SleepScoreMetrics;
 
-SleepState.ints.NREMstate = stateintervals{2};
-SleepState.ints.REMstate = stateintervals{3};
-SleepState.ints.WAKEstate = stateintervals{1};
+SleepState.ints = ints;
+SleepState.idx = idx;
 SleepState.detectorinfo.detectorname = 'SleepScoreMaster';
 SleepState.detectorinfo.detectionparms = detectionparms;
 SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');

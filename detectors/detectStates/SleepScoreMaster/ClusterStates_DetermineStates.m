@@ -1,4 +1,4 @@
-function [INT, IDX, t_IDX, MinTimeWindowParms] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParms,histsandthreshs)
+function [ints, idx, MinTimeWindowParms] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParms,histsandthreshs)
 % can input histsandthreshs from externally if needed... ie via manual
 % selection in stateeditor
 
@@ -157,12 +157,23 @@ INT = IDXtoINT_ss(IDX,3);
 
 %% Pad time to match recording time
 offset = SleepScoreMetrics.t_clus(1)-1; %t_FFT(1)-1;
-
+IDX = INTtoIDX_ss(INT,length(SleepScoreMetrics.t_clus));
+t_IDX = SleepScoreMetrics.t_clus';
 INT = cellfun(@(x) x+offset,INT,'UniformOutput',false);
 
-IDX = INTtoIDX_ss(INT,reclength);
-t_IDX = 1:length(IDX);
-IDX = IDX';
+%% Structure Output
+
+ints.WAKEstate = INT{1};
+ints.NREMstate = INT{2};
+ints.REMstate = INT{3};
+
+%Because TheStateEditor
+IDX(IDX==3) = 5; IDX(IDX==2) = 3;
+
+idx.states = IDX;
+idx.timestamps = t_IDX;
+idx.statenames = {'WAKE','','NREM','','REM'};
+
 
 end
 
