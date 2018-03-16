@@ -177,11 +177,6 @@ savefolder = fullfile(savedir,recordingname);
 if ~exist(savefolder,'dir')
     mkdir(savefolder)
 end
-%Figure locations
-figloc = [fullfile(savefolder,'StateScoreFigures'),'/'];
-if ~exist(figloc,'dir')
-    mkdir(figloc)
-end
 
 %Filenames of metadata and SleepState.states.mat file to save
 sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
@@ -213,7 +208,7 @@ EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,.
 %Determine the best channels for Slow Wave and Theta separation.
 %Described in Watson et al 2016, with modifications
 SleepScoreLFP = PickSWTHChannel(basePath,...
-                            figloc,scoretime,SWWeightsName,...
+                            scoretime,SWWeightsName,...
                             Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
                             SWChannels,ThetaChannels,rejectChannels,...
                             overwrite);
@@ -230,8 +225,7 @@ display('Clustering States Based on EMG, SW, and TH LFP channels')
 [stateintervals,stateIDX,~,MinTimeWindowParms] = ClusterStates_DetermineStates(...
                                            SleepScoreMetrics,MinTimeWindowParms);
 
-%% MAKE THE STATE SCORE OUTPUT FIGURE
-ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
+
                                 
 %% RECORD PARAMETERS from scoring
 detectionparms.userinputs = p.Results;
@@ -244,9 +238,14 @@ SleepState.ints.WAKEstate = stateintervals{1};
 SleepState.detectorinfo.detectorname = 'SleepScoreMaster';
 SleepState.detectorinfo.detectionparms = detectionparms;
 SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
+SleepState.detectorinfo.StatePlotMaterials = StatePlotMaterials;
 
 %Saving SleepStates
 save(bz_sleepstatepath,'SleepState');
+
+%% MAKE THE STATE SCORE OUTPUT FIGURE
+%ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
+ClusterStates_MakeFigure(SleepState,basePath);
 
 %% JOIN STATES INTO EPISODES
 

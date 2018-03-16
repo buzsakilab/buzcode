@@ -8,10 +8,13 @@ function [SleepStateEpisodes] = StatesToEpisodes(SleepState,basePath)
 % structures.
 %
 % INPUTS
-%   SleepState  buzcode states.mat structure. Expected to have fields:
-%                   SleepState.ints.NREMstate;
-%                   SleepState.ints.WAKEstate;
-%                   SleepState.ints.REMstate;
+%   SleepState  buzcode states.mat structure. 
+%               Expected to have fields:
+%                   SleepState.ints.NREMstate
+%                   SleepState.ints.WAKEstate
+%                   SleepState.ints.REMstate
+%               Hopefully has fields:
+%                   SleepState.detectorinfo
 %   basePath    (optional) a basepath to save the output
 % 
 % OUTPUTS
