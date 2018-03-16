@@ -14,8 +14,6 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   OPTIONS
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false, overwrite all processing steps
-%   'rescore'       Default: false, do not overwrite channel selection or
-%                   EMG, but recluster and score
 %   'savebool'      Default: true
 %   'scoretime'     Default: [0 Inf]
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
@@ -189,7 +187,7 @@ end
 sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
 %Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
-bz_sleepstateepisodespath = fullfile(savefolder,[recordingname,'.SleepStateEpisodes.states.mat']);
+
 
 
 %% Get channels not to use
@@ -240,20 +238,21 @@ detectionparms.userinputs = p.Results;
 detectionparms.MinTimeWindowParms = MinTimeWindowParms;
 detectionparms.SleepScoreMetrics = SleepScoreMetrics;
 
+SleepState.ints.NREMstate = stateintervals{2};
+SleepState.ints.REMstate = stateintervals{3};
+SleepState.ints.WAKEstate = stateintervals{1};
+SleepState.detectorinfo.detectorname = 'SleepScoreMaster';
+SleepState.detectorinfo.detectionparms = detectionparms;
+SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
+
+%Saving SleepStates
+save(bz_sleepstatepath,'SleepState');
+
 %% JOIN STATES INTO EPISODES
-%convert to expected format
-NREMints = stateintervals{2};
-REMints = stateintervals{3};
-WAKEints = stateintervals{1};
 
 % Extract states, Episodes, properly organize params etc, prep for final saving
-[SleepState,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,detectionparms,'SleepScoreMaster');
-
-%Saving SleepStates (more but not totally raw) - bzStyle
-save(bz_sleepstatepath,'SleepState');
-%Saving SleepStateEpisodes (most interpreted/processed) - bzStyle
-save(bz_sleepstateepisodespath,'SleepStateEpisodes');
-
+display('Calculating/Saving Episodes')
+StatesToEpisodes(SleepState,basePath);
 
 display(['Sleep Score ',recordingname,': Complete!']);
 

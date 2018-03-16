@@ -2196,7 +2196,7 @@ sints = IDXtoINT_In( FO.States,5);%convert to start-stop intervals
 NREMints = sints{3};
 REMints = sints{5};
 WAKEints = sints{1};
-[SleepState_new,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,dp);% FO.States
+[SleepStateEpisodes] = StatesToEpisodes(NREMints,WAKEints,REMints,dp);% FO.States
 SleepState.ints = SleepState_new.ints;
 SleepState.detectorinfo.detectionparms.LastManualUpdate = datestr(today,'yyyy-mm-dd');
 
@@ -4841,9 +4841,9 @@ end
 
 function [states,StateIntervals] = ReClusterStates_In(obj,ev)
 % Wrapper around functions ClusterStates_DetermineStates and
-% StatesToFinalScoring.  Note only the more raw (but not totally raw) 
-% SleepState output from StatesToFinalScoring is used... not the Episodes.
-% One could consider excluding the refining step of StatesToFinalScoring,
+% StatesToEpisodes.  Note only the more raw (but not totally raw) 
+% SleepState output from StatesToEpisodes is used... not the Episodes.
+% One could consider excluding the refining step of StatesToEpidodes,
 % but I think Dan Levenstein would not stand by that approach as
 % appropriate and vetted
 %
@@ -4879,11 +4879,13 @@ FO.AutoScore.histsandthreshs.THthresh = THthresh;
 % Execute scoring - USE SleepScore toolbox functions
 [stateintervals,~,~] = ClusterStates_DetermineStates(...
                                            dp.SleepScoreMetrics,dp.MinTimeWindowParms,FO.AutoScore.histsandthreshs);
-% Use StatesToFinalScoring really just to apply minima
+% Use StatesToEpisodes really just to apply minima
 NREMints = stateintervals{2};
 REMints = stateintervals{3};
 WAKEints = stateintervals{1};
-[SleepState_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints);
+
+%Not needed anymore
+%[SleepState_new,~] = StatesToEpisodes(NREMints,WAKEints,REMints);
 
 % update plot and data in TheStateEditor GUI
 stateslen = size(FO.to,1);
