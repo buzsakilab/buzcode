@@ -110,7 +110,7 @@ switch trackingType
         positionTracking.position.y = y_coords';
         positionTracking.position.z = [];
         positionTracking.timestamps = timestamps;
-        positionTracking.samplingRate = 1000 ./ mean(diff(positionTracking.timestamps))./1000;
+        positionTracking.samplingRate = 1000 ./ nanmean(diff(positionTracking.timestamps))./1000;
         positionTracking.position.units = 'pixels';
         positionTracking.orientation.yaw = orientation;
         positionTracking.orientation.pitch = [];
@@ -151,7 +151,7 @@ switch trackingType
         positionTracking.position.y = pos(:,10);
         positionTracking.position.z = pos(:,9);
         positionTracking.timestamps = pos(:,1);
-        positionTracking.samplingRate = 1000 ./ mean(diff(positionTracking.timestamps))./1000;
+        positionTracking.samplingRate = 1000 ./ nanmean(diff(positionTracking.timestamps))./1000;
         if nanstd(pos(:,7)) > 10  % determine unit of measure
             positionTracking.position.units = 'meters';
         else

@@ -16,7 +16,7 @@ function spikes = bz_GetSpikes(varargin)
 %    forceReload     -logical (default=false) to force loading from
 %                     res/clu/spk files
 %    saveMat         -logical (default=false) to save in buzcode format
-%    noPrompts       -logical to supress any user prompts
+%    noPrompts       -logical (default=false) to supress any user prompts
 %    
 % OUTPUTS
 %
@@ -84,7 +84,7 @@ saveMat = p.Results.saveMat;
 noPrompts = p.Results.noPrompts;
 
 
-[sessionInfo] = bz_getSessionInfo(basepath);
+[sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
 
 
 samplingRate = sessionInfo.rates.wideband;
@@ -116,7 +116,9 @@ disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
 cluFiles = dir([basepath filesep '*.clu*']);  
 resFiles = dir([basepath filesep '*.res*']);
-spkFiles = dir([basepath filesep '*.spk*']);
+if getWaveforms
+    spkFiles = dir([basepath filesep '*.spk*']);
+end
 
 % remove *temp*, *autosave*, and *.clu.str files/directories
 tempFiles = zeros(length(cluFiles),1);
@@ -133,14 +135,16 @@ for i = 1:length(resFiles)
         tempFiles(i) = 1;
     end
 end
-resFiles(tempFiles==1)=[];
-tempFiles = zeros(length(spkFiles),1);
-for i = 1:length(spkFiles)
-    if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name))
-        tempFiles(i) = 1;
+if getWaveforms
+    resFiles(tempFiles==1)=[];
+    tempFiles = zeros(length(spkFiles),1);
+    for i = 1:length(spkFiles)
+        if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name))
+            tempFiles(i) = 1;
+        end
     end
+    spkFiles(tempFiles==1)=[];
 end
-spkFiles(tempFiles==1)=[];
 
 if isempty(cluFiles)
     disp('no clu files found...')
@@ -157,8 +161,10 @@ for i = 1:length(cluFiles)
 end
 [shanks ind] = sort(shanks);
 cluFiles = cluFiles(ind); %Bug here if there are any files x.clu.x that are not your desired clus
-resFiles = resFiles(ind); 
-spkFiles = spkFiles(ind);
+resFiles = resFiles(ind);
+if getWaveforms
+    spkFiles = spkFiles(ind);
+end
 
 % check if there are matching #'s of files
 if length(cluFiles) ~= length(resFiles) & length(cluFiles) ~= length(spkFiles)

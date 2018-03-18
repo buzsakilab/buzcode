@@ -3,8 +3,7 @@
 %[PhaseLockingData] = bz_PhaseModulation(varargin)
 % 
 % INPUTS
-% spikes        -cell array where each element is a vector of
-%               spiketimes for each cell (time in seconds)
+% spikes        -spike time cellinfo struct
 %
 % lfp           -lfp struct with a single channel from bz_GetLFP()
 %
@@ -50,8 +49,8 @@
 
 %% defaults
 p = inputParser;
-addRequired(p,'spikes',@iscell);
-addRequired(p,'lfp',@isstruct);
+addRequired(p,'spikes',@bz_isCellInfo);
+addRequired(p,'lfp',@bz_isLFP);
 addRequired(p,'passband',@isnumeric)
 addParameter(p,'intervals',[0 inf],@isnumeric)
 addParameter(p,'samplingRate',1250,@isnumeric)
@@ -140,11 +139,11 @@ intervals = intervals(diff(intervals')>minWidth./samplingRate,:); % only keep mi
 h = [];
 % cum_spkphases = [];
 phasebins=[];
-spkphases = cell(1,length(spikes));
-for a = 1:length(spikes)
+spkphases = cell(1,length(spikes.times));
+for a = 1:length(spikes.times)
     
-    bools = InIntervals(spikes{a},intervals);
-    s =spikes{a}(bools);
+    bools = InIntervals(spikes.times{a},intervals);
+    s =spikes.times{a}(bools);
 %     s = spikes{a};
     if isempty(s) 
         phasedistros(:,a) = zeros(numBins,1);
@@ -211,12 +210,16 @@ end
 % end
 
 detectorName = 'bz_PhaseModulation';
+channels = lfp.channels;
 detectorParams = v2struct(intervals,samplingRate,method,plotting,numBins,...
-    passband,powerThresh);
+    passband,powerThresh,channels);
 
 PhaseLockingData = v2struct(phasedistros,phasebins,...
                             phasestats,spkphases,...
                             detectorName, detectorParams);
+PhaseLockingData.region = spikes.region;
+PhaseLockingData.UID = spikes.UID;
+PhaseLockingData.sessionName = spikes.sessionName;
 
 if saveMat
  save([lfp.Filename(1:end-4) '.PhaseLockingData.cellinfo.mat'],'PhaseLockingData');
