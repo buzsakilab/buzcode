@@ -98,7 +98,7 @@ elseif ~isempty(dir('*.csv')) % looks for any csv file in the current recording 
     if isstruct(dat)
         d=[];
         for i=1:length(csv)
-             d = [d;dat(i).data(:,1:20)]; 
+             d = [d;dat(i).data]; 
         end
         clear dat; dat.data = d;
     end
@@ -118,7 +118,7 @@ elseif ~isempty(dir('Session*')) % Looks for a /Session*/ folder that Motive/Opt
     if isstruct(dat)
         d=[];
         for i=1:length(csv)
-             d = [d;dat(i).data(:,1:20)]; 
+             d = [d;dat(i).data]; 
         end
         clear dat; dat.data = d;
     else
