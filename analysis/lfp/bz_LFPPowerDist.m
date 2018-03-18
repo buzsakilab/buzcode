@@ -1,6 +1,6 @@
-function [ output_args ] = LFPPowerDist( LFP,varargin )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+function [ output_args ] = bz_LFPPowerDist( LFP,varargin )
+% bz_LFPPowerDist(LFP) calculates the power distribution of an LFP signal.
+%   NOTE: THIS FUNCTION IS UNDER DEVELOPMENT. Feel free to chip in.
 %
 %INPUTS
 %   LFP     [nt x 1] vector of the LFP signal -or- basename
@@ -10,26 +10,27 @@ function [ output_args ] = LFPPowerDist( LFP,varargin )
 %   spectype    'wavelet' or 'FFT'
 %   frange      [lowf highf]
 %   nfreqs      number of frequencies to look at
+%   SHOWFIG     true/false (default: false)
 %   figfolder   folder to save output figures
 %   
 %% DEV
-datasetfolder = '/Users/dlevenstein/Dropbox/Research/Datasets/BWData/';
-figfolder = '/Users/dlevenstein/Dropbox/Research/Current Projects/misc/PowerDistribution/';
-recname = '20140526_277um';
+%datasetfolder = '/Users/dlevenstein/Dropbox/Research/Datasets/BWData/';
+%figfolder = '/Users/dlevenstein/Dropbox/Research/Current Projects/misc/PowerDistribution/';
+%recname = '20140526_277um';
 
-load(fullfile(datasetfolder,recname,[recname,'_LFP.mat']))
-load(fullfile(datasetfolder,recname,[recname,'_SleepScore.mat']))
+%load(fullfile(datasetfolder,recname,[recname,'_LFP.mat']))
+%load(fullfile(datasetfolder,recname,[recname,'_SleepScore.mat']))
 %%
 sf = 1250;
-int = StateIntervals.NREMpacket;
+%int = StateIntervals.NREMpacket;
 
-LFP = LFP.CTX;
-LFP = NormToInt(LFP,int,sf,'modZ');
+%LFP = LFP.CTX;
+%LFP = NormToInt(LFP,int,sf,'modZ');
 
 spectype = 'FFT';
 
 %%
-
+warning('This function is still under development. No promises')
 
 frange = [1 128];
 nfreqs = 100;
@@ -51,7 +52,7 @@ switch spectype
         sf_down = sf./downsamplefactor;
         intLFP = IsolateEpochs2(downsample(LFP,2),int,0,sf_down);
         ncyc = 5;
-        [freqlist,t,intspec] = WaveSpec(intLFP,frange,nfreqs,ncyc,1/sf_down,'log');
+        [freqlist,t,intspec] = bz_WaveSpec(intLFP,frange,nfreqs,ncyc,1/sf_down,'log');
         intspec = cat(2,intspec{:});
         intspec = abs(intspec)';
 end

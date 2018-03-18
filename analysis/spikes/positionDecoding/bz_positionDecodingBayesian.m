@@ -60,7 +60,8 @@ nCells = length(spikes.times);
 positionSamplingRate = behavior.samplingRate;
 
 % find a better way to get spike phase relationship...
-[firingMaps] = bz_firingMap1D(spikes,behavior,lfp,5);
+[firingMaps] = bz_firingMap1D(spikes,behavior,5);
+[phaseMaps] = bz_phaseMap1D(spikes,behavior,lfp,5);
 
 % iterate through conditions and compile spike trains and spike-phase
 % trains
@@ -72,12 +73,12 @@ for cond = conditions
         spk_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000)); % assumes intervals are in seconds, rounds to nearest millisecond
         phase_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000));
         for cell = 1:nCells
-            if ~isempty(firingMaps.phaseMaps{cond}{cell})
-                f = find(firingMaps.phaseMaps{cond}{cell}(:,2)==t);
+            if ~isempty(phaseMaps.phaseMaps{cond}{cell})
+                f = find(phaseMaps.phaseMaps{cond}{cell}(:,2)==t);
                 if ~isempty(f)
                 for s=1:length(f)
-                    phase_trains{cond}{t}(cell,ceil(firingMaps.phaseMaps{cond}{cell}(f(s),5)*1000)) = ...
-                        firingMaps.phaseMaps{cond}{cell}(f(s),end);
+                    phase_trains{cond}{t}(cell,ceil(phaseMaps.phaseMaps{cond}{cell}(f(s),5)*1000)) = ...
+                        phaseMaps.phaseMaps{cond}{cell}(f(s),end);
                 end
                 end
             end
@@ -104,9 +105,10 @@ positionDecodingBayesian.sessionName = spikes.sessionName; % session name
 positionDecodingBayesian.results = table;
 
 disp('running models...')
-for cond = conditions
-    for iter = 1:5
+for cond = 2%conditions
     r = randperm(length(phase_trains{cond}));
+    for iter = 1:5%length(r)
+        r = circshift(r,1);
     for wind = smoothingRange
         for cell = 1:nCells
             phase_trains_smooth=[];
@@ -202,22 +204,59 @@ for cond = conditions
         struct.trialOrder = r;
         positionDecodingBayesian.results = [positionDecodingBayesian.results;struct2table(struct)];
         if plotting
+            clf
             subplot(2,2,1)
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_rate,'r')
-            hold on
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_phase_all,'g')
-            hold off
+            t_rate = varfun(@mean,positionDecodingBayesian.results,'InputVariables','mse_rate',...
+            'GroupingVariables',{'tau','condition'});
+            t_phase = varfun(@mean,positionDecodingBayesian.results,'InputVariables','mse_phase',...
+            'GroupingVariables',{'tau','condition'});
+            t_phase_cos = varfun(@mean,positionDecodingBayesian.results,'InputVariables','mse_phase_cos',...
+            'GroupingVariables',{'tau','condition'});
+            t_phase_sin = varfun(@mean,positionDecodingBayesian.results,'InputVariables','mse_phase_sin',...
+            'GroupingVariables',{'tau','condition'});
+%             t_chance = varfun(@mean,positionDecodingBayesian.results,'InputVariables','mse_chance',...
+%             'GroupingVariables',{'tau','condition'});
+%             t_chance_s = varfun(@std,positionDecodingBayesian.results,'InputVariables','mse_chance',...
+%             'GroupingVariables',{'tau','condition'});
+%             t_chance_rate = varfun(@mean,positionDecodingBayesian.results,'InputVariables','mse_chance_rate',...
+%             'GroupingVariables',{'tau','condition'});
+%             t_chance_s_rate = varfun(@std,positionDecodingBayesian.results,'InputVariables','mse_chance_rate',...
+%             'GroupingVariables',{'tau','condition'});
+            t_rate_s = varfun(@std,positionDecodingBayesian.results,'InputVariables','mse_rate',...
+            'GroupingVariables',{'tau','condition'});
+            t_phase_s = varfun(@std,positionDecodingBayesian.results,'InputVariables','mse_phase',...
+            'GroupingVariables',{'tau','condition'});
+            t_phase_cos_s = varfun(@std,positionDecodingBayesian.results,'InputVariables','mse_phase_cos',...
+            'GroupingVariables',{'tau','condition'});
+            t_phase_sin_s = varfun(@std,positionDecodingBayesian.results,'InputVariables','mse_phase_sin',...
+            'GroupingVariables',{'tau','condition'});
+            tab = join(join(join(join(t_rate,t_phase),t_chance),t_phase_cos),t_phase_sin);
+            tab_s = join(join(join(join(t_rate_s,t_phase_s),t_chance_s),t_phase_sin_s),t_phase_cos_s);
+            rows = find(tab.condition==cond);
+
+            title('MaxCorr decoding of pos, r-rate, g-phase')
+%             iterRows = positionDecodingBayesian.iter == iter;
+%             plot(positionDecodingBayesian.results.tau,...
+%                 positionDecodingBayesian.results.mse_rate,'r')
+%             hold on
+%             plot(positionDecodingBayesian.results.tau,...
+%                 positionDecodingBayesian.results.mse_phase_all,'g')
+%             hold off
+%             boundedline(tab.tau,t_chance_rate.mean_mse_chance_rate(rows),t_chance_s_rate.std_mse_chance_rate(rows),'k')
+%             boundedline(tab.tau,tab.mean_mse_chance(rows),tab_s.std_mse_chance(rows),'k')
+            boundedline(tab.tau,tab.mean_mse_phase_cos(rows),tab_s.std_mse_phase_cos(rows),'g')
+            boundedline(tab.tau,tab.mean_mse_rate(rows),tab_s.std_mse_rate(rows),'r')
+%             set(gca,'xscale','log')
             subplot(2,2,2)
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_phase_cos,'g')
-            subplot(2,2,3)
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_phase_sin,'g')
-            subplot(2,2,4)
-            plot(positionDecodingBayesian.results.tau,...
-                positionDecodingBayesian.results.mse_phase,'g')
+            boundedline(tab.tau,tab.mean_mse_phase(rows),tab_s.std_mse_phase(rows),'.g')
+            boundedline(tab.tau,tab.mean_mse_phase_sin(rows),tab_s.std_mse_phase_sin(rows),'--g')
+            boundedline(tab.tau,tab.mean_mse_phase_cos(rows),tab_s.std_mse_phase_cos(rows),'g')
+%             subplot(2,2,3)
+%             plot(positionDecodingBayesian.results.tau,...
+%                 positionDecodingBayesian.results.mse_phase_sin,'g')
+%             subplot(2,2,4)
+%             plot(positionDecodingBayesian.results.tau,...
+%                 positionDecodingBayesian.results.mse_phase,'g')
             pause(.001)
         end
         clear *train *test yfit*

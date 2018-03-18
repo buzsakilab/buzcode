@@ -22,6 +22,7 @@ function [lfp] = bz_GetLFP(varargin)
 %    basename           -base file name to load
 %    intervals          -list of time intervals [0 10; 20 30] to read from 
 %                           the LFP file (default is [0 inf])
+%    noPrompts          -logical (default) to supress any user prompts
 %
 %  OUTPUT
 %
@@ -59,8 +60,8 @@ function [lfp] = bz_GetLFP(varargin)
 % expand channel selection options (i.e. region or spikegroup)
 % add forcereload
 %% Parse the inputs!
-channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
-    'channels must be numeric or "all"');
+
+channelsValidation = @(x) isnumeric(x) || strcmp(x,'all');
 
 % parse args
 p = inputParser;
@@ -71,10 +72,13 @@ addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
+addParameter(p,'noPrompts',false,@islogical);
+
 parse(p,varargin{:})
 basename = p.Results.basename;
 channels = p.Results.channels;
 basepath = p.Results.basepath;
+noPrompts = p.Results.noPrompts;
 
 % doing this so you can use either 'intervals' or 'restrict' as parameters to do the same thing
 intervals = p.Results.intervals;
@@ -114,7 +118,7 @@ else
 end
 
 %% things we can parse from sessionInfo or xml file
-sessionInfo = bz_getSessionInfo(basepath);
+sessionInfo = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
 nChannels = sessionInfo.nChannels;
 try
     samplingRate = sessionInfo.lfpSampleRate;
@@ -127,7 +131,7 @@ end
 %indexing), we could also add options for this to be select region or spike
 %group from the xml...
 if strcmp(channels,'all')
-    channels = 0:(nChannels-1);
+    channels = xml.channels;
 end
 
 %% get the data
@@ -143,7 +147,7 @@ for i = 1:nIntervals
     % load....
     lfp(i).data = bz_LoadBinary([basepath filesep lfp.Filename],...
         'duration',double(lfp(i).duration),...
-                  'frequency',samplingRate,'nchannels',nChannels,...
+                  'frequency',samplingRate,'nchannels',xml.nChannels,...
                   'start',double(lfp(i).interval(1)),'channels',channels+1);
     lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRate):...
                         (lfp(i).interval(1)+(length(lfp(i).data)-1)/...
@@ -156,7 +160,9 @@ for i = 1:nIntervals
         lfp(i).duration = (lfp(i).interval(i,2)-lfp(i).interval(i,1));
     end
     
+
     if isfield(sessionInfo,'region') && isfield(sessionInfo,'channels')
-        lfp(i).region = sessionInfo.region(lfp(i).channels); % match region order to channel order..
+        [~,~,regionidx] = intersect(lfp(i).channels,sessionInfo.channels,'stable');
+        lfp(i).region = sessionInfo.region(regionidx); % match region order to channel order..
     end
 end
