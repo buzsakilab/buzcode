@@ -54,7 +54,7 @@ switch spectype
         sf_down = sf./downsamplefactor;
         intLFP = IsolateEpochs2(downsample(LFP,2),int,0,sf_down);
         ncyc = 5;
-        [freqlist,t,intspec] = WaveSpec(intLFP,frange,nfreqs,ncyc,1/sf_down,'log');
+        [freqlist,t,intspec] = bz_WaveSpec(intLFP,frange,nfreqs,ncyc,1/sf_down,'log');
         intspec = cat(2,intspec{:});
         intspec = abs(intspec)';
 end

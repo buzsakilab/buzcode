@@ -88,7 +88,7 @@ end
 % Test result
 h = U2 >= value;
 
-disp(['Watson U2 test: Means:       m1=' num2str(CircularMean(group1)) ', m2=' num2str(CircularMean(group2))]);
+disp(['Watson U2 test: Means:       m1=' num2str(circ_mean(group1)) ', m2=' num2str(circ_mean(group2))]);
 disp(['Watson U2 test: Variances:   v1=' num2str(CircularVariance(group1)) ', v2=' num2str(CircularVariance(group2))]);
 
 if h,

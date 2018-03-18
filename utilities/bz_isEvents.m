@@ -18,7 +18,7 @@ function [isEvents] = bz_isEvents(events)
 
 
 if isfield(events,'detectorinfo') && isfield(events,'timestamps') % check that fields exist
-     if isstruct(events.detectorinfo) && isvector(events.timestamps) 
+     if isstruct(events.detectorinfo) && isnumeric(events.timestamps) 
          % check that sub fields exist
          if isfield(events.detectorinfo,'detectorname') && isfield(events.detectorinfo,'detectionparms') ...
                  && isfield(events.detectorinfo,'detectionintervals') && isfield(events.detectorinfo,'detectiondate')
