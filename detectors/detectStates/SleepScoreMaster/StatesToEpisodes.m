@@ -1,53 +1,46 @@
-function [SleepState,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,DetectorName,DetectionParams)
-% Takes sleep state data as a series of raw intervals and imposes max and
+function [SleepStateEpisodes] = StatesToEpisodes(SleepState,basePath)
+% Takes a buzcode structure of sleep state data and imposes max and
 % min durations and interruption criteria to make WAKE, NREM, REM Episodes,
-% Packets, Microarousals and Microarusals in REM.
+% Packets, Microarousals and Microarusals in REM, as defined in 
+% Watson et al 2017. Returns the SleepStateEpisodes in buzcode format
+% along with any detectionparms from initial state scoring. Can save as
+% states.mat file in basePath
+% structures.
 %
 % INPUTS
-% - WAKEints - startstop pairs (nx2 array) of second numbers of starts and
-%   ends respectively of periods of wake-like state.  These can be broken
-%   later into wake, microarousal and other mini wake-like states
-% - NREMints - startstop pairs (nx2 array) of second numbers of starts and
-%   ends respectively of periods of NREM state
-% - REMints - startstop pairs (nx2 array) of second numbers of starts and
-%   ends respectively of periods of REM state
-% - DetectorName - function that detected NREM, WAKE, REM states... 
-%   essentially the calling function in most cases, such as 
-%   SleepScoreMaster or TheStateEditor
-% - DetectionParams - Parameters used by  
+%   SleepState  buzcode states.mat structure. 
+%               Expected to have fields:
+%                   SleepState.ints.NREMstate
+%                   SleepState.ints.WAKEstate
+%                   SleepState.ints.REMstate
+%               Hopefully has fields:
+%                   SleepState.detectorinfo
+%   basePath    (optional) a basepath to save the output
 % 
 % OUTPUTS
-% - SleepState - Struct array of relatively less processed epochs relative
-%   to SleepStateEpisodes.  
-%   - .ints contains start-stop pair intervals in subfields: WAKEstate, 
-%         NREMstate and REMstate.
-%       - NREMstate: NREMstate same as the input NREMints  
-%       - REMstate: REMstate same as the input REMints  
-%       - WAKEstate: input WAKEints that are longer than the microarousal duration (100s at the writing of 
-%           this comment)
-%
-% 
-% - SleepStateEpisodes - Struct array of relatively more processed epochs
+%	SleepStateEpisodes - Struct array of relatively more processed epochs
 %   with minimum durations and maximum interruptions imposed.  Fields below
-%   - WAKEpisodes: WAKEints inputs with at least [minWAKEEpisodeDuration] 
-%   long and without interruptions more than [maxWAKEEpisodeInterruption]
-%   - NREMepisodes
-%   - REMepisodes
-%   - NREMpackets
-%   - MAstate
-%   - MAInREM 
+%       .ints.WAKEpisodes  WAKEints inputs with at least [minWAKEEpisodeDuration] 
+%                          long and without interruptions more than [maxWAKEEpisodeInterruption]
+%       .ints.NREMepisodes
+%       .ints.REMepisodes
+%       .ints.NREMpackets
+%       .ints.MAstate
+%       .ints.MAInREM 
+%       .detectorinfo      a structure with detector information
 % 
 
 %
 % Called in [SleepScoreMaster] and [TheStateEditor "saveStates" & "ReClusterStates_In" functions]  
 % Dan Levenstein & Brendon Watson 2016
+%%
 
-if ~exist('DetectorName','var')
-    DetectorName = 'NotSpecified';
-end
-if ~exist('DetectionParams','var')
-    DetectionParams = [];
-end
+%Pull inputs from SleepState
+NREMints =  SleepState.ints.NREMstate;
+WAKEints =  SleepState.ints.WAKEstate;
+REMints =  SleepState.ints.REMstate;
+
+%Duration parameters
 minPacketDuration = 30;
 minWAKEEpisodeDuration = 20;
 minNREMEpisodeDuration = 20;
@@ -59,7 +52,7 @@ maxWAKEEpisodeInterruption = 40;
 maxNREMEpisodeInterruption = maxMicroarousalDuration;
 maxREMEpisodeInterruption = 40;
 
-detectionparams_episodes = v2struct(minPacketDuration, minWAKEEpisodeDuration,...
+detectionparms_episodes = v2struct(minPacketDuration, minWAKEEpisodeDuration,...
     minNREMEpisodeDuration, minREMEpisodeDuration,...
     maxMicroarousalDuration,...
     maxWAKEEpisodeInterruption, maxNREMEpisodeInterruption,...
@@ -115,27 +108,26 @@ MAInREM = MAIntervals(MAInREM,:);
 MAIntervals = MAIntervals(realMA,:);
 
 %% Output: buzcode format
-% Output 1: 
-SleepState.ints.NREMstate = NREMints;
-SleepState.ints.REMstate = REMints;
-SleepState.ints.WAKEstate = WAKEIntervals;
-SleepState.detectorinfo.detectorname = DetectorName;
-SleepState.detectorinfo.detectionparams = DetectionParams;
-SleepState.detectorinfo.detectiondate = datestr(today,'yyyy-mm-dd');
-
-% Output 2:
+% Output: SleepStateEpisodes
 SleepStateEpisodes.ints.NREMepisode = episodeintervals{2};
 SleepStateEpisodes.ints.REMepisode = episodeintervals{3};
 SleepStateEpisodes.ints.WAKEepisode = episodeintervals{1};
 SleepStateEpisodes.ints.NREMpacket = packetintervals;
-SleepStateEpisodes.ints.MAstate = MAIntervals;
+SleepStateEpisodes.ints.MA = MAIntervals;
 SleepStateEpisodes.ints.MA_REM = MAInREM;
-SleepStateEpisodes.detectorinfo.detectionparams.StateDetectionParams = DetectionParams;
-SleepStateEpisodes.detectorinfo.detectionparams.EpisodeDetectionParams= detectionparams_episodes;
-SleepStateEpisodes.detectorinfo.detector = ['StatesToFinalScoring.m'];
-SleepStateEpisodes.detectorinfo.detectiondate = datestr(today,'yyyy-mm-dd');
+SleepStateEpisodes.detectorinfo.originaldetectorinfo = SleepState.detectorinfo;
+SleepStateEpisodes.detectorinfo.detectionparms.EpisodeDetectionParms= detectionparms_episodes;
+SleepStateEpisodes.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
 
 
+%% Save
+
+%Saving SleepStateEpisodes (most interpreted/processed) - bzStyle
+if exist('basePath','var')
+    baseName = bz_BasenameFromBasepath(basePath);
+    bz_sleepstateepisodespath = fullfile(basePath,[baseName,'.SleepStateEpisodes.states.mat']);
+    save(bz_sleepstateepisodespath,'SleepStateEpisodes');
+end
 
 
 

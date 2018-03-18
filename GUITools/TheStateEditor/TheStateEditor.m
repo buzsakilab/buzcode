@@ -188,7 +188,7 @@ end
 %These parameters are passed through all functions
 FO.downsampleGoal = 312.5;% display Hz goal, to save memory... will calculate downsample factor to match (ie 4 if 1250hz lfp file)
 FO.baseName = baseName;
-FO.basePath = pwd; %basePath is assumed to be pwd
+FO.basePath = fileparts(baseName); %basePath is assumed to be pwd
 FO.eegShow = 2; %show 2 seconds of eeg
 FO.maxFreq = 40; %default starting frequency extent
 FO.hanningW = 10; %default hanning smoothing window
@@ -284,16 +284,6 @@ if FileExistsIn([baseName,'.eegstates.mat'])
             end
             disp('Done.');
         end
-    end
-    if exist([baseName,'.SleepState.states.mat'],'file')
-       load([baseName,'.SleepState.states.mat'])
-       stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate))]); 
-       states = zeros(1,stateslen);
-       states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
-%        states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
-       states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
-       states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
-       states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
     end
 
 else
@@ -612,17 +602,7 @@ else
         StateInfo.rawEeg = rawEeg;
     end
     
-    if exist([baseName,'.SleepState.states.mat'],'file')
-       load([baseName,'.SleepState.states.mat'])
-       
-       stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate)) max(max(SleepState.ints.MAstate))]); 
-       states = zeros(1,stateslen);
-       states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
-%        states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
-       states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
-       states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
-       states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
-    end
+
     
     disp(['Saving ', baseName, '.eegstates.mat...']);
     try
@@ -630,6 +610,24 @@ else
     catch
         warndlg(['Failed to save ' , baseName, '.eegstates.mat']);
     end
+end
+
+%Load Previous state tagging in SleepState.states.mat
+SleepState = bz_LoadStates(FO.basePath,'SleepState');
+if isfield(SleepState,'idx')
+    states = SleepState.idx.states';
+    %Pad the beginning and end to match fspec{1}.to
+    states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(StateInfo.fspec{1}.to(1))),states);
+    states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
+else
+   stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate)) ]); 
+   states = zeros(1,stateslen);
+   states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
+%        states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
+   states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
+   states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
+   states = cat(2,0,states); %For 0-indexing
+   states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
 end
 
 if eegFS>FO.downsampleGoal;
@@ -2176,54 +2174,45 @@ FO = guidata(obj(end));
 baseName = FO.baseName;
 basePath = FO.basePath;
 
-%grab parameters for storage
-% load detectionparameters if not loaded when user pressed "a" in ViewAutoScoreThresholds
-if isfield(FO,'AutoScore')
-    if isfield(FO.AutoScore,'detectionparams')
-        dp = F0.AutoScore.detectionparams;
+%Load baseName.SleepState.states.mat
+SleepState = bz_LoadStates(basePath,'SleepState');
+
+%If no SleepState.states.mat existed, create a new one
+if isempty(SleepState)
+    SleepState.detectorinfo.detectorname = 'TheStateEditor';
+    SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd'); 
+    SleepState.idx.statenames = {'','','','',''};
+end
+
+
+%Put the new states in format for buzcode
+%Make an buzcode-style idx structure
+if isfield(SleepState,'idx')
+    idx.statenames = SleepState.idx.statenames;
+else
+    idx.statenames = {'WAKE','','NREM','','REM'}; %assume...
+end
+idx.states = FO.States';
+idx.timestamps = FO.to;
+%note: FO.to is 0-indexed... does not line up with F0.states. issue with
+%loading. to fix.
+
+%Make a buzcode-style ints structure
+sints = IDXtoINT_In(idx.states(2:end),5); %2:end to deal with 0-indexing
+for ss = 1:5
+    if isempty(sints{ss});continue;end
+    if isempty(idx.statenames{ss}) %Are there states that are not named?
+        idx.statenames{ss} = inputdlg(['What is the name of state ',num2str(ss),'?']);
     end
-end
-if ~exist('dp','var')
-    % load([baseName '.SleepScoreMetrics.LFP.mat'])
-    load([baseName '.SleepState.states.mat'])
-    dp = SleepState.detectorinfo.detectionparams;
-    v2struct(dp)
+    ints.([idx.statenames{ss},'state']) = sints{ss};
 end
 
-%re-process states for storage
-sints = IDXtoINT_In( FO.States,5);%convert to start-stop intervals
-% Join states into episodes
-NREMints = sints{3};
-REMints = sints{5};
-WAKEints = sints{1};
-[SleepState_new,SleepStateEpisodes] = StatesToFinalScoring(NREMints,WAKEints,REMints,'TheStateEditor.m',dp);% FO.States
-SleepState.ints = SleepState_new.ints;
-SleepState.detectorinfo.detectionparams.LastManualUpdate = datestr(today,'yyyy-mm-dd');
 
-% Not sure I understand if this is still necessary code 1/2018 -BW
-% % Save to SleepState.states .mat file with proper formatting etc
-% SleepState = bz_LoadStates(basePath,'SleepState'); %load old scoring
-% if isempty(SleepState) %If no SleepState saved
-%    display('No previous SleepState.states.mat file detected, saving anew')
-%    SleepState.detectorname = 'TheStateEditor';
-%    SleepState.detectiondate = datestr(today,'yyyy-mm-dd');
-% end
-
-        
-% Save original autoscoreints from SleepScoreMaster
-% first check if they're already saved, in that case save those back into
-% the new file
-if exist(fullfile(basePath,[baseName '.SleepState.states.mat']),'file')
-    SleepState_saved = load(fullfile(basePath,[baseName '.SleepState.states.mat']));
-    if isfield(SleepState_saved,'AutoScoreInts')
-        SleepState.AutoScoreInts = SleepState_saved.AutoScoreInts;
-    end
-    clear SleepState_saved
-end
+%Save old Autoscoring in AutoScoreInts
 if ~isfield(SleepState,'AutoScoreInts') 
     if isfield(SleepState,'detectorinfo')
         if isfield(SleepState.detectorinfo,'detectorname')
-            if strcmp(SleepState.detectorinfo.detectorname,'SleepScoreMaster.m');
+            if strcmp(SleepState.detectorinfo.detectorname,'SleepScoreMaster')
                 display('Original State Scoring from SleepScoreMaster detected...')
                 display('   saving old states as SleepState.AutoScoreInts')
                 SleepState.AutoScoreInts = SleepState.ints;
@@ -2232,9 +2221,17 @@ if ~isfield(SleepState,'AutoScoreInts')
     end
 end
 
+
+%Write the new ints/idx
+SleepState.ints = ints;
+SleepState.idx = idx;
+SleepState.detectorinfo.LastManualUpdate = datestr(now,'yyyy-mm-dd');
+
 %Save the results!
-save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState')
-save(fullfile(basePath,[baseName '.SleepStateEpisodes.states.mat']),'SleepStateEpisodes')
+save([baseName '.SleepState.states.mat'],'SleepState')
+
+%Calculate and save new StateEpisodes
+StatesToEpisodes(SleepState,basePath);
 
 b = msgbox(['Saved work to ', baseName, '.SleepState/SleepStateEpisodes.states.mat']);
 saved = 1;
@@ -4644,14 +4641,14 @@ baseName = FO.baseName;
 load([baseName '.SleepState.states.mat'])
 paramsAvailBool = 0;
 if isfield(SleepState,'detectorinfo');
-    if isfield(SleepState.detectorinfo,'detectionparams')
+    if isfield(SleepState.detectorinfo,'detectionparms')
         paramsAvailBool = 1;
     end
 end
 if paramsAvailBool
-    F0.AutoScore.detectionparams =  SleepState.detectorinfo.detectionparams;
+    F0.AutoScore.detectionparms =  SleepState.detectorinfo.detectionparms;
 else
-    F0.AutoScore.detectionparams = [];
+    F0.AutoScore.detectionparms = [];
 end
 
 
@@ -4676,6 +4673,8 @@ FO.AutoScore.histsandthreshs = histsandthreshs;
 
 % start figure
 h = figure('position',[940 5 480 720]);
+set(h, 'MenuBar', 'none');
+set(h, 'ToolBar', 'none');
 
 ax1 = subplot(3,1,1,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.swhistbins,histsandthreshs.swhist)
@@ -4683,7 +4682,7 @@ swline = plot(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1),
 % swline = imline(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1));
 % set(swline,'UserData','swline')
 % id = addNewPositionCallback(swline,@(pos) title(mat2str(pos,3)));
-xlabel('SWS Band Power')
+xlabel('SWS Band Power (NREM vs other)')
 ylabel('Counts (sec)')
 ResetToInitButton_sw = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.95, 0.15, 0.05]);
 set(ResetToInitButton_sw,'Callback',@ResetToInitSw);
@@ -4698,7 +4697,7 @@ EMGline = plot(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax
 % EMGline = imline(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2));
 % set(EMGline,'UserData','EMGline')
 % id = addNewPositionCallback(EMGline,@(pos) title(mat2str(pos,3)));
-xlabel('EMG (300-600Hz Correlation)')
+xlabel('EMG (300-600Hz Correlation, active WAKE vs REM/inactive)')
 ylabel('Counts (sec)')
 ResetToInitButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.62, 0.15, 0.05]);
 set(ResetToInitButton_EMG,'Callback',@ResetToInitEMG);
@@ -4711,7 +4710,7 @@ THline = plot(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3),
 % THline = imline(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3));
 % set(THline,'UserData','THline')
 % id = addNewPositionCallback(THline,@(pos) title(mat2str(pos,3)));
-xlabel('Theta ratio (5-10Hz/2-15Hz)')
+xlabel('Theta ratio (5-10Hz/2-15Hz, REM vs inactive WAKE)')
 ylabel('Counts (sec)')
 ResetToInitButton_TH = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.29, 0.15, 0.05]);
 set(ResetToInitButton_TH,'Callback',@ResetToInitTH);
@@ -4764,8 +4763,10 @@ function histsandthreshs = SSHistogramsAndThresholds_In(baseName)
 % Get initial histograms and thresholds as calculated by SleepScoreMaster.m
 
 load([baseName '.SleepState.states.mat']);
-dp = SleepState.detectorinfo.detectionparams;
-if isfield(dp,'histsandthreshs')%if already exists, just take from saved data
+dp = SleepState.detectorinfo.detectionparms;
+if isfield(dp.SleepScoreMetrics,'histsandthreshs')%if already exists, just take from saved data
+    histsandthreshs = dp.SleepScoreMetrics.histsandthreshs;
+elseif isfield(dp,'histsandthreshs')%if already exists, just take from saved data
     histsandthreshs = dp.histsandthreshs;
 else%if not, try to generate 
     %(not likely to work since these params should have been saved at same
@@ -4850,9 +4851,9 @@ end
 
 function [states,StateIntervals] = ReClusterStates_In(obj,ev)
 % Wrapper around functions ClusterStates_DetermineStates and
-% StatesToFinalScoring.  Note only the more raw (but not totally raw) 
-% SleepState output from StatesToFinalScoring is used... not the Episodes.
-% One could consider excluding the refining step of StatesToFinalScoring,
+% StatesToEpisodes.  Note only the more raw (but not totally raw) 
+% SleepState output from StatesToEpisodes is used... not the Episodes.
+% One could consider excluding the refining step of StatesToEpidodes,
 % but I think Dan Levenstein would not stand by that approach as
 % appropriate and vetted
 %
@@ -4863,21 +4864,16 @@ baseName = FO.baseName;
 
 % load detectionparameters if not loaded when user pressed "a" in ViewAutoScoreThresholds
 if isfield(FO,'AutoScore')
-    if isfield(FO.AutoScore,'detectionparams')
-        dp = F0.AutoScore.detectionparams;
+    if isfield(FO.AutoScore,'detectionparms')
+        dp = F0.AutoScore.detectionparms;
     end
 end
 if ~exist('dp','var')
     % load([baseName '.SleepScoreMetrics.LFP.mat'])
     load([baseName '.SleepState.states.mat'])
-    dp = SleepState.detectorinfo.detectionparams;
+    dp = SleepState.detectorinfo.detectionparms;
     v2struct(dp)
 end
-
-% Get parameters ready for expectation of ClusterStates_DetermineStates
-MinWinParams = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,minREMinWsecs,minREMsecs,minWAKEsecs);
-SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
-    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,recordingname);
 
 % grab user-entered thresholds from GUI, for final input to DetermineStates
 swthresh = get(FO.AutoClusterFig.swline,'XData');
@@ -4892,21 +4888,16 @@ FO.AutoScore.histsandthreshs.THthresh = THthresh;
 
 % Execute scoring - USE SleepScore toolbox functions
 [stateintervals,~,~] = ClusterStates_DetermineStates(...
-                                           SleepScoreMetrics,MinWinParams,FO.AutoScore.histsandthreshs);
-% Use StatesToFinalScoring really just to apply minima
-NREMints = stateintervals{2};
-REMints = stateintervals{3};
-WAKEints = stateintervals{1};
-[SleepState_new,~] = StatesToFinalScoring(NREMints,WAKEints,REMints);
+                                           dp.SleepScoreMetrics,dp.MinTimeWindowParms,FO.AutoScore.histsandthreshs);
 
 % update plot and data in TheStateEditor GUI
 stateslen = size(FO.to,1);
 % stateslen = max([max(max(SleepState_new.ints.NREMstate)) max(max(SleepState_new.ints.REMstate)) max(max(SleepState_new.ints.WAKEstate)) max(max(SleepState_new.ints.MAstate)) ]); 
 states = zeros(1,stateslen);
-states(find(inttoboolIn(SleepState_new.ints.WAKEstate))) = 1;
+states(find(inttoboolIn(stateintervals.WAKEstate))) = 1;
 % states(find(inttoboolIn(SleepState_new.ints.MAstate))) = 2;
-states(find(inttoboolIn(SleepState_new.ints.NREMstate))) = 3;
-states(find(inttoboolIn(SleepState_new.ints.REMstate))) = 5;
+states(find(inttoboolIn(stateintervals.NREMstate))) = 3;
+states(find(inttoboolIn(stateintervals.REMstate))) = 5;
 states = cat(2,states,zeros(1,length(FO.to)-length(states)));%pad to make sure is long enough
 
 FO.States = states;
