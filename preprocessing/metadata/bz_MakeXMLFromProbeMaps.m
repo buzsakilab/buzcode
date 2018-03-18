@@ -47,17 +47,6 @@ function bz_MakeXMLFromProbeMaps(basepath,basename,probemaplist,plugorder,defaul
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
-%% Defaults... now replaced with defaults input struct
-% numchans = 1;
-% samprate = 20000;
-% bitspersample = 16;
-% voltageRange = 20;
-% amplification = 1000;
-% lfpsamprate = 1250;
-% pointsperwaveform = 32;
-% peakpointinwaveform = 16;
-% numfeatures = 4;
-
 %% Variable parsing
 if ~exist('basepath','var')
     basepath = cd;
@@ -78,6 +67,18 @@ end
 if ~exist('plugorder','var') %make gui
     % mapfolder = fileparts(which 'NRX_Buzsaki64_8X8.xlsx');
     plugorder = 1:length(probemaplist);
+end
+
+if ~exist('defaults','var')%for use if no metadata exists prior
+    defaults.NumberOfChannels = 1;
+    defaults.SampleRate = 20000;
+    defaults.BitsPerSample = 16;
+    defaults.VoltageRange = 20;
+    defaults.Amplification = 1000;
+    defaults.LfpSampleRate = 1250;
+    defaults.PointsPerWaveform = 32;
+    defaults.PeakPointInWaveform = 16;
+    defaults.FeaturesPerWave = 4;
 end
 
 probemaplist = probemaplist(plugorder);%re-sequence map list based on plugging
@@ -181,7 +182,11 @@ chunk5 = {   '</channels>';...
 % s = cat(1,s, chunk3);
 
 %% Gather probe maps
+if ischar(probemaplist)
+    probemaplist = {probemaplist};
+end
 [groupchans_byprobe,~,NumChansPerProbe] = bz_ReadProbeMapFiles(probemaplist);
+TotalNumChannels = sum(NumChansPerProbe);
 offsets = cat(2,0,cumsum(NumChansPerProbe));
 for pidx = 2:size(groupchans_byprobe,1);%add to channel numbers to acount for previous probes
     for gidx = 1:size(groupchans_byprobe,2)
@@ -227,6 +232,12 @@ end
 %     channelcountoffset = numchansthisprobe;
 %     numchans = length(groupchans_all);
 % end
+
+%% Check and set up numbers of channels
+if TotalNumChannels ~= defaults.NumberOfChannels
+    defaults.NumberOfChannels = TotalNumChannels;
+    warning('Number of channels found in the probe maps does not match the number input as default.  Will use total number specified in probe maps');
+end
 
 if isempty(probemaplist)
     groupchans_byprobe{1,1} = [0:defaults.NumberOfChannels-1];

@@ -17,12 +17,13 @@ function [isBehavior] = bz_isBehavior(behavior)
 % written by david tingley, 2017
 
 
-if isfield(behavior,'position') && isfield(behavior,'units') && isfield(behavior,'timestamps') && isfield(behavior,'samplingRate')% check that fields exist
-     if isstruct(behavior.position) && isvector(behavior.timestamps) && ischar(behavior.units) && isnumeric(behavior.samplingRate)
+if isfield(behavior,'behaviorinfo') && isfield(behavior,'timestamps') && isfield(behavior,'samplingRate')% check that fields exist
+     if isstruct(behavior.behaviorinfo) && isvector(behavior.timestamps) && isnumeric(behavior.samplingRate)
          % check that sub fields exist
-         if isfield(behavior.position,'x') && isfield(behavior.position,'y') 
+         if isfield(behavior.behaviorinfo,'description') && isfield(behavior.behaviorinfo,'acquisitionsystem') && isfield(behavior.behaviorinfo,'substructnames') 
             isBehavior = true;
          else
+            warning('behavior struct seems to be missing something in .behaviorinfo')
             isBehavior = false;
          end
          
