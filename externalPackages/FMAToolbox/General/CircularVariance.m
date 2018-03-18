@@ -16,7 +16,7 @@ function [v,s] = CircularVariance(angles,dim)
 %
 %  SEE
 %
-%    See also CircularMean, CircularConfidenceIntervals, Concentration,
+%    See also circ_mean, CircularConfidenceIntervals, Concentration,
 %    ConcentrationTest.
 
 % Copyright (C) 2004-2011 by Michaël Zugaro
@@ -33,6 +33,6 @@ end
 isradians(angles);
 
 angles = exp(i*angles);
-r_bar = abs(mean(angles,dim));
+r_bar = abs(mean(angles,dim)); % is this a bug? should it be circ_mean?
 v = 1 - r_bar;
 s = sqrt(-2*log(r_bar));

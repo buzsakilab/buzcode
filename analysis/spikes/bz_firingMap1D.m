@@ -1,27 +1,28 @@
 function [firingMaps] = bz_firingMap1D(varargin)
 % USAGE
-% [rateMap countMap occuMap phaseMap] = bz_firingMap1D(spikes,behavior,lfp,tau)
+% [firingMaps] = bz_firingMap1D(spikes,behavior,lfp,tau)
 %
 % INPUTS
 %
-%   spikes  - buzcode format .cellinfo. struct with the following fields
-%           .times 
+%   spikes    - buzcode format .cellinfo. struct with the following fields
+%               .times 
 %
-%   behavior
+%   behavior  - buzcode format behavior struct
 %
 %
-%   tau
+%   tau       - desired smoothing window
+%
+%   saveMat   - logical (default: false) that saves firingMaps file
 %
 %
 % OUTPUT
-%  phaseMap - 7xM matrix columns are linearized position, trial
-%  number, x position, y position, instananeous firing rate, theta phase.  M is the number of spikes
-%  across all trials of the same type
 %
-%
-%
-%
-%
+%   firingMaps - cellinfo struct with the following fields
+%                .rateMaps              gaussian filtered rates
+%                .rateMaps_unsmooth     raw rate data
+%                .rateMaps_box          box filtered rates
+%                .countMaps             raw spike count data
+%                .occuMaps              position occupancy data
 %
 % written by david tingley, 2017
 
