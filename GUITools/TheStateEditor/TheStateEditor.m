@@ -188,7 +188,10 @@ end
 %These parameters are passed through all functions
 FO.downsampleGoal = 312.5;% display Hz goal, to save memory... will calculate downsample factor to match (ie 4 if 1250hz lfp file)
 FO.baseName = baseName;
-FO.basePath = fileparts(baseName); %basePath is assumed to be pwd
+FO.basePath = fileparts(baseName);
+if isempty(FO.basePath)
+FO.basePath = pwd;     %basePath is assumed to be pwd... 
+end
 FO.eegShow = 2; %show 2 seconds of eeg
 FO.maxFreq = 40; %default starting frequency extent
 FO.hanningW = 10; %default hanning smoothing window
@@ -4636,6 +4639,7 @@ end
 function FO = ViewAutoScoreThresholds(obj,event)
 FO = guidata(obj);
 baseName = FO.baseName;
+basePath = FO.basePath;
 
 % auto-load DetectionParameters, if they exist.  Save for later
 load([baseName '.SleepState.states.mat'])
@@ -4662,7 +4666,7 @@ end
 if HistAndThreshAlready_Bool
     histsandthreshs = FO.AutoScore.histsandthreshs;
 else
-    histsandthreshs = SSHistogramsAndThresholds_In(baseName);
+    histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath);
 end
 FO.AutoScore.histsandthreshs = histsandthreshs;
 % if ~exist([baseName '_SleepScore_FromStateEditor.mat'],'file');
@@ -4759,94 +4763,41 @@ set(lo,'XData',[newx newx])
 end
 
 
-function histsandthreshs = SSHistogramsAndThresholds_In(baseName)
+function histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath)
 % Get initial histograms and thresholds as calculated by SleepScoreMaster.m
+SleepState = bz_LoadStates(basePath,'SleepState');
 
-load([baseName '.SleepState.states.mat']);
-dp = SleepState.detectorinfo.detectionparms;
-if isfield(dp.SleepScoreMetrics,'histsandthreshs')%if already exists, just take from saved data
-    histsandthreshs = dp.SleepScoreMetrics.histsandthreshs;
-elseif isfield(dp,'histsandthreshs')%if already exists, just take from saved data
-    histsandthreshs = dp.histsandthreshs;
-else%if not, try to generate 
-    %(not likely to work since these params should have been saved at same
-    %time as histsandthreshs)
-
-    %get params
-    broadbandSlowWave = dp.broadbandSlowWave;
-    EMG = dp.EMG;
-    thratio = dp.thratio;
-
-    %% SWBand power
-    numpeaks = 1;
-    numbins = 12;
-    %numbins = 12; %for Poster...
-    while numpeaks ~=2
-        [swhist,swhistbins]= hist(broadbandSlowWave,numbins);
-
-        [PKS,LOCS] = findpeaks_In(swhist,'NPeaks',2,'SortStr','descend');
-        LOCS = sort(LOCS);
-        numbins = numbins+1;
-        numpeaks = length(LOCS);
-    end
-    betweenpeaks = swhistbins(LOCS(1):LOCS(2));
-    [dip,diploc] = findpeaks_In(-swhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
-    swthresh = betweenpeaks(diploc);
-    broadbandSlowWave(badtimes,1)=swhistbins(LOCS(1));
-    NREMtimes = (broadbandSlowWave >swthresh); %SWS time points
+try
+    dp = SleepState.detectorinfo.detectionparms;
     
-    %% EMG
-    numpeaks = 1;
-    numbins = 12;
-    while numpeaks ~=2
-        [EMGhist,EMGhistbins]= hist(EMG(NREMtimes==0),numbins);
-        %[EMGhist,EMGhistbins]= hist(EMG,numbins);
-
-        [PKS,LOCS] = findpeaks_In([0 EMGhist],'NPeaks',2);
-        LOCS = sort(LOCS)-1;
-        numbins = numbins+1;
-        numpeaks = length(LOCS);
-
-        if numpeaks ==100
-            display('Something is wrong with your EMG')
-            return
-        end
+    %if already exists, just take from saved data
+    if isfield(dp,'histsandthreshs')
+        histsandthreshs = dp.histsandthreshs;
+    elseif isfield(dp.SleepScoreMetrics,'histsandthreshs')
+        %this is the proper formatting, everything else in here is to deal
+        %with legacy issues (DL 3/18/18)
+        histsandthreshs = dp.SleepScoreMetrics.histsandthreshs;
     end
+catch
+    warning('We were unable to find histsandthreshs in your SleepState. Trying to recalculate...')
 
-    betweenpeaks = EMGhistbins(LOCS(1):LOCS(2));
-    [dip,diploc] = findpeaks_In(-EMGhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
-
-    EMGthresh = betweenpeaks(diploc);
-
-
-    MOVtimes = (broadbandSlowWave<swthresh & EMG>EMGthresh);
-    % Then Divide Theta... repetition below is same as Dan's code
-    numpeaks = 1;
-    numbins = 12;
-    while numpeaks ~=2 && numbins <=25
-        %[THhist,THhistbins]= hist(thratio(SWStimes==0 & MOVtimes==0),numbins);
-        [THhist,THhistbins]= hist(thratio(MOVtimes==0),numbins);
-
-        [PKS,LOCS] = findpeaks_In(THhist,'NPeaks',2,'SortStr','descend');
-        LOCS = sort(LOCS);
-        numbins = numbins+1;
-        numpeaks = length(LOCS);
-    end
-
-    if length(PKS)==2
-        betweenpeaks = THhistbins(LOCS(1):LOCS(2));
-        [dip,diploc] = findpeaks_In(-THhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
-
-        THthresh = betweenpeaks(diploc);
-
-        REMtimes = (broadbandSlowWave<swthresh & EMG<EMGthresh & thratio>THthresh);
-    else
-        THthresh = 0;
-        REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
-    end
-    %save
-    histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
+    load(fullfile(basePath,[baseName '.SleepScoreLFP.LFP.mat']));
+    load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+    
+    [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
+                                           basePath,SleepScoreLFP,EMGFromLFP,false);
+    
+    histsandthreshs = SleepScoreMetrics.histsandthreshs;
+    
+    SleepState.detectorinfo.detectionparms.SleepScoreMetrics = SleepScoreMetrics;
+    SleepState.detectorinfo.StatePlotMaterials = StatePlotMaterials;
+    save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState');
 end
+
+
+
+
+
 end
 
 function [states,StateIntervals] = ReClusterStates_In(obj,ev)
@@ -4861,6 +4812,7 @@ function [states,StateIntervals] = ReClusterStates_In(obj,ev)
 obj = findobj('tag','StateEditorMaster');
 FO = guidata(obj(end));
 baseName = FO.baseName;
+basePath = FO.basePath;
 
 % load detectionparameters if not loaded when user pressed "a" in ViewAutoScoreThresholds
 if isfield(FO,'AutoScore')
@@ -4870,9 +4822,8 @@ if isfield(FO,'AutoScore')
 end
 if ~exist('dp','var')
     % load([baseName '.SleepScoreMetrics.LFP.mat'])
-    load([baseName '.SleepState.states.mat'])
+    SleepState = bz_LoadStates(basePath,'SleepState');
     dp = SleepState.detectorinfo.detectionparms;
-    v2struct(dp)
 end
 
 % grab user-entered thresholds from GUI, for final input to DetermineStates
@@ -4885,6 +4836,11 @@ THthresh = THthresh(1,1);
 FO.AutoScore.histsandthreshs.swthresh = swthresh;
 FO.AutoScore.histsandthreshs.EMGthresh = EMGthresh;
 FO.AutoScore.histsandthreshs.THthresh = THthresh;
+
+if ~isfield(dp,'MinTimeWindowParms')
+    display('No MinTimeWindowParms found... using defaults')
+    dp.MinTimeWindowParms = [];
+end
 
 % Execute scoring - USE SleepScore toolbox functions
 [stateintervals,~,~] = ClusterStates_DetermineStates(...

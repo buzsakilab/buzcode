@@ -4,7 +4,7 @@ function [ints, idx, MinTimeWindowParms] = ClusterStates_DetermineStates(SleepSc
 
 %% Basic parameters
 % Min Win Parameters (s)
-if exist('MinTimeWindowParms','var')
+if exist('MinTimeWindowParms','var') && ~isempty(MinTimeWindowParms)
      v2struct(MinTimeWindowParms)
 else%defaults as follows:
     minSWSsecs = 6;
