@@ -22,10 +22,6 @@ if exist('sf','var')
     INT = cellfun(@(X) X*sf,INT,'UniformOutput',false);
 end
 
-if ~exist('len','var')
-    allints = cat(1,INT{:});
-    len = max(allints(:));
-end
 
 IDX = zeros(len,1);
 
@@ -42,11 +38,6 @@ switch numstates
     case 1
         IDX = logical(IDX);
     otherwise
-end
-
-if length(IDX)>len
-    display("your states extend past your len...")
-    IDX = IDX(1:len);
 end
 
 
