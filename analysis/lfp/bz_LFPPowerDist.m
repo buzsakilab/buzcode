@@ -1,6 +1,7 @@
 function [ output_args ] = bz_LFPPowerDist( LFP,varargin )
 % bz_LFPPowerDist(LFP) calculates the power distribution of an LFP signal.
 %   NOTE: THIS FUNCTION IS UNDER DEVELOPMENT. Feel free to chip in.
+
 %
 %INPUTS
 %   LFP     [nt x 1] vector of the LFP signal -or- basename
@@ -31,6 +32,7 @@ spectype = 'FFT';
 
 %%
 warning('This function is still under development. No promises')
+
 
 frange = [1 128];
 nfreqs = 100;
