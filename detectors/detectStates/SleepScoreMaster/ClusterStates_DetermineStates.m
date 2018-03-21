@@ -1,15 +1,11 @@
-function [INT, IDX, t_IDX, MinTimeWindowParams] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParams,histsandthreshs)
+function [ints, idx, MinTimeWindowParms] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParms,histsandthreshs)
 % can input histsandthreshs from externally if needed... ie via manual
 % selection in stateeditor
 
 %% Basic parameters
 % Min Win Parameters (s)
-if exist('MinWinParams','var')
-     v2struct(MinTimeWindowParams)
-% 	fn = fieldnames(MinWinParams);
-%     for a = 1:length(fn);
-%         eval([fn{a} '=MinWinParams.' fn{a} ';']);
-%     end
+if exist('MinTimeWindowParms','var') && ~isempty(MinTimeWindowParms)
+     v2struct(MinTimeWindowParms)
 else%defaults as follows:
     minSWSsecs = 6;
     minWnexttoREMsecs = 6;
@@ -17,7 +13,7 @@ else%defaults as follows:
     minREMinWsecs = 6;
     minREMsecs = 6;
     minWAKEsecs = 6;
-    MinTimeWindowParams = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,...
+    MinTimeWindowParms = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,...
         minREMinWsecs,minREMsecs,minWAKEsecs);
 end
 
@@ -161,12 +157,22 @@ INT = IDXtoINT_ss(IDX,3);
 
 %% Pad time to match recording time
 offset = SleepScoreMetrics.t_clus(1)-1; %t_FFT(1)-1;
-
 INT = cellfun(@(x) x+offset,INT,'UniformOutput',false);
 
-IDX = INTtoIDX_ss(INT,reclength);
-t_IDX = 1:length(IDX);
-IDX = IDX';
+IDX = INTtoIDX_ss(INT,t_clus(end));
+IDX = [0;IDX];  %T make start at 0;
+t_IDX = [0:t_clus(end)]';
+
+
+%% Structure Output
+
+ints.WAKEstate = INT{1};
+ints.NREMstate = INT{2};
+ints.REMstate = INT{3};
+
+%Because TheStateEditor
+idx = INTtoIDX(ints,'statenames',{'WAKE','','NREM','','REM'});
+
 
 end
 
