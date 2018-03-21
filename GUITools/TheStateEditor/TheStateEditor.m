@@ -206,7 +206,7 @@ FO.hanningW = 10; %default hanning smoothing window
 %FO.eMidline{1:nCh} - handle for eeg center of view line objects
 
 
-%% account for possibility that some lft files are .eeg and some are .lft
+%% account for possibility that some lfp files are .eeg and some are .lfp
 if ~(exist('rawEeg', 'var') & exist('Chs', 'var') & exist('nCh', 'var') & exist('MotionType', 'var'))
     if LoadFromPortable == 0
         if FileExistsIn([baseName,'.eeg'])
