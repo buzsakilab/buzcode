@@ -2201,7 +2201,7 @@ idx.timestamps = FO.to;
 %note: FO.to is 0-indexed... does not line up with F0.states. issue with
 %loading. to fix.
 
-%Make a buzcode-style ints structure
+%Make a buzcode-style ints structure (should wrap this into IDXtoINT.mat)
 sints = IDXtoINT_In(idx.states(2:end),5); %2:end to deal with 0-indexing
 for ss = 1:5
     if isempty(sints{ss});continue;end
@@ -4844,18 +4844,13 @@ if ~isfield(dp,'MinTimeWindowParms')
 end
 
 % Execute scoring - USE SleepScore toolbox functions
-[stateintervals,~,~] = ClusterStates_DetermineStates(...
+[stateintervals,stateidx,~] = ClusterStates_DetermineStates(...
                                            dp.SleepScoreMetrics,dp.MinTimeWindowParms,FO.AutoScore.histsandthreshs);
 
-% update plot and data in TheStateEditor GUI
-stateslen = size(FO.to,1);
-% stateslen = max([max(max(SleepState_new.ints.NREMstate)) max(max(SleepState_new.ints.REMstate)) max(max(SleepState_new.ints.WAKEstate)) max(max(SleepState_new.ints.MAstate)) ]); 
-states = zeros(1,stateslen);
-states(find(inttoboolIn(stateintervals.WAKEstate))) = 1;
-% states(find(inttoboolIn(SleepState_new.ints.MAstate))) = 2;
-states(find(inttoboolIn(stateintervals.NREMstate))) = 3;
-states(find(inttoboolIn(stateintervals.REMstate))) = 5;
-states = cat(2,states,zeros(1,length(FO.to)-length(states)));%pad to make sure is long enough
+%Pad the beginning and end to match fspec{1}.to
+states = stateidx.states';
+states = cat(2,zeros(1,stateidx.timestamps(1)-(FO.to(1))),states);
+states = cat(2,states,zeros(1,length(FO.to)-length(states)));                                       
 
 FO.States = states;
 guidata(FO.fig,FO);
