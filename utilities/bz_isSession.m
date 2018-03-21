@@ -20,7 +20,8 @@ end
 pathSplit = strsplit(path,'/');
 session = pathSplit{end}; % get session name 
 
-if exist([session '.dat']) & exist([session '.eeg']) | exist([session '.lfp'])
+if exist([lower(session) '.dat']) | exist([lower(session) '.eeg']) | exist([lower(session) '.lfp'])  ...
+        | exist([upper(session) '.dat']) | exist([upper(session) '.eeg']) | exist([upper(session) '.lfp']) 
     isSession = 1;  
 else
     isSession = 0;

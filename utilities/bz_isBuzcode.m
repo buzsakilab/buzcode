@@ -16,7 +16,7 @@ else
     path = varargin{1};
 end
 if bz_isSession % only worth continuing if it's a session..
-    sessionInfo = bz_getSessionInfo;
+    sessionInfo = bz_getSessionInfo(path,'noprompts',true);
 
     if bz_isSessionInfo(sessionInfo) 
         isBuzcode = 1;  % we should also add checks for dat/clu/res/wav files..
