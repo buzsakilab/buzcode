@@ -138,8 +138,9 @@ for i =1:length(Listing)
         bad(i) = 0;
     end
 end
+if ~isempty(Listing)
 Listing(find(bad)) = [];
-
+end
 % Call Visitor function
 cwd = pwd;
 cd(topPath)
