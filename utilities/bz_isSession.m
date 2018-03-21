@@ -19,10 +19,15 @@ else
 end
 pathSplit = strsplit(path,'/');
 session = pathSplit{end}; % get session name 
+if  ~isempty(dir('*xml'))
+    if exist([(session) '.dat']) | exist([(session) '.eeg']) | exist([(session) '.lfp'])  | ...
+            exist([lower(session) '.dat']) | exist([lower(session) '.eeg']) | exist([lower(session) '.lfp'])  ... % lowercase options..
+            | exist([upper(session) '.dat']) | exist([upper(session) '.eeg']) | exist([upper(session) '.lfp'])  % uppercase options..
 
-if exist([lower(session) '.dat']) | exist([lower(session) '.eeg']) | exist([lower(session) '.lfp'])  ...
-        | exist([upper(session) '.dat']) | exist([upper(session) '.eeg']) | exist([upper(session) '.lfp']) 
-    isSession = 1;  
+        isSession = 1;  
+    else
+        isSession = 0;
+    end
 else
     isSession = 0;
 end
