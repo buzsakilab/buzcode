@@ -1,4 +1,4 @@
-function [isSession] = bz_isSession(path)
+function [isSession, path] = bz_isSession(varargin)
 % USAGE
 % [isSession] = bz_isSession(event)
 % 
@@ -14,9 +14,11 @@ function [isSession] = bz_isSession(path)
 
 if nargin == 0
     path = pwd;
+else
+    path = varargin{1};
 end
-path = strsplit(path,'/');
-session = path{end}; % get session name 
+pathSplit = strsplit(path,'/');
+session = pathSplit{end}; % get session name 
 
 if exist([session '.dat']) & exist([session '.eeg']) | exist([session '.lfp'])
     isSession = 1;  

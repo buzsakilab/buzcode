@@ -21,12 +21,12 @@ function [newDB] = bz_updateSQLFromFiles(nyuSharePath)
 
 experimenterList = dir([nyuSharePath '/Buzsakilabspace/Datasets/*']);
 for exp = 1:length(experimenterList)
-    if ~strcmp(experimenterList{exp},'unsorted') % ignore unsorted folder
+    if ~strcmp(experimenterList(exp),'unsorted') % ignore unsorted folder
         
-        dirwalk([nyuSharePath '/Buzsakilabspace/Datasets/' experimenterList{exp}],@bz_isBuzcode)
+        dirwalk([nyuSharePath '/Buzsakilabspace/Datasets/' experimenterList(exp).name],@bz_isBuzcode)
         % finds recordings that are currently in buzcode format
         
-%         dirwalk([nyuSharePath '/Buzsakilabspace/Datasets/' experimenterList{exp}],@bz_isSession)
+        dirwalk([nyuSharePath '/Buzsakilabspace/Datasets/' experimenterList(exp).name],@bz_isSession)
         % finds recordings that have a minimal dataset (*.dat or *.eeg
         % file)
         
