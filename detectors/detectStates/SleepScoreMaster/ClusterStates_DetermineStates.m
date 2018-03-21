@@ -171,11 +171,7 @@ ints.NREMstate = INT{2};
 ints.REMstate = INT{3};
 
 %Because TheStateEditor
-IDX(IDX==3) = 5; IDX(IDX==2) = 3;
-
-idx.states = IDX;
-idx.timestamps = t_IDX;
-idx.statenames = {'WAKE','','NREM','','REM'};
+idx = INTtoIDX(ints,'statenames',{'WAKE','','NREM','','REM'});
 
 
 end

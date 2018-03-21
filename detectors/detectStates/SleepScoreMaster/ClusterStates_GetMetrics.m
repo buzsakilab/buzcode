@@ -5,7 +5,7 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 %
 %
 %
-%Dependencies: IDXtoINT, INTtoIDX
+%Dependencies: IDXtoINT
 %
 %Last Updated: 1/31/16
 %DLevenstein

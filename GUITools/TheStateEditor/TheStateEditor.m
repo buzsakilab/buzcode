@@ -187,7 +187,7 @@ end
 
 %These parameters are passed through all functions
 FO.downsampleGoal = 312.5;% display Hz goal, to save memory... will calculate downsample factor to match (ie 4 if 1250hz lfp file)
-FO.baseName = baseName;
+FO.baseName = baseName;  %Includes basePath
 FO.basePath = fileparts(baseName);
 if isempty(FO.basePath)
 FO.basePath = pwd;     %basePath is assumed to be pwd... 
@@ -622,15 +622,16 @@ if isfield(SleepState,'idx')
     %Pad the beginning and end to match fspec{1}.to
     states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(StateInfo.fspec{1}.to(1))),states);
     states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
+elseif isfield(SleepState,'ints')
+    %If no idx... get from  .ints
+    SleepState.idx = INTtoIDX(SleepState.ints,'statenames',{'WAKE','','NREM','','REM'});
+    save([baseName '.SleepState.states.mat'],'SleepState') %Save with new idx
+    states = SleepState.idx.states';
+    %Pad the beginning and end to match fspec{1}.to
+    states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(StateInfo.fspec{1}.to(1))),states);
+    states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
 else
-   stateslen = max([max(max(SleepState.ints.NREMstate)) max(max(SleepState.ints.REMstate)) max(max(SleepState.ints.WAKEstate)) ]); 
-   states = zeros(1,stateslen);
-   states(find(inttoboolIn(SleepState.ints.WAKEstate))) = 1;
-%        states(find(inttoboolIn(SleepState.ints.MAstate))) = 2;
-   states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
-   states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
-   states = cat(2,0,states); %For 0-indexing
-   states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
+   error('Your SleepState is broken.')
 end
 
 if eegFS>FO.downsampleGoal;
@@ -2236,7 +2237,7 @@ save([baseName '.SleepState.states.mat'],'SleepState')
 %Calculate and save new StateEpisodes
 StatesToEpisodes(SleepState,basePath);
 
-b = msgbox(['Saved work to ', baseName, '.SleepState/SleepStateEpisodes.states.mat']);
+b = msgbox(['Saved work to ', baseName, '.SleepState.states.mat, SleepStateEpisodes.states.mat']);
 saved = 1;
 uiwait(b);
 
@@ -4957,44 +4958,6 @@ end
 
 end
 
-function [ IDX ] = INTtoIDX_In(INT,len,sf)
-%[IDX] = INTtoIDX_In(INT,len,sf) Converts state on/offsets to vector of indices
-%
-%INPUT
-%   INT:    {nstates} cell array of [nintervals x 2] start and end times.
-%                       (optional) can be TSObject intervalSet
-%   len:    length of index vector
-%   sf:     desired sampling frequency of the output vector
-%
-%OUTPUT
-%   IDX:    [len x 1] vector of state indices, where states are identified by
-%           integers starting from 1, 0 are unmarked.
-%
-%Last Updated: 11/15/15
-%DLevenstein
-%%
-if isa(INT,'intervalSet')
-    INT = {[Start(INT,'s'), End(INT,'s')]};
-end
-if exist('sf','var')
-    INT = cellfun(@(X) X*sf,INT,'UniformOutput',false);
-end
-IDX = zeros(len,1);
-numstates = length(INT);
-for ss = 1:numstates
-    stateints = INT{ss};
-    numints = length(stateints(:,1));
-    for ii = 1:numints
-        IDX(stateints(ii,1):stateints(ii,2))=ss;
-    end
-end
-switch numstates
-    case 1
-        IDX = logical(IDX);
-    otherwise
-end
-
-end
 
 function newvals = ResampleTolerant(vals,length1,length2)
 % Wrapper around the resample function that allows it to work even if
