@@ -37,13 +37,13 @@ if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the fo
         display(['Multiple .xml files in this folder, trying ',baseName,'.xml'])
     end
     if isempty(d) %if no .xmls - you have a problem
-        error(['No .xml in ',filename])
-    end 
+        error('LoadParameters:noXmls',['No .xml in ',filename])
+    end
     
     filename = fullfile(filename, d.name);
 end
 
-if ~exist(filename),
+if ~exist(filename)
 	error(['File ''' filename ''' not found.']);
 end
 [pathname,basename,extension] = fileparts(filename);

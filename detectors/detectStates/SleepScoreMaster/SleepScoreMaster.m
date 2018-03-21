@@ -150,15 +150,14 @@ addParameter(p,'Notch60Hz',defaultNotch60Hz)
 addParameter(p,'NotchUnder3Hz',defaultNotchUnder3Hz)
 addParameter(p,'NotchHVS',defaultNotchHVS)
 addParameter(p,'NotchTheta',defaultNotchTheta)
-addParameter(p,'SWChannels',defaultNotchTheta)
-addParameter(p,'ThetaChannels',defaultNotchTheta)
+addParameter(p,'SWChannels',defaultSWChannels)
+addParameter(p,'ThetaChannels',defaultThetaChannels)
 addParameter(p,'rejectChannels',[]);
 addParameter(p,'noPrompts',false);
 
 parse(p,varargin{:})
 %Clean up this junk...
 overwrite = p.Results.overwrite; 
-savebool = p.Results.savebool;
 savedir = p.Results.savedir;
 scoretime = p.Results.scoretime;
 SWWeightsName = p.Results.SWWeightsName;
@@ -187,6 +186,18 @@ bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']
 
 %% Get channels not to use
 parameters = bz_getSessionInfo(basePath);
+% check that SW/Theta channels exist in rec..
+if length(SWChannels) > 1 
+    if sum(ismember(SWChannels,parameters.channels)) ~= length(SWChannels)
+        error('some of the SW input channels dont exist in this recording...?')
+    end   
+end
+if length(ThetaChannels) > 1 
+    if sum(ismember(ThetaChannels,parameters.channels)) ~= length(ThetaChannels)
+        error('some of the theta input channels dont exist in this recording...?')
+    end   
+end
+
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
     rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];

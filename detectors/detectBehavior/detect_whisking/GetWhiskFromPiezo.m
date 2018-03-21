@@ -1,4 +1,4 @@
-function [ EMGwhisk ] = GetWhiskFromEMG( basePath,varargin )
+function [ EMGwhisk ] = GetWhiskFromPiezo( basePath,varargin )
 %[ EMGwhisk ] = GetWhiskFromEMG(basePath ) 
 %This is a detector that extracts whisking/nonwhisking epochs from 
 %implanted EMG in the whisker pad. Extracts also the EMG and EMG envelope.
@@ -49,32 +49,27 @@ end
 
 
 %% Clampex File
-timechan = 1;
-emgchan = 2;
-sf_abf = 20000; %Sampling Frequency of the .abf file
-
 
 [abffile,si,file_info] = abfload(abfname);
+sf_abf = 1./(si.*10^-6);
 
-% %Prompt user for channel
-% numabfchans = length(abffile(1,:));
-% if ~exist('chanNums','var')
-%     emgchan = listdlg('ListString',file_info.recChNames,...
-%         'PromptString',['Which channels is Whisker? ']);
-%     %Replace this with prompt file_info.recChNames
-% end
-
-pulse_abf = abffile(:,timechan);
-EMG = abffile(:,emgchan);
-
+%Prompt user for channel
+numabfchans = length(abffile(1,:));
+if ~exist('chanNums','var')
+    piezochan = listdlg('ListString',file_info.recChNames,...
+        'PromptString',['Which channels is Whisker? ']);
+    %Replace this with prompt file_info.recChNames
+end
+%%
+EMG = abffile(:,piezochan);
 t_abf = [1:length(EMG)]'./sf_abf;
 
 %%
 % figure
 % plot(t_abf,EMG,'k')
 %% Get the whisking envelope
-EMGrange = [400 3000];
-EMG = FiltNPhase(EMG,EMGrange,sf_abf);
+%EMGrange = [400 3000];
+%EMG = FiltNPhase(EMG,EMGrange,sf_abf);
 
 downsamplefactor = 16; %Downsample to same as the LFP;
 EMG = downsample(EMG,downsamplefactor);
@@ -109,7 +104,7 @@ troughs = 10.^EMGbins(troughidx);
 
 %Get sign of gradient at each of the thresholds and use that to pick trough
 Whsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.Whthreshold),'nearest'));
-if Whsign==-1 
+if Whsign==-1
     EMGparms.Whthreshold = troughs(find(troughs>EMGparms.Whthreshold,1,'first'));
     if isempty(EMGparms.Whthreshold)
         EMGparms.Whthreshold = troughs(end);
@@ -119,7 +114,7 @@ elseif Whsign==1
 end
 
 NWhsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.NWhthreshold),'nearest'));
-if NWhsign==-1 
+if NWhsign==-1
     EMGparms.NWhthreshold = troughs(find(troughs>EMGparms.NWhthreshold,1,'first'));
 elseif NWhsign==1
     EMGparms.NWhthreshold = troughs(find(troughs<EMGparms.NWhthreshold,1,'last'));
@@ -196,66 +191,22 @@ durhist.bins = linspace(-1,2,numbinst);
 durhist.Wh = hist(log10(Whdur),durhist.bins);
 durhist.NWh = hist(log10(NWhdur),durhist.bins);
 
-%% Identify Pulses from Camera (in clampex)
-pulsethreshold_abf =0.5;  %Adjust this later to set based on input.
-pulseonsets = find(diff(pulse_abf>pulsethreshold_abf)==1);
-pulset = t_abf(pulseonsets);
 
-interpulse = diff(pulset);
-
-%remove the first trigger, which is just camera onset... 
-%Make this more rigorous later
-if interpulse(1) > sum(interpulse(2:3))
-    pulset(1) = []; 
-end
-firstpulstime_abf = pulset(1);
-
-%% Load the analogin for the timestamps (pulses in intan)
-
-timepulses = bz_LoadBinary(analogName,'nChannels',1,'precision','uint16');
-
-sf_pulse = 1./20000; %Sampling Frequency of the .abf file
-t_pulse = [1:length(timepulses)]'.*sf_pulse;
-
-pulsethreshold =1e4;  %Adjust this later to set based on input.
-pulseonsets = find(diff(timepulses>pulsethreshold)==1);
-pulset = t_pulse(pulseonsets);
-
-minpulsedur = 0.003; %Remove double/noise crossings
-shortpulses=diff(pulset)<(minpulsedur);
-pulset(shortpulses) = [];
-
-interpulse = diff(pulset);
-
-if interpulse(1) > sum(interpulse(2:3))
-    pulset(1) = []; 
-end
-sf_eff = 1./mean(interpulse);
-
-%Check that frame duration is constant up to tolerance (no skipped frames)
-tol = 0.001;
-
-if range(interpulse)>tol
-    warning('Frame rate is not constant...')
-end
-
-
-firstpulstime_lfp = pulset(1);
 
 %% Reset time to align to LFP
 
-t_align = t_EMG-firstpulstime_abf+firstpulstime_lfp;
-Whints = [wh_on wh_off]-firstpulstime_abf+firstpulstime_lfp;
-NWhints = [nwh_on nwh_off]-firstpulstime_abf+firstpulstime_lfp;
+%t_EMG = t_EMG-firstpulstime_abf+firstpulstime_lfp;
+Whints = [wh_on wh_off];
+NWhints = [nwh_on nwh_off];
 
 %% Figure
 
 figure
 subplot(4,1,1)
-    plot(t_align,EMGz,'k')
+    plot(t_EMG,EMGz,'k')
 
     hold on
-    plot(t_align,EMGsm,'b','linewidth',2)
+    plot(t_EMG,EMGsm,'b','linewidth',2)
     plot(Whints',EMGparms.Whthreshold.*ones(size(Whints))','g','linewidth',2)
     plot(NWhints',EMGparms.NWhthreshold.*ones(size(NWhints))','r','linewidth',2)
     axis tight
@@ -263,10 +214,10 @@ subplot(4,1,1)
     ylabel('EMG (modZ)');
     
 subplot(4,1,2)
-    plot(t_align,EMGz,'k')
+    plot(t_EMG,EMGz,'k')
 
     hold on
-    plot(t_align,EMGsm,'b','linewidth',2)
+    plot(t_EMG,EMGsm,'b','linewidth',2)
     plot(Whints',EMGparms.Whthreshold.*ones(size(Whints))','g','linewidth',2)
     plot(NWhints',EMGparms.NWhthreshold.*ones(size(NWhints))','r','linewidth',2)
     xlim([100 160])
@@ -293,20 +244,6 @@ xlabel('Duration (s)')
 ylabel('# Epochs')
 legend('NWh','Wh')
 
-subplot(4,2,5)
-plot(t_abf-firstpulstime_abf+firstpulstime_lfp,pulse_abf,'k')
-hold on
-plot(pulset,pulsethreshold_abf.*ones(size(pulset)),'r+')
-xlim(firstpulstime_lfp+[-0.2 0.5])
-ylabel('Clampex Pulse Onset')
-
-subplot(4,2,7)
-
-plot(t_pulse,timepulses,'k')
-hold on
-plot(pulset,pulsethreshold.*ones(size(pulset)),'r+')
-xlim(firstpulstime_lfp+[-0.2 0.5])
-ylabel('Intan Pulse Onset')
 
 NiceSave('WhiskingDetection',figfolder,baseName)
 
@@ -319,7 +256,7 @@ EMGwhisk.detectorname = 'GetWhiskFromEMG';
 EMGwhisk.detectiondate = today('datetime');
 EMGwhisk.EMG = EMGz;
 EMGwhisk.EMGsm = EMGsm;
-EMGwhisk.t = t_align;
+EMGwhisk.t = t_EMG;
 
 save(savefile,'EMGwhisk')
 end
