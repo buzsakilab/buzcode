@@ -42,6 +42,15 @@ if ~strcmp(curs.Message,'Invalid connection.')
     end
     for j = 1:length(buzsakilab_datasets)
         disp(['Submitting dataset ' num2str(j) ': ' buzsakilab_datasets(j).Session])
+        % check for empty fields, and will with 'null'
+        if any(structfun(@isempty, buzsakilab_datasets(j)))
+            idx = find(structfun(@isempty, buzsakilab_datasets(j)));
+            names = fieldnames(buzsakilab_datasets);
+            for field = 1:length(idx)
+                warning([names{idx(field)} ' was empty, filling with null.'])
+                buzsakilab_datasets(j) = setfield(buzsakilab_datasets(j),names{idx(field)},'null');
+            end
+        end
         % Data to insert
         colnames = fieldnames(buzsakilab_datasets(j))'; %
         data_table = struct2table(buzsakilab_datasets(j));
