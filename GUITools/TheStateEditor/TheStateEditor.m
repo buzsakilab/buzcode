@@ -4856,17 +4856,6 @@ FO.States = states;
 guidata(FO.fig,FO);
 modifyStates(1, states, 0);
 
-
-%don't save for now... let user control this
-% % save to SleepState.states .mat file
-% load([baseName '.SleepState.states.mat'])%load it
-% if ~isfield(SleepState,'AutoScoreInts')%if this is the first stateeditor writes state
-%     SleepState.AutoScoreInts = SleepState.ints;
-% end
-% SleepState.ints = SleepState_new.ints;
-% 
-% save([baseName '.SleepState.states.mat'],'SleepState')
-
 end
 
 
