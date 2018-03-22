@@ -20,17 +20,29 @@ function [newDB] = bz_updateSQLFromFiles(nyuSharePath)
 
 
 experimenterList = dir([nyuSharePath '/Buzsakilabspace/Datasets/*']);
+
+totalSessions = 0;
+%% step 1, find all sessions and compile a path list
 for exp = 1:length(experimenterList)
-    if ~strcmp(experimenterList(exp),'unsorted') % ignore unsorted folder
+    warning off
+    if ~strcmp(experimenterList(exp).name,'unsorted') & ~strcmp(experimenterList(exp).name(1),'.') % ignore unsorted folder and hidden files
         
-        dirwalk([nyuSharePath '/Buzsakilabspace/Datasets/' experimenterList(exp).name],@bz_isBuzcode)
+        experimenterList(exp).name
+        [isBuzcode{exp}, buzcodePaths{exp}] = dirwalk([nyuSharePath '/Buzsakilabspace/Datasets/' experimenterList(exp).name],@bz_isBuzcode,3);
         % finds recordings that are currently in buzcode format
         
-        dirwalk([nyuSharePath '/Buzsakilabspace/Datasets/' experimenterList(exp).name],@bz_isSession)
-        % finds recordings that have a minimal dataset (*.dat or *.eeg
-        % file)
+        [isSession{exp}, sessionPaths{exp}] = dirwalk([nyuSharePath '/Buzsakilabspace/Datasets/' experimenterList(exp).name],@bz_isSession,3);
+        % finds recordings that have a minimal dataset (*.dat or *.eeg file)
         
-        
-        
+        bzSessions(exp) = sum(cell2mat(isBuzcode{exp}));
+        totalSessions(exp) = sum(cell2mat(isSession{exp}));
+        totalSessions = totalSessions + sum(cell2mat(isSession))
     end
 end
+
+%% step 2, get current DB and check if these already exist 
+
+    db = bz_loadDB('dbname','buzsakid_submitdataset');
+    
+%% step 3, add new recordings
+
