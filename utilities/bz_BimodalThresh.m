@@ -1,4 +1,4 @@
-function [thresh,cross,bihist,dip,dip_p] = BimodalThresh(bimodaldata,varargin)
+function [thresh,cross,bihist,diptest] = BimodalThresh(bimodaldata,varargin)
 %[thresh,cross,bihist] = BimodalThresh(bimodaldata) takes bimodal time
 %series data, calculates the threshold between the modes (i.e. UP vs DOWN states),
 %and returns the crossing times (i.e. UP/DOWN onset/offset times)
@@ -22,8 +22,9 @@ function [thresh,cross,bihist,dip,dip_p] = BimodalThresh(bimodaldata,varargin)
 %   bihist
 %       .bins       bin centers
 %       .hist       counts
-%   dip             hartigans dip test statistic
-%   dip_p           p value for bimodal distribution
+%   diptest
+%       .dip             hartigans dip test statistic
+%       .p              p value for bimodal distribution
 %
 %DLevenstein Spring 2016
 %-Updated Spring 2017 to include Schmidt trigger, maxthresh
@@ -55,7 +56,14 @@ end
 
 %Run hartigansdiptest for bimodality
 nboot = 500; %number of times for bootstrapped significance
-[dip, p_value]=hartigansdipsigniftest(bimodaldata,nboot)
+[diptest.dip, diptest.p_value]=hartigansdipsigniftest(bimodaldata,nboot);
+
+if diptest.p_value>0.05  %add option to bipass this
+    display('Dip test says: not bimodal')
+    cross.upints = []; cross.downints = []; thresh=nan; 
+    [bihist.hist,bihist.bins]= hist(bimodaldata,starthistbins);
+    return
+end
 
 %Remove data over the threshold... this is klugey
 overmax = bimodaldata>=maxthresh;
@@ -71,6 +79,7 @@ while numpeaks ~=2
     numbins = numbins+1;
     numpeaks = length(LOCS);
     if numbins==maxhistbins && ~SETTHRESH
+        display('Unable to find trough')
     	cross.upints = []; cross.downints = []; thresh=nan; return
     end
 end
