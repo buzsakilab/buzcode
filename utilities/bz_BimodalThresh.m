@@ -1,4 +1,4 @@
-function [thresh,cross,bihist,diptest] = BimodalThresh(bimodaldata,varargin)
+function [thresh,cross,bihist,diptest] = bz_BimodalThresh(bimodaldata,varargin)
 %[thresh,cross,bihist] = BimodalThresh(bimodaldata) takes bimodal time
 %series data, calculates the threshold between the modes (i.e. UP vs DOWN states),
 %and returns the crossing times (i.e. UP/DOWN onset/offset times)
