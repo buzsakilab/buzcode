@@ -1,12 +1,20 @@
-function CutDatFragment(fname,timeperiod)
+function CutDatFragment(fname,timeperiod,RenameOriginalsAsOrig)
 % Creating a new dat file from a fragment of an original dat file
 % INPUTs
-% fname: filename of original dat
-% timeperiod: start and stop of file fragment to keep
-%
+% fname: filepath/name of original dat
+% timeperiod: start and stop of file fragment to keep, in seconds
+% RenameOriginalsAsOrig: [optional] - specifies naming convention for new vs
+% old files.  
+%    If RenameOriginalsAsOrig = 1 then amplifier.dat becomes
+%      amplifier.dat_orig and the new file is called amplifier.dat.  Same with
+%      supply.dat becoming supply.dat etc.
+%    If RenameOriginalsAsOrig = 0 then amplifier.dat remains and the new
+%      file is caled amplifier_fragment.dat.  Same for other files like
+%      supply, time etc
+%    Default = 0
 %
 % Original by Antonio Ruiz
-% Modified by Peter Petersen
+% Modified by Peter Petersen, Brendon Watson
 %
 % function should be run from the directory of the dat files
 % It assumes an info.rhd in the directory
@@ -14,48 +22,125 @@ function CutDatFragment(fname,timeperiod)
 % fname = 'Peter_MS13_171130_143907';
 % timeperiod = [0,44*60+9];
 
-Intan_rec_info = read_Intan_RHD2000_file(fullfile(pwd,'info.rhd'));
+%% Input handling
+if ~exist('RenameOriginalsAsOrig','var')
+    RenameOriginalsAsOrig = 0;
+end
 
-ch = length(Intan_rec_info.amplifier_channels);
-sr = Intan_rec_info.frequency_parameters.amplifier_sample_rate;
-a = memmapfile([fname '.dat'],'Format','int16');
+if strcmp(fname(end-3:end),'.dat')
+    fname = fname(1:end-4);
+end
+
+
+%% Gather recording meta info
+[amplifier_channels, notes, aux_input_channels, spike_triggers,...         
+board_dig_in_channels, supply_voltage_channels, frequency_parameters ] = read_Intan_RHD2000_file(pwd,'info.rhd');
+
+
+%% amplifier.dat
+disp('Writing amplifier file')
+NumCh = length(amplifier_channels);
+SampRate = frequency_parameters.amplifier_sample_rate;
+if RenameOriginalsAsOrig
+    inname = [fname '.dat_orig'];
+    outname = [fname '.dat'];
+    movefile(outname,inname)
+else
+    inname = [fname '.dat'];
+    outname = [fname '_fragment.dat'];
+end
+a = memmapfile(inname,'Format','int16');
 aa = a.data;
-fid = fopen([fname '_fragment.dat'],'W');
+fid = fopen(outname,'W');
 for i = timeperiod(1)+1:timeperiod(2)
-     fwrite(fid,aa((i-1)*ch*sr+1:i*ch*sr),'int16');
+     fwrite(fid,aa((i-1)*NumCh*SampRate+1:i*NumCh*SampRate),'int16');
 end
 fclose(fid);
 clear aa a
 
+%% auxiliary.dat
 disp('Writing aux file')
-ch = length(Intan_rec_info.aux_input_channels);
-h1 = fopen('auxiliary_fragment.dat','W');
-m = memmapfile('auxiliary.dat','Format','uint16','writable',false);
-fwrite(h1,m.Data(timeperiod(1)*ch*sr+1:timeperiod(end)*ch*sr),'uint16');
+if RenameOriginalsAsOrig
+    inname = 'auxiliary.dat_orig';
+    outname = 'auxiliary.dat';
+    movefile(outname,inname)
+else
+    inname = 'auxiliary.dat';
+    outname = 'auxiliary_fragment.dat';
+end
+NumCh = length(aux_input_channels);
+m = memmapfile(inname,'Format','uint16','writable',false);
+h1 = fopen(outname,'W');
+fwrite(h1,m.Data(timeperiod(1)*NumCh*SampRate+1:timeperiod(end)*NumCh*SampRate),'uint16');
 fclose(h1);
 
-disp('Writing analogin file')
-ch = length(Intan_rec_info.board_adc_channels);
-h2 = fopen('analogin_fragment.dat','W');
-m = memmapfile('analogin.dat','Format','uint16','writable',false);
-fwrite(h2,m.Data(timeperiod(1)*ch*sr+1:timeperiod(end)*ch*sr),'uint16');
-fclose(h2);
+%% analogin.dat
+d = dir('analogin.dat');
+if ~isempty(d)
+    disp('Writing analogin file')
+    if RenameOriginalsAsOrig
+        inname = 'analogin.dat_orig';
+        outname = 'analogin.dat';
+        movefile(outname,inname)
+    else
+        inname = 'analogin.dat';
+        outname = 'analogin_fragment.dat';
+    end
+    NumCh = length(board_adc_channels);
+    m = memmapfile(inname,'Format','uint16','writable',false);
+    h2 = fopen(outname,'W');
+    fwrite(h2,m.Data(timeperiod(1)*NumCh*SampRate+1:timeperiod(end)*NumCh*SampRate),'uint16');
+    fclose(h2);
+end
 
-disp('Writing digitalin file')
-h3 = fopen('digitalin_fragment.dat','W');
-m = memmapfile('digitalin.dat','Format','int16','writable',false);
-fwrite(h3,m.Data(timeperiod(1)*sr+1:timeperiod(end)*sr),'int16');
-fclose(h3);
+%% digitalin.dat
+d = dir('digitalin.dat');
+if ~isempty(d)
+    disp('Writing digitalin file')
+    if RenameOriginalsAsOrig
+        inname = 'digitalin.dat_orig';
+        outname = 'digitalin.dat';
+        movefile(outname,inname)
+    else
+        inname = 'digitalin.dat';
+        outname = 'digitalin_fragment.dat';
+    end
+    disp('Writing digitalin file')
+    m = memmapfile(inname,'Format','uint16','writable',false);
+    h3 = fopen(outname,'W');
+    fwrite(h3,m.Data(timeperiod(1)*SampRate+1:timeperiod(end)*SampRate),'uint16');
+    fclose(h3);
+end
 
+%% time.dat
 disp('Writing time file')
-h4 = fopen('time_fragment.dat','W');
-m = memmapfile('time.dat','Format','int16','writable',false);
-fwrite(h4,m.Data(timeperiod(1)*sr+1:timeperiod(end)*sr),'int16');
+if RenameOriginalsAsOrig
+    inname = 'time.dat_orig';
+    outname = 'time.dat';
+    movefile(outname,inname)
+else
+    inname = 'time.dat';
+    outname = 'time_fragment.dat';
+end
+disp('Writing time file')
+m = memmapfile(inname,'Format','uint16','writable',false);
+h4 = fopen(outname,'W');
+fwrite(h4,m.Data(timeperiod(1)*SampRate+1:timeperiod(end)*SampRate),'int32');
 fclose(h4);
 
+%% supply.dat
+disp('Writing analogin file')
+if RenameOriginalsAsOrig
+    inname = 'supply.dat_orig';
+    outname = 'supply.dat';
+    movefile(outname,inname)
+else
+    inname = 'supply.dat';
+    outname = 'supply.dat_fragment.dat';
+end
 disp('Writing supply file')
-h5 = fopen('supply_fragment.dat','W');
-m = memmapfile('supply.dat','Format','int16','writable',false);
-fwrite(h5,m.Data(timeperiod(1)*sr+1:timeperiod(end)*sr),'int16');
+m = memmapfile(inname,'Format','uint16','writable',false);
+h5 = fopen(outname,'W');
+fwrite(h5,m.Data(timeperiod(1)*SampRate+1:timeperiod(end)*SampRate),'uint16');
 fclose(h5);
 
