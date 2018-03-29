@@ -1,8 +1,8 @@
 function [ChannelsPerGroupSuperficialToDeep,SpatialChannelXY,NumChansPerProbe,GroupsPerChannel] =...
-    bz_ReadProbeMapFiles(probemaplist)
+    bz_ReadProbeGeometryFiles(probemaplist)
 % USAGE
 % [ChannelsPerGroupSuperficialToDeep,SpatialChannelXY,NumChansPerProbe,GroupsPerChannel] =...
-%     bz_ReadProbeMapFiles(probemaplist)
+%     bz_ReadProbeGeometryFiles(probemaplist)
 % 
 % INPUTS
 %       probemaplist      - character cell (cell array of strings), each
