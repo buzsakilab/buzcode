@@ -52,8 +52,9 @@ if nargin < 3
 end
 
 if nBootstrap == 0
-	[m,r1] = CircularMean(angles);
-	[unused,r2] = CircularMean(wrap(2*angles));
+	[m] = circ_mean(angles);
+    [r1] = circ_r(angles);
+	[r2] = circ_r(wrap(2*angles));
 	delta = (1-r2)/(2*r1^2);
 	sigma = sqrt(delta/n);
 	sinarg = norminv(1-alpha/2)*sigma;
@@ -64,8 +65,8 @@ if nBootstrap == 0
 	end
 	boundaries = m + [-err err];
 else
-	m = CircularMean(angles);
-	b = bootstrp(nBootstrap,'CircularMean',angles);
+	m = circ_mean(angles);
+	b = bootstrp(nBootstrap,'circ_mean',angles);
 
 	% unwrap data around mean value
 	unwrapped = mod(b-m+pi,2*pi)+m-pi;
