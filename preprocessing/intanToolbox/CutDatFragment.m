@@ -123,7 +123,7 @@ else
     outname = 'time_fragment.dat';
 end
 disp('Writing time file')
-m = memmapfile(inname,'Format','uint16','writable',false);
+m = memmapfile(inname,'Format','int32','writable',false);
 h4 = fopen(outname,'W');
 fwrite(h4,m.Data(timeperiod(1)*SampRate+1:timeperiod(end)*SampRate),'int32');
 fclose(h4);
@@ -139,8 +139,9 @@ else
     outname = 'supply.dat_fragment.dat';
 end
 disp('Writing supply file')
+NumCh = length(length(supply_voltage_channels));
 m = memmapfile(inname,'Format','uint16','writable',false);
 h5 = fopen(outname,'W');
-fwrite(h5,m.Data(timeperiod(1)*SampRate+1:timeperiod(end)*SampRate),'uint16');
+fwrite(h5,m.Data(timeperiod(1)*NumCh*SampRate+1:timeperiod(end)*SampRate),'uint16');
 fclose(h5);
 
