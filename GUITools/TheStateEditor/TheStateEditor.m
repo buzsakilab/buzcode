@@ -1093,6 +1093,8 @@ updateEEG;
 UpdateText;
 set(FO.max,'xticklabel',num2str(get(FO.max,'xtick')'));
 set(FO.sax{end},'xticklabel',num2str(get(FO.sax{end},'xtick')'));
+set(FO.sax{1}, 'XLim', FO.lims);
+
 %set(FO.eax{end},'xticklabel',num2str(get(FO.eax{end},'xtick')'));
 
 
@@ -2230,6 +2232,7 @@ end
 SleepState.ints = ints;
 SleepState.idx = idx;
 SleepState.detectorinfo.LastManualUpdate = datestr(now,'yyyy-mm-dd');
+SleepState.detectorinfo.detectionparms.SleepScoreMetrics.histsandthreshs = FO.AutoScore.histsandthreshs;
 
 %Save the results!
 save([baseName '.SleepState.states.mat'],'SleepState')
@@ -4638,14 +4641,20 @@ end
 
 
 function FO = ViewAutoScoreThresholds(obj,event)
+%Pull up window for user to look at where auto-scoring thresholds were and 
+%also allow them to change them
 FO = guidata(obj);
 baseName = FO.baseName;
 basePath = FO.basePath;
 
+if ~isfield(FO,'AutoScore')
+    FO.AutoScore = [];
+end
+
 % auto-load DetectionParameters, if they exist.  Save for later
 load([baseName '.SleepState.states.mat'])
 paramsAvailBool = 0;
-if isfield(SleepState,'detectorinfo');
+if isfield(SleepState,'detectorinfo')
     if isfield(SleepState.detectorinfo,'detectionparms')
         paramsAvailBool = 1;
     end
@@ -4670,6 +4679,27 @@ else
     histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath);
 end
 FO.AutoScore.histsandthreshs = histsandthreshs;
+
+% get histograms and thresholds of original detection
+
+HistAndThreshOrigAlready_Bool = 0;
+if isfield(SleepState,'detectorinfo')
+    if isfield(SleepState.detectorinfo,'detectionparms')
+        if isfield(SleepState.detectorinfo.detectionparms,'SleepScoreMetrics')
+            if isfield(SleepState.detectorinfo.detectionparms.SleepScoreMetrics,'histsandthreshs_orig')
+                HistAndThreshOrigAlready_Bool = 1;
+            end
+        end
+    end
+end
+if HistAndThreshOrigAlready_Bool
+    histsandthreshs_orig = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.histsandthreshs_orig;
+else
+    histsandthreshs_orig = histsandthreshs;
+end
+FO.AutoScore.histsandthreshs_orig = histsandthreshs_orig;
+
+
 % if ~exist([baseName '_SleepScore_FromStateEditor.mat'],'file');
 %     histsandthreshs = SSHistogramsAndThresholds_In(baseName);
 % else
@@ -4681,6 +4711,7 @@ h = figure('position',[940 5 480 720]);
 set(h, 'MenuBar', 'none');
 set(h, 'ToolBar', 'none');
 
+%top plot: Slow wave power
 ax1 = subplot(3,1,1,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.swhistbins,histsandthreshs.swhist)
 swline = plot(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1),'tag','bw');
@@ -4696,6 +4727,7 @@ set(ResetToOrigButton_sw,'Callback',@ResetToOrigSw);
 
 title('Click in plots to reset X value of thresholds')
 
+%middle plot: EMG amplitude
 ax2 = subplot(3,1,2,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.EMGhistbins,histsandthreshs.EMGhist)
 EMGline = plot(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2),'tag','bw');
@@ -4709,6 +4741,7 @@ set(ResetToInitButton_EMG,'Callback',@ResetToInitEMG);
 ResetToOrigButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.85, 0.57, 0.15, 0.05]);
 set(ResetToOrigButton_EMG,'Callback',@ResetToOrigEMG);
 
+%bottom plot: Theta power
 ax3 = subplot(3,1,3,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.THhistbins,histsandthreshs.THhist)
 THline = plot(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3),'tag','bw');
