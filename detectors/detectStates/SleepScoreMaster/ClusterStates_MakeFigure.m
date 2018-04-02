@@ -102,7 +102,7 @@ figure
         bar(swhistbins(swhistbins>swthresh),swhist(swhistbins>swthresh),'FaceColor','b','barwidth',0.9,'linewidth',1)
         bar(swhistbins(swhistbins<=swthresh),swhist(swhistbins<=swthresh),'FaceColor',0.9*[1 1 1],'barwidth',0.9,'linewidth',1)
         plot([swthresh swthresh],[0 max(swhist)],'r','LineWidth',1)
-        xlabel('PC 1')
+        xlabel('Broadband Slow Wave')
         title('Step 1: Broadband for NREM')
         
 

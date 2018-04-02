@@ -243,10 +243,13 @@ detectionparms.userinputs = p.Results;
 detectionparms.MinTimeWindowParms = MinTimeWindowParms;
 detectionparms.SleepScoreMetrics = SleepScoreMetrics;
 
+% note and keep special version of original hists and threshs
+
 SleepState.ints = ints;
 SleepState.idx = idx;
 SleepState.detectorinfo.detectorname = 'SleepScoreMaster';
-SleepState.detectorinfo.detectionparms = detectionparms;
+SleepState.detectorinfo.detectionparams = detectionparams;
+SleepState.detectorinfo.detectionparams.histsandthreshs_orig = detectionparams.histsandthreshs;
 SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
 SleepState.detectorinfo.StatePlotMaterials = StatePlotMaterials;
 
