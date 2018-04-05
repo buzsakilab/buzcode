@@ -141,10 +141,14 @@ switch recsys
                    t = dir(fullfile(basepath,d(didx).name,'amplifier.dat'));
                    if ~isempty(t) %if original .dat still around
                        DatInfo.Files.Bytes(end+1) = t.bytes;
-                   else%if no .dat around
-                       disp([DatInfo.Files.Names{end} ' not found']);
+                   else%if no .dat around, use bytes from time.dat
+                       disp([DatInfo.Files.Names{end} ':amplifier.dat not found... using time.dat and multiplying by channels']);
                        timedat = dir(fullfile(basepath,d(didx).name,'time.dat'));
-                       if ~isnan(NAmpChannels(end));
+                       if isempty(timedat)%if no time.dat, try supply.dat
+                          timedat = dir(fullfile(basepath,d(didx).name,'supply.dat'));
+                       end
+                       
+                       if ~isnan(NAmpChannels(end))
                           DatInfo.Files.Bytes(end+1) = timedat(1).bytes/2*NAmpChannels(end);
                        else
                           DatInfo.Files.Bytes(end+1) = timedat(1).bytes/2*SessionMetadata.AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal;
