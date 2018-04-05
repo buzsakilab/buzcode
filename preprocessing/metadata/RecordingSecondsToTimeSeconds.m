@@ -1,7 +1,7 @@
 function RecordingSecondsToTimeSeconds(basepath,basename)
 % Store correspondences between recoring (ie dat file) second timestamps
 % and clock time.  0.1sec resolution. 
-% Can only be run after DatInfoMake.m and TimeFromLightCycleStart.m
+% Can only be run after bz_DatFileMetadata.m and TimeFromLightCycleStart.m
 % Brendon Watson 2016
 
 if ~exist('basepath','var')
@@ -13,15 +13,15 @@ if ~exist(basepath,'dir')
 end
 
 
-load(fullfile(basepath,[basename '_DatInfo.mat']))
+load(fullfile(basepath,[basename '_DatsMetadata.mat']))
 load(fullfile(basepath,[basename '_SecondsFromLightsOn.mat']))
 
-RecordingSeconds = .1:.1:sum(DatInfo.Files.Seconds);
+RecordingSeconds = .1:.1:sum(DatsMetadata.Recordings.Seconds);
 
 % Clock seconds since light on (on day 1)
 FromLightOn_ByClockSeconds = [];
 RecordingStartsFromLightOnByClock = SecondsAfterLightCycleStart_PerFile;
-RecordingEndsFromLightOnByClock = SecondsAfterLightCycleStart_PerFile+DatInfo.Files.Seconds;
+RecordingEndsFromLightOnByClock = SecondsAfterLightCycleStart_PerFile+DatsMetadata.Recordings.Seconds;
 for a = 1:length(RecordingStartsFromLightOnByClock)
     FromLightOn_ByClockSeconds = cat(2,FromLightOn_ByClockSeconds,RecordingStartsFromLightOnByClock(a)+.1:.1:RecordingEndsFromLightOnByClock(a));
 end
