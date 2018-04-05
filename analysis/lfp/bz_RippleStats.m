@@ -75,7 +75,7 @@ nHalfCenterBins = 3;
 centerBin = ceil(nBins/2);
 centerBins = centerBin-nHalfCenterBins:centerBin+nHalfCenterBins;
 
-idx = ceil((ripples.peaks-ripples.times(:,1))*ripples.detectorParams.frequency);
+idx = ceil((ripples.peaks-ripples.timestamps(:,1))*ripples.detectorinfo.detectionparms.frequency);
 
 % Compute instantaneous phase and amplitude
 h = hilbert(filtered);
@@ -104,7 +104,7 @@ maps.amplitude = SyncMap(a,i,'durations',durations,'nbins',nBins,'smooth',0);
 
 idx(idx>length(maps.frequency(1,:))) = length(maps.frequency(1,:));
 % Ripple frequency and amplitude at peak
-% for i= 1:length(ripples.times)
+% for i= 1:length(ripples.timestamps)
 %     data.peakFrequency(i) = maps.frequency(i,idx(i));
 %     data.peakAmplitude(i) = maps.amplitude(i,idx(i));
 % end
@@ -115,12 +115,12 @@ data.peakFrequency = maps.frequency(:,centerBin);
 data.peakAmplitude = maps.amplitude(:,centerBin);
 
 % Ripple durations
-data.duration = abs(diff(ripples.times'))';
+data.duration = abs(diff(ripples.timestamps'))';
 
 % Autocorrelogram and correlations
 %  if nargin > 2,
 %  	[stats.acg.data,stats.acg.t] = CCG(ripples.peaks,1,'binSize',corrBinSize,'halfBins',nCorrBins/2);
-	[stats.acg.data,stats.acg.t] = CCG(ripples.peaks,1,'binSize',corrBinSize);
+	[stats.acg.data,stats.acg.t] = CCG(ripples.peaks,ones(length(ripples.peaks),1),'binSize',corrBinSize);
 	[stats.amplitudeFrequency.rho,stats.amplitudeFrequency.p] = corrcoef(data.peakAmplitude,data.peakFrequency);
 	[stats.durationFrequency.rho,stats.durationFrequency.p] = corrcoef(data.duration,data.peakFrequency);
 	[stats.durationAmplitude.rho,stats.durationAmplitude.p] = corrcoef(data.duration,data.peakAmplitude);

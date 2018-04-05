@@ -35,7 +35,7 @@ else
 end
 
 %% FMA
-Par = LoadParameters(xmlfilename);
+Par = bz_getSessionInfo(basePath);
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
 
@@ -115,7 +115,7 @@ numThetaChannels = length(ThetaChannels);
 
 %% Load LFP files from .lfp
 downsamplefactor = 10;
-allLFP = LoadBinary(rawlfppath,'frequency',Fs,...
+allLFP = bz_LoadBinary(rawlfppath,'frequency',Fs,...
     'nchannels',nChannels,'channels',usechannels+1,'downsample',downsamplefactor,...
     'start',scoretime(1),'duration',diff(scoretime));
 %allLFP = double(allLFP); % hack fix
@@ -144,10 +144,10 @@ parfor idx = 1:numSWChannels;
     estimatedremaining = estimatedtotal-timespent;
    %if mod(idx,10) == 1
    %fprintf('\r'); % delete previous counter display
-        display(['SW Channels - Percent Complete: ',num2str(round(percdone,1)),...
-            '.  Time Spent: ',num2str(round(timespent./60,1)),...
-            '.  Est. Total Time: ',num2str(round(estimatedtotal./60,1)),...
-            'min.  ETR: ',num2str(round(estimatedremaining./60,1)),'min.'])
+        display(['SW Channels - Percent Complete: ',num2str(round(percdone)),...
+            '.  Time Spent: ',num2str(round(timespent./60)),...
+            '.  Est. Total Time: ',num2str(round(estimatedtotal./60)),...
+            'min.  ETR: ',num2str(round(estimatedremaining./60)),'min.'])
   % end
 
     %% Get spectrogram
@@ -188,10 +188,10 @@ parfor idx = 1:numThetaChannels;
     estimatedremaining = estimatedtotal-timespent;
    %if mod(idx,10) == 1
    %fprintf('\r'); % delete previous counter display
-        display(['TH Channels - Percent Complete: ',num2str(round(percdone,1)),...
-            '.  Time Spent: ',num2str(round(timespent./60,1)),...
-            '.  Est. Total Time: ',num2str(round(estimatedtotal./60,1)),...
-            'min.  ETR: ',num2str(round(estimatedremaining./60,1)),'min.'])
+        display(['TH Channels - Percent Complete: ',num2str(round(percdone)),...
+            '.  Time Spent: ',num2str(round(timespent./60)),...
+            '.  Est. Total Time: ',num2str(round(estimatedtotal./60)),...
+            'min.  ETR: ',num2str(round(estimatedremaining./60)),'min.'])
   % end
 
     %% Get spectrogram and calculate theta ratio
@@ -235,7 +235,7 @@ THchanID = ThetaChannels(goodTHidx);   %best SW and theta channels
 %% Load the best channels at sampling frequency needed for clustering later
 downsample_save = Par.lfpSampleRate./250;
 sf = Par.lfpSampleRate./downsample_save;
-swthLFP = LoadBinary(rawlfppath,'frequency',Par.lfpSampleRate,...
+swthLFP = bz_LoadBinary(rawlfppath,'frequency',Par.lfpSampleRate,...
     'downsample',downsample_save,...
     'nchannels',nChannels,'channels',[SWchanID,THchanID]+1,...
     'start',scoretime(1),'duration',diff(scoretime));
@@ -254,7 +254,7 @@ SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,params);
 
 
 if saveFiles
-    %Save in buzcodeformat
+    %Need to update to Save in buzcode format for lfp.mat
     save(matfilename,'SleepScoreLFP');
 end
 
