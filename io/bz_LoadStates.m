@@ -1,4 +1,4 @@
-function [ states ] = bz_LoadStates(basePath,statesName)
+function [ states,filename ] = bz_LoadStates(basePath,statesName)
 %[ states ] = bz_LoadStates(basePath,statesName) function for
 %loading states.mat files. states.mat files are saved as...
 % datasetPath/baseName/baseName.statesName.states.mat
@@ -11,23 +11,23 @@ function [ states ] = bz_LoadStates(basePath,statesName)
 %%
 baseName = bz_BasenameFromBasepath(basePath);
 
-% if strcmp('statesName','all')
-%     allStatesFiles = dir(fullfile(datasetPath,baseName,[baseName,'.','*','.states.mat']));
-%     for
+%Here is where the code will go to allow user to select states or load all
+%states
+%if strcmp('statesName','all')
+%     allStatesFiles = dir(fullfile(basePath,[baseName,'.','*','.states.mat']));
 %         [s,v] = listdlg('PromptString','Which states.mats would you like to load?',...
 %                         'ListString',allStatesFiles);
 %         statesfilestoload = allStatesFiles(s);
+        
+%end
 
 
-statesfile = fullfile(basePath,[baseName,'.',statesName,'.states.mat']);
+filename = fullfile(basePath,[baseName,'.',statesName,'.states.mat']);
 
-
-%evalin('caller',['load(''',statesfile,''')']);
-
-if exist(statesfile,'file')
-    statestruct = load(statesfile);
+if exist(filename,'file')
+    statestruct = load(filename);
 else
-    warning([statesfile,' does not exist...'])
+    warning([filename,' does not exist...'])
     states = [];
     return
 end
@@ -41,5 +41,6 @@ else
     states = statestruct;
 end
 
+%Check here that the structure complies with buzcode format?
 end
 

@@ -6,7 +6,7 @@ function [lfp] = bz_GetLFP(varargin)
 %
 %  USAGE
 %
-%    [lfp] = GetLFP(channels,<options>)
+%    [lfp] = bz_GetLFP(channels,<options>)
 %
 %  INPUTS
 %
@@ -14,11 +14,15 @@ function [lfp] = bz_GetLFP(varargin)
 %                        list of channels to load (use keyword 'all' for all)
 %                        channID is 0-indexing, a la neuroscope
 %  Name-value paired inputs:
-%    basename           -base file name to load
 %    basepath           - folder in which .lfp file will be found (default
 %                           is pwd)
+%                           folder should follow buzcode standard:
+%                           whateverPath/baseName
+%                           and contain file baseName.lfp
+%    basename           -base file name to load
 %    intervals          -list of time intervals [0 10; 20 30] to read from 
 %                           the LFP file (default is [0 inf])
+%    noPrompts          -logical (default) to supress any user prompts
 %
 %  OUTPUT
 %
@@ -50,33 +54,44 @@ function [lfp] = bz_GetLFP(varargin)
 % NOTES
 % -'select' option has been removed, it allowed switching between 0 and 1
 %   indexing.  This should no longer be necessary with .lfp.mat structs
-% -'restrict' option has been removed, it was redundant with 'intervals'
 %
 % TODO
 % add saveMat input 
 % expand channel selection options (i.e. region or spikegroup)
 % add forcereload
 %% Parse the inputs!
-channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
-    'channels must be numeric or "all"');
+
+channelsValidation = @(x) isnumeric(x) || strcmp(x,'all');
 
 % parse args
 p = inputParser;
 addRequired(p,'channels',channelsValidation)
 addParameter(p,'basename','',@isstr)
-addParameter(p,'intervals',[0 Inf],@isnumeric)
+addParameter(p,'intervals',[],@isnumeric)
+addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
+addParameter(p,'noPrompts',false,@islogical);
+
 parse(p,varargin{:})
 basename = p.Results.basename;
 channels = p.Results.channels;
-intervals = p.Results.intervals;
 basepath = p.Results.basepath;
+noPrompts = p.Results.noPrompts;
+
+% doing this so you can use either 'intervals' or 'restrict' as parameters to do the same thing
+intervals = p.Results.intervals;
+restrict = p.Results.restrict;
+if isempty(intervals) && isempty(restrict) % both empty
+    intervals = [0 Inf];
+elseif isempty(intervals) && ~isempty(restrict) % intervals empty, restrict isn't
+    intervals = restrict;
+end
 
 %% let's check that there is an appropriate LFP file
 if isempty(basename)
-   disp('No basename given, so we look for a *lfp/*eeg file...')
+   %disp('No basename given, so we look for a *lfp/*eeg file...')
    d = dir([basepath filesep '*lfp']);
    if length(d) > 1 % we assume one .lfp file or this should break
        error('there is more than one .lfp file in this directory?');
@@ -102,13 +117,14 @@ else
    lfp.Filename = [basename '.lfp'];
 end
 
-%% things we can parse from xml file
-xml = LoadParameters(fullfile(basepath,[basename '.xml']));
-nChannels = xml.nChannels;
+%% things we can parse from sessionInfo or xml file
+
+sessionInfo = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
+
 try
-    samplingRate = xml.lfpSampleRate;
+    samplingRate = sessionInfo.lfpSampleRate;
 catch
-     samplingRate = xml.rates.lfp; % old ugliness we need to get rid of
+    samplingRate = sessionInfo.rates.lfp; % old ugliness we need to get rid of
 end
 
 %% Channel load options
@@ -116,11 +132,11 @@ end
 %indexing), we could also add options for this to be select region or spike
 %group from the xml...
 if strcmp(channels,'all')
-    channels = 0:(nChannels-1);
+    channels = sessionInfo.channels;
 end
 
 %% get the data
-disp('loading file...')
+disp('loading LFP file...')
 nIntervals = size(intervals,1);
 % returns lfp/bz format
 for i = 1:nIntervals
@@ -128,11 +144,12 @@ for i = 1:nIntervals
     lfp(i).interval = [intervals(i,1) intervals(i,2)];
 
     % Load data and put into struct
-    % we assume 0-indexing like neuroscope, but LoadBinary uses 1-indexing to
+    % we assume 0-indexing like neuroscope, but bz_LoadBinary uses 1-indexing to
     % load....
-    lfp(i).data = LoadBinary([basepath filesep lfp.Filename],'duration',lfp(i).duration,...
-                  'frequency',samplingRate,'nchannels',nChannels,...
-                  'start',lfp(i).interval(1),'channels',channels+1);
+    lfp(i).data = bz_LoadBinary([basepath filesep lfp.Filename],...
+        'duration',double(lfp(i).duration),...
+                  'frequency',samplingRate,'nchannels',sessionInfo.nChannels,...
+                  'start',double(lfp(i).interval(1)),'channels',channels+1);
     lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRate):...
                         (lfp(i).interval(1)+(length(lfp(i).data)-1)/...
                         samplingRate)]';
@@ -142,5 +159,10 @@ for i = 1:nIntervals
     if lfp(i).interval(2) == inf
         lfp(i).interval(2) = length(lfp(i).timestamps)/lfp(i).samplingRate;
         lfp(i).duration = (lfp(i).interval(i,2)-lfp(i).interval(i,1));
+    end
+    
+    if isfield(sessionInfo,'region') && isfield(sessionInfo,'channels')
+        [~,~,regionidx] = intersect(lfp(i).channels,sessionInfo.channels,'stable');
+        lfp(i).region = sessionInfo.region(regionidx); % match region order to channel order..
     end
 end

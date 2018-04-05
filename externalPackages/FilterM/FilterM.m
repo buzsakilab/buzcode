@@ -217,7 +217,11 @@ if isunix
    % Enable the "modern" C99. Matlab defines the primordial C89 style as default
    % for the GCC compiler. If you think, that this is hilarious, send an
    % enhancement report to support@mathworks.com.
-   Flags = {'-O', 'CFLAGS="\$CFLAGS', '-std=c99"', 'FilterX.c'};
+   
+%    Flags = {'-O', 'CFLAGS="\$CFLAGS', '-std=c99"', 'FilterX.c', '-v'}; 
+    Flags = {'-O', 'CFLAGS="\$CFLAGS', '-std=c99"', '-compatibleArrayDims', 'FilterX.c', '-v'}; 
+   
+   
 else
    Flags = {'-O', 'FilterX.c'};
 end
@@ -225,6 +229,7 @@ end
 % Display the compilation command:
 cmd = ['mex', sprintf(' %s', Flags{:})];
 fprintf('%s\n', cmd);
+warning('filterX can crash matlab 2017a - run test and delete mex file if there are problems');
 
 try
    cd(FuncPath);

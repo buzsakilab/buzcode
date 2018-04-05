@@ -44,6 +44,7 @@ function [phasedistros,phasebins,phasestats,h] = PhaseModulation(spikes,lfp,pass
 % edited by david tingley, 2017
 
 
+warning('this function is now deprecated, try using bz_PhaseModulation.m instead')
 
 %% defaults
 % if no intervals set to keep all recording
@@ -82,10 +83,10 @@ numbins = 180;
 %% Get phase for every time point in LFP
 switch lower(method)
     case ('hilbert')
-        fil=FilterLFP(lfp,'passband',passband); %from FMAToolbox
+        fil = FilterLFP(lfp,'passband',passband, 'filter', 'fir1'); % from FMAToolbox - added fir1 parameter because cheby2 was unstable
         hilb = hilbert(fil(:,2));
         lfpphase = mod(angle(hilb+pi),2*pi);
-        clear fil
+%         clear fil % wotan
     case ('wavelet')% Use Wavelet transform to calulate the signal phases
         [wave,f,t,coh,wphases,raw,coi,scale,priod,scalef]=getWavelet(lfp(:,2),lfpfreq,passband(1),passband(2),8,0);
         [~,mIdx]=max(wave);%get index max power for each timepiont
@@ -96,7 +97,7 @@ switch lower(method)
         % not yet coded
         % filter, smooth, diff = 0, diffdiff = negative
 end
-clear lfp
+% clear lfp % wotan
 
 %% Get phases for each spike for each cell
 h = [];
@@ -169,6 +170,16 @@ if length(cum_spkphases) > 10
         plot([0:360],cos(pi/180*[0:360])*0.05*max(cpd)+0.95*max(cpd),'color',[.7 .7 .7])
         set(h(end),'name',['PhaseModPlotsForAllCells']);
     end
+    
+else warning('too few spikes');
+    cpd = NaN(180, 1);
+    phasebins = NaN(180, 1);
+    cps.m = NaN;
+    cps.r = NaN;
+    cps.k = NaN;
+    cps.p = NaN;
+    cps.mode = NaN;
+    
 end
 
 

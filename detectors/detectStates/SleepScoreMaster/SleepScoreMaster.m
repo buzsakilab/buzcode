@@ -45,6 +45,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'ThetaChannels' A vector list of channels that may be chosen for Theta
 %                   signal
 %   'rejectChannels' A vector of channels to exclude from the analysis
+%   'noPrompts'     (default:false) an option to not prompt user of things
 %
 %OUTPUT
 %   StateIntervals  structure containing start/end times (seconds) of
@@ -151,14 +152,14 @@ addParameter(p,'Notch60Hz',defaultNotch60Hz)
 addParameter(p,'NotchUnder3Hz',defaultNotchUnder3Hz)
 addParameter(p,'NotchHVS',defaultNotchHVS)
 addParameter(p,'NotchTheta',defaultNotchTheta)
-addParameter(p,'SWChannels',defaultNotchTheta)
-addParameter(p,'ThetaChannels',defaultNotchTheta)
+addParameter(p,'SWChannels',defaultSWChannels)
+addParameter(p,'ThetaChannels',defaultThetaChannels)
 addParameter(p,'rejectChannels',[]);
+addParameter(p,'noPrompts',false);
 
 parse(p,varargin{:})
 %Clean up this junk...
 overwrite = p.Results.overwrite; 
-savebool = p.Results.savebool;
 savedir = p.Results.savedir;
 scoretime = p.Results.scoretime;
 SWWeightsName = p.Results.SWWeightsName;
@@ -169,6 +170,7 @@ NotchTheta = p.Results.NotchTheta;
 SWChannels = p.Results.SWChannels;
 ThetaChannels = p.Results.ThetaChannels;
 rejectChannels = p.Results.rejectChannels;
+noPrompts = p.Results.noPrompts;
 
 
 %% Database File Management 
@@ -189,7 +191,19 @@ bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']
 
 
 %% Get channels not to use
-parameters = LoadParameters(basePath);
+parameters = bz_getSessionInfo(basePath);
+% check that SW/Theta channels exist in rec..
+if length(SWChannels) > 1 
+    if sum(ismember(SWChannels,parameters.channels)) ~= length(SWChannels)
+        error('some of the SW input channels dont exist in this recording...?')
+    end   
+end
+if length(ThetaChannels) > 1 
+    if sum(ismember(ThetaChannels,parameters.channels)) ~= length(ThetaChannels)
+        error('some of the theta input channels dont exist in this recording...?')
+    end   
+end
+
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
     rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];
@@ -248,6 +262,17 @@ SleepState.detectiondate = today;
 save(bz_sleepstatepath,'SleepState');
 
 display(['Sleep Score ',recordingname,': Complete!']);
+%Prompt user here to manually check detection with TheStateEditor
+if ~noPrompts
+    str = input('Would you like to check detection with TheStateEditor? [Y/N] ','s');
+    switch str
+        case {'Y','y',''}
+            TheStateEditor([basePath,filesep,recordingname])
+        case {'N','n'}
+        otherwise
+            display('Unknown input..... you''ll have to load TheStateEditor on your own')
+    end
+end
 
 end
 

@@ -49,7 +49,7 @@ SAVEMAT = p.Results.saveMat;
 SAVEFIG = p.Results.saveFig;
 FORCERELOAD = p.Results.forceReload;
 %%
-Par = LoadParameters(basePath);
+Par = bz_getSessionInfo(basePath);
 OneMs = round(Par.rates.wideband/1000);
 
 baseName = bz_BasenameFromBasepath(basePath);

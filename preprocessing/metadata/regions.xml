@@ -1,0 +1,19 @@
+<?xml version='1.0'?>
+<parameter>
+ <program>
+  <name>regions</name>
+  <parameters>
+   <parameter>
+    <name>regionname</name>
+    <value>#,#,#</value>
+    <status>Mandatory</status>
+   </parameter>
+   <parameter>
+    <name>regionname</name>
+    <value>#,#,#</value>
+    <status>Mandatory</status>
+   </parameter>
+  </parameters>
+  <help/>
+ </program>
+</parameter>
