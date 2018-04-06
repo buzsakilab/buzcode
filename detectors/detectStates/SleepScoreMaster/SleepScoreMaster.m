@@ -14,8 +14,6 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   OPTIONS
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false, overwrite all processing steps
-%   'rescore'       Default: false, do not overwrite channel selection or
-%                   EMG, but recluster and score
 %   'savebool'      Default: true
 %   'scoretime'     Default: [0 Inf]
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
