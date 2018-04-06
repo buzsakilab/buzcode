@@ -1,15 +1,27 @@
-
-function bz_LFPfromDat(basename,basepath,varargin)
+function bz_LFPfromDat(basepath,varargin)
 
 % perform lowpass (2 X output Fs) sinc filter on wideband data
 % subsample the filtered data and save as a new flat binary
 % basename must have basename.dat and basename.xml
 % basepath is the full path for basename.dat
-% varargin{1} = optional sampling rate, otherwise from XML, otherwise 1KHz
 % depends upon iosr tool box https://github.com/IoSR-Surrey/MatlabToolbox
 % note that sincFilter was altered to accomodate GPU filtering
+% 
+% option inputs
+% 
+%   outFs = downsampled frequency (1250)
+%   lopass = low pass cut off for sinc filter (400)
+
+%% Contstnts/defaults
+outFs = 1250;
+lopass = 450;
 
 
+%% Input handling
+if ~exist('basepath','var')
+    basepath = cd;
+end
+basename = bz_BasenameFromBasepath(basepath);
 
 import iosr.dsp.*
 
@@ -20,42 +32,68 @@ end
 
 
 %get xml
-fxml = [basepath '/' basename '.xml'];
+fxml = fullfile(basepath, [basename '.xml']);
 if ~exist(fxml,'file')
     error('Dat file and/or Xml file does not exist')
 end
 sizeInBytes = 2; %
-chunk = 1e5; % depends on the system... could be bigger I guess
 
-syst = LoadXml(fxml);
-fInfo = dir([basepath '/' basename '.dat']);
-inFs = syst.SampleRate;
+syst = bz_getSessionInfo(fxml,'noPrompts',true);
+fInfo = dir(fullfile(basepath, [basename '.dat']));
+inFs = syst.rates.wideband;
 nbChan = syst.nChannels;
 
 
 %set output sampling rate
-if isempty(varargin) && isfield(syst.lfpSampleRate) && ~isempty(syst.lfpSampleRate)
-    outFs =syst.lfpSampleRate;
-elseif ~isempty(varargin)
-    outFs = varargin{1};
+
+for i = 1:2:length(varargin)
     
-    if syst.lfpSampleRate~=outFs
-        warning(['XML does not match user LFP rate, using user input LFP sampling of: ' num2str(outFs) 'Hz']);
+    switch varargin{i}
+        
+        case 'outFs'
+          
+                outFs = varargin{i+1};
+                
+                if isfield(syst,'lfpSampleRate') &&  syst.lfpSampleRate~=outFs
+                    warning(['XML does not match user LFP rate, using user input LFP sampling of: ' num2str(outFs) 'Hz']);
+                end
+        case 'lopass'
+                lopass = varargin{i+1};
+                
+               
+            
     end
-else
-    outFs = 1000;
+end
+
+if lopass> outFs/2
+    
+    warning('low pass cutoff beyond Nyquist')
+end
+
+    
+ratio =lopass/(inFs/2) ;
+sampleRatio = (inFs/outFs);
+
+%chunk should be even multiple of sampleRatio
+chunksize = 1e5; % depends on the system... could be bigger I guess
+
+if mod(chunksize,sampleRatio)~=0
+chunksize = chunksize + sampleRatio-mod(chunksize,sampleRatio);
+end
+
+
+%ntbuff should be even multiple of sampleRatio
+ntbuff = 525;  %default filter size in iosr toolbox
+
+if mod(ntbuff,sampleRatio)~=0
+ntbuff = ntbuff + sampleRatio-mod(ntbuff,sampleRatio);
 end
 
 
 
-
-ratio =outFs/(inFs/2) /2;
-sampleRatio = (inFs/outFs);
-ntbuff = find(sampleRatio.*[1:100]>525,1)*sampleRatio;%default filter length  = 1025
-
 %f
 nBytes = fInfo.bytes;
-nbChunks = floor(nBytes/(nbChan*sizeInBytes*chunk));
+nbChunks = floor(nBytes/(nbChan*sizeInBytes*chunksize));
 
 
 
@@ -84,18 +122,18 @@ for ibatch = 1:nbChunks
     h=waitbar(ibatch/(nbChunks+1));
     
     if ibatch>1
-        fseek(fidI,((ibatch-1)*(nbChan*sizeInBytes*chunk))-(nbChan*sizeInBytes*ntbuff),'bof');
-        dat = fread(fidI,nbChan*(chunk+2*ntbuff),'int16');
-        dat = reshape(dat,[nbChan (chunk+2*ntbuff)]);
+        fseek(fidI,((ibatch-1)*(nbChan*sizeInBytes*chunksize))-(nbChan*sizeInBytes*ntbuff),'bof');
+        dat = fread(fidI,nbChan*(chunksize+2*ntbuff),'int16');
+        dat = reshape(dat,[nbChan (chunksize+2*ntbuff)]);
     else
-        dat = fread(fidI,nbChan*(chunk+ntbuff),'int16');
-        dat = reshape(dat,[nbChan (chunk+ntbuff)]);
+        dat = fread(fidI,nbChan*(chunksize+ntbuff),'int16');
+        dat = reshape(dat,[nbChan (chunksize+ntbuff)]);
     end
     
     
     
     
-    DATA = nan(size(dat,1),chunk/sampleRatio);
+    DATA = nan(size(dat,1),chunksize/sampleRatio);
     for ii = 1:size(dat,1)
         
         d = double(dat(ii,:));
@@ -130,15 +168,27 @@ end
 
 
 
-remainder = nBytes/(sizeInBytes*nbChan) - nbChunks*chunk;
+remainder = nBytes/(sizeInBytes*nbChan) - nbChunks*chunksize;
 if ~isempty(remainder)
     
-    fseek(fidI,((ibatch-1)*(nbChan*sizeInBytes*chunk))-(nbChan*sizeInBytes*ntbuff),'bof');
+    fseek(fidI,((ibatch-1)*(nbChan*sizeInBytes*chunksize))-(nbChan*sizeInBytes*ntbuff),'bof');
     dat = fread(fidI,nbChan*(remainder+ntbuff),'int16');
     dat = reshape(dat,[nbChan (remainder+ntbuff)]);
+    
+    
     DATA = nan(size(dat,1),floor(remainder/sampleRatio));
     for ii = 1:size(dat,1)
-        tmp=  iosr.dsp.sincFilter(double(dat(ii,:)),ratio);
+        
+        
+        
+        d = double(dat(ii,:));
+        
+        if useGPU
+            d = gpuArray(d);
+        end
+        
+        
+        tmp=  iosr.dsp.sincFilter(d,ratio);
         
         if useGPU
             
