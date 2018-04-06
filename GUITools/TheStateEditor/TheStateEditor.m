@@ -2232,7 +2232,23 @@ end
 SleepState.ints = ints;
 SleepState.idx = idx;
 SleepState.detectorinfo.LastManualUpdate = datestr(now,'yyyy-mm-dd');
-SleepState.detectorinfo.detectionparms.SleepScoreMetrics.histsandthreshs = FO.AutoScore.histsandthreshs;
+
+%Save histsandthreshs... different depending on whether AutoScore was
+%used or not
+HistAndThreshAlready_Bool = 0;
+if isfield(FO,'AutoScore')
+    if isfield(FO.AutoScore,'histsandthreshs')
+        HistAndThreshAlready_Bool = 1;
+    end
+end
+if HistAndThreshAlready_Bool
+    histsandthreshs = FO.AutoScore.histsandthreshs;
+else
+    histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath);
+end
+SleepState.detectorinfo.detectionparms.SleepScoreMetrics.histsandthreshs = histsandthreshs;
+% FO.AutoScore.histsandthreshs = histsandthreshs;
+
 
 %Save the results!
 save([baseName '.SleepState.states.mat'],'SleepState')
