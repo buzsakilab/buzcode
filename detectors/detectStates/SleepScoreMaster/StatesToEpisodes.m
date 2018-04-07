@@ -35,6 +35,16 @@ function [SleepStateEpisodes] = StatesToEpisodes(SleepState,basePath)
 % Dan Levenstein & Brendon Watson 2016
 %%
 
+if ~isfield(SleepState.ints,'NREMstate')
+    SleepState.ints.NREMstate = zeros(0,2);
+end
+if ~isfield(SleepState.ints,'WAKEstate')
+    SleepState.ints.WAKEstate = zeros(0,2);
+end
+if ~isfield(SleepState.ints,'REMstate')
+    SleepState.ints.REMstate = zeros(0,2);
+end
+
 %Pull inputs from SleepState
 NREMints =  SleepState.ints.NREMstate;
 WAKEints =  SleepState.ints.WAKEstate;

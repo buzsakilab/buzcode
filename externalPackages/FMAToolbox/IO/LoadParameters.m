@@ -69,6 +69,7 @@ end
 
 
 if ~isempty(p.spikeDetection),
+    try
 	parameters.spikeGroups.nGroups = length(p.spikeDetection.channelGroups.group);
 	if parameters.spikeGroups.nGroups == 1,   %if there's a single spike group
 		parameters.spikeGroups.nSamples = str2num(p.spikeDetection.channelGroups.group.nSamples);
@@ -99,7 +100,13 @@ if ~isempty(p.spikeDetection),
 				parameters.spikeGroups.groups{group} = str2num(channels);
 			end
 		end
-	end
+    end
+    catch
+        warning('something went wrong loading spikeGroups from XML')
+        parameters.spikeGroups.nSamples = [];
+        parameters.spikeGroups.groups = {};
+        parameters.spikeGroups.nGroups = length(p.anatomicalDescription.channelGroups);
+    end
 else
 	parameters.spikeGroups.nSamples = [];
 	parameters.spikeGroups.groups = {};

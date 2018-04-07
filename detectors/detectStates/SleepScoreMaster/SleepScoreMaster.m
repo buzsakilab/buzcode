@@ -249,7 +249,7 @@ SleepState.ints = ints;
 SleepState.idx = idx;
 SleepState.detectorinfo.detectorname = 'SleepScoreMaster';
 SleepState.detectorinfo.detectionparms = detectionparms;
-SleepState.detectorinfo.detectionparms.histsandthreshs_orig = detectionparms.histsandthreshs;
+SleepState.detectorinfo.detectionparms.histsandthreshs_orig = detectionparms.SleepScoreMetrics.histsandthreshs;
 SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
 SleepState.detectorinfo.StatePlotMaterials = StatePlotMaterials;
 
