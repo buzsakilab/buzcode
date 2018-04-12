@@ -83,6 +83,7 @@ for pmidx = 1:length(probemaplist)
 %     grouplist_all = cat(1,grouplist_all,unique(groupperchannel));
     
     %find channels
+    %HARD CODED!!! groupcolumn+2!!! 
     channelcolumn = groupcolumn+2;%may definitely want to change this
 %     groupcolumn = strmatch('Neuroscope channel',tptxt(1,:));
     tc = tpraw(groupdenoterows,channelcolumn);
