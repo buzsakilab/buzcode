@@ -94,7 +94,7 @@ switch recsys
        end
     case 'Intan' %if not amplipex, look for intan
         d = dir(fullfile(basepath,[basename(1:end-3) '*']));%if I record over new year's eve I'll have to handle it :)
-        for a = length(d):-1:1;
+        for a = length(d):-1:1
             if ~d(a).isdir
                 d(a) = [];
             end
