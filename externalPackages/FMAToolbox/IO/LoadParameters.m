@@ -71,8 +71,10 @@ end
 if ~isempty(p.spikeDetection),
     try
 	parameters.spikeGroups.nGroups = length(p.spikeDetection.channelGroups.group);
-	if parameters.spikeGroups.nGroups == 1,   %if there's a single spike group
-		parameters.spikeGroups.nSamples = str2num(p.spikeDetection.channelGroups.group.nSamples);
+	if parameters.spikeGroups.nGroups == 1,   %if there's a single spike group		
+        if isfield(p.spikeDetection.channelGroups.group,'nSamples')
+            parameters.spikeGroups.nSamples = str2num(p.spikeDetection.channelGroups.group.nSamples);
+        end
 		channels = p.spikeDetection.channelGroups.group.channels.channel;
 		if isa(channels,'cell'),
 			for channel = 1:length(channels),
