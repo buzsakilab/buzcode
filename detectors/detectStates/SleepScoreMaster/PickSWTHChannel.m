@@ -1,4 +1,4 @@
-function [SleepScoreLFP] = PickSWTHChannel(basePath,figfolder,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels,OVERWRITE);
+function [SleepScoreLFP] = PickSWTHChannel(basePath,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels,OVERWRITE);
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %
@@ -7,6 +7,11 @@ function [SleepScoreLFP] = PickSWTHChannel(basePath,figfolder,scoretime,SWWeight
 recordingname = [recordingname extension];
 
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreLFP.LFP.mat']);
+
+figfolder = [fullfile(basePath,'StateScoreFigures'),'/'];
+if ~exist(figfolder,'dir')
+    mkdir(figfolder)
+end
 
 saveFiles = true;
 %% Check if SleepScoreLFP has already been claculated for this recording
