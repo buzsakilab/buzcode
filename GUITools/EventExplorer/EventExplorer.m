@@ -380,62 +380,34 @@ function FlagEvent(obj,event)
         usercomment = [];
     end
     
-    if ~isfield(FO,'FlagsAndComments') %First flag for the recording
-        %initiate the flag at the event and at the timestamp (with no comment)
-        FO.FlagsAndComments.(FO.viewmode).flags = FO.currevent;
-        FO.FlagsAndComments.(FO.viewmode).comments{1} = usercomment;
-        FO.FlagsAndComments.timepoint.flags = FO.EventTimes(FO.currevent);
-        FO.FlagsAndComments.timepoint.comments{1} = usercomment;
-        set(FO.flageventbutton,'String','Unflag')
-        
-        guidata(FO.fig, FO);
-        return
+    %First flag for the recording
+    if ~isfield(FO,'FlagsAndComments')
+        isflagged = 'first';
+    else
+        [isflagged,flagidx] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
     end
-    
-    switch FO.viewmode
-        case 'timepoint'
-            %Has it already been flagged?
-            [isflagged,flagidx] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
-            switch isflagged
-                case false
-                    %Flag it!
-                    FO.FlagsAndComments.timepoint.flags(end+1) = FO.currevent;
-                    FO.FlagsAndComments.timepoint.comments{end+1} = usercomment;  
-                    set(FO.flageventbutton,'String','Unflag')
-                case true
-                    %Remove the Flag
-                    FO.FlagsAndComments.timepoint.flags(flagidx)=[];
-                    FO.FlagsAndComments.timepoint.comments(flagidx) = [];
-                    set(FO.flageventbutton,'String','Flag')
-            end
-                    
-        otherwise 
-            %Has it already been flagged?
-            [isflagged,flagidx] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
-            switch isflagged
-                case false
-                    %Flag it! (and the time point)
-                    FO.FlagsAndComments.(FO.viewmode).flags(end+1) = FO.currevent;
-                    FO.FlagsAndComments.(FO.viewmode).comments{end+1} = usercomment;
-                    FO.FlagsAndComments.timepoint.flags(end+1) = FO.EventTimes(FO.currevent);
-                    FO.FlagsAndComments.timepoint.comments{end+1} = usercomment;
-                    set(FO.flageventbutton,'String','Unflag')
 
-                case true
-                    %F
-                    %Remove the Flag/Comment
-                    FO.FlagsAndComments.(FO.viewmode).flags(flagidx)=[];
-                    FO.FlagsAndComments.(FO.viewmode).comments(flagidx) = [];
-                    set(FO.flageventbutton,'String','Flag')
-            end
+    %Has it already been flagged?
+    switch isflagged
+        case 'first'
+            %First flag for the recording
+            %initiate the flag at the event and at the timestamp (with no comment)
+            FO.FlagsAndComments.(FO.viewmode).flags = FO.currevent;
+            FO.FlagsAndComments.(FO.viewmode).comments{1} = usercomment;
+            set(FO.flageventbutton,'String','Unflag')
+        case false
+            %Flag it! (and the time point)
+            FO.FlagsAndComments.(FO.viewmode).flags(end+1) = FO.currevent;
+            FO.FlagsAndComments.(FO.viewmode).comments{end+1} = usercomment;
+            set(FO.flageventbutton,'String','Unflag')
+        case true
+            %Remove the Flag/Comment
+            FO.FlagsAndComments.(FO.viewmode).flags(flagidx)=[];
+            FO.FlagsAndComments.(FO.viewmode).comments(flagidx) = [];
+            set(FO.flageventbutton,'String','Flag')
     end
-            
-    %Sort everything 
-    [FO.FlagsAndComments.timepoint.flags,I] = sort(FO.FlagsAndComments.timepoint.flags);
-    FO.FlagsAndComments.timepoint.comments=FO.FlagsAndComments.timepoint.comments(I);
-    FO.FlagsAndComments.(FO.viewmode).flags = sort(FO.FlagsAndComments.(FO.viewmode).flags);
     
-    FO.FlagsAndComments = MergeFlagsComments(FO.FlagsAndComments);
+    FO.FlagsAndComments = MergeFlagsComments(FO.FlagsAndComments,FO.EventTimes);
     guidata(FO.fig, FO);
 end
 
