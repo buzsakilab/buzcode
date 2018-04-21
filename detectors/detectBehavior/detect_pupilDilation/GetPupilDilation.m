@@ -80,9 +80,16 @@ if exist(savefile,'file')
     PREVIOUSDETECT = true;  %not used yet: should be used to load old? or use old params?
 end
 
+<<<<<<< HEAD
+
 %% Parameters
 
 unstablemeanthresh = 0.7;  %how many modSTDs from the median can the median go
+=======
+%% Parameters
+
+unstablemeanthresh = 0.75;  %how many modSTDs from the median can the median go
+>>>>>>> parent of 8d7ea4a... Revert "Merge branch 'dev' into EventExplorer-Dev"
 unstablestdthresh = 0.15;
 unstablewindow = 10; %window of frames around detected unstable frames to denote as unstable
 
