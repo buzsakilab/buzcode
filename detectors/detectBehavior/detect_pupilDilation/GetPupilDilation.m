@@ -86,7 +86,19 @@ end
 if exist(savefile,'file')
     PREVIOUSDETECT = true;
 end
-%%
+
+
+%% Parameters
+
+unstablemeanthresh = 0.7;  %how many modSTDs from the median can the median go
+unstablestdthresh = 0.15;
+unstablewindow = 10; %window of frames around detected unstable frames to denote as unstable
+
+pupilsizethresh = 5; %Pupil must be larger than this many pixels
+pupilmaxsize = 5;   %maximum pupil size (in median-normalized units)
+                    %this is for plotting purposes only, for now,
+
+%% The Meat
 %Load in the video
 pupilvidobj = VideoReader(vidName);
 NumberOfFrames = pupilvidobj.NumberOfFrames;
