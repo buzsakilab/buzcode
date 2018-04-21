@@ -1,0 +1,6 @@
+# compiled binary
+*.mex*
+
+# temp files
+*.m~
+*.c~

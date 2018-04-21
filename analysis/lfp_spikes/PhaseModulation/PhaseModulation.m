@@ -44,6 +44,7 @@ function [phasedistros,phasebins,phasestats,h] = PhaseModulation(spikes,lfp,pass
 % edited by david tingley, 2017
 
 
+warning('this function is now deprecated, try using bz_PhaseModulation.m instead')
 
 %% defaults
 % if no intervals set to keep all recording
