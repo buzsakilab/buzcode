@@ -2226,10 +2226,11 @@ sints = IDXtoINT(idx.states(2:end),5); %2:end to deal with 0-indexing
 for ss = 1:5
     if isempty(sints{ss});continue;end
     if isempty(idx.statenames{ss}) %Are there states that are not named?
-        idx.statenames{ss} = inputdlg(['What is the name of state ',num2str(ss),'?']);
+        usernamedstate = inputdlg(['What is the name of state ',num2str(ss),'?']);
+        idx.statenames{ss} = usernamedstate{1};
     end
-    newname = (strcat(idx.statenames{ss},'state'));
-    ints.(newname{1}) = sints{ss};
+    newname = strcat(idx.statenames{ss},'state');
+    ints.(newname) = sints{ss};
 end
 
 
