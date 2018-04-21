@@ -4691,14 +4691,46 @@ if ~isfield(FO,'AutoScore')
 end
 
 % auto-load DetectionParameters, if they exist.  Save for later
-load([baseName '.SleepState.states.mat'])
+SleepState = bz_LoadStates(basePath,'SleepState');
+
 paramsAvailBool = 0;
-if isfield(SleepState,'detectorinfo')
+if isempty(SleepState)
+    answer = questdlg({'No SleepState.states.mat. Would you like to run SleepScoreMaster?', 'WARNING: will lose current states!!!'},...
+        'AutoScore?');
+    switch answer
+        case 'Yes'
+            SleepScoreMaster(basePath)
+        case {'No','Cancel'}
+            return
+    end
+elseif isfield(SleepState,'detectorinfo')
+    if isfield(SleepState.detectorinfo,'detectorname')
+        detectnameAvailBool = 1;
+    end
     if isfield(SleepState.detectorinfo,'detectionparms')
         paramsAvailBool = 1;
     end
 end
-if paramsAvailBool
+
+if detectnameAvailBool
+    switch SleepState.detectorinfo.detectorname
+        case {'TheStateEditor'}
+            answer = questdlg({'States manually detected. Would you like to run SleepScoreMaster?',...
+                'WARNING: will lose current states!!!'},...
+                'AutoScore?');
+            switch answer
+                case 'Yes'
+                    SleepScoreMaster(basePath)
+                case {'No','Cancel'}
+                    return
+            end
+    end
+end
+        
+
+if paramsAvailBool 
+    %DL: this seems weird to me... 
+    %why do we assume the detectionparms in SleepState are auto?
     F0.AutoScore.detectionparms =  SleepState.detectorinfo.detectionparms;
 else
     F0.AutoScore.detectionparms = [];
