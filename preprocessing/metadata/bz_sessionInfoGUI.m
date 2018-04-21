@@ -65,6 +65,8 @@ switch MODE
             numregions = 0;
         end
         
+
+
         %Run the user input
         newstruct.anotherregion = true; 
         while newstruct.anotherregion
@@ -108,16 +110,13 @@ switch MODE
         %Add the regions to the sessionInfo structure
         if ~isempty(newstruct) %For user:cancel
             sessionInfo.region = repmat({''},1,sessionInfo.nChannels);
-            %Need: catch if user has assigned two regions to one channel
             for rr = 1:numregions
                 regionname = newstruct.(['regionname',num2str(rr-1)]);
                 regionchans = newstruct.(['regionchans',num2str(rr-1)]);
                 sessionInfo.region(ismember(sessionInfo.channels,regionchans)) = {regionname};
             end
         end
-        
         MODE = 'none'; %Return to selection
-        
         
     %MODE: Bad Channels    
     case 'Bad Channels'

@@ -28,8 +28,6 @@ function filtered = Filter(samples,varargin)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
-error('this function is now deprecated, try using bz_Filter')
-
 % Default values
 passband = [];
 stopband = [];
@@ -117,16 +115,15 @@ switch(type),
 		else
 			[b a] = cheby2(order,ripple,stopband/nyquist,'stop');
 		end
-	case 'fir1'
-        	a = 1;
-		if ~isempty(passband)
-			if passband(1) == 0
-				b = fir1(order,passband(2)/nyquist,'low');
+	case 'fir1',
+		if ~isempty(passband),
+			if passband(1) == 0,
+				[b a] = fir1(order,passband(2)/nyquist,'low');
 			else
-				b = fir1(order,passband/nyquist);
+				[b a] = fir1(order,passband/nyquist);
 			end
 		else
-			b = fir1(order,stopband/nyquist,'stop');
+			[b a] = fir1(order,stopband/nyquist,'stop');
 		end
 end
 filtered(:,1) = samples(:,1);

@@ -1,28 +1,27 @@
 function [firingMaps] = bz_firingMap1D(varargin)
 % USAGE
-% [firingMaps] = bz_firingMap1D(spikes,behavior,lfp,tau)
+% [rateMap countMap occuMap phaseMap] = bz_firingMap1D(spikes,behavior,lfp,tau)
 %
 % INPUTS
 %
-%   spikes    - buzcode format .cellinfo. struct with the following fields
-%               .times 
+%   spikes  - buzcode format .cellinfo. struct with the following fields
+%           .times 
 %
-%   behavior  - buzcode format behavior struct
+%   behavior
 %
 %
-%   tau       - desired smoothing window
-%
-%   saveMat   - logical (default: false) that saves firingMaps file
+%   tau
 %
 %
 % OUTPUT
+%  phaseMap - 7xM matrix columns are linearized position, trial
+%  number, x position, y position, instananeous firing rate, theta phase.  M is the number of spikes
+%  across all trials of the same type
 %
-%   firingMaps - cellinfo struct with the following fields
-%                .rateMaps              gaussian filtered rates
-%                .rateMaps_unsmooth     raw rate data
-%                .rateMaps_box          box filtered rates
-%                .countMaps             raw spike count data
-%                .occuMaps              position occupancy data
+%
+%
+%
+%
 %
 % written by david tingley, 2017
 
@@ -75,8 +74,7 @@ for tt =1:length(unique(behavior.events.trialConditions))
                     abs(behavior.events.trials{trials(m)}.y(mm)-behavior.events.map{tt}.y));
                 occuMap{tt}(m,b) = occuMap{tt}(m,b) + 1;
             end
-            occuMap{tt}(m,:) = medfilt1(occuMap{tt}(m,:),5);
-            occuMap{tt}(m,occuMap{tt}(m,:)<1) = 1;
+            occuMap{tt}(m,:) = medfilt1(occuMap{tt}(m,:),4);
         end
     end
 end
@@ -94,7 +92,7 @@ for tt =1:length(unique(behavior.events.trialConditions))
             rateMap{tt}(i,t,:) = Smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
                 (Smooth((occuMap{tt}(t,:)),tau)*(1/behavior.samplingRate));
             rateMap_box{tt}(i,t,:) = smooth(squeeze(countMap{tt}(i,t,:))',tau)./ ...
-                (smooth((occuMap{tt}(t,:)),tau)*(1/behavior.samplingRate));
+                (Smooth((occuMap{tt}(t,:)),tau)*(1/behavior.samplingRate));
             rateMap_unsmooth{tt}(i,t,:) = (squeeze(countMap{tt}(i,t,:)))./ ...
                 (Smooth((occuMap{tt}(t,:)),tau)*(1/behavior.samplingRate));
 %               rateMap{tt}(i,t,:) = Smooth(squeeze(countMap{tt}(i,t,:))./...

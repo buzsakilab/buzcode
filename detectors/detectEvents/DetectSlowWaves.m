@@ -14,10 +14,6 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %                   baseName.SleepState.states.mat
 %               
 %   (options)
-%   'lfp'               -A buzcode-style lfp structure... if you would
-%                        rather just input the lfp instead of loading from
-%                        basepath
-%   'spikes'            -A buzcode-style spike structure 
 %   'NREMInts'          -Interval of times for NREM 
 %                       -(Default: loaded from SleepState.states.mat, 
 %                                   run SleepScoreMaster if not exist)
@@ -72,8 +68,6 @@ addParameter(p,'showFig',true,@islogical);
 addParameter(p,'noSpikes',false,@islogical);
 addParameter(p,'DetectionChannel','autoselect');
 addParameter(p,'NREMInts',[]);
-addParameter(p,'lfp',[]);
-addParameter(p,'spikes',[]);
 addParameter(p,'CTXChans','all');
 addParameter(p,'sensitivity',0.6,ratevalidation);
 addParameter(p,'noPrompts',false,@islogical);
@@ -90,8 +84,6 @@ NOPROMPTS = p.Results.noPrompts;
 NOSPIKES = p.Results.noSpikes;
 ratethresh = p.Results.sensitivity;
 filterparms = p.Results.filterparms;
-lfp = p.Results.lfp;
-spikes = p.Results.spikes;
 
 %Defaults
 if ~exist('basePath','var')
@@ -113,13 +105,7 @@ end
 %% Collect all the Necessary Pieces of Information: Spikes, States, LFP
 
 %Spikes in the CTX Spike Groups - assumes region ('CTX')
-if NOSPIKES
-    spikes = 'NOSPIKES'; allspikes = 'NOSPIKES';
-    numcells = nan;
-elseif ~isempty(spikes)
-    allspikes = sort(cat(1,spikes.times{:}));
-    numcells = length(spikes.UID);
-else
+if ~NOSPIKES
     spikes = bz_GetSpikes('basepath',basePath,'region','CTX');
     if isempty(spikes)
         button = questdlg({['No spikes found (baseName.spikes.cellinfo.mat or clu/res/fet), '...
@@ -141,31 +127,31 @@ else
         allspikes = sort(cat(1,spikes.times{:}));
         numcells = length(spikes.UID);
     end
-
+else
+    spikes = 'NOSPIKES'; allspikes = 'NOSPIKES';
+    numcells = nan;
 end
 
 %Sleep Scoring (for NREM). Load, Prompt if doesn't exist
-if isempty(NREMInts)
-    [SleepState] = bz_LoadStates(basePath,'SleepState');
-    if isempty(SleepState) && isempty(NREMInts)
-        button = questdlg(['SleepState.states.mat does not exist, '...
-            'would you like to run SleepScoreMaster?'],...
-            'DetectSlowWaves Needs NREM',...
-            'Yes','No, use all timepoints','Cancel','Yes');
-        switch button
-            case 'Yes'
-                SleepState = SleepScoreMaster(basePath);
-                display('Please double check quality of sleep scoring in the StateScoreFigures folder')
-                NREMInts = SleepState.ints.NREMstate;
-            case 'No, use all timepoints'
-                NREMInts = [0 Inf];
-                SleepState.detectorparams.empty = [];
-            case 'Cancel'
-                return
-        end
-    else
-        NREMInts = SleepState.ints.NREMstate;
+[SleepState] = bz_LoadStates(basePath,'SleepState');
+if isempty(SleepState) && isempty(NREMInts)
+    button = questdlg(['SleepState.states.mat does not exist, '...
+        'would you like to run SleepScoreMaster?'],...
+        'DetectSlowWaves Needs NREM',...
+        'Yes','No, use all timepoints','Cancel','Yes');
+    switch button
+        case 'Yes'
+            SleepState = SleepScoreMaster(basePath);
+            display('Please double check quality of sleep scoring in the StateScoreFigures folder')
+            NREMInts = SleepState.ints.NREMstate;
+        case 'No, use all timepoints'
+            NREMInts = [0 Inf];
+            SleepState.detectorparams.empty = [];
+        case 'Cancel'
+            return
     end
+else
+    NREMInts = SleepState.ints.NREMstate;
 end
    
 %Which channel should be used for detection?
@@ -191,9 +177,7 @@ switch SWChan
 end
         
 %Load the LFP
-if isempty(lfp)
-    lfp = bz_GetLFP(SWChan,'basepath',basePath);
-end
+lfp = bz_GetLFP(SWChan,'basepath',basePath);
 
 %% Filter the LFP: delta, high gamma 
 display('Filtering LFP')
@@ -613,7 +597,6 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
     else
         numcells = length(spikes.times);
         allspikes = sort(cat(1,spikes.times{:}));
-        NOSPIKES=false;
     end
     
     %DELTA

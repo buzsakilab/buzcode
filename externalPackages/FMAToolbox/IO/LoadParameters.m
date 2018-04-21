@@ -37,13 +37,13 @@ if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the fo
         display(['Multiple .xml files in this folder, trying ',baseName,'.xml'])
     end
     if isempty(d) %if no .xmls - you have a problem
-        error('LoadParameters:noXmls',['No .xml in ',filename])
-    end
+        error(['No .xml in ',filename])
+    end 
     
     filename = fullfile(filename, d.name);
 end
 
-if ~exist(filename)
+if ~exist(filename),
 	error(['File ''' filename ''' not found.']);
 end
 [pathname,basename,extension] = fileparts(filename);
@@ -69,12 +69,9 @@ end
 
 
 if ~isempty(p.spikeDetection),
-    try
 	parameters.spikeGroups.nGroups = length(p.spikeDetection.channelGroups.group);
-	if parameters.spikeGroups.nGroups == 1,   %if there's a single spike group		
-        if isfield(p.spikeDetection.channelGroups.group,'nSamples')
-            parameters.spikeGroups.nSamples = str2num(p.spikeDetection.channelGroups.group.nSamples);
-        end
+	if parameters.spikeGroups.nGroups == 1,   %if there's a single spike group
+		parameters.spikeGroups.nSamples = str2num(p.spikeDetection.channelGroups.group.nSamples);
 		channels = p.spikeDetection.channelGroups.group.channels.channel;
 		if isa(channels,'cell'),
 			for channel = 1:length(channels),
@@ -102,13 +99,7 @@ if ~isempty(p.spikeDetection),
 				parameters.spikeGroups.groups{group} = str2num(channels);
 			end
 		end
-    end
-    catch
-        warning('something went wrong loading spikeGroups from XML')
-        parameters.spikeGroups.nSamples = [];
-        parameters.spikeGroups.groups = {};
-        parameters.spikeGroups.nGroups = length(p.anatomicalDescription.channelGroups);
-    end
+	end
 else
 	parameters.spikeGroups.nSamples = [];
 	parameters.spikeGroups.groups = {};

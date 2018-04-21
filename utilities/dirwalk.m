@@ -1,4 +1,4 @@
-function varargout = dirwalk(topPath, visitor, recursionLimit, varargin)
+function varargout = dirwalk(topPath, visitor, varargin)
 %DIRWALK Generate the file names in a directory tree by walking the tree
 %
 % Description:
@@ -15,7 +15,7 @@ function varargout = dirwalk(topPath, visitor, recursionLimit, varargin)
 %   [visitorOutput1, visitorOutput2, ..., visitorOutputN] = dirwalk(topPath, visitor)
 %   [...] = dirwalk(topPath, visitor, visitorInput1, visitorInput2, ..., visitorInputN)
 %   [...] = dirwalk(topPath, visitor, varargin)
-%c
+%
 %
 % Input:
 %   topPath -- (Required) Top path name (Root path name)
@@ -72,12 +72,10 @@ error(nargchk(1, Inf, nargin));
 
 if (nargin < 2)
     error(nargoutchk(0, 3, nargout));
-    recursionLimit = Inf;
+    
     visitor = @default_visitor;
     visitorNumOutputs = 3;
     isUseDefaultVisitor = true;
-elseif nargin < 3
-    recursionLimit = Inf;
 else
     visitorNumOutputs = nargout;
     isUseDefaultVisitor = false;
@@ -92,23 +90,22 @@ if ~isempty(visitor)
 end
 
 varargout = dir_tree_helper(topPath, ...
-    visitor, visitorNumOutputs, isUseDefaultVisitor, recursionLimit, varargin{:});
+    visitor, visitorNumOutputs, isUseDefaultVisitor, varargin{:});
 %--------------------------------------------------------------------------
 
 %==========================================================================
 function visitorOutputs = dir_tree_helper(topPath, visitorHandle, ...
-    visitorNumOutputs, isUseDefaultVisitor, recursionLimit, varargin)
+    visitorNumOutputs, isUseDefaultVisitor, varargin)
 %DIR_TREE_HELPER Helper function for get directory tree
 
 % Allocate memory for tree listing
 preallocDirItems = 100000;
 outputs = cell(preallocDirItems, visitorNumOutputs);
 counter = 1;
-depth = 0;
 
 % Get tree listing
-[counter, outputs] = dir_tree_listing(topPath, counter, depth, outputs, ...
-    visitorHandle, visitorNumOutputs, isUseDefaultVisitor, recursionLimit, varargin{:});
+[counter, outputs] = dir_tree_listing(topPath, counter, outputs, ...
+    visitorHandle, visitorNumOutputs, isUseDefaultVisitor, varargin{:});
 
 % Remove extra
 if (counter < preallocDirItems)
@@ -123,8 +120,8 @@ end
 %--------------------------------------------------------------------------
 
 %==========================================================================
-function [counter, outputs] = dir_tree_listing(topPath, counter, depth, outputs, ...
-    visitorHandle, visitorNumOutputs, isUseDefaultVisitor, recursionLimit, varargin)
+function [counter, outputs] = dir_tree_listing(topPath, counter, outputs, ...
+    visitorHandle, visitorNumOutputs, isUseDefaultVisitor, varargin)
 %DIR_TREE_LISTING Generate dir tree listing
 
 % Get listing of current directory
@@ -138,9 +135,8 @@ for i =1:length(Listing)
         bad(i) = 0;
     end
 end
-if ~isempty(Listing)
 Listing(find(bad)) = [];
-end
+
 % Call Visitor function
 cwd = pwd;
 cd(topPath)
@@ -162,12 +158,10 @@ end
 % Recursive walking directories in current directory
 for i = 1:length(dirNames)
     nextRootPath = fullfile(topPath, dirNames{i});
-    if depth + 1 <= recursionLimit
-        [counter, outputs] = dir_tree_listing(nextRootPath, counter+1, depth+1, outputs, ...
-            visitorHandle, visitorNumOutputs, isUseDefaultVisitor, recursionLimit, varargin{:});
-    end
+    
+    [counter, outputs] = dir_tree_listing(nextRootPath, counter+1, outputs, ...
+        visitorHandle, visitorNumOutputs, isUseDefaultVisitor, varargin{:});
 end
-
 %--------------------------------------------------------------------------
 
 %==========================================================================

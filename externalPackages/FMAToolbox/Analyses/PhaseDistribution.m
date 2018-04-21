@@ -29,7 +29,7 @@ function [dist,angles,stats] = PhaseDistribution(phases,varargin)
 %
 %  NOTE
 %
-%    For multiple phase distributions, groups can be indicated in two differecnt
+%    For multiple phase distributions, groups can be indicated in two different
 %    manners:
 %
 %     - a vector of group IDs (one per phase)
@@ -120,8 +120,7 @@ for i = 1:nGroups,
 	h = Smooth(hist(p,angles),smooth);h = h/sum(h);
 	dist(:,i) = h;
 	% Stats
-	[stats.m(i)] = circ_mean(p);
-    [stats.r(i)] = circ_r(p);
+	[stats.m(i),stats.r(i)] = CircularMean(p);
 	stats.k(i) = Concentration(p);
 	n = sum(groups(:,i));
 	R = stats.r(i)*n;
