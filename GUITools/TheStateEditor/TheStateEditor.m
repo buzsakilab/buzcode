@@ -2191,14 +2191,19 @@ if isempty(SleepState)
     SleepState.detectorinfo.detectorname = 'TheStateEditor';
     SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd'); 
     SleepState.idx.statenames = {'','','','',''};
-elseif isfield(SleepState,'detectorinfo')
-        if isfield(SleepState.detectorinfo,'detectorname')
-            if strcmp(SleepState.detectorinfo.detectorname,'SleepScoreMaster')
-                STATESFILETYPE = 'auto';
-            end
-        end
 elseif isfield(FO,'AutoScore')
     STATESFILETYPE = 'auto';
+elseif isfield(SleepState,'detectorinfo')
+        if isfield(SleepState.detectorinfo,'detectorname')
+            switch SleepState.detectorinfo.detectorname
+                case 'SleepScoreMaster'
+                    STATESFILETYPE = 'auto';
+                case 'TheStateEditor'
+                    STATESFILETYPE = 'manual';
+                otherwise
+                    STATESFILETYPE = 'unknown'; 
+            end
+        end
 else
 	STATESFILETYPE = 'unknown';   
 end
