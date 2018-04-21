@@ -18,7 +18,7 @@ function [h,p] = ConcentrationTest(angles,group,alpha,nRandomizations)
 %
 %  SEE
 %
-%    See also Concentration, CircularMean, CircularVariance, CircularConfidenceIntervals.
+%    See also Concentration, circ_mean, CircularVariance, CircularConfidenceIntervals.
 
 % Copyright (C) 2004-2011 by Michaël Zugaro
 %
@@ -55,7 +55,7 @@ kappa = median(k);
 
 % Circular mean for each group (mu)
 for i = 1:r,
-	mu(i) = CircularMean(angles(group==i));
+	mu(i) = circ_mean(angles(group==i));
 end
 
 if kappa >= 1,
@@ -76,7 +76,7 @@ else
 		x = randperm(N);
 		group = group(x);
 		for j = 1:r,
-			mu(j) = CircularMean(angles(group==j));
+			mu(j) = circ_mean(angles(group==j));
 		end
 		fr_rand(i) = ComputeStatistics(angles,group,mu);
 	end
