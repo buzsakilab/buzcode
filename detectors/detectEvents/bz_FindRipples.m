@@ -39,7 +39,7 @@ function [ripples] = bz_FindRipples(varargin)
 %                   like noise (events also present on this channel are
 %                   discarded)
 %     'passband'    N x 2 matrix of frequencies to filter for ripple detection
-%     'EMGfilt'     logical (default=false) use EMG to exclude noise
+%     'EMGThresh'   0-1 threshold of EMG to exclude noise
 %     'saveMat'     logical (default=true) to save in buzcode format
 %    =========================================================================
 %
@@ -80,7 +80,7 @@ addParameter(p,'stdev',[],@isnumeric)
 addParameter(p,'show','off',@isstr)
 addParameter(p,'noise',[],@ismatrix)
 addParameter(p,'passband',[130 200],@isnumeric)
-addParameter(p,'EMGfilt',true,@islogical);
+addParameter(p,'EMGThresh',.9,@isnumeric);
 addParameter(p,'saveMat',false,@islogical);
 
 if isstr(varargin{1})  % if first arg is basepath
@@ -90,7 +90,7 @@ if isstr(varargin{1})  % if first arg is basepath
     basename = bz_BasenameFromBasepath(p.Results.basepath);
     basepath = p.Results.basepath;
     passband = p.Results.passband;
-    EMG = p.Results.EMGfilt;
+    EMGThresh = p.Results.EMGfilt;
     lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
     signal = bz_Filter(double(lfp.data),'filter','butter','passband',passband,'order', 3);
     timestamps = lfp.timestamps;
@@ -99,7 +99,7 @@ elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     addRequired(p,'timestamps',@isnumeric)
     parse(p,varargin{:})
     passband = p.Results.passband;
-    EMG = p.Results.EMGfilt;
+    EMGThresh = p.Results.EMGfilt;
     signal = bz_Filter(double(p.Results.lfp),'filter','butter','passband',passband,'order', 3);
     timestamps = p.Results.timestamps;
     basepath = pwd;
@@ -244,7 +244,6 @@ if EMG
         [EMGFromLFP] = bz_EMGFromLFP(pwd,'samplingFrequency',10,'savemat',false);
     end
     excluded = logical(zeros(size(ripples,1),1));
-    EMGThresh = prctile(EMGFromLFP.data,90);
     for i = 1:size(ripples,1)
        [a ts] = min(abs(ripples(i,1)-EMGFromLFP.timestamps)); % get closest sample
        if EMGFromLFP.data(ts) > EMGThresh
