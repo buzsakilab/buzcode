@@ -5,7 +5,7 @@ obj = findobj('tag','EventExplorerMaster');  FO = guidata(obj);
 
 %Two options of current timepoint: Event Number, arbitraty timepoint
 switch FO.viewmode
-    case 'timepoint'
+    case 'timepoint' 
         timepoint = FO.currevent;
     case 'events'
         timepoint = FO.EventTimes(FO.currevent);
@@ -15,7 +15,7 @@ switch FO.viewmode
         timepoint = FO.DetectionReview.miss(FO.currevent);
 end
 
-
+%Get the view window and events inside it
 thiseventwin = timepoint+FO.winsize.*[-0.5 0.5];
 inwinevents = FO.EventTimes(FO.EventTimes>=thiseventwin(1) &FO.EventTimes<=thiseventwin(2));
 
@@ -30,34 +30,45 @@ plot(FO.viewwin,inwinevents,zeros(size(inwinevents)),'o','color',[0 0.6 0])
 
 
 %Passthrough info from the plot
-viewinfo.inwinevents = inwinevents;
 viewinfo.thiseventwin = thiseventwin;
+viewinfo.inwinevents = inwinevents;
 
 %UPdate event number display
 set(FO.thiseventdisplay,'String',round(FO.currevent))
 
+%% Deal with Flags and Comments
 %Update Comment/Flag Window to reflect current event
 %these try statements are to deal with FlagsAndComments not being made yet (do better)
-try iscommented = ~isempty(FO.FlagsAndComments.(FO.viewmode).comments{FO.currevent});
-catch; iscommented=false; end
-if iscommented 
-    set(FO.eventcomment,'String',FO.FlagsAndComments.(FO.viewmode).comments{FO.currevent})
-else set(FO.eventcomment,'String','Event Comments')
+if isfield(FO,'FlagsAndComments')
+    if isfield(FO.FlagsAndComments,(FO.viewmode))
+        %Has it already been flagged?
+        [isflagged,flagidx] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
+        switch isflagged
+            case true
+                set(FO.eventcomment,'String',FO.FlagsAndComments.(FO.viewmode).comments{flagidx})
+                set(FO.flageventbutton,'String','Unflag')
+            case false
+                set(FO.eventcomment,'String','Event Comments')
+                set(FO.flageventbutton,'String','Flag')        
+        end
+        
+    else %This is ugly :(
+        set(FO.eventcomment,'String','Event Comments')
+        set(FO.flageventbutton,'String','Flag')
+    end
+else %If no flags/comments have been created yet
+    set(FO.eventcomment,'String','Event Comments')
+    set(FO.flageventbutton,'String','Flag')
 end
-
-try isflagged = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
-catch; isflagged = false; end
-if isflagged
-    set(FO.flageventbutton,'String','Unflag')
-else set(FO.flageventbutton,'String','Flag')
-end
+%% Focus on window
+%This is a terrible fix to the figure focus problem that slows down window
+%switching. sad. only necessary if focus has been moved away from current
 
 % set(0,'currentfigure',FO.fig); %These is supposed to fix the post-button resize bug... 
 % set(FO.fig,'currentaxes',FO.viewwin); %but do not. sad.
 % figure(FO.fig)
 % set(gcf,'CurrentObject',gcf)
-%This is a terrible fix to the figure focus problem that slows down window
-%switching. sad. only necessary if focus has been moved away from current
+
 %figure
 set(findobj(FO.fig,'Type','uicontrol'),'Enable','off');
 drawnow;

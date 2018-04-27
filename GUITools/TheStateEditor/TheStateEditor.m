@@ -467,7 +467,7 @@ else
                 if exist([baseName,'.EMGFromLFP.LFP.mat'],'file')
                     tpath = [baseName,'.EMGFromLFP.LFP.mat'];
                 else
-                    [name, path] = uigetfile('*.mat', 'Choose a file with time:val pairs:');
+                    [name, path] = uigetfile('*.mat', 'EMG: Choose a file with time:val pairs:');
                     tpath = fullfile(path,name);
                 end
                 load(tpath)%should now have the EMG variable with fields 
@@ -615,12 +615,10 @@ end
 
 %Load Previous state tagging in SleepState.states.mat
 thispath = FO.basePath;
-numsecsinrecording = length(StateInfo.fspec{1}.to);
-timestartsecond = StateInfo.fspec{1}.to(1);
-states = bz_LoadStates_StateEditorWrapper_In(thispath,numsecsinrecording,timestartsecond);
+timevector = StateInfo.fspec{1}.to;
+states = bz_LoadStates_StateEditorWrapper_In(thispath,timevector);
 
-
-if eegFS>FO.downsampleGoal;
+if eegFS>FO.downsampleGoal
     FO.downsample = round(eegFS/FO.downsampleGoal);
 else
     FO.downsample = 1;
@@ -2169,11 +2167,27 @@ basePath = FO.basePath;
 %Load baseName.SleepState.states.mat
 SleepState = bz_LoadStates(basePath,'SleepState');
 
-%If no SleepState.states.mat existed, create a new one
+%Check if the SleepState file is new, manually detected, or auto-detected
 if isempty(SleepState)
+    STATESFILETYPE = 'new';
     SleepState.detectorinfo.detectorname = 'TheStateEditor';
     SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd'); 
     SleepState.idx.statenames = {'','','','',''};
+elseif isfield(FO,'AutoScore')
+    STATESFILETYPE = 'auto';
+elseif isfield(SleepState,'detectorinfo')
+        if isfield(SleepState.detectorinfo,'detectorname')
+            switch SleepState.detectorinfo.detectorname
+                case 'SleepScoreMaster'
+                    STATESFILETYPE = 'auto';
+                case 'TheStateEditor'
+                    STATESFILETYPE = 'manual';
+                otherwise
+                    STATESFILETYPE = 'unknown'; 
+            end
+        end
+else
+	STATESFILETYPE = 'unknown';   
 end
 
 
@@ -2190,59 +2204,65 @@ idx.timestamps = FO.to;
 %loading. to fix.
 
 %Make a buzcode-style ints structure (should wrap this into IDXtoINT.mat)
-sints = IDXtoINT_In(idx.states(2:end),5); %2:end to deal with 0-indexing
+sints = IDXtoINT(idx.states(2:end),5); %2:end to deal with 0-indexing
 for ss = 1:5
     if isempty(sints{ss});continue;end
     if isempty(idx.statenames{ss}) %Are there states that are not named?
-        idx.statenames{ss} = inputdlg(['What is the name of state ',num2str(ss),'?']);
+        usernamedstate = inputdlg(['What is the name of state ',num2str(ss),'?']);
+        idx.statenames{ss} = usernamedstate{1};
     end
-    ints.([idx.statenames{ss},'state']) = sints{ss};
+    newname = strcat(idx.statenames{ss},'state');
+    ints.(newname) = sints{ss};
 end
 
 
-%Save old Autoscoring in AutoScoreInts
-if ~isfield(SleepState,'AutoScoreInts') 
-    if isfield(SleepState,'detectorinfo')
-        if isfield(SleepState.detectorinfo,'detectorname')
-            if strcmp(SleepState.detectorinfo.detectorname,'SleepScoreMaster')
-                display('Original State Scoring from SleepScoreMaster detected...')
-                display('   saving old states as SleepState.AutoScoreInts')
-                SleepState.AutoScoreInts = SleepState.ints;
+switch STATESFILETYPE
+    case 'auto'
+        %Save old Autoscoring in AutoScoreInts
+        if ~isfield(SleepState,'AutoScoreInts') 
+            if isfield(SleepState,'detectorinfo')
+                if isfield(SleepState.detectorinfo,'detectorname')
+                    if strcmp(SleepState.detectorinfo.detectorname,'SleepScoreMaster')
+                        display('Original State Scoring from SleepScoreMaster detected...')
+                        display('   saving old states as SleepState.AutoScoreInts')
+                        SleepState.AutoScoreInts = SleepState.ints;
+                    end
+                end
             end
         end
-    end
-end
 
+        %Save histsandthreshs... different depending on whether AutoScore was
+        %used or not
+        HistAndThreshAlready_Bool = 0;
+        if isfield(FO,'AutoScore')
+            if isfield(FO.AutoScore,'histsandthreshs')
+                HistAndThreshAlready_Bool = 1;
+            end
+        end
+        if HistAndThreshAlready_Bool
+            histsandthreshs = FO.AutoScore.histsandthreshs;
+        else
+            histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath);
+        end
+        SleepState.detectorinfo.detectionparms.SleepScoreMetrics.histsandthreshs = histsandthreshs;
+end
 
 %Write the new ints/idx
 SleepState.ints = ints;
 SleepState.idx = idx;
 SleepState.detectorinfo.LastManualUpdate = datestr(now,'yyyy-mm-dd');
 
-%Save histsandthreshs... different depending on whether AutoScore was
-%used or not
-HistAndThreshAlready_Bool = 0;
-if isfield(FO,'AutoScore')
-    if isfield(FO.AutoScore,'histsandthreshs')
-        HistAndThreshAlready_Bool = 1;
-    end
-end
-if HistAndThreshAlready_Bool
-    histsandthreshs = FO.AutoScore.histsandthreshs;
-else
-    histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath);
-end
-SleepState.detectorinfo.detectionparms.SleepScoreMetrics.histsandthreshs = histsandthreshs;
-% FO.AutoScore.histsandthreshs = histsandthreshs;
-
-
 %Save the results!
 save([baseName '.SleepState.states.mat'],'SleepState')
 
-%Calculate and save new StateEpisodes
-StatesToEpisodes(SleepState,basePath);
 
-b = msgbox(['Saved work to ', baseName, '.SleepState.states.mat, SleepStateEpisodes.states.mat']);
+%If autoscored, calculate and save new StateEpisodes
+switch STATESFILETYPE
+    case 'auto'
+        StatesToEpisodes(SleepState,basePath);
+end
+
+b = msgbox(['Saved work to ', baseName, '.SleepState.states.mat']);
 saved = 1;
 uiwait(b);
 
@@ -2369,18 +2389,10 @@ obj = findobj('tag','StateEditorMaster');  FO = guidata(obj);
     
     if strcmp(name(end-21:end),'.SleepState.states.mat')%buzcode format
         thispath = FO.basePath;
-        numsecsinrecording = length(FO.to);
-        timestartsecond = FO.to(1);
-        states = bz_LoadStates_StateEditorWrapper_In(thispath,numsecsinrecording,timestartsecond);
-%         load([path,name])
-%         stateslen = size(FO.to,1);
-%         states = zeros(1,stateslen);
-%         states(find(inttoboolIn(SleepState.intsRaw.WAKEstate))) = 1;
-% %         states(find(inttoboolIn(SleepState.intsRaw.MAstate))) = 2;
-%         states(find(inttoboolIn(SleepState.ints.NREMstate))) = 3;
-%         states(find(inttoboolIn(SleepState.ints.REMstate))) = 5;
-%         states = cat(2,states,zeros(1,numel(FO.States)-length(states)));
+        timevector = FO.to;
+        states = bz_LoadStates_StateEditorWrapper_In(thispath,timevector);
         FO.States = states;
+        
     elseif strcmp(name(end-14:end),'_SleepScore.mat')%2016 format
         load([path,name])
 %         stateslen = max([max(max(StateIntervals.NREMstate)) max(max(StateIntervals.REMstate)) max(max(StateIntervals.WAKEstate)) ]); 
@@ -4662,14 +4674,46 @@ if ~isfield(FO,'AutoScore')
 end
 
 % auto-load DetectionParameters, if they exist.  Save for later
-load([baseName '.SleepState.states.mat'])
+SleepState = bz_LoadStates(basePath,'SleepState');
+
 paramsAvailBool = 0;
-if isfield(SleepState,'detectorinfo')
+if isempty(SleepState)
+    answer = questdlg({'No SleepState.states.mat. Would you like to run SleepScoreMaster?', 'WARNING: will lose current states!!!'},...
+        'AutoScore?');
+    switch answer
+        case 'Yes'
+            SleepScoreMaster(basePath)
+        case {'No','Cancel'}
+            return
+    end
+elseif isfield(SleepState,'detectorinfo')
+    if isfield(SleepState.detectorinfo,'detectorname')
+        detectnameAvailBool = 1;
+    end
     if isfield(SleepState.detectorinfo,'detectionparms')
         paramsAvailBool = 1;
     end
 end
-if paramsAvailBool
+
+if detectnameAvailBool
+    switch SleepState.detectorinfo.detectorname
+        case {'TheStateEditor'}
+            answer = questdlg({'States manually detected. Would you like to run SleepScoreMaster?',...
+                'WARNING: will lose current states!!!'},...
+                'AutoScore?');
+            switch answer
+                case 'Yes'
+                    SleepScoreMaster(basePath)
+                case {'No','Cancel'}
+                    return
+            end
+    end
+end
+        
+
+if paramsAvailBool 
+    %DL: this seems weird to me... 
+    %why do we assume the detectionparms in SleepState are auto?
     F0.AutoScore.detectionparms =  SleepState.detectorinfo.detectionparms;
 else
     F0.AutoScore.detectionparms = [];
@@ -4710,11 +4754,6 @@ end
 FO.AutoScore.histsandthreshs_orig = histsandthreshs_orig;
 
 
-% if ~exist([baseName '_SleepScore_FromStateEditor.mat'],'file');
-%     histsandthreshs = SSHistogramsAndThresholds_In(baseName);
-% else
-%     load([baseName '_SleepScore_FromStateEditor.mat'],'histsandthreshs')
-% end
 
 % start figure
 h = figure('position',[940 5 480 720]);
@@ -4810,6 +4849,12 @@ end
 function histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath)
 % Get initial histograms and thresholds as calculated by SleepScoreMaster.m
 SleepState = bz_LoadStates(basePath,'SleepState');
+
+if isempty(SleepState) %If there is no saved SleepState already. 
+    %Will also need something here if the name of the Detector isn't
+    %'SleepScoreMaster'... sorry I didn't fix this -DL
+    error('No SleepState.states.mat detected');
+end
 
 try
     dp = SleepState.detectorinfo.detectionparms;
@@ -5991,10 +6036,14 @@ for n = 1:nargin
 end
 end
 
-function states = bz_LoadStates_StateEditorWrapper_In(basePath,numsecsinrecording,timestartsecond)
+function states = bz_LoadStates_StateEditorWrapper_In(basePath,timevector)
 % TheStateEditor-appropriate loading function for loading buzcode SleepState.states.mat files.
 % Abstracted here so it can be used both during initial load and during LoadStates calls
 % Brendon Watson 4/2018
+
+numsecsinrecording = length(timevector);
+timestartsecond = timevector(1);
+
 SleepState = bz_LoadStates(basePath,'SleepState');
 if isfield(SleepState,'idx')
     states = SleepState.idx.states';
@@ -6009,10 +6058,11 @@ elseif isfield(SleepState,'ints')
     %Pad the beginning and end to match fspec{1}.to
     states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(timestartsecond)),states);
     states = cat(2,states,zeros(1,numsecsinrecording-length(states)));
+elseif isempty(SleepState)
+    states = zeros(1,length(StateInfo.fspec{1}.to));
 else
    error('Your SleepState is broken.')
 end
-
 
 
 %% END for TheStateEditor
