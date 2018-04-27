@@ -24,7 +24,7 @@ function data = bz_LoadBinary(filename,varargin)
 %                   default = 0)
 %     'samples'     number of samples (per channel) to read (default = Inf)
 %     'nChannels'   number of data channels in the file (default = 1)
-%     'channels'    channels to read (default = all)
+%     'channels'    channels to read, base 1 (default = all)
 %     'precision'   sample precision (default = 'int16')
 %     'skip'        number of bytes to skip after each value is read
 %                   (default = 0)
