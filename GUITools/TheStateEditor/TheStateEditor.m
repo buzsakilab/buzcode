@@ -1,4 +1,4 @@
-%function StateEditorProBeta(baseName, inputData, supressGUI, makePortable)
+B%function StateEditorProBeta(baseName, inputData, supressGUI, makePortable)
 % SIMPLE USAGE (NO INPUT VARIABLES, if run from dir with .xml and .eeg/lfp):
 % Add StateEditor to your Matlab path. Within Matlab navigate to a folder
 % containing '.xml' and '.eeg' (or '.lfp') files. Type in the name of this 
