@@ -45,7 +45,7 @@ switch numstates
 end
 
 if length(IDX)>len
-    display("your states extend past your len...")
+    disp('your states extend past your len...')
     IDX = IDX(1:len);
 end
 
