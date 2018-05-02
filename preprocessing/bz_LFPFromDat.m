@@ -1,4 +1,4 @@
-function bz_LFPFromDat(basepath)
+function bz_LFPFromDat(basepath,varargin)
 %assumes you are in or pointed to a directory containing subdirectories for
 % various recording files from a single session
 %
@@ -14,6 +14,10 @@ function bz_LFPFromDat(basepath)
 %
 %If basePath not specified, tries the current working directory.
 %
+%   (options)
+%      'noPrompts'     (default: false) prevents prompts about
+%                       saving/adding metadata
+%
 %
 %OUTPUT
 %Creates file:
@@ -26,6 +30,12 @@ if ~exist('basepath','var')
 elseif isempty(basepath)
     basepath = cd;
 end
+
+p = inputParser;
+addParameter(p,'noPrompts',false,@islogical);
+parse(p,varargin{:})
+noPrompts = p.Results.noPrompts;
+
 basename = bz_BasenameFromBasepath(basepath);
 BWmetadataname = fullfile(basepath,[basename,'.SessionMetadata.mat']);
 xmlname = fullfile(basepath,[basename,'.xml']);
@@ -40,7 +50,7 @@ if exist(BWmetadataname,'file')
     oldsamplerate = SessionMetadata.ExtracellEphys.Parameters.SampleRate;
     newsamplerate = SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate;
 elseif exist(xmlname,'file') || exist(sessionInfoname,'file')
-    parameters = bz_getSessionInfo(basepath);
+    parameters = bz_getSessionInfo(basepath,'noPrompts',noPrompts);
     
     nchannels = parameters.nChannels;
     oldsamplerate = parameters.rates.wideband;
