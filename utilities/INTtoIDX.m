@@ -60,6 +60,8 @@ if isstruct(INT)
         INTtemp{ss} = INT.([statenames{ss},'state']);
     end
     INT = INTtemp;
+else
+    STRUCTIN = false;
 end
 
     
