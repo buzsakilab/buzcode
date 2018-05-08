@@ -1,13 +1,13 @@
 function [ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName)
-%[ events ] = bz_LoadEvents(basePath,eventsName) function for
-%loading events.mat files. events.mat files are saved as...
-% datasetPath/baseName/baseName.eventsName.events.mat
+%[ events ] = bz_LoadCellinfo(basePath,eventsName) function for
+%loading cellinfo.mat files. cellinfo.mat files are saved as...
+% datasetPath/baseName/baseName.cellinfoName.cellinfo.mat
 %
-%eventsName can be the name of a events.mat file, If empty, prompts the user
-%with a list of available events.mat files in basePath.
-%Future update: 'all' (nonfunctional) to load all events.mat files for a given recording. 
+%cellinfoName can be the name of a cellinfo.mat file, If empty, prompts the user
+%with a list of available cellinfo.mat files in basePath.
+%Future update: 'all' (nonfunctional) to load all cellinfo.mat files for a given recording. 
 %
-%DLevenstein 2017
+%DLevenstein 2018
 %%
 if ~exist('basePath','var')
     basePath = pwd;
