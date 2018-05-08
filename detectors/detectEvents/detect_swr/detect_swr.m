@@ -1120,7 +1120,7 @@ end
 %%% GENERATE OUTPUT %%%
 %%%%%%%%%%%%%%%%%%%%%%%
 % 1) swr detections
-SWR.times     = SWR_valid.Ts(:,[2 3])/SR;
+SWR.timestamps     = SWR_valid.Ts(:,[2 3])/SR;
 SWR.peaktimes     = SWR_valid.Ts(:,1)/SR;
 SWR.SwMax  = SWR_valid.SwMax;
 SWR.RipMax = SWR_valid.RipMax;
@@ -1175,15 +1175,16 @@ params.EVENTFILE    = EVENTFILE;
 params.TRAINING     = TRAINING;
 params.DEBUG        = DEBUG;
 
-SWR.detectorparams = params;
-SWR.detectorname = 'detect_swr';
-SWR.detectiondate = today('datetime');
+SWR.detectorinfo.detectionparms = params;
+SWR.detectorinfo.detectorname = 'detect_swr';
+SWR.detectorinfo.detectiondate = today('datetime');
+SWR.detectorinfo.detectionintervals = Epochs;
 
 % save output to Filebase directory
 %save(sprintf('%s_detected_swr%d.mat',Filebase,fileN),'SWR')
 %DL: removed multiple detection version option... should we put this back
 %in as optional user input?
-save(sprintf('%s.SWR.event.mat',Filebase),'SWR') 
+save(sprintf('%s.SWR.events.mat',Filebase),'SWR') 
 
 % write out log file
 logAnalysisFile(mfilename('fullpath'),pathname);

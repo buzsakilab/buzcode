@@ -13,6 +13,7 @@ function  [CellClass] = bz_CellClassification (basePath, varargin)
 %            (default:true)
 % 'forceReload'     -logical (default=false) to force reclassifying even if
 %                    the CellClass.cellinfo.mat already exists
+% 'noPrompts'          -logical (default) to supress any user prompts
 %
 %OUTPUTS
 %   CellClass   buzcode structure saved to
@@ -40,6 +41,7 @@ addParameter(p,'knownI',[],@isvector);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'saveFig',true,@islogical);
 addParameter(p,'forceReload',false,@islogical);
+addParameter(p,'noPrompts',false,@islogical);
 
 parse(p,varargin{:})
 
@@ -48,8 +50,9 @@ knownI = p.Results.knownI;
 SAVEMAT = p.Results.saveMat;
 SAVEFIG = p.Results.saveFig;
 FORCERELOAD = p.Results.forceReload;
+noPrompts = p.Results.noPrompts;
 %%
-Par = LoadParameters(basePath);
+Par = bz_getSessionInfo(basePath, 'noPrompts', noPrompts);
 OneMs = round(Par.rates.wideband/1000);
 
 baseName = bz_BasenameFromBasepath(basePath);

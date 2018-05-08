@@ -17,7 +17,7 @@ end
 cd ..
 
 if exist('analoginin.dat')
-    analogin = uint16(LoadBinary('analoginin.dat','nChannels',2,'channels',1));
+    analogin = uint16(bz_LoadBinary('analoginin.dat','nChannels',2,'channels',1));
 end
 analogin(analogin<mean(analogin)+std(single(analogin)))=mean(analogin);
 

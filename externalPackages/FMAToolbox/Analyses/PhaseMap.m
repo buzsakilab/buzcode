@@ -43,6 +43,6 @@ end
 %   error('Parameter ''positions'' is not a Nx3 matrix (type ''help <a href="matlab:help PhaseMap''">PhaseMap''</a> for details).');
 % end
 
-map = Map(positions,phases,'type','circular',varargin{:});
+map = Map(positions,phases,varargin{:});
 map.phase = map.z;
 map = rmfield(map,'z');
