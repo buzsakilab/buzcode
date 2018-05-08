@@ -1,5 +1,4 @@
 function bz_LFPfromDat(basepath,varargin)
-
 % perform lowpass (2 X output Fs) sinc filter on wideband data
 % subsample the filtered data and save as a new flat binary
 % basename must have basename.dat and basename.xml
@@ -11,15 +10,11 @@ function bz_LFPfromDat(basepath,varargin)
 % 
 %   outFs = downsampled frequency (1250)
 %   lopass = low pass cut off for sinc filter (400)
-
-%% Contstnts/defaults
-outFs = 1250;
-lopass = 450;
-
+%%
 
 %% Input handling
 if ~exist('basepath','var')
-    basepath = cd;
+    basepath = pwd;
 end
 basename = bz_BasenameFromBasepath(basepath);
 
@@ -29,7 +24,6 @@ useGPU = false;
 if gpuDeviceCount>0
     useGPU = true;
 end
-
 
 %get xml
 fxml = fullfile(basepath, [basename '.xml']);
@@ -43,30 +37,34 @@ fInfo = dir(fullfile(basepath, [basename '.dat']));
 inFs = syst.rates.wideband;
 nbChan = syst.nChannels;
 
+%Contstnts/defaults
+outFs = 1250;
+lopass = 450;
+chunksize = 1e5; % depends on the system... could be bigger I guess
+%chunk should be even multiple of sampleRatio
 
-%set output sampling rate
+%set output sampling rate from xml
+if isfield(syst.rates,'lfp') && ~isempty(syst.rates.lfp)
+    outFs =syst.lfpSampleRate;
+end
 
+%Parsing the input options
 for i = 1:2:length(varargin)
-    
     switch varargin{i}
         
-        case 'outFs'
-          
+        case 'outFs'    %User set output frequency
                 outFs = varargin{i+1};
-                
                 if isfield(syst,'lfpSampleRate') &&  syst.lfpSampleRate~=outFs
                     warning(['XML does not match user LFP rate, using user input LFP sampling of: ' num2str(outFs) 'Hz']);
                 end
-        case 'lopass'
-                lopass = varargin{i+1};
                 
-               
-            
+        case 'lopass'   %User set lowpass frequency
+                lopass = varargin{i+1};
+                    
     end
 end
 
 if lopass> outFs/2
-    
     warning('low pass cutoff beyond Nyquist')
 end
 
@@ -74,8 +72,6 @@ end
 ratio =lopass/(inFs/2) ;
 sampleRatio = (inFs/outFs);
 
-%chunk should be even multiple of sampleRatio
-chunksize = 1e5; % depends on the system... could be bigger I guess
 
 if mod(chunksize,sampleRatio)~=0
 chunksize = chunksize + sampleRatio-mod(chunksize,sampleRatio);
@@ -96,22 +92,26 @@ nBytes = fInfo.bytes;
 nbChunks = floor(nBytes/(nbChan*sizeInBytes*chunksize));
 
 
-
-fidI = fopen(fullfile(basepath,[basename,'.dat']), 'r');
-
-
-
-fprintf('Extraction of LFP begun \n')
-
-if exist(fullfile(basepath,[basename,'.lfp']))
-    delete(fullfile(basepath,[basename,'.lfp']))
+%If there's already a .lfp file, make sure the user wants to overwrite it
+if exist(fullfile(basepath,[basename,'.lfp']),'file')
+    overwrite = input([basename,'.lfp already exists. Overwrite? [Y/N]']);
+    switch overwrite
+        case {'y','Y'}
+            delete(fullfile(basepath,[basename,'.lfp']))
+        case {'n','N'}
+            return
+        otherwise
+            error('Y or N please...')
+    end
 end
 
+fidI = fopen(fullfile(basepath,[basename,'.dat']), 'r');
+fprintf('Extraction of LFP begun \n')
 fidout =  fopen(fullfile(basepath,[basename,'.lfp']), 'a');
 
 
 for ibatch = 1:nbChunks
-    
+
     if mod(ibatch,10)==0
         if ibatch~=10
             fprintf(repmat('\b',[1 length([num2str(round(100*(ibatch-10)/nbChunks)), ' percent complete'])]))
@@ -131,20 +131,16 @@ for ibatch = 1:nbChunks
     end
     
     
-    
-    
     DATA = nan(size(dat,1),chunksize/sampleRatio);
     for ii = 1:size(dat,1)
         
         d = double(dat(ii,:));
-        
         if useGPU
             d = gpuArray(d);
         end
         
         tmp=  iosr.dsp.sincFilter(d,ratio);
         if useGPU
-            
             if ibatch==1
                 DATA(ii,:) = gather_try(int16(real( tmp(sampleRatio:sampleRatio:end-ntbuff))));
             else
@@ -162,31 +158,23 @@ for ibatch = 1:nbChunks
         
     end
     
-    fwrite(fidout,DATA(:),'int16');
-    
+    fwrite(fidout,DATA(:),'int16'); 
 end
 
 
 
 remainder = nBytes/(sizeInBytes*nbChan) - nbChunks*chunksize;
 if ~isempty(remainder)
-    
     fseek(fidI,((ibatch-1)*(nbChan*sizeInBytes*chunksize))-(nbChan*sizeInBytes*ntbuff),'bof');
     dat = fread(fidI,nbChan*(remainder+ntbuff),'int16');
     dat = reshape(dat,[nbChan (remainder+ntbuff)]);
-    
-    
+ 
     DATA = nan(size(dat,1),floor(remainder/sampleRatio));
     for ii = 1:size(dat,1)
-        
-        
-        
         d = double(dat(ii,:));
-        
         if useGPU
             d = gpuArray(d);
         end
-        
         
         tmp=  iosr.dsp.sincFilter(d,ratio);
         
@@ -199,11 +187,12 @@ if ~isempty(remainder)
     end
     
     fwrite(fidout,DATA(:),'int16');
-    
-    
 end
+
 close(h);
 
 fclose(fidI);
 fclose(fidout);
+
 end
+

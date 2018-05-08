@@ -17,6 +17,7 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 %       'overwrite'         - true/false - overwrite saved EMGFromLFP.LFP.mat
 %                             default: false
 %       'samplingFrequency' - desired sampling rate for EMG output
+%       'noPrompts'     (default: false) prevents prompts about saving/adding metadata
 %       
 %
 % OUTPUTS
@@ -59,7 +60,7 @@ addParameter(p,'saveMat',true,@islogical)
 addParameter(p,'saveLocation','',@isstr)
 addParameter(p,'overwrite',true,@islogical)
 addParameter(p,'samplingFrequency',2,@isnumeric)
-
+addParameter(p,'noPrompts',false,@islogical);
 parse(p,varargin{:})
     
 restrict = p.Results.restrict;
@@ -69,6 +70,7 @@ restrictChannels = p.Results.restrictChannels;
 saveMat = p.Results.saveMat;
 overwrite = p.Results.overwrite;
 samplingFrequency = p.Results.samplingFrequency;
+noPrompts = p.Results.noPrompts;
 
 if ~isempty(p.Results.saveLocation)
     matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMGFromLFP.LFP.mat']);
@@ -90,7 +92,7 @@ display('Calculating EMGFromLFP from High Frequency LFP Correlation')
 
 %% get basics about.lfp/lfp file
 
-xml = bz_getSessionInfo(basePath); % now using the updated version
+xml = bz_getSessionInfo(basePath,'noPrompts',noPrompts); % now using the updated version
 if exist([basePath '/' xml.FileName '.lfp'])
     lfpFile = [basePath '/' xml.FileName '.lfp'];
 elseif exist([basePath '/' xml.FileName '.eeg'])
