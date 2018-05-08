@@ -42,7 +42,7 @@ if isstruct(INT)
     %Get the NAMEs of the states from the structure (INT.NAMEstate)
     fields = fieldnames(INT);
     endState = cellfun(@(X) contains(X,'state'),fields)';
-    fieldstates = cellfun(@(X) extractBefore(X,'state'),fields(endState),'uniformoutput',false)';
+    fieldstates = cellfun(@(X) char(extractBefore(X,'state')),fields(endState),'uniformoutput',false)';
 
     if ~isempty(statenames) %Check if there are any states the user didn't put in
         samestates = ismember(fieldstates,statenames);
