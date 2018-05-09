@@ -31,7 +31,7 @@ spikedefault.spindices = [nan nan];
 p = inputParser;
 addParameter(p,'channels','all',@isnumeric)
 addParameter(p,'timewin',[0 Inf],@isnumeric)
-addParameter(p,'spikes',spikedefault) %should have iscellinfo function
+addParameter(p,'spikes',[]) %should have iscellinfo function
 addParameter(p,'sortmetric',[])
 addParameter(p,'cellgroups',{})
 addParameter(p,'axhandle',gca)
