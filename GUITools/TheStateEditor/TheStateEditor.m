@@ -4779,6 +4779,7 @@ if isempty(SleepState)
         'AutoScore?');
     switch answer
         case 'Yes'
+            %answer = questdlg('Use Loaded Channels?','Yes','No, Auto select channgels for scoring');
             SleepScoreMaster(basePath)
         case {'No','Cancel'}
             return
