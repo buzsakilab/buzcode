@@ -3,20 +3,59 @@ function bz_LFPfromDat(basepath,varargin)
 % subsample the filtered data and save as a new flat binary
 % basename must have basename.dat and basename.xml
 % basepath is the full path for basename.dat
-% depends upon iosr tool box https://github.com/IoSR-Surrey/MatlabToolbox
+%
 % note that sincFilter was altered to accomodate GPU filtering
-% 
-% option inputs
-% 
-%   outFs = downsampled frequency (1250)
-%   lopass = low pass cut off for sinc filter (400)
-%%
-
+%
+%INPUTS
+%   basePath    path where the recording files are located
+%               where basePath is a folder of the form: 
+%                   whateverPath/baseName/
+%
+%               Assumes presence of the following files:
+%                   basePath/baseName.dat
+%
+%                   (optional parameters files)
+%                   basePath/baseName.xml
+%                   basePath/baseName.sessionInfo.mat
+%
+%               If basePath not specified, tries the current working directory.
+%
+%   (options)
+%       'outFs'         (default: 1250) downsampled frequency of the .lfp
+%                       output file. if no user input and not specified in
+%                       the xml, use default
+%       'lopass'        (default: 450) low pass filter frequency 
+%       'noPrompts'     (default: true) prevents prompts about
+%                       saving/adding metadata
+%
+%
+%OUTPUT
+%   Creates file:   basePath/baseName.lfp
+%
+%   If no sessionInfo.mat file previously exists, creates one with 
+%   the information from the .xml file, with the .lfp sampling frequency 
+%   and the lowpass filter used.
+%
+%
+%Dependency: iosr tool box https://github.com/IoSR-Surrey/MatlabToolbox
+%
+%SMckenzie, BWatson, DLevenstein 2018
 %% Input handling
 if ~exist('basepath','var')
     basepath = pwd;
 end
 basename = bz_BasenameFromBasepath(basepath);
+
+defaultoutFS = 1250; %used later
+
+p = inputParser;
+addParameter(p,'noPrompts',true,@islogical);
+addParameter(p,'outFs',[],@isnumeric);
+addParameter(p,'lopass',450,@isnumeric);
+parse(p,varargin{:})
+noPrompts = p.Results.noPrompts;
+outFs = p.Results.outFs;
+lopass = p.Results.lopass;
 
 import iosr.dsp.*
 
@@ -24,80 +63,21 @@ useGPU = false;
 if gpuDeviceCount>0
     useGPU = true;
 end
-
-%get xml
-fxml = fullfile(basepath, [basename '.xml']);
-if ~exist(fxml,'file')
-    error('Dat file and/or Xml file does not exist')
-end
 sizeInBytes = 2; %
 
-syst = bz_getSessionInfo(fxml,'noPrompts',true);
-fInfo = dir(fullfile(basepath, [basename '.dat']));
-inFs = syst.rates.wideband;
-nbChan = syst.nChannels;
-
-%Contstnts/defaults
-outFs = 1250;
-lopass = 450;
-chunksize = 1e5; % depends on the system... could be bigger I guess
-%chunk should be even multiple of sampleRatio
-
-%set output sampling rate from xml
-if isfield(syst.rates,'lfp') && ~isempty(syst.rates.lfp)
-    outFs =syst.lfpSampleRate;
-end
-
-%Parsing the input options
-for i = 1:2:length(varargin)
-    switch varargin{i}
-        
-        case 'outFs'    %User set output frequency
-                outFs = varargin{i+1};
-                if isfield(syst,'lfpSampleRate') &&  syst.lfpSampleRate~=outFs
-                    warning(['XML does not match user LFP rate, using user input LFP sampling of: ' num2str(outFs) 'Hz']);
-                end
-                
-        case 'lopass'   %User set lowpass frequency
-                lopass = varargin{i+1};
-                    
-    end
-end
-
-if lopass> outFs/2
-    warning('low pass cutoff beyond Nyquist')
-end
-
-    
-ratio =lopass/(inFs/2) ;
-sampleRatio = (inFs/outFs);
-
-
-if mod(chunksize,sampleRatio)~=0
-chunksize = chunksize + sampleRatio-mod(chunksize,sampleRatio);
-end
-
-
-%ntbuff should be even multiple of sampleRatio
-ntbuff = 525;  %default filter size in iosr toolbox
-
-if mod(ntbuff,sampleRatio)~=0
-ntbuff = ntbuff + sampleRatio-mod(ntbuff,sampleRatio);
-end
-
-
-
-%f
-nBytes = fInfo.bytes;
-nbChunks = floor(nBytes/(nbChan*sizeInBytes*chunksize));
+%% files check
+fxml = fullfile(basepath, [basename '.xml']);
+fsessioninfo = fullfile(basepath,[basename,'.sessionInfo.mat']);
+fdat = fullfile(basepath,[basename,'.dat']);
+flfp = fullfile(basepath,[basename,'.lfp']);
 
 
 %If there's already a .lfp file, make sure the user wants to overwrite it
-if exist(fullfile(basepath,[basename,'.lfp']),'file')
+if exist(flfp,'file')
     overwrite = input([basename,'.lfp already exists. Overwrite? [Y/N]']);
     switch overwrite
         case {'y','Y'}
-            delete(fullfile(basepath,[basename,'.lfp']))
+            delete(flfp)
         case {'n','N'}
             return
         otherwise
@@ -105,10 +85,61 @@ if exist(fullfile(basepath,[basename,'.lfp']),'file')
     end
 end
 
-fidI = fopen(fullfile(basepath,[basename,'.dat']), 'r');
-fprintf('Extraction of LFP begun \n')
-fidout =  fopen(fullfile(basepath,[basename,'.lfp']), 'a');
+%Check the dat
+if ~exist(fdat,'file')
+    error('Dat file does not exist')
+end
+fInfo = dir(fullfile(basepath, [basename '.dat']));
 
+%Get the metadata
+if ~exist(fxml,'file') && ~exist(fsessioninfo,'file')
+    warning('No xml or sessionInfo file, using defaults and creating a minimal sessionInfo file')
+else
+    %Get everything from the xml/sessionInfo
+    sessionInfo = bz_getSessionInfo(basepath,'noPrompts',noPrompts);
+    inFs = sessionInfo.rates.wideband;
+    nbChan = sessionInfo.nChannels;
+    
+    %set output sampling rate from xml, user input    
+    if ~isempty(outFs)          %If user input - priority (keep from above)
+        outFs = outFs;          %redundant, clearly.
+    elseif isfield(sessionInfo,'lfpSampleRate') %If not, use from xml
+        outFs = sessionInfo.lfpSampleRate;    
+    else                                        %If not in xml, use default
+        outFs = defaultoutFS;
+    end
+end
+sessionInfo.lfpSampleRate = outFs;
+sessionInfo.LFPLoPassFreq = lopass;
+save(fsessioninfo,'sessionInfo');  %Save the sessioninfo with the parameters used
+
+
+if lopass> outFs/2
+    warning('low pass cutoff beyond Nyquist')
+end
+ 
+ratio =lopass/(inFs/2) ;
+sampleRatio = (inFs/outFs);
+
+%% Set Chunk and buffer size at even multiple of sampleRatio
+chunksize = 1e5; % depends on the system... could be bigger I guess
+if mod(chunksize,sampleRatio)~=0
+    chunksize = chunksize + sampleRatio-mod(chunksize,sampleRatio);
+end
+
+%ntbuff should be even multiple of sampleRatio
+ntbuff = 525;  %default filter size in iosr toolbox
+if mod(ntbuff,sampleRatio)~=0
+    ntbuff = ntbuff + sampleRatio-mod(ntbuff,sampleRatio);
+end
+
+nBytes = fInfo.bytes;
+nbChunks = floor(nBytes/(nbChan*sizeInBytes*chunksize));
+
+%% GET LFP FROM DAT!
+fidI = fopen(fdat, 'r');
+fprintf('Extraction of LFP begun \n')
+fidout = fopen(flfp, 'a');
 
 for ibatch = 1:nbChunks
 
@@ -194,5 +225,6 @@ close(h);
 fclose(fidI);
 fclose(fidout);
 
+disp(' ........baseName.lfp file created! Huzzah!')
 end
 
