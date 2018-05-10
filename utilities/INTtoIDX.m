@@ -41,14 +41,16 @@ if isstruct(INT)
     STRUCTIN = true;
     %Get the NAMEs of the states from the structure (INT.NAMEstate)
     fields = fieldnames(INT);
-    fieldstates = cellfun(@(X) extractBefore(X,'state'),fields,'uniformoutput',false)';
+    endState = cellfun(@(X) contains(X,'state'),fields)';
+    fieldstates = cellfun(@(X) char(extractBefore(X,'state')),fields(endState),'uniformoutput',false)';
 
     if ~isempty(statenames) %Check if there are any states the user didn't put in
         samestates = ismember(fieldstates,statenames);
         %Here: if you find any states in struct not in input, prompt user
         for ss = 1:length(samestates); if samestates(ss)==0
                 statenum = inputdlg(['What number would you like state ''',fieldstates{ss},''' to be']);
-                statenames{ss} = fieldstates{ss};
+                statenum = str2num(statenum{1});
+                statenames{statenum} = fieldstates{ss};
         end; end     
     else
         statenames = fieldstates;
@@ -60,13 +62,16 @@ if isstruct(INT)
         INTtemp{ss} = INT.([statenames{ss},'state']);
     end
     INT = INTtemp;
+else
+    STRUCTIN = false;
 end
 
-    
-%%    
+%TSToolbox
 if isa(INT,'intervalSet')
     INT = {[Start(INT,'s'), End(INT,'s')]};
 end
+
+%%
 
 %Convert from seconds to dt = 1/sf
 INT = cellfun(@(X) X*sf,INT,'UniformOutput',false);
