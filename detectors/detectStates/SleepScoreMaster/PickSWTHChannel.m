@@ -1,4 +1,4 @@
-function [SleepScoreLFP] = PickSWTHChannel(basePath,figfolder,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels,OVERWRITE);
+function [SleepScoreLFP] = PickSWTHChannel(basePath,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels,OVERWRITE);
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %
@@ -7,6 +7,11 @@ function [SleepScoreLFP] = PickSWTHChannel(basePath,figfolder,scoretime,SWWeight
 recordingname = [recordingname extension];
 
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreLFP.LFP.mat']);
+
+figfolder = [fullfile(basePath,'StateScoreFigures'),'/'];
+if ~exist(figfolder,'dir')
+    mkdir(figfolder)
+end
 
 saveFiles = true;
 %% Check if SleepScoreLFP has already been claculated for this recording
@@ -35,7 +40,7 @@ else
 end
 
 %% FMA
-Par = LoadParameters(xmlfilename);
+Par = bz_getSessionInfo(basePath);
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
 
@@ -144,10 +149,10 @@ parfor idx = 1:numSWChannels;
     estimatedremaining = estimatedtotal-timespent;
    %if mod(idx,10) == 1
    %fprintf('\r'); % delete previous counter display
-        display(['SW Channels - Percent Complete: ',num2str(round(percdone,1)),...
-            '.  Time Spent: ',num2str(round(timespent./60,1)),...
-            '.  Est. Total Time: ',num2str(round(estimatedtotal./60,1)),...
-            'min.  ETR: ',num2str(round(estimatedremaining./60,1)),'min.'])
+        display(['SW Channels - Percent Complete: ',num2str(round(percdone)),...
+            '.  Time Spent: ',num2str(round(timespent./60)),...
+            '.  Est. Total Time: ',num2str(round(estimatedtotal./60)),...
+            'min.  ETR: ',num2str(round(estimatedremaining./60)),'min.'])
   % end
 
     %% Get spectrogram
@@ -188,10 +193,10 @@ parfor idx = 1:numThetaChannels;
     estimatedremaining = estimatedtotal-timespent;
    %if mod(idx,10) == 1
    %fprintf('\r'); % delete previous counter display
-        display(['TH Channels - Percent Complete: ',num2str(round(percdone,1)),...
-            '.  Time Spent: ',num2str(round(timespent./60,1)),...
-            '.  Est. Total Time: ',num2str(round(estimatedtotal./60,1)),...
-            'min.  ETR: ',num2str(round(estimatedremaining./60,1)),'min.'])
+        display(['TH Channels - Percent Complete: ',num2str(round(percdone)),...
+            '.  Time Spent: ',num2str(round(timespent./60)),...
+            '.  Est. Total Time: ',num2str(round(estimatedtotal./60)),...
+            'min.  ETR: ',num2str(round(estimatedremaining./60)),'min.'])
   % end
 
     %% Get spectrogram and calculate theta ratio
@@ -254,7 +259,7 @@ SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,params);
 
 
 if saveFiles
-    %Save in buzcodeformat
+    %Need to update to Save in buzcode format for lfp.mat
     save(matfilename,'SleepScoreLFP');
 end
 

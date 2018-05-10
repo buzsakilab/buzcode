@@ -65,7 +65,7 @@ nCells = length(spikes.times);
 positionSamplingRate = behavior.samplingRate;
 
 % find a better way to get spike phase relationship...
-[rateMap countMap occuMap phaseMap] = bz_firingMap1D(spikes.times,behavior,lfp,5);
+[firingMaps] = bz_firingMap1D(spikes,behavior,lfp,5);
 
 % iterate through conditions and compile spike trains and spike-phase
 % trains
@@ -77,12 +77,12 @@ for cond = conditions
         spk_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000)); % assumes intervals are in seconds, rounds to nearest millisecond
         phase_trains{cond}{t} = zeros(nCells,ceil((intervals(t,2)-intervals(t,1))*1000));
         for cell = 1:nCells
-            if ~isempty(phaseMap{cond}{cell})
-                f = find(phaseMap{cond}{cell}(:,2)==t);
+            if ~isempty(firingMaps.phaseMaps{cond}{cell})
+                f = find(firingMaps.phaseMaps{cond}{cell}(:,2)==t);
                 if ~isempty(f)
                 for s=1:length(f)
-                    phase_trains{cond}{t}(cell,ceil(phaseMap{cond}{cell}(f(s),5)*1000)) = ...
-                        phaseMap{cond}{cell}(f(s),end);
+                    phase_trains{cond}{t}(cell,ceil(firingMaps.phaseMaps{cond}{cell}(f(s),5)*1000)) = ...
+                        firingMaps.phaseMaps{cond}{cell}(f(s),end);
                 end
                 end
             end
@@ -108,10 +108,10 @@ end
 
 % collapse across trials..
 for cond = conditions
-%    phase_trains{cond} = cell2mat(phase_trains{cond});
-%    spk_trains{cond} = cell2mat(spk_trains{cond});
-% this was a bad idea because it lead to smoothing across trial boundaries,
-% fixed below by smoothing first, then concatenating trials...
+% %    phase_trains{cond} = cell2mat(phase_trains{cond});
+% %    spk_trains{cond} = cell2mat(spk_trains{cond});
+% % this was a bad idea because it lead to smoothing across trial boundaries,
+% % fixed below by smoothing first, then concatenating trials...
    position{cond} = cell2mat(position{cond});
 end
 
@@ -123,8 +123,9 @@ end
 disp('running models...')
 for cond = conditions
 % train/test data & cross validation needs to get worked in eventually
-train = 1:length(position{cond});
-test = 1:length(position{cond});
+r = randperm(length(position{cond}));
+train = r(1:round(length(r)/3));
+test = r(round(length(r)/3):end);
     warning off
     for wind = smoothingRange
        for cell = 1:nCells 

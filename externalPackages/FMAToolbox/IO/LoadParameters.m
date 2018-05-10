@@ -19,24 +19,31 @@ function parameters = LoadParameters(filename)
 
 % updated for compatibility by David Tingley 02/2017
 % updated for compatibility by Rachel Swanson 05/28/2017
+% updated for compatibility by Daniel Levenstein 09/2017
 
 if nargin < 1 % if we're especially lazy, we assume there is one XML in the current working directory....
-   xml = dir('*xml'); 
-   filename = xml.name;
+%    xml = dir('*xml'); 
+%    filename = xml.name;
+    filename = pwd; %if no input filename is basepath and you're looking for basename.xml
 end
 
 if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the folder location instead of an actual xml file
-    d = dir(fullfile(filename, '*xml')); %bug if multiple xmls, pick the one that matches baseName
-    filename = fullfile(filename, d.name);
-    if ~strcmp(filename(end-3:end),'.xml')
-        error(['No .xml in ',filename])
+    d = dir(fullfile(filename, '*xml')); 
+    
+    if length(d)>1 %if multiple .xmls, pick the one that matches baseName
+        baseName = bz_BasenameFromBasepath(filename);
+        correctxmlfilename = cellfun(@(X) strcmp(X,[baseName,'.xml']),{d.name});
+        d = d(correctxmlfilename);
+        display(['Multiple .xml files in this folder, trying ',baseName,'.xml'])
     end
-    if length(d)>1
-        error('Multiple .xml files in this folder')
-    end 
+    if isempty(d) %if no .xmls - you have a problem
+        error('LoadParameters:noXmls',['No .xml in ',filename])
+    end
+    
+    filename = fullfile(filename, d.name);
 end
 
-if ~exist(filename),
+if ~exist(filename)
 	error(['File ''' filename ''' not found.']);
 end
 [pathname,basename,extension] = fileparts(filename);
@@ -62,9 +69,12 @@ end
 
 
 if ~isempty(p.spikeDetection),
+    try
 	parameters.spikeGroups.nGroups = length(p.spikeDetection.channelGroups.group);
-	if parameters.spikeGroups.nGroups == 1,
-		parameters.spikeGroups.nSamples = str2num(p.spikeDetection.channelGroups.group.nSamples);
+	if parameters.spikeGroups.nGroups == 1,   %if there's a single spike group		
+        if isfield(p.spikeDetection.channelGroups.group,'nSamples')
+            parameters.spikeGroups.nSamples = str2num(p.spikeDetection.channelGroups.group.nSamples);
+        end
 		channels = p.spikeDetection.channelGroups.group.channels.channel;
 		if isa(channels,'cell'),
 			for channel = 1:length(channels),
@@ -72,7 +82,12 @@ if ~isempty(p.spikeDetection),
 			end
 		else
 			parameters.spikeGroups.groups{1} = str2num(channels);
-		end
+        end
+        
+        %%%%%%%bug fix for xml tree mishandling single spike group
+         temp = p.spikeDetection.channelGroups.group;
+         p.spikeDetection.channelGroups = rmfield(p.spikeDetection.channelGroups,'group');
+         p.spikeDetection.channelGroups.group{1} = temp;  
 	else
 		for group = 1:parameters.spikeGroups.nGroups,
             if isfield(p.spikeDetection.channelGroups.group{group},'nSamples')
@@ -87,7 +102,13 @@ if ~isempty(p.spikeDetection),
 				parameters.spikeGroups.groups{group} = str2num(channels);
 			end
 		end
-	end
+    end
+    catch
+        warning('something went wrong loading spikeGroups from XML')
+        parameters.spikeGroups.nSamples = [];
+        parameters.spikeGroups.groups = {};
+        parameters.spikeGroups.nGroups = length(p.anatomicalDescription.channelGroups);
+    end
 else
 	parameters.spikeGroups.nSamples = [];
 	parameters.spikeGroups.groups = {};
@@ -95,6 +116,9 @@ else
 end
 
 parameters.nChannels = str2num(p.acquisitionSystem.nChannels);
+%channel list assumes 0-indexing a la neuroscope, and that all channels are used.
+%In the future, should think about this...
+parameters.channels = [0:parameters.nChannels-1]; 
 parameters.nBits = str2num(p.acquisitionSystem.nBits);
 parameters.rates.lfp = str2num(p.fieldPotentials.lfpSamplingRate);
 parameters.rates.wideband = str2num(p.acquisitionSystem.samplingRate);
@@ -186,13 +210,14 @@ try
 catch
 %if no units in the .xml..... well probably not using them anyway, eh?
 end
-%% For added plugins (such as badchannels)
+%% For added plugins (such as badchannels, regions)
 try %some xml may not have p.programs.program.... if so, ignore all of this
     plugins = p.programs.program;
     pluginnames = cellfun(@(X) X.name,plugins,'uniformoutput',false);
     %Run through each plugin and check if it matches something we know what
     %to do with, feel free to add more things here for your own purposes
     for pp = 1:length(pluginnames)
+        
         if strcmp(pluginnames{pp},'badchannels')
             %Badchannels should be a plugin in the xml, with a single
             %parameter "badchannels" and a list of bad channels separated
@@ -201,6 +226,23 @@ try %some xml may not have p.programs.program.... if so, ignore all of this
             assert(strcmp(plugins{pp}.parameters.parameter.name,'badchannels'),...
                 'There is a plugin ''badchannels'', but the parameter name is not ''badchannels''')
             parameters.badchannels = str2num(plugins{pp}.parameters.parameter.value);
+        end
+        
+        if strcmp(pluginnames{pp},'regions')
+            %Regions should be a plugin in the xml, with a group per region
+            %with the region name and a list of channels separated
+            %by a space or comma. This is temporary while we get metadata ironed out
+            %-DL
+            parameters.region = repmat({''},1,sessionInfo.nChannels);
+            numregions = length(plugins{pp}.parameters.parameter);
+            for rr = 1:numregions
+                regionname = plugins{pp}.parameters.parameter{rr}.name;
+                if strcmp(regionname,'regionname') %"default" is 'regionname'
+                    continue
+                end
+                regionchans = str2num(plugins{pp}.parameters.parameter{rr}.value);
+                parameters.region(ismember(parameters.channels,regionchans)) = {regionname};
+            end
         end
     end
 end

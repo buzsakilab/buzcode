@@ -19,7 +19,7 @@ end
 mySQL_buzsaki.address = '77.104.157.210';
 mySQL_buzsaki.userid = 'buzsakid_users';
 mySQL_buzsaki.password = 'BuzsakiLab9';
-mySQL_buzsaki.database = 'buzsakid_metadata';
+mySQL_buzsaki.database = 'buzsakid_submitdataset';
 mySQL_buzsaki.table = 'Datasets';
 
 % Make connection to database
@@ -42,7 +42,19 @@ if ~strcmp(curs.Message,'Invalid connection.')
     end
     for j = 1:length(buzsakilab_datasets)
         disp(['Submitting dataset ' num2str(j) ': ' buzsakilab_datasets(j).Session])
-        % Data to insert
+        %% check for empty fields, and will with 'null'
+        if any(structfun(@isempty, buzsakilab_datasets(j)))
+            idx = find(structfun(@isempty, buzsakilab_datasets(j)));
+            names = fieldnames(buzsakilab_datasets);
+            for field = 1:length(idx)
+                warning([names{idx(field)} ' was empty, filling with null.'])
+                buzsakilab_datasets(j) = setfield(buzsakilab_datasets(j),names{idx(field)},'null');
+            end
+        end
+        %% check if this session already exists in the DB
+        
+        
+        %% Data to insert
         colnames = fieldnames(buzsakilab_datasets(j))'; %
         data_table = struct2table(buzsakilab_datasets(j));
         % data_table = buzsakilab_database_verify_fieldtypes_and_dataformat(data_table,attributes)
