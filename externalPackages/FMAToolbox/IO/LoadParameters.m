@@ -107,12 +107,12 @@ if ~isempty(p.spikeDetection),
         warning('something went wrong loading spikeGroups from XML')
         parameters.spikeGroups.nSamples = [];
         parameters.spikeGroups.groups = {};
-        parameters.spikeGroups.nGroups = length(p.anatomicalDescription.channelGroups);
+        parameters.spikeGroups.nGroups = 0;
     end
 else
 	parameters.spikeGroups.nSamples = [];
 	parameters.spikeGroups.groups = {};
-	parameters.spikeGroups.nGroups = length(p.anatomicalDescription.channelGroups);
+	parameters.spikeGroups.nGroups = 0;
 end
 
 parameters.nChannels = str2num(p.acquisitionSystem.nChannels);
