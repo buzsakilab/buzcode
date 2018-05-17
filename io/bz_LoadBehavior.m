@@ -1,5 +1,5 @@
 function [ behavior,filename ] = bz_LoadBehavior( basePath,behaviorName )
-% behavior,filename ] = bz_LoadBehavior( basePath,behaviorName ) function for
+%[ behavior,filename ] = bz_LoadBehavior( basePath,behaviorName ) function for
 %loading behavior.mat files.
 %
 %
