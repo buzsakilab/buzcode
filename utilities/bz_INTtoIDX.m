@@ -1,4 +1,4 @@
-function [ IDX,timestamps ] = INTtoIDX(INT,varargin)
+function [ IDX,timestamps ] = bz_INTtoIDX(INT,varargin)
 %[IDX] = INTtoIDX(INT,len,sf) Converts state on/offsets to vector of indices
 %
 %INPUT

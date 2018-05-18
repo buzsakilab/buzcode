@@ -171,7 +171,7 @@ ints.NREMstate = INT{2};
 ints.REMstate = INT{3};
 
 %Because TheStateEditor
-idx = INTtoIDX(ints,'statenames',{'WAKE','','NREM','','REM'});
+idx = bz_INTtoIDX(ints,'statenames',{'WAKE','','NREM','','REM'});
 
 
 end
