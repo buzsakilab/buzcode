@@ -104,7 +104,7 @@ spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff
 %% Do the plot
 ywinrange = fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange));
 if ~isnan(spikes.spindices)
-    ywinrange(2) = ywinrange(2)+max(spikes.plotdata(:,2));
+    ywinrange(2) = ywinrange(2)+max([spikes.plotdata(:,2);0]);
 end
 
 plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
