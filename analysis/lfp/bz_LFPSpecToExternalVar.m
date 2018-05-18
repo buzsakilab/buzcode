@@ -63,7 +63,7 @@ switch specparms.type
             'ncyc',specparms.ncyc,'space',specparms.space);
         
         spectimestamps = wavespec.timestamps; %Wavelet timestamp are same as LFP        
-        spec = wavespec.data;
+        spec = wavespec.data';
         specvarcorr.freqs = wavespec.freqs;
         specbyvar.freqs = specvarcorr.freqs;
         
