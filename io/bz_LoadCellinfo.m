@@ -62,6 +62,8 @@ if dataset
         disp('One or more of your .mats has missing fields')
     end
     
+    %Concatenate structures here. find matching dimensions and cat along
+    %the non-matching?
     return %send out the compiled cellinfo structure
 end
 
