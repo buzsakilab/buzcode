@@ -25,11 +25,8 @@ dataset = p.Results.dataset;
 
 if dataset
     %Figure out which basePaths to look at
-    [possiblebasePaths,possiblebaseNames] = bz_FindBasePaths(basePath);
-    [s,v] = listdlg('PromptString','Which recording(s) would you like analyze?',...
-                    'ListString',possiblebaseNames);
-    baseNames = possiblebaseNames(s);
-    basePaths = possiblebasePaths(s); 
+    [basePaths,baseNames] = bz_FindBasePaths(basePath,...
+        'select',true);
     
     %Go through each and load the cell info
     FIELDMISMATCH=false;
