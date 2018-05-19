@@ -13,29 +13,32 @@ function [ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName,varargin)
 %                   the user to select basepaths in the folder to load the
 %                   cellinfo file from
 %                   future update: 'select', 'all'
+%       'catall'    logical (default: false) if loading multiple cellinfo
+%                   files from a dataset, will try to concatenate all units
+%                   into a single cellinfo structure.
 %
 %DLevenstein 2018
 %%
 p = inputParser;
-addParameter(p,'dataset',false,@islogical)
+addParameter(p,'dataset',false)
+addParameter(p,'catall',false)
 parse(p,varargin{:})
 dataset = p.Results.dataset;
+catall = p.Results.catall;
 
 %% For loading all cellinfo files of same name from dataset
 
 if dataset
     %Figure out which basePaths to look at
-    [basePaths,baseNames] = bz_FindBasePaths(basePath,...
-        'select',true);
+    [basePaths,baseNames] = bz_FindBasePaths(basePath,'select',true);
     
     %Go through each and load the cell info
     FIELDMISMATCH=false;
-    numrecs = length(baseNames);
-    for rr = 1:numrecs
+    for rr = 1:length(baseNames)
         thiscellinfo = bz_LoadCellinfo(basePaths{rr},cellinfoName);
         
-        %Add baseName to the cellinfo file
-        thiscellinfo.baseName = baseNames{rr};
+        %Add baseName to the cellinfo file. this could be for each unit....
+        thiscellinfo.baseName = repmat(baseNames{rr},size(cellinfo.UID));
         
         %Check if the new .mat has any additional fields
         if exist('cellinfo','var')    
@@ -56,11 +59,13 @@ if dataset
     end
     
     if FIELDMISMATCH
-        disp('One or more of your .mats has missing fields')
+        warning('One or more of your .mats has missing fields')
     end
     
-    %Concatenate structures here. find matching dimensions and cat along
-    %the non-matching?
+    if catall
+        cellinfo = CollapseStruct(cellinfo,'match','justcat',true);
+    end
+    
     return %send out the compiled cellinfo structure
 end
 
