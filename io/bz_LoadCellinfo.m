@@ -1,12 +1,15 @@
 function [ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName,varargin)
-%[ events ] = bz_LoadCellinfo(basePath,eventsName) function for
-%loading cellinfo.mat files. cellinfo.mat files are saved as...
+%[ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName) function for
+%for loading cellinfo.mat files. cellinfo.mat files are saved as:
 % datasetPath/baseName/baseName.cellinfoName.cellinfo.mat
 %
-%cellinfoName can be the name of a cellinfo.mat file, If empty, prompts the user
-%with a list of available cellinfo.mat files in basePath.
-%Future update: 'all' (nonfunctional) to load all cellinfo.mat files for a given recording. 
-%
+%INPUT
+%   basePath
+%   cellinfoName    can also be 
+%                   -empty, which allows use prompts the user with a list 
+%                     of available cellinfo.mat files in basePath
+%                   -'all' (not yet functional) load all cellinfo.mat files 
+%                     for a given recording. 
 % (optional inputs)
 %       'dataset'   logical (default: false) used if basePath is a
 %                   high-level dataset path. bz_LoadCellinfo then allows
@@ -16,6 +19,10 @@ function [ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName,varargin)
 %       'catall'    logical (default: false) if loading multiple cellinfo
 %                   files from a dataset, will try to concatenate all units
 %                   into a single cellinfo structure.
+%
+%OUTPUT
+%   cellinfo        loaded cellinfo structure
+%   filename        filename loaded
 %
 %DLevenstein 2018
 %%
@@ -76,7 +83,7 @@ if ~exist('basePath','var')
 end
 baseName = bz_BasenameFromBasepath(basePath);
 
-if ~exist('cellinfoName','var')
+if ~exist('cellinfoName','var') || isempty(cellinfoName)
     allCellinfoFiles = dir(fullfile(basePath,[baseName,'.','*','.cellinfo.mat']));
     [s,v] = listdlg('PromptString','Which cellinfo.mat would you like to load?',...
                  'ListString',{allCellinfoFiles.name},'SelectionMode','single');
