@@ -605,8 +605,6 @@ else
         StateInfo.rawEeg = rawEeg;
     end
     
-
-    
     disp(['Saving ', baseName, '.eegstates.mat...']);
     try
         save([baseName, '.eegstates.mat'], 'StateInfo');
@@ -616,27 +614,11 @@ else
 end
 
 %Load Previous state tagging in SleepState.states.mat
-SleepState = bz_LoadStates(FO.basePath,'SleepState');
-if isfield(SleepState,'idx')
-    states = SleepState.idx.states';
-    %Pad the beginning and end to match fspec{1}.to
-    states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(StateInfo.fspec{1}.to(1))),states);
-    states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
-elseif isfield(SleepState,'ints')
-    %If no idx... get from  .ints
-    SleepState.idx = INTtoIDX(SleepState.ints,'statenames',{'WAKE','','NREM','','REM'});
-    save([baseName '.SleepState.states.mat'],'SleepState') %Save with new idx
-    states = SleepState.idx.states';
-    %Pad the beginning and end to match fspec{1}.to
-    states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(StateInfo.fspec{1}.to(1))),states);
-    states = cat(2,states,zeros(1,length(StateInfo.fspec{1}.to)-length(states)));
-elseif isempty(SleepState)
-    states = zeros(1,length(StateInfo.fspec{1}.to));
-else
-   error('Your SleepState is broken.')
-end
+thispath = FO.basePath;
+timevector = StateInfo.fspec{1}.to;
+states = bz_LoadStates_StateEditorWrapper_In(thispath,timevector);
 
-if eegFS>FO.downsampleGoal;
+if eegFS>FO.downsampleGoal
     FO.downsample = round(eegFS/FO.downsampleGoal);
 else
     FO.downsample = 1;
@@ -649,10 +631,10 @@ if supressGUI == 1
 else
     StateEditorSetup(StateInfo.fspec, StateInfo.motion, states, rawEeg, baseName, FO, eegFS);
 end
-
-if exist([baseName,'-states.mat'],'file')
-    LoadStatesAutoNoMsgs
-end
+% 
+% if exist([baseName,'-states.mat'],'file')
+%     LoadStatesAutoNoMsgs
+% end
 
 
 end
@@ -2386,57 +2368,31 @@ uiwait(b);
 end
 
 
-function LoadStates
-obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-
+function LoadStates(filepath)
+obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); 
 global answer1;
 answer1 = 0;
-FO.loadFig = figure('Position', [382   353   438   200], 'Name', 'Load');
-warn1 = {'\color{red}\fontsize{12}Warning: \color{black}Loading files will overwrite current work.'};
-tx1 = annotation('textbox',  'Position', [0.02, 0.9, 0.9, 0.1], 'string', warn1 , 'EdgeColor', 'none');
-
-loadStates = uicontrol('style', 'checkbox', 'string', 'Load State Vector (if ''.states'' field exists)');
-set(loadStates, 'Units', 'normalized', 'Position', [0.1, 0.71, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
-
-loadEvents = uicontrol('style', 'checkbox', 'string', 'Load Event Matrix (if ''.events'' field exists)');
-set(loadEvents, 'Units', 'normalized', 'Position', [0.1, 0.51, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
-
-loadTransitions =  uicontrol('style', 'checkbox', 'string', 'Load Transition Matrix (if ''.transitions'' field exists)');
-set(loadTransitions, 'Units', 'normalized', 'Position', [0.1, 0.31, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
-
-loadb = uicontrol('style', 'pushbutton', 'string', 'Load ''.mat'' File', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 1;');
-set(loadb, 'Units', 'normalized', 'Position', [0.25, 0.06, 0.4, 0.2], 'FontSize', 12);
-
-cancelb = uicontrol('style', 'pushbutton', 'string', 'Cancel', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 0;');
-set(cancelb, 'Units', 'normalized', 'Position', [0.7, 0.06, 0.25, 0.2], 'FontSize', 12);
-uiwait(FO.loadFig);
-
-loadStates = get(loadStates, 'Value');
-loadEvents = get(loadEvents, 'Value');
-loadTransitions = get(loadTransitions, 'Value');
-
-close(FO.loadFig);
-obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-if answer1 == 0
-    return;
-else
-    [name, path] = uigetfile('*mat', 'Choose a file to load:');
+obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); 
+% if answer1 == 0
+%     return;
+% else
+    
+    if exist('filepath','var')
+        [path,name] = fileparts(filepath);
+    else
+        [name, path] = uigetfile('*mat', 'Choose a file to load:');
+    end
     
     if name == 0
         return;
     end
     
-    
     if strcmp(name(end-21:end),'.SleepState.states.mat')%buzcode format
-        load([path,name])
-        stateslen = size(FO.to,1);
-        states = zeros(1,stateslen);
-        states(find(inttoboolIn(SleepState.intsRaw.WAKEstate))) = 1;
-%         states(find(inttoboolIn(SleepState.intsRaw.MAstate))) = 2;
-        states(find(inttoboolIn(SleepState.intsRaw.NREMstate))) = 3;
-        states(find(inttoboolIn(SleepState.intsRaw.REMstate))) = 5;
-        states = cat(2,states,zeros(1,numel(FO.States)-length(states)));
+        thispath = FO.basePath;
+        timevector = FO.to;
+        states = bz_LoadStates_StateEditorWrapper_In(thispath,timevector);
         FO.States = states;
+        
     elseif strcmp(name(end-14:end),'_SleepScore.mat')%2016 format
         load([path,name])
 %         stateslen = max([max(max(StateIntervals.NREMstate)) max(max(StateIntervals.REMstate)) max(max(StateIntervals.WAKEstate)) ]); 
@@ -2449,6 +2405,34 @@ else
         states = cat(2,states,zeros(1,numel(FO.States)-length(states)));
         FO.States = states;
     else %Andres original TheStateEditor format
+
+        FO.loadFig = figure('Position', [382   353   438   200], 'Name', 'Load');
+        warn1 = {'\color{red}\fontsize{12}Warning: \color{black}Loading files will overwrite current work.'};
+        tx1 = annotation('textbox',  'Position', [0.02, 0.9, 0.9, 0.1], 'string', warn1 , 'EdgeColor', 'none');
+
+        loadStates = uicontrol('style', 'checkbox', 'string', 'Load State Vector (if ''.states'' field exists)');
+        set(loadStates, 'Units', 'normalized', 'Position', [0.1, 0.71, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
+
+        loadEvents = uicontrol('style', 'checkbox', 'string', 'Load Event Matrix (if ''.events'' field exists)');
+        set(loadEvents, 'Units', 'normalized', 'Position', [0.1, 0.51, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
+
+        loadTransitions =  uicontrol('style', 'checkbox', 'string', 'Load Transition Matrix (if ''.transitions'' field exists)');
+        set(loadTransitions, 'Units', 'normalized', 'Position', [0.1, 0.31, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
+
+        loadb = uicontrol('style', 'pushbutton', 'string', 'Load ''.mat'' File', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 1;');
+        set(loadb, 'Units', 'normalized', 'Position', [0.25, 0.06, 0.4, 0.2], 'FontSize', 12);
+
+        cancelb = uicontrol('style', 'pushbutton', 'string', 'Cancel', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 0;');
+        set(cancelb, 'Units', 'normalized', 'Position', [0.7, 0.06, 0.25, 0.2], 'FontSize', 12);
+        uiwait(FO.loadFig);
+
+        loadStates = get(loadStates, 'Value');
+        loadEvents = get(loadEvents, 'Value');
+        loadTransitions = get(loadTransitions, 'Value');
+
+        close(FO.loadFig);
+
+        
         newS = load([path, name]);
 
         if ~isstruct(newS)
@@ -2512,7 +2496,7 @@ else
             end
         end
     end
-end
+% end
 
 % successMsg = ['Found and loaded '];
 % 
@@ -2532,141 +2516,139 @@ else
     updateEventLines(FO.Events(FO.Events(:, 1) == EN, 2));
 end
 modifyStates(1, FO.States, 0);
-obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-FO.madeChanges = 0;
-guidata(FO.fig, FO); 
+guidata(obj, FO); 
 end
 
-
-function LoadStatesAutoNoMsgs
-% global answer1;
-% answer1 = 0;
-% FO.loadFig = figure('Position', [382   353   438   200], 'Name', 'Load');
-% warn1 = {'\color{red}\fontsize{12}Warning: \color{black}Loading files will overwrite current work.'};
-% tx1 = annotation('textbox',  'Position', [0.02, 0.9, 0.9, 0.1], 'string', warn1 , 'EdgeColor', 'none');
-
-% loadStates = uicontrol('style', 'checkbox', 'string', 'Load State Vector (if ''.states'' field exists)');
-% set(loadStates, 'Units', 'normalized', 'Position', [0.1, 0.71, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
 % 
-% loadEvents = uicontrol('style', 'checkbox', 'string', 'Load Event Matrix (if ''.events'' field exists)');
-% set(loadEvents, 'Units', 'normalized', 'Position', [0.1, 0.51, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
+% function LoadStatesAutoNoMsgs
+% % global answer1;
+% % answer1 = 0;
+% % FO.loadFig = figure('Position', [382   353   438   200], 'Name', 'Load');
+% % warn1 = {'\color{red}\fontsize{12}Warning: \color{black}Loading files will overwrite current work.'};
+% % tx1 = annotation('textbox',  'Position', [0.02, 0.9, 0.9, 0.1], 'string', warn1 , 'EdgeColor', 'none');
 % 
-% loadTransitions =  uicontrol('style', 'checkbox', 'string', 'Load Transition Matrix (if ''.transitions'' field exists)');
-% set(loadTransitions, 'Units', 'normalized', 'Position', [0.1, 0.31, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
+% % loadStates = uicontrol('style', 'checkbox', 'string', 'Load State Vector (if ''.states'' field exists)');
+% % set(loadStates, 'Units', 'normalized', 'Position', [0.1, 0.71, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
+% % 
+% % loadEvents = uicontrol('style', 'checkbox', 'string', 'Load Event Matrix (if ''.events'' field exists)');
+% % set(loadEvents, 'Units', 'normalized', 'Position', [0.1, 0.51, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
+% % 
+% % loadTransitions =  uicontrol('style', 'checkbox', 'string', 'Load Transition Matrix (if ''.transitions'' field exists)');
+% % set(loadTransitions, 'Units', 'normalized', 'Position', [0.1, 0.31, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
+% % 
+% % loadb = uicontrol('style', 'pushbutton', 'string', 'Load ''.mat'' File', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 1;');
+% % set(loadb, 'Units', 'normalized', 'Position', [0.25, 0.06, 0.4, 0.2], 'FontSize', 12);
+% % 
+% % cancelb = uicontrol('style', 'pushbutton', 'string', 'Cancel', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 0;');
+% % set(cancelb, 'Units', 'normalized', 'Position', [0.7, 0.06, 0.25, 0.2], 'FontSize', 12);
+% % uiwait(FO.loadFig);
+% % 
+% % loadStates = get(loadStates, 'Value');
+% % loadEvents = get(loadEvents, 'Value');
+% % loadTransitions = get(loadTransitions, 'Value');
+% loadStates = 1;
+% loadEvents = 1;
+% loadTransitions = 1;
 % 
-% loadb = uicontrol('style', 'pushbutton', 'string', 'Load ''.mat'' File', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 1;');
-% set(loadb, 'Units', 'normalized', 'Position', [0.25, 0.06, 0.4, 0.2], 'FontSize', 12);
-% 
-% cancelb = uicontrol('style', 'pushbutton', 'string', 'Cancel', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 0;');
-% set(cancelb, 'Units', 'normalized', 'Position', [0.7, 0.06, 0.25, 0.2], 'FontSize', 12);
-% uiwait(FO.loadFig);
-% 
-% loadStates = get(loadStates, 'Value');
-% loadEvents = get(loadEvents, 'Value');
-% loadTransitions = get(loadTransitions, 'Value');
-loadStates = 1;
-loadEvents = 1;
-loadTransitions = 1;
-
-% close(FO.loadFig);
-obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-% if answer1 == 0
-%     return;
-% else
+% % close(FO.loadFig);
+% obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+% % if answer1 == 0
+% %     return;
+% % else
+% %     
+% %     [name, path] = uigetfile('*mat', 'Choose a state vector to load:');
+% %     
+% %     if name == 0
+% %         return;
+% %     end
 %     
-%     [name, path] = uigetfile('*mat', 'Choose a state vector to load:');
+%     path = cd;
+%     name = [FO.baseName '-states.mat'];
+%     newS = load(fullfile(path, name));
 %     
-%     if name == 0
+%     if ~isstruct(newS)
+%         warndlg('Input must be a structure with fields ''.states'', ''.events'' and/or ''.transitions''.')
 %         return;
 %     end
-    
-    path = cd;
-    name = [FO.baseName '-states.mat'];
-    newS = load(fullfile(path, name));
-    
-    if ~isstruct(newS)
-        warndlg('Input must be a structure with fields ''.states'', ''.events'' and/or ''.transitions''.')
-        return;
-    end
-    
-    loaded = {};
-    if isfield(newS, 'States')
-        st = 'States';
-    else
-        st = 'states';
-    end
-    
-    if loadStates == 1    
-        if isfield(newS, st)
-
-            if sum(size(FO.States) == size(newS.(st))) ~= 2
-                b = msgbox({'Error: states field must be a 1xN vector file', 'where N == the number of bins.'});
-                uiwait(b);
-                obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-                return;
-            end
-
-            FO.States = newS.(st);
-%             loaded{end + 1} = 'states vector';
-        end
-    end
-    
-    if loadEvents == 1    
-        if isfield(newS, 'events')
-            events = newS.events;
-            if size(events, 2) ~= 2 & ~isempty(events)
-                b = msgbox({'Error: events field must be a Nx2 matrix file', 'where N == the number of events.'});
-                uiwait(b);
-                obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-                return;
-            end
-
-            FO.Events = events;
-%             loaded{end + 1} = 'event matrix';
-        end
-    end
-    
-    
-    if loadTransitions == 1
-        if isfield(newS, 'transitions')
-            transitions = newS.transitions;
-            if size(transitions, 2) ~= 3 & ~isempty(transitions)
-                b = msgbox({'Error: transitions field must be a Nx3 matrix file', 'where N == the number of transitions.'});
-                uiwait(b);
-                obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-                return;
-            end
-            
-            FO.Transitions = transitions;
-%             loaded{end + 1} = 'transition matrix';
-        end
-    end
-% end
-
-% successMsg = ['Found and loaded '];
+%     
+%     loaded = {};
+%     if isfield(newS, 'States')
+%         st = 'States';
+%     else
+%         st = 'states';
+%     end
+%     
+%     if loadStates == 1    
+%         if isfield(newS, st)
 % 
-% for i = 1:length(loaded)
-%     successMsg = [successMsg, loaded{i}, ', '];
+%             if sum(size(FO.States) == size(newS.(st))) ~= 2
+%                 b = msgbox({'Error: states field must be a 1xN vector file', 'where N == the number of bins.'});
+%                 uiwait(b);
+%                 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+%                 return;
+%             end
+% 
+%             FO.States = newS.(st);
+% %             loaded{end + 1} = 'states vector';
+%         end
+%     end
+%     
+%     if loadEvents == 1    
+%         if isfield(newS, 'events')
+%             events = newS.events;
+%             if size(events, 2) ~= 2 & ~isempty(events)
+%                 b = msgbox({'Error: events field must be a Nx2 matrix file', 'where N == the number of events.'});
+%                 uiwait(b);
+%                 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+%                 return;
+%             end
+% 
+%             FO.Events = events;
+% %             loaded{end + 1} = 'event matrix';
+%         end
+%     end
+%     
+%     
+%     if loadTransitions == 1
+%         if isfield(newS, 'transitions')
+%             transitions = newS.transitions;
+%             if size(transitions, 2) ~= 3 & ~isempty(transitions)
+%                 b = msgbox({'Error: transitions field must be a Nx3 matrix file', 'where N == the number of transitions.'});
+%                 uiwait(b);
+%                 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+%                 return;
+%             end
+%             
+%             FO.Transitions = transitions;
+% %             loaded{end + 1} = 'transition matrix';
+%         end
+%     end
+% % end
+% 
+% % successMsg = ['Found and loaded '];
+% % 
+% % for i = 1:length(loaded)
+% %     successMsg = [successMsg, loaded{i}, ', '];
+% % end
+% % successMsg = [successMsg(1:(end - 2)), '.'];
+% 
+% guidata(FO.fig, FO); 
+% % b = msgbox(successMsg);
+% % uiwait(b);
+% 
+% EN = FO.eventNum;
+% if isempty(FO.Events)
+%     updateEventLines([]);
+% else
+%     updateEventLines(FO.Events(FO.Events(:, 1) == EN, 2));
 % end
-% successMsg = [successMsg(1:(end - 2)), '.'];
-
-guidata(FO.fig, FO); 
-% b = msgbox(successMsg);
-% uiwait(b);
-
-EN = FO.eventNum;
-if isempty(FO.Events)
-    updateEventLines([]);
-else
-    updateEventLines(FO.Events(FO.Events(:, 1) == EN, 2));
-end
-if isfield(newS,'states')
-    modifyStates(1, newS.(st), 0);
-end
-obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-FO.madeChanges = 0;
-guidata(FO.fig, FO); 
-end
+% if isfield(newS,'states')
+%     modifyStates(1, newS.(st), 0);
+% end
+% obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+% FO.madeChanges = 0;
+% guidata(FO.fig, FO); 
+% end
 
 
 
@@ -2784,6 +2766,8 @@ else
 end
 
 end
+
+
 function ChangeSmoothingWindow(e, src)
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
 spec = getappdata(gcf,'spec');
@@ -2855,60 +2839,155 @@ switch get(FO.overlayDisp, 'Value')
             FO.overlayLines{i} = plot(FO.to, m, '-w', 'LineWidth', 2.5);
         end
     case 3
-        if ~isempty(FO.overlayLines)
-            for i = 1:length(FO.overlayLines)
-                delete(FO.overlayLines{i})
-            end
-            FO.overlayLines = {};
-            guidata(FO.fig, FO); 
-        end
-        helpdlg({['Input must be a .mat file with n collumns of time bins'],...
+        helpdlg({['2 Choices: 1) Choose a SleepState.States.mat file or 2) a simpler mat with a single variable with n columns of time bins'],...
             ['(n = ', int2str(length(FO.to)),') and up to ', int2str(FO.nCh), ' rows. Successive rows of the'],...
             ['input will be displayed overlayed on on successive'],...
             ['spectrogram channels']});
+        
         [name, path] = uigetfile('*mat', 'Choose overlay data to load:');
-        if name == 0
-            guidata(FO.fig, FO); 
-            set(FO.overlayDisp, 'Value', 1);
-        else
-            
-            input1 = load([path, name]);
-            
-            if isstruct(input1)
-                t = fieldnames(input1);
-                input1 = input1.(t{1});
-            end
-            
-            
-            if size(input1, 2) ~= length(FO.to)
-                b = msgbox('Error: number of collumns in input does not match the number of bins');
-                uiwait(b);
-                
-                set(FO.overlayDisp, 'Value', 1);
-                guidata(FO.fig, FO); 
-                return;
-            end
-            
-            m1 = min([FO.nCh; size(input1, 1)]);
-            maxF = FO.maxFreq;
-            for i = 1:m1
-                m = input1(i, :);
-                m = m - prctile(m, 1);
-                m = m./prctile(m, 99);
-                range = maxF*(1/2);
-                base = maxF*(1/2);
-                m  = m*range;
-                m = m + base;
-                axes(FO.sax{i});
-                hold on;
-                FO.overlayLines{i} = plot(FO.to, m, '-w', 'LineWidth', 2.5);
+        
+        maxF = FO.maxFreq;
+        
+        SleepStateTypeBool = 0;
+        if length(name)>22
+            if strcmp(name(end-21:end),'.SleepState.states.mat')
+                SleepStateTypeBool = 1;
             end
         end
-        
+        if SleepStateTypeBool  %if sleepstate.states.mat type file
+            load(fullfile(path,name))%will get SleepState struct
+            broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
+            thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
+            EMG = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.EMG;
+%             clear SleepState
+            chans = FO.Chs;
+            
+            overlaychoicefig = figure('closerequestfcn',@OverlaySleepStateSelectCallback);
+            for cidx = 1:length(chans)
+                   bg(cidx) = uibuttongroup(overlaychoicefig,...
+                      'Position',[(cidx-1)*.33 0 .3 1],...
+                      'Title',['Overlay for Ch' num2str(chans(cidx))]);
+                  
+                    % Create radio buttons in the button group.
+                    r1(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
+                          'String','Broaband SlowWave Power',...
+                          'Units','Normalized',....
+                          'Position',[.05 .55 1 .1]);
+                    r2(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
+                          'String','Theta Ratio 5-10Hz/2-20Hz',...
+                          'Units','Normalized',....
+                          'Position',[.05 .1 1 .08]);
+                      
+                    if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.SWchanID
+                        r1(cidx).Value = true;
+                        r2(cidx).Value = false;
+                    end
+                    if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.THchanID
+                        r1(cidx).Value = false;
+                        r2(cidx).Value = true;
+                    end
+                      
+            end            
+            closebutt = uicontrol('style','pushbutton','units','normalized',...
+                'position',[.91 .05 .08 .1],'String','Finish',...
+                'callback',@OverlaySleepStateSelectCallback);
+            localguidata = v2struct(overlaychoicefig,bg,r1,r2,closebutt);
+            guidata(overlaychoicefig,localguidata)
+            waitfor(overlaychoicefig)
+              
+            choices = get(obj,'userdata');
+            for cidx = 1:length(choices)%for each channel/choice (should be same)
+                switch choices(cidx)
+                    case 1
+                        t = broadbandSlowWave;
+                    case 2
+                        t = thratio;
+                end
+                if length(t) > length(FO.to)
+                    t = t(1:length(FO.to));
+                elseif length(t) < length(FO.to)
+                    t = cat(1,t,zeros(length(FO.to) - length(t),1))
+                end
+                t = t';
+                t = t - prctile(t, 1);
+                t = t./prctile(t, 99);
+                range = maxF*(1/2);
+                base = maxF*(1/2);
+                t  = t*range;
+                t = t + base;
+
+                axes(FO.sax{cidx});
+                hold on;
+                FO.overlayLines{cidx} = plot(FO.to, t, '-w', 'LineWidth', 2.5);
+            end
+                        
+        else %if simple mat
+            if name == 0
+                guidata(FO.fig, FO); 
+                set(FO.overlayDisp, 'Value', 1);
+            else
+
+                input1 = load([path, name]);
+
+                if isstruct(input1)
+                    t = fieldnames(input1);
+                    input1 = input1.(t{1});
+                end
+
+
+                if size(input1, 2) ~= length(FO.to)
+                    b = msgbox('Error: number of columns in input does not match the number of bins');
+                    uiwait(b);
+
+                    set(FO.overlayDisp, 'Value', 1);
+                    guidata(FO.fig, FO); 
+                    return;
+                end
+
+                if ~isempty(FO.overlayLines)
+                    for i = 1:length(FO.overlayLines)
+                        delete(FO.overlayLines{i})
+                    end
+                    FO.overlayLines = {};
+                end
+
+                m1 = min([FO.nCh; size(input1, 1)]);
+                maxF = FO.maxFreq;
+                for i = 1:m1
+                    m = input1(i, :);
+                    m = m - prctile(m, 1);
+                    m = m./prctile(m, 99);
+                    range = maxF*(1/2);
+                    base = maxF*(1/2);
+                    m  = m*range;
+                    m = m + base;
+                    axes(FO.sax{i});
+                    hold on;
+                    FO.overlayLines{i} = plot(FO.to, m, '-w', 'LineWidth', 2.5);
+                end
+            end
+        end        
 end
 
 guidata(FO.fig, FO); 
 UpdateText;
+
+end
+
+function OverlaySleepStateSelectCallback(obj,ev)
+f = get(obj,'parent');
+lgd = guidata(f);
+
+for idx = 1:length(lgd.r1) %only BBSlowWave and ThetaRatio
+    if lgd.r1(idx).Value
+        out(idx) = 1;%if value1 is 1, save out as 1
+    else
+        out(idx) = 2;%else save as 2
+    end
+end
+TSEFig = findobj('tag','StateEditorMaster');  
+set(TSEFig,'userdata',out)
+delete(f)
 
 end
 
@@ -4700,6 +4779,7 @@ if isempty(SleepState)
         'AutoScore?');
     switch answer
         case 'Yes'
+            %answer = questdlg('Use Loaded Channels?','Yes','No, Auto select channgels for scoring');
             SleepScoreMaster(basePath)
         case {'No','Cancel'}
             return
@@ -6052,5 +6132,37 @@ for n = 1:nargin
         error(message('signal:chkinputdatatype:NotSupported'));
     end
 end
+end
 
+function states = bz_LoadStates_StateEditorWrapper_In(basePath,timevector)
+% TheStateEditor-appropriate loading function for loading buzcode SleepState.states.mat files.
+% Abstracted here so it can be used both during initial load and during LoadStates calls
+% Brendon Watson 4/2018
+baseName=bz_BasenameFromBasepath(basePath);
+
+numsecsinrecording = length(timevector);
+timestartsecond = timevector(1);
+
+SleepState = bz_LoadStates(basePath,'SleepState');
+if isfield(SleepState,'idx')
+    states = SleepState.idx.states';
+    %Pad the beginning and end to match fspec{1}.to
+    states = cat(2,zeros(1,SleepState.idx.timestamps(1)-timestartsecond),states);
+    states = cat(2,states,zeros(1,numsecsinrecording-length(states)));
+elseif isfield(SleepState,'ints')
+    %If no idx... get from  .ints
+    SleepState.idx = bz_INTtoIDX(SleepState.ints,'statenames',{'WAKE','','NREM','','REM'});
+    save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState') %Save with new idx
+    states = SleepState.idx.states';
+    %Pad the beginning and end to match fspec{1}.to
+    states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(timestartsecond)),states);
+    states = cat(2,states,zeros(1,numsecsinrecording-length(states)));
+elseif isempty(SleepState)
+    states = zeros(1,length(StateInfo.fspec{1}.to));
+else
+   error('Your SleepState is broken.')
+end
+
+
+%% END for TheStateEditor
 end

@@ -118,10 +118,10 @@ switch recsys
                    catch%if read error, set values based on prior
                        if ~isempty(NAmpChannels)
 %                            if ~isnan(NAmpChannels(1));
-                              NAmpChannels(thisidx) = NAmpChannels(1);
+                          NAmpChannels(thisidx) = NAmpChannels(1);
                        else
-                              sess = bz_getSessionInfo(basepath);
-                              NAmpChannels(thisidx) = sess.nChannels;
+                          sess = bz_getSessionInfo(basepath,'noPrompts',true);
+                          NAmpChannels(thisidx) = sess.nChannels;
                        end
                        if ~isempty(NAuxChannels)
                            NAuxChannels(thisidx) = NAuxChannels(1);
