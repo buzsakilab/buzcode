@@ -18,7 +18,8 @@ function [ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName,varargin)
 %                   future update: 'select', 'all'
 %       'catall'    logical (default: false) if loading multiple cellinfo
 %                   files from a dataset, will try to concatenate all units
-%                   into a single cellinfo structure.
+%                   into a single cellinfo structure. Removes fields that
+%                   are not common to all basePaths
 %
 %OUTPUT
 %   cellinfo        loaded cellinfo structure

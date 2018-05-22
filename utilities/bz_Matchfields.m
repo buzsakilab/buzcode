@@ -7,8 +7,7 @@ function [ newstruct1, newstruct2 ] = bz_Matchfields( struct1,struct2,mode )
 %return a structure array with matched fields
 %%
 
-%There's a better way to do this...
-%allfields = cellfun(@(X) fieldnames(X),structs,'uniformoutput',false);
+%For many structures....
 if iscell(struct1) & isempty(struct2)
     newstruct1 = struct1{1};
    for ss = 2:length(struct1)
@@ -18,22 +17,34 @@ if iscell(struct1) & isempty(struct2)
    return
 end
 
+%% For Two Structures
 
 fieldnames1 = fieldnames(struct1);
 fieldnames2 = fieldnames(struct2);
 
 [commonfields,IdxFn1,IdxFn2] = intersect(fieldnames1,fieldnames2,'stable');
 
+difffield1 = true(size(fieldnames1));difffield1(IdxFn1)=false;
+difffield2 = true(size(fieldnames2));difffield2(IdxFn2)=false;
 switch mode
     case 'remove'
-        exclude1 = true(size(fieldnames1));exclude1(IdxFn1)=false;
-        exclude2 = true(size(fieldnames2));exclude2(IdxFn2)=false;
-        newstruct1 = rmfield(struct1,fieldnames1(exclude1));
-        newstruct2 = rmfield(struct2,fieldnames2(exclude2));
+        newstruct1 = rmfield(struct1,fieldnames1(difffield1));
+        newstruct2 = rmfield(struct2,fieldnames2(difffield2));
         newstruct2 = orderfields(newstruct2,newstruct1);
         
     case 'add'
+        newstruct1 = struct1;
+        newstruct2 = struct2;
+        for ff = 1:sum(difffield2)
+            newfields = find(difffield2);
+            [newstruct1(:).(fieldnames2{newfields(ff)})] = deal([]);
+        end
+        for ff = 1:sum(difffield1)
+            newfields = find(difffield1);
+            [newstruct2(:).(fieldnames1{newfields(ff)})] = deal([]);
+        end
         
+        newstruct2 = orderfields(newstruct2,newstruct1);
 end
 %%
 % matchedstruct = structs{1};
