@@ -45,21 +45,22 @@ if dataset
         thiscellinfo = bz_LoadCellinfo(basePaths{rr},cellinfoName);
         
         %Add baseName to the cellinfo file. this could be for each unit....
-        thiscellinfo.baseName = repmat(baseNames{rr},size(cellinfo.UID));
+        thiscellinfo.baseName = repmat(baseNames(rr),size(thiscellinfo.UID));
         
         %Check if the new .mat has any additional fields
         if exist('cellinfo','var')    
-            matfields = fieldnames(thiscellinfo);
-            resultsfields = fieldnames(cellinfo);
-            newfields = setdiff(matfields,resultsfields);
-            if ~isempty(newfields)
-                for ff = 1:length(newfields)
-                    cellinfo(1).(newfields{ff}) = []; 
-                end
-                FIELDMISMATCH=true;
-            end
-
-            cellinfo = orderfields(cellinfo,thiscellinfo);   
+%             matfields = fieldnames(thiscellinfo);
+%             resultsfields = fieldnames(cellinfo);
+%             newfields = setdiff(matfields,resultsfields);
+%             if ~isempty(newfields)
+%                 for ff = 1:length(newfields)
+%                     cellinfo(1).(newfields{ff}) = []; 
+%                 end
+%                 FIELDMISMATCH=true;
+%             end
+% 
+%             cellinfo = orderfields(cellinfo,thiscellinfo);   
+            [cellinfo,thiscellinfo] = bz_Matchfields(cellinfo,thiscellinfo,'remove');
         end
         
         cellinfo(rr) = thiscellinfo;
@@ -70,7 +71,7 @@ if dataset
     end
     
     if catall
-        cellinfo = CollapseStruct(cellinfo,'match','justcat',true);
+        cellinfo = bz_CollapseStruct(cellinfo,'match','justcat',true);
     end
     
     return %send out the compiled cellinfo structure
