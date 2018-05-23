@@ -56,6 +56,7 @@ nyquist = 625; %written over later from samples.samplingRate if available
 type = 'cheby2';
 FMAlegacy = false;
 BUZCODE = false;
+matlabVersion = version('-release');
 
 % Check number of parameters
 if nargin < 1 | mod(length(varargin),2) ~= 0,
@@ -189,12 +190,20 @@ end
 if FMAlegacy %FMA has (samples given as a list of (t,v1,v2,v3...) tuples)
     filtered(:,1) = samples(:,1);
     for i = 2:size(samples,2),
-        filtered(:,i) = FiltFiltM(b,a,double(samples(:,i)));
+        if strcmp(matlabVersion,'2017a')
+            filtered(:,i) = filtfilt(b,a,double(samples(:,i)));
+        else
+            filtered(:,i) = FiltFiltM(b,a,double(samples(:,i)));
+        end
     end
 elseif BUZCODE %BUZCODE has samples as a data structure
     filtered.timestamps = samples.timestamps;
     for i = 1:size(samples.data,2),
-        filtered.data(:,i) = FiltFiltM(b,a,double(samples.data(:,i)));
+        if strcmp(matlabVersion,'2017a')
+           filtered.data(:,i) = filtfilt(b,a,double(samples.data(:,i)));
+        else
+           filtered.data(:,i) = FiltFiltM(b,a,double(samples.data(:,i))); 
+        end
 	hilb = hilbert(filtered.data(:,i));
         filtered.amp(:,i) = abs(hilb);
         filtered.phase(:,i) = angle(hilb);
@@ -205,7 +214,12 @@ elseif BUZCODE %BUZCODE has samples as a data structure
     filtered.samplingRate = samples.samplingRate;
 else %or if you just want filter a basic timeseries
     for i = 1:size(samples,2),
-        filtered(:,i) = FiltFiltM(b,a,double(samples(:,i)));
+        if strcmp(matlabVersion,'2017a')
+            filtered(:,i) = filtfilt(b,a,double(samples(:,i)));
+        else
+            filtered(:,i) = FiltFiltM(b,a,double(samples(:,i)));    
+        end
+        
     end
 end
 

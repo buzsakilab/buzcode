@@ -4779,6 +4779,7 @@ if isempty(SleepState)
         'AutoScore?');
     switch answer
         case 'Yes'
+            %answer = questdlg('Use Loaded Channels?','Yes','No, Auto select channgels for scoring');
             SleepScoreMaster(basePath)
         case {'No','Cancel'}
             return
@@ -6137,6 +6138,7 @@ function states = bz_LoadStates_StateEditorWrapper_In(basePath,timevector)
 % TheStateEditor-appropriate loading function for loading buzcode SleepState.states.mat files.
 % Abstracted here so it can be used both during initial load and during LoadStates calls
 % Brendon Watson 4/2018
+baseName=bz_BasenameFromBasepath(basePath);
 
 numsecsinrecording = length(timevector);
 timestartsecond = timevector(1);
@@ -6149,8 +6151,8 @@ if isfield(SleepState,'idx')
     states = cat(2,states,zeros(1,numsecsinrecording-length(states)));
 elseif isfield(SleepState,'ints')
     %If no idx... get from  .ints
-    SleepState.idx = INTtoIDX(SleepState.ints,'statenames',{'WAKE','','NREM','','REM'});
-    save([baseName '.SleepState.states.mat'],'SleepState') %Save with new idx
+    SleepState.idx = bz_INTtoIDX(SleepState.ints,'statenames',{'WAKE','','NREM','','REM'});
+    save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState') %Save with new idx
     states = SleepState.idx.states';
     %Pad the beginning and end to match fspec{1}.to
     states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(timestartsecond)),states);

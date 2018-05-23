@@ -15,10 +15,13 @@ end
 mex('CFLAGS="\$CFLAGS -std=c99"', 'FilterX.c') % the above line fails with newer compilers but this works
 cd('../..')
     
-
+try
 cd('externalPackages/chronux_2_12/locfit/Source')
 compile % compiles chronux
 cd('../../../../')
+catch
+    warning('CHRONUX DIDN''T COMPILE. sad.')
+end
 
 cd('externalPackages/xmltree-2.0/@xmltree/private/')
 mex -O xml_findstr.c
