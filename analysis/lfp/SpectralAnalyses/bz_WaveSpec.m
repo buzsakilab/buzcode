@@ -23,6 +23,8 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %       'space'     'log' or 'lin'  spacing of f's      (default: 'log')
 %       'samplingRate' (only if input is not a buzcode structure)
 %       'intervals'  ADD THIS - ability to spec intervals
+%       'showprogess' true/false (default:false)
+%       'savelfp'   put the basePath to save an LFP file
 %    =========================================================================
 %
 %OUTPUT
@@ -58,6 +60,8 @@ addParameter(parms,'nfreqs',100,@isnumeric);
 addParameter(parms,'ncyc',5,@isnumeric);
 addParameter(parms,'space','log');
 addParameter(parms,'samplingRate',[]);
+addParameter(parms,'showprogress',false,@islogical);
+addParameter(parms,'savelfp',false);
 
 parse(parms,varargin{:})
 frange = parms.Results.frange;
@@ -65,6 +69,8 @@ nfreqs = parms.Results.nfreqs;
 ncyc = parms.Results.ncyc;
 space = parms.Results.space;
 samplingRate = parms.Results.samplingRate;
+showprogress = parms.Results.showprogress;
+savelfp = parms.Results.savelfp;
 
 
 %lfp input
@@ -111,9 +117,11 @@ end
 %Filter with wavelets
 spec = zeros(length(timestamps),nfreqs);
 for f_i = 1:nfreqs
-%     if mod(f_i,10) == 1;
-%         display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
-%     end   
+    if showprogress
+        if mod(f_i,10) == 1
+            display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
+        end  
+    end
     wavelet = MorletWavelet(freqs(f_i),ncyc,si);
     spec(:,f_i) = FConv(wavelet',data);
 end
@@ -133,7 +141,11 @@ wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
 wavespec.filterparms.space = space;
 
-    
+if savelfp
+    baseName = bz_BasenameFromBasepath(savelfp);
+    lfpfilename = fullfile(basePath,[baseName,'.wavespec.lfp.mat']);
+    save(lfpfilename,wavespec)
+end
 
 end
 
