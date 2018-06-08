@@ -23,7 +23,7 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %       'space'     'log' or 'lin'  spacing of f's      (default: 'log')
 %       'samplingRate' (only if input is not a buzcode structure)
 %       'intervals'  ADD THIS - ability to spec intervals
-%       'showprogess' true/false (default:false)
+%       'showprogress' true/false (default:false)
 %       'savelfp'   put the basePath to save an LFP file
 %    =========================================================================
 %
