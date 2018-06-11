@@ -91,31 +91,33 @@ end
 
 %% let's check that there is an appropriate LFP file
 if isempty(basename)
-   %disp('No basename given, so we look for a *lfp/*eeg file...')
-   d = dir([basepath filesep '*lfp']);
-   if length(d) > 1 % we assume one .lfp file or this should break
-       error('there is more than one .lfp file in this directory?');
-   elseif length(d) == 0
-       d = dir([basepath filesep '*eeg']);
-       if isempty(d)
-           error('could not find an lfp/eeg file..')
+    if exist('basepath','var')
+        basename = bz_BasenameFromBasepath(basepath);
+    else
+       %disp('No basename given, so we look for a *lfp/*eeg file...')
+       d = dir([basepath filesep '*lfp']);
+       if length(d) > 1 % we assume one .lfp file or this should break
+           error('There is more than one .lfp file in this directory.  Aborting.  Specify basename');
+       elseif length(d) == 0
+           d = dir([basepath filesep '*eeg']);
+           if isempty(d)
+               error('Could not find an lfp/eeg file.')
+           end
        end
-   end
-   lfp.Filename = d.name;
-   basename = strsplit(lfp.Filename,'.');
-   if length(basename) > 2
-       base = [];
-       for i=1:length(basename)-1
-          base = [base basename{i} '.'];
+       lfp.Filename = d.name;
+       basename = strsplit(lfp.Filename,'.');
+       if length(basename) > 2
+           base = [];
+           for i=1:length(basename)-1
+              base = [base basename{i} '.'];
+           end
+           basename = base(1:end-1);  % this is an fugly hack to make things work with Kenji's naming system...
+       else
+           basename = basename{1};
        end
-       basename = base(1:end-1);  % this is an fugly hack to make things work with Kenji's naming system...
-   else
-       basename = basename{1};
-   end
-   
-else
-   lfp.Filename = [basename '.lfp'];
+    end
 end
+lfp.Filename = [basename '.lfp'];
 
 %% things we can parse from sessionInfo or xml file
 
