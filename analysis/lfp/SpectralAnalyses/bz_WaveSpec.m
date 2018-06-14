@@ -1,5 +1,5 @@
 function [wavespec] = bz_WaveSpec(lfp,varargin)
-%[wavespec] = WaveSpec(lfp) calculates the 
+%[wavespec] = bz_WaveSpec(lfp) calculates the 
 %wavelet transform of a signal with nfreqs frequencies in the range frange 
 %[fmin fmax]. Spacing between frequencies can be 'lin' or 'log'.
 %Time-frequency resolution is defined by ncyc, the number of cycles in each
@@ -17,7 +17,7 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
-%       'frange'	[low frequency, high frequency]     (default: [1 100])
+%       'frange'	[low frequency, high frequency]     (default: [1 128])
 %       'nfreqs'  	number of frequencies               (default: 100
 %       'ncyc'      number of cycles in your wavelet    (default: 5)
 %       'space'     'log' or 'lin'  spacing of f's      (default: 'log')
@@ -55,7 +55,7 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 
 %Parameters
 parms = inputParser;
-addParameter(parms,'frange',[1 100],@isnumeric);
+addParameter(parms,'frange',[1 128],@isnumeric);
 addParameter(parms,'nfreqs',100,@isnumeric);
 addParameter(parms,'ncyc',5,@isnumeric);
 addParameter(parms,'space','log');
