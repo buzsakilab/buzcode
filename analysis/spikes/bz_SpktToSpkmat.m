@@ -1,5 +1,5 @@
 function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
-%[spikemat,t,spindices] = SpktToSpkmat(spiketimes, T, dt,overlap) takes a 
+%spikemat = SpktToSpkmat(spiketimes,<options>) takes a 
 % 1 x N_neurons cell array of spiketimes  and converts into a t/dt x N spike
 % matrix.
 %
@@ -12,6 +12,7 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %       'win'
 %       'binsize'
 %       'overlap'
+%       'dt'  add (use instead of binsize/overlap)
 %
 %OUTPUT
 %

@@ -54,6 +54,7 @@ end
 
 % Check parameters
 intervals = double(intervals);
+values = double(values);
 if ~isdmatrix(intervals) || size(intervals,2) ~= 2,
   error('Incorrect intervals (type ''help <a href="matlab:help InIntervals">InIntervals</a>'' for details).');
 end
