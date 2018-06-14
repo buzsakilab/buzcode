@@ -46,8 +46,8 @@ end
 %Calcluate spectrogram
 noverlap = winsize-dt;
 spec.freqs = logspace(0.5,2,200);
-winsize_sf = winsize .*lfp.samplingRate;
-noverlap_sf = noverlap.*lfp.samplingRate;
+winsize_sf = round(winsize .*lfp.samplingRate);
+noverlap_sf = round(noverlap.*lfp.samplingRate);
 [spec.data,~,spec.timestamps] = spectrogram(single(lfp.data),winsize_sf,noverlap_sf,spec.freqs,lfp.samplingRate);
 
 spec.amp = log10(abs(spec.data));
