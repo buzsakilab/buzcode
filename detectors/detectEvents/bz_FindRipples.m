@@ -90,7 +90,7 @@ if isstr(varargin{1})  % if first arg is basepath
     basename = bz_BasenameFromBasepath(p.Results.basepath);
     basepath = p.Results.basepath;
     passband = p.Results.passband;
-    EMGThresh = p.Results.EMGfilt;
+    EMGThresh = p.Results.EMGThresh;
     lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
     signal = bz_Filter(double(lfp.data),'filter','butter','passband',passband,'order', 3);
     timestamps = lfp.timestamps;
@@ -99,7 +99,7 @@ elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     addRequired(p,'timestamps',@isnumeric)
     parse(p,varargin{:})
     passband = p.Results.passband;
-    EMGThresh = p.Results.EMGfilt;
+    EMGThresh = p.Results.EMGThresh;
     signal = bz_Filter(double(p.Results.lfp),'filter','butter','passband',passband,'order', 3);
     timestamps = p.Results.timestamps;
     basepath = pwd;
