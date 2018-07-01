@@ -6151,7 +6151,7 @@ if isfield(SleepState,'idx')
     states = cat(2,states,zeros(1,numsecsinrecording-length(states)));
 elseif isfield(SleepState,'ints')
     %If no idx... get from  .ints
-    SleepState.idx = INTtoIDX(SleepState.ints,'statenames',{'WAKE','','NREM','','REM'});
+    SleepState.idx = bz_INTtoIDX(SleepState.ints,'statenames',{'WAKE','','NREM','','REM'});
     save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState') %Save with new idx
     states = SleepState.idx.states';
     %Pad the beginning and end to match fspec{1}.to

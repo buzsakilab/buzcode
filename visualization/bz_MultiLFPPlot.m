@@ -16,6 +16,7 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %   'spikes'    a buzcode spikes struct to display spikes above the LFP
 %   'sortmetric'metric by which to sort the cells in the raster (eg FR)
 %   'cellgroups'{Ngroups} cell array of logical arrays of group members
+%   'plotcells' list of cell UIDs to plot (not implemented. sad.)
 %   'axhandle'  axes handle in which to put the plot
 %   'scaleLFP'  multiplicative factor to scale the y range of LFP
 %   'scalespikes' size of spike points (default:5)
@@ -37,12 +38,14 @@ addParameter(p,'cellgroups',{})
 addParameter(p,'axhandle',gca)
 addParameter(p,'scaleLFP',1,@isnumeric)
 addParameter(p,'scalespikes',5,@isnumeric)
+addParameter(p,'plotcells',nan,@isnumeric)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
 spikes = p.Results.spikes;
 sortmetric = p.Results.sortmetric;
 cellgroups = p.Results.cellgroups;
+plotcells = p.Results.plotcells;
 ax = p.Results.axhandle;
 scaleLFP = p.Results.scaleLFP;
 scalespikes = p.Results.scalespikes;
@@ -65,7 +68,14 @@ else
     if isempty(sortraster)
         sortraster = 1:max(spikes.spindices(:,2));
     end
+    
+    if ~isnan(plotcells)
+        temp = nan(size(sortraster));
+        temp(plotcells) = sortraster(plotcells);
+        sortraster = temp;
+    end
     spikes.spindices(:,2) = sortraster(spikes.spindices(:,2));
+    spikes.spindices(isnan(spikes.spindices(:,2)),:) = [];
 end
 
 %% Channel and time stuff
