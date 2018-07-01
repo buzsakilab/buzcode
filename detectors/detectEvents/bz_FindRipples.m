@@ -236,7 +236,7 @@ if ~isempty(noise)
 	disp(['After ripple-band noise removal: ' num2str(size(ripples,1)) ' events.']);
 end
     %% lets try to also remove EMG artifact?
-if EMG
+if EMGThresh
     sessionInfo = bz_getSessionInfo;
     if exist([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
         load([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
