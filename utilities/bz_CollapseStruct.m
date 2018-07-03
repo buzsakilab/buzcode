@@ -1,4 +1,4 @@
-function [ structout ] = CollapseStruct( structin,dim,combine,NEST )
+function [ structout ] = bz_CollapseStruct( structin,dim,combine,NEST )
 %structout = CollapseStruct( structin,dim,combine,NEST ) Combines elements in a
 %structure array
 %
@@ -46,21 +46,29 @@ for ff = 1:length(fields)
     currentfield = fields{ff};
 
 	if isstruct(structin(1).(currentfield)) & NEST %For Nested Structures
-       structout.(currentfield) = cat(1,structin(:).(currentfield));
-       structout.(currentfield) = CollapseStruct(structout.(currentfield),dim,combine,true);
+        %Here: need to match fields, either 'remove' or 'addempty'
+        %bz_Matchfields
+       %structout.(currentfield) = cat(1,structin(:).(currentfield));
+       structout.(currentfield) = bz_Matchfields({structin(:).(currentfield)},[],'remove');
+       structout.(currentfield) = bz_CollapseStruct(structout.(currentfield),dim,combine,true);
        continue
     elseif iscell(structin(1).(currentfield)) & NEST %For cell array in field
-        structout.(currentfield) = cat(1,structin(:).(currentfield));
+%             if strcmp(dim,'match')
+%                 catdim = bz_FindCatableDims({structin(:).(currentfield)});
+%             else
+%                 catdim = dim;
+%             end
+%         structout.(currentfield) = cat(catdim,structin(:).(currentfield));
             if strcmp(dim,'match')
-                catdim = bz_FindCatableDims(structin(:).(currentfield));
+                catdim = bz_FindCatableDims({structin(:).(currentfield)});
             else
                 catdim = dim;
             end
-        structout.(currentfield) = cat(catdim,structout.(currentfield){:});
+        structout.(currentfield) = cat(catdim,structin(:).(currentfield));
     elseif (isstring(structin(1).(currentfield))||ischar(structin(1).(currentfield))) & NEST %For string in field
         structout.(currentfield) = {structin(:).(currentfield)};
     else %For simple array in field
-        try
+        %try
             %Concatenate Array
             if strcmp(dim,'match')
                 catdim = bz_FindCatableDims({structin(:).(currentfield)});
@@ -68,10 +76,10 @@ for ff = 1:length(fields)
                 catdim = dim;
             end
         structout.(currentfield) = cat(catdim(1),structin(:).(currentfield));
-        catch
-           keyboard
-            continue
-        end
+%         catch
+%            keyboard
+%             continue
+%         end
 	end
 
     
