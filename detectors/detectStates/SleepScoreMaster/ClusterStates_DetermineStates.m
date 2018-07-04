@@ -36,6 +36,7 @@ else % THthresh = 0;
     REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
 end    
 
+%USE bz_BimodalThresh(bimodaldata,varargin) here
 %%
 %OLD:
 %Index Vector: SWS=2, REM=3, MOV=6, NonMOV=1.   

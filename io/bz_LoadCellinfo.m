@@ -11,6 +11,7 @@ function [ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName,varargin)
 %                   -'all' (not yet functional) load all cellinfo.mat files 
 %                     for a given recording. 
 % (optional inputs)
+%       'UIDs'      subset of UIDs to load. (not yet functional... add this)
 %       'dataset'   logical (default: false) used if basePath is a
 %                   high-level dataset path. bz_LoadCellinfo then allows
 %                   the user to select basepaths in the folder to load the
