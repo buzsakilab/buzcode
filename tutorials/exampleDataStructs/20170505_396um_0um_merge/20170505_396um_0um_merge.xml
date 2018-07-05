@@ -9,7 +9,7 @@
  <acquisitionSystem>
   <nBits>16</nBits>
   <nChannels>96</nChannels>
-  <samplingRate>20000</samplingRate>
+  <samplingRate>1250</samplingRate>
   <voltageRange>20</voltageRange>
   <amplification>1000</amplification>
   <offset>0</offset>
