@@ -17,6 +17,12 @@
  <fieldPotentials>
   <lfpSamplingRate>1250</lfpSamplingRate>
  </fieldPotentials>
+ <files>
+  <file>
+   <extension>lfp</extension>
+   <samplingRate>20000</samplingRate>
+  </file>
+ </files>
  <anatomicalDescription>
   <channelGroups>
    <group>
