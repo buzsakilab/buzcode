@@ -1,2 +1,0 @@
-% ripple and state detection
-

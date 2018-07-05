@@ -27,16 +27,14 @@ subplot(3,2,1)
 bz_plotTrials(behavior,'condition',1)
 
 %% mapping spiking onto behavior
-[firingMaps] = bz_firingMap1D(spikes,behavior,5,'savemat',false);
+[firingMaps] = bz_firingMap1D(spikes,behavior,4,'savemat',false);
 % let's look at some ratemaps...
 subplot(3,2,2)
 imagesc(squeeze(firingMaps.rateMaps{1}(96,:,:)))
 ylabel('trial #')
 xlabel('position')
 
-% should we find some place fields?
-
-[phaseMaps] = bz_phaseMap1D(spikes,behavior,lfp,5,'savemat',false);
+[phaseMaps] = bz_phaseMap1D(spikes,behavior,lfp,4,'savemat',false);
 % phase precession, eh?
 subplot(3,2,4)
 scatter(phaseMaps.phaseMaps{1}{96}(:,1),phaseMaps.phaseMaps{1}{96}(:,end),'.k')
@@ -50,5 +48,26 @@ xlabel('position')
 subplot(3,2,3)
 % pretty phasemap for rachel.... coming when someone has the motivation :)
 
+%% detecting place fields
+% should we find some place fields?
+for condition = 1:length(firingMaps.rateMaps)
+     fields{condition} = bz_getPlaceFields1D(firingMaps.rateMaps{condition},'minPeakRate',2,'percentThreshold',.15);
+end
 
+% typing 'fields{1}{96}{1}' will give you an idea of the type of data
+% stored for each place field
+fieldStart = fields{1}{96}{1}.start;
+fieldStop = fields{1}{96}{1}.stop;
+fieldCenterMass = fields{1}{96}{1}.COM;
+% fieldStart = fields{1}{96}{1}.start;
+
+
+subplot(3,2,3)
+plot(squeeze(mean(firingMaps.rateMaps{1}(96,:,:),2)),'k')
+line([fieldStart fieldStart],[0 25],'color','g')
+line([fieldStop fieldStop],[0 25],'color','g')
+line([fieldCenterMass fieldCenterMass],[0 25],'color','r')
+title('G - start/stop, R - Center of mass')
+ylabel('avg. firing rate')
+xlabel('position')
 
