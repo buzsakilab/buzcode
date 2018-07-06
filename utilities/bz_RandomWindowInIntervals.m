@@ -12,6 +12,10 @@ function [ window ] = bz_RandomWindowInIntervals( intervals,winsize )
 %DLevenstein 2018
 %%
 %Intervals of possible start times
+if isequal(size(intervals),[2 1])
+    intervals = intervals';
+end
+
 intervals(:,2) = intervals(:,2)-winsize;
 intervals(diff(intervals,1,2)<=0,:)=[];
 

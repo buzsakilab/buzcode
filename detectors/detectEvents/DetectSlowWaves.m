@@ -61,7 +61,7 @@ filterparmsvalidate = @(x) isstruct(x) & all(isfield(x,...
     {'deltafilter','gammafilter','gammasmoothwin','gammanormwin'}));
 
 filterparms.deltafilter = [0.5 8];%heuristically defined.  room for improvement here.
-filterparms.gammafilter = [100 400]; %high pass >80Hz (previously (>100Hz)
+filterparms.gammafilter = [100 400];
 filterparms.gammasmoothwin = 0.08; %window for smoothing gamma power (s)
 filterparms.gammanormwin = 20; %window for gamma normalization (s)
 
