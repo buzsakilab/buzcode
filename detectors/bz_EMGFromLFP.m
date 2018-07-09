@@ -93,10 +93,10 @@ display('Calculating EMGFromLFP from High Frequency LFP Correlation')
 %% get basics about.lfp/lfp file
 
 xml = bz_getSessionInfo(basePath,'noPrompts',noPrompts); % now using the updated version
-if exist([basePath '/' xml.FileName '.lfp'])
-    lfpFile = [basePath '/' xml.FileName '.lfp'];
-elseif exist([basePath '/' xml.FileName '.eeg'])
-    lfpFile = [basePath '/' xml.FileName '.eeg'];
+if exist([basePath filesep xml.FileName '.lfp'])
+    lfpFile = [basePath filesep xml.FileName '.lfp'];
+elseif exist([basePath filesep xml.FileName '.eeg'])
+    lfpFile = [basePath filesep xml.FileName '.eeg'];
 else
     error('could not find an LFP or EEG file...')    
 end
