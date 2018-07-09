@@ -38,7 +38,8 @@ function [ripples] = bz_FindRipples(varargin)
 %     'noise'       noisy unfiltered channel used to exclude ripple-
 %                   like noise (events also present on this channel are
 %                   discarded)
-%     'passband'    N x 2 matrix of frequencies to filter for ripple detection
+%     'passband'    N x 2 matrix of frequencies to filter for ripple detection 
+%                   (default = [130 200])
 %     'EMGThresh'   0-1 threshold of EMG to exclude noise
 %     'saveMat'     logical (default=true) to save in buzcode format
 %    =========================================================================
@@ -90,7 +91,7 @@ if isstr(varargin{1})  % if first arg is basepath
     basename = bz_BasenameFromBasepath(p.Results.basepath);
     basepath = p.Results.basepath;
     passband = p.Results.passband;
-    EMGThresh = p.Results.EMGfilt;
+    EMGThresh = p.Results.EMGThresh;
     lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
     signal = bz_Filter(double(lfp.data),'filter','butter','passband',passband,'order', 3);
     timestamps = lfp.timestamps;
@@ -99,7 +100,7 @@ elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     addRequired(p,'timestamps',@isnumeric)
     parse(p,varargin{:})
     passband = p.Results.passband;
-    EMGThresh = p.Results.EMGfilt;
+    EMGThresh = p.Results.EMGThresh;
     signal = bz_Filter(double(p.Results.lfp),'filter','butter','passband',passband,'order', 3);
     timestamps = p.Results.timestamps;
     basepath = pwd;
@@ -236,7 +237,7 @@ if ~isempty(noise)
 	disp(['After ripple-band noise removal: ' num2str(size(ripples,1)) ' events.']);
 end
     %% lets try to also remove EMG artifact?
-if EMG
+if EMGThresh
     sessionInfo = bz_getSessionInfo;
     if exist([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
         load([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])

@@ -53,21 +53,33 @@ scalespikes = p.Results.scalespikes;
 if isempty(spikes)
     spikes = spikedefault;
 else
-    %Implement raster sorting 
+    %Implement raster sorting - cell sort 
+    if isempty(sortmetric)
+        sortmetric = 1:max(spikes.spindices(:,2));
+    end
     [~,cellsort] =sort(sortmetric);
+    
     %Goups
     if ~isempty(cellgroups)
         for gg = 1:length(cellgroups)
             groupsort{gg} = intersect(cellsort,find(cellgroups{gg}),'stable');
         end
         cellsort = [groupsort{:}];
+        
+        %Cell sort should now map from CellID in spikes.spindices to their
+        %desired order in the raster, such that cellsort(IDX) is the
+        %UID of the IDXth cell in the raster
     end
     
-    %Sort the raster
+    %Sort the raster - this fails if every cell doesn't have a group
     [~,sortraster] = sort(cellsort);
-    if isempty(sortraster)
-        sortraster = 1:max(spikes.spindices(:,2));
-    end
+    %sortraster(UID) is the position of cell UID in the raster
+%     if isempty(sortraster)
+%         sortraster = 1:max(spikes.spindices(:,2));
+%     end
+    %This accounts for cells that have no group
+    sortraster(end+1:max(spikes.spindices(:,2)))=nan;
+    %
     
     if ~isnan(plotcells)
         temp = nan(size(sortraster));
@@ -104,7 +116,7 @@ spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff
 %% Do the plot
 ywinrange = fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange));
 if ~isnan(spikes.spindices)
-    ywinrange(2) = ywinrange(2)+max(spikes.plotdata(:,2));
+    ywinrange(2) = ywinrange(2)+max([spikes.plotdata(:,2);0]);
 end
 
 plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
