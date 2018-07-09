@@ -13,7 +13,7 @@ function [ INT, IDX, t_IDX,PC1weights,PC1expvar,broadbandSlowWave,thratio,EMG,t_
 
 
 %% Min Win Parameters (s)
-if exist(
+%if exist(
 minSWS = 6;
 minWnexttoREM = 6;
 minWinREM = 6;       

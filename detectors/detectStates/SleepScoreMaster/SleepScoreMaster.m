@@ -100,11 +100,11 @@ if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file') &
              'containing .lfp files'])
         %foldercontents = dir(basePath);
         %possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
-        [basePaths,baseNames] = bz_FindBasePaths(basePath); %Find all basePaths within the topPath
-        [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
-                        'ListString',baseNames);
-        recordingname = baseNames(s);
-        basePaths = basePaths(s);
+        [basePaths,recordingname] = bz_FindBasePaths(basePath,'select',true); %Find all basePaths within the topPath
+%         [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
+%                         'ListString',baseNames);
+%         recordingname = baseNames(s);
+%         basePaths = basePaths(s);
         
 end
 

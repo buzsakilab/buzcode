@@ -23,7 +23,7 @@
 % 'baseName-states.mat'. By default this file contains a structure with 3
 % fields: 
 %    'states' - the state vector is of length N, where N is the number
-%               of seconds	bins in your spectrogram 
+%               of seconds	bins in your spectrogfram 
 %               (N = round((length(eeg)/eegFS) - 1). It has a value between
 %               0 and 5 for each bin (0 = 'no state', 1 = 'awake', 2 = 
 %               'Light/Drowzy', 3 = 'NREM', 4 = 'Intermediate', 5 = 'REM').
@@ -5032,7 +5032,7 @@ end
 % Execute scoring - USE SleepScore toolbox functions
 [stateintervals,stateidx,~] = ClusterStates_DetermineStates(...
                                            dp.SleepScoreMetrics,dp.MinTimeWindowParms,FO.AutoScore.histsandthreshs);
-
+%May want to re-make figure here using CluterStates_MakeFigure....
 %Pad the beginning and end to match fspec{1}.to
 states = stateidx.states';
 states = cat(2,zeros(1,stateidx.timestamps(1)-(FO.to(1))),states);

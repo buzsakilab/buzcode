@@ -1,6 +1,12 @@
-function [ basePaths,baseNames ] = bz_FindBasePaths(topPath)
+function [ basePaths,baseNames ] = bz_FindBasePaths(topPath,varargin)
 %basePaths = bz_FindBasePaths(topPath) finds all buzcode basePaths in any
 %directory within topPath and returns them.
+%
+%INPUT
+%   topPath     a top-level directory with multiple basePaths in it.
+%   (options)
+%       'select'    prompt the user with all possible basePaths and let
+%                   them select the ones they want
 %
 %OUTPUT
 %   basePaths   a cell array of folders that meet one the criteria for
@@ -13,6 +19,12 @@ function [ basePaths,baseNames ] = bz_FindBasePaths(topPath)
 %
 %Please add more criteria to fit your needs! (Lines >31)
 %DLevenstein 2017
+%%
+p = inputParser;
+addParameter(p,'select',false,@islogical)
+parse(p,varargin{:})
+select = p.Results.select;
+
 %% Get all the directories
 [basePaths, dirNames, fileNames] = dirwalk(topPath);
 
@@ -24,7 +36,18 @@ for pp = length(basePaths):-1:1 %Count down to maintain indexing
     end
 end
 baseNames = cellfun(@bz_BasenameFromBasepath,basePaths,'UniformOutput',false);
+
+%User select recordings
+if select
+      [s,v] = listdlg('PromptString','Which recording(s) would you like?',...
+                    'ListString',baseNames);
+    baseNames = baseNames(s);
+    basePaths = basePaths(s);   
 end
+
+end
+
+ 
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
