@@ -1,5 +1,5 @@
 function [wavespec] = bz_WaveSpec(lfp,varargin)
-%[wavespec] = WaveSpec(lfp) calculates the 
+%[wavespec] = bz_WaveSpec(lfp) calculates the 
 %wavelet transform of a signal with nfreqs frequencies in the range frange 
 %[fmin fmax]. Spacing between frequencies can be 'lin' or 'log'.
 %Time-frequency resolution is defined by ncyc, the number of cycles in each
@@ -17,12 +17,14 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
-%       'frange'	[low frequency, high frequency]     (default: [1 100])
+%       'frange'	[low frequency, high frequency]     (default: [1 128])
 %       'nfreqs'  	number of frequencies               (default: 100
 %       'ncyc'      number of cycles in your wavelet    (default: 5)
 %       'space'     'log' or 'lin'  spacing of f's      (default: 'log')
 %       'samplingRate' (only if input is not a buzcode structure)
 %       'intervals'  ADD THIS - ability to spec intervals
+%       'showprogress' true/false (default:false)
+%       'savelfp'   put the basePath to save an LFP file
 %    =========================================================================
 %
 %OUTPUT
@@ -53,11 +55,13 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 
 %Parameters
 parms = inputParser;
-addParameter(parms,'frange',[1 100],@isnumeric);
+addParameter(parms,'frange',[1 128],@isnumeric);
 addParameter(parms,'nfreqs',100,@isnumeric);
 addParameter(parms,'ncyc',5,@isnumeric);
 addParameter(parms,'space','log');
 addParameter(parms,'samplingRate',[]);
+addParameter(parms,'showprogress',false,@islogical);
+addParameter(parms,'savelfp',false);
 
 parse(parms,varargin{:})
 frange = parms.Results.frange;
@@ -65,6 +69,8 @@ nfreqs = parms.Results.nfreqs;
 ncyc = parms.Results.ncyc;
 space = parms.Results.space;
 samplingRate = parms.Results.samplingRate;
+showprogress = parms.Results.showprogress;
+savelfp = parms.Results.savelfp;
 
 
 %lfp input
@@ -111,9 +117,11 @@ end
 %Filter with wavelets
 spec = zeros(length(timestamps),nfreqs);
 for f_i = 1:nfreqs
-%     if mod(f_i,10) == 1;
-%         display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
-%     end   
+    if showprogress
+        if mod(f_i,10) == 1
+            display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
+        end  
+    end
     wavelet = MorletWavelet(freqs(f_i),ncyc,si);
     spec(:,f_i) = FConv(wavelet',data);
 end
@@ -133,7 +141,11 @@ wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
 wavespec.filterparms.space = space;
 
-    
+if savelfp
+    baseName = bz_BasenameFromBasepath(savelfp);
+    lfpfilename = fullfile(basePath,[baseName,'.wavespec.lfp.mat']);
+    save(lfpfilename,wavespec)
+end
 
 end
 
