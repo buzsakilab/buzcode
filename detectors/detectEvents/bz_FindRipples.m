@@ -38,7 +38,8 @@ function [ripples] = bz_FindRipples(varargin)
 %     'noise'       noisy unfiltered channel used to exclude ripple-
 %                   like noise (events also present on this channel are
 %                   discarded)
-%     'passband'    N x 2 matrix of frequencies to filter for ripple detection
+%     'passband'    N x 2 matrix of frequencies to filter for ripple detection 
+%                   (default = [130 200])
 %     'EMGThresh'   0-1 threshold of EMG to exclude noise
 %     'saveMat'     logical (default=true) to save in buzcode format
 %    =========================================================================

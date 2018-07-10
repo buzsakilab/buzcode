@@ -5032,7 +5032,7 @@ end
 % Execute scoring - USE SleepScore toolbox functions
 [stateintervals,stateidx,~] = ClusterStates_DetermineStates(...
                                            dp.SleepScoreMetrics,dp.MinTimeWindowParms,FO.AutoScore.histsandthreshs);
-
+%May want to re-make figure here using CluterStates_MakeFigure....
 %Pad the beginning and end to match fspec{1}.to
 states = stateidx.states';
 states = cat(2,zeros(1,stateidx.timestamps(1)-(FO.to(1))),states);
