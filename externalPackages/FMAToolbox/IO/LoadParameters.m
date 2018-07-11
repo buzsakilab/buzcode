@@ -60,7 +60,7 @@ t = xmltree(filename);
 paths = which('convert','-ALL');
 for i = 1:length(paths) % we need to find the right version of convert.m (2018a bugfix)
     if ~isempty(strfind(paths{i},'buzcode'))
-       addpath(paths{find(bz==1)},'-begin') % bump buzcode/XML/convert to the top of the search path
+       addpath(paths{i},'-begin') % bump buzcode/XML/convert to the top of the search path
     end
 end
 p = convert(t);
