@@ -23,14 +23,14 @@
 % 'baseName-states.mat'. By default this file contains a structure with 3
 % fields: 
 %    'states' - the state vector is of length N, where N is the number
-%               of seconds	bins in your spectrogfram 
+%               of seconds	bins in your spectrogram 
 %               (N = round((length(eeg)/eegFS) - 1). It has a value between
 %               0 and 5 for each bin (0 = 'no state', 1 = 'awake', 2 = 
 %               'Light/Drowzy', 3 = 'NREM', 4 = 'Intermediate', 5 = 'REM').
 %   'events' -  a N by 2 matrix where the first column are event type ID's 
 %               (1 through max of 10 types) and the 2nd column are the 
 %               event times in seconds (in arbitrary precision). 
-%   'transitions' - a Nx3 matrix of exact state transition times. 1st 
+%   'transitions' - a Nx3 matrix of exact sstate transition times. 1st 
 %                   collumn: state number, 2nd collumn: state start time 
 %                   (in seconds), 3rd column: 	end time (in seconds). The 
 %                   transition matrix is a higher resolution complement to
