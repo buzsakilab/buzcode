@@ -1,4 +1,4 @@
-function bz_ConcatenateDats(basepath,deleteoriginaldatsbool)
+function bz_ConcatenateDats(basepath,deleteoriginaldatsbool,sortFiles)
 % bz_ConcatenateDats - Concatenate raw .dat files found in a session folder
 % - for intan type recordings 
 % 
@@ -36,7 +36,7 @@ function bz_ConcatenateDats(basepath,deleteoriginaldatsbool)
 %
 %  USAGE
 %
-%    bz_ConcatenateDats(basepath,deletedats)
+%    bz_ConcatenateDats(basepath,deleteoriginaldatsbool,sortFiles)
 %
 %  INPUTS
 %
@@ -45,6 +45,10 @@ function bz_ConcatenateDats(basepath,deleteoriginaldatsbool)
 %    deleteoriginaldatsbool  - boolean denoting whether to delete (1) or
 %                              not delete (0) original .dats after
 %                              concatenation.  Default = 0.
+%    sortFiles               - boolean denoting whether to sort files according 
+%                              to time of recording (1) or
+%                              not (0) and thus sort them alphabetically 
+%                              Default = 0.
 %
 %  OUTPUT
 %     Operates on files in specified folder.  No output variable
@@ -53,7 +57,7 @@ function bz_ConcatenateDats(basepath,deleteoriginaldatsbool)
 %      Can be called directly or via bz_PreprocessExtracellEphysSession.m
 %
 % Copyright (C) 2017 by Brendon Watson
-
+% Modified by Antonio FR, 2018
 
 
 %% Handling inputs
@@ -65,6 +69,9 @@ basename = bz_BasenameFromBasepath(basepath);
 
 if ~exist('deleteoriginaldatsbool','var')
     deleteoriginaldatsbool = 0;
+end
+if ~exist('sortFiles','var')
+    sortFiles = 0;
 end
 
 %% assume xml is present in the basepath... comment this out... could copy an amplifier.xml from below
@@ -141,7 +148,40 @@ if isempty(datpaths)
     return
 end
 
-    
+%% Sort files according to time of recording
+
+if sortFiles
+    d = dir;
+    fidx = 0;
+    for idx = 3:length(d)
+        if d(idx).isdir
+            if (numel(d(idx).name) > 13)
+                if(numel(num2str(str2num(d(idx).name(end-5:end))))>=5 && numel(num2str(str2num(d(idx).name(end-12:end-7))))==6) %detecting intan recordings
+                    fidx = fidx+1;
+                    names2sort(fidx) = str2num(d(idx).name(end-5:end));
+                end
+            end
+        end
+    end
+
+    [~,I] = sort(names2sort);
+    for idx = 1:length(I)
+        ndatpaths{idx} = datpaths{I(idx)};
+        nrecordingbytes(idx) = recordingbytes(I(idx));
+        nrecordingnames{idx} = recordingnames{I(idx)};
+    end
+    datpaths = ndatpaths;
+    recordingbytes = nrecordingbytes;
+    recordingnames = nrecordingnames;
+
+    % save txt with order of files to concatenate
+    fid = fopen('concatORDER.txt','w');
+    for idx = 1:length(I)
+        fprintf(fid,[nrecordingnames{idx} '\n']);
+    end
+    fclose(fid);
+end
+
 %% Concatenate
 %     cs = strjoin(datpaths);
 %     catstring = ['! cat ', cs, ' > ',fullfile(basepath,[basename,'.dat'])];
@@ -155,9 +195,9 @@ newdatpath = fullfile(basepath,[basename,'.dat']);
 if isunix
     cs = strjoin(datpaths);
     catstring = ['! cat ', cs, ' > ',newdatpath];
-elseif ispc%As of 4/9/2017 - never tested
+elseif ispc  
     if length(datpaths)>1
-        for didx = 1:length(datpaths)-1;
+        for didx = 1:length(datpaths)
             datpathsplus{didx} = [datpaths{didx} '+'];
         end
     else
@@ -183,19 +223,27 @@ if t.bytes ~= sum(recordingbytes)
     error('New .dat size not right.  Exiting')
     return
 else
-    disp(['Primary .dats concatenated and size checked'])
+    disp('Primary .dats concatenated and size checked')
 end
 
 %% Also concatenate the other .dats
 for odidx = 1:length(otherdattypes)
     eval(['tdatpaths = ' otherdattypes{odidx} 'datpaths;']);
     eval(['tnewdatpath = new' otherdattypes{odidx} 'path;']);
+    
+    if sortFiles
+        for idx = 1:length(I)
+            ntdatpaths{idx} = tdatpaths{I(idx)};
+        end            
+    end
+    tdatpaths = ntdatpaths;
+    
     if isunix
         cs = strjoin(tdatpaths);
         catstring = ['! cat ', cs, ' > ',tnewdatpath];
     elseif ispc%As of 4/9/2017 - never tested
         if length(tdatpaths)>1
-            for didx = 1:length(tdatpaths)-1;
+            for didx = 1:length(tdatpaths)
                 datpathsplus{didx} = [tdatpaths{didx} '+'];
             end
         else
