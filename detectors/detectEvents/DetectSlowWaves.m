@@ -61,7 +61,7 @@ filterparmsvalidate = @(x) isstruct(x) & all(isfield(x,...
     {'deltafilter','gammafilter','gammasmoothwin','gammanormwin'}));
 
 filterparms.deltafilter = [0.5 8];%heuristically defined.  room for improvement here.
-filterparms.gammafilter = [100 400]; %high pass >80Hz (previously (>100Hz)
+filterparms.gammafilter = [100 400];
 filterparms.gammasmoothwin = 0.08; %window for smoothing gamma power (s)
 filterparms.gammanormwin = 20; %window for gamma normalization (s)
 
@@ -86,7 +86,7 @@ SHOWFIG = p.Results.showFig;
 SWChan = p.Results.DetectionChannel;
 NREMInts = p.Results.NREMInts;
 CTXChans = p.Results.CTXChans;
-NOPROMPTS = p.Results.noPrompts;
+noPrompts = p.Results.noPrompts;
 NOSPIKES = p.Results.noSpikes;
 ratethresh = p.Results.sensitivity;
 filterparms = p.Results.filterparms;
@@ -172,7 +172,7 @@ end
 switch SWChan
     case 'autoselect'	%Automated selection
         CHANSELECT = 'auto';
-        [SWChan,CTXChans] = AutoChanSelect(CTXChans,basePath,NREMInts,spikes);
+        [SWChan,CTXChans] = AutoChanSelect(CTXChans,basePath,NREMInts,spikes,filterparms,noPrompts);
     case 'useold'       %Use from existing SlowWaves.events.mat
         SlowWaves = bz_LoadEvents(basePath,'SlowWaves');
         CHANSELECT = SlowWaves.detectorinfo.detectionparms.CHANSELECT;
@@ -192,7 +192,7 @@ end
         
 %Load the LFP
 if isempty(lfp)
-    lfp = bz_GetLFP(SWChan,'basepath',basePath);
+    lfp = bz_GetLFP(SWChan,'basepath',basePath,'noPrompts',noPrompts);
 end
 
 %% Filter the LFP: delta, high gamma 
@@ -440,7 +440,7 @@ end
 
 display('Slow Wave Detection: COMPLETE!')
 
-if ~NOPROMPTS
+if ~noPrompts
     button = questdlg('Would you like to open EventExplorer to check Detection Quality?');
     switch button
         case 'Yes'
@@ -458,14 +458,18 @@ end
 
 
 %% Channel Selection Functions
-function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes)
+function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes,filterparms,noPrompts)
     display('Detecting best channel for slow wave detection...')
     baseName = bz_BasenameFromBasepath(basePath);
     figfolder = fullfile(basePath,'DetectionFigures');
     
-    par = bz_getSessionInfo(basePath); %Load the metadata
+    par = bz_getSessionInfo(basePath,'noPrompts',noPrompts); %Load the metadata
     if strcmp(trychans,'all') %ie the user hasn't manually entered channels
-        regions = unique(par.region);
+        try %In case there is no region field in the SessionInfo
+            regions = unique(par.region);
+        catch
+            regions = {''};
+        end
         if length(regions)==1 && strcmp(regions,'')
             %If there are no regions, use all (tell user)
             display('No region in sessionInfo, using all channels')
@@ -502,9 +506,9 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes)
   %%  
     for cc = 1:length(trychans)
         display(['Trying Channel ',num2str(cc),' of ',num2str(length(trychans))])
-        chanlfp = bz_GetLFP(trychans(cc),'basepath',basePath);
+        chanlfp = bz_GetLFP(trychans(cc),'basepath',basePath,'noPrompts',noPrompts);
         %Filter in gamma
-        gammafilter = [100 512];
+        gammafilter = filterparms.gammafilter; %Note: this doesn't work as well with new filtered LFP.... need better MUA
         trygammaLFP = bz_Filter(chanlfp,'passband',gammafilter,'order',4);
 
         %Restrict to NREM only - could also use intervals above to do this....
@@ -513,7 +517,7 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes)
         trygammaLFP.amp = trygammaLFP.amp(inNREMidx,:);
         %Best channel is the one in which gamma is most anticorrelated with the
         %lowpass LFP - i.e. DOWN states (positive LFP) have low gamma power
-        lowpassLFP = bz_Filter(chanlfp,'passband',[0 6],'order',2);
+        lowpassLFP = bz_Filter(chanlfp,'passband',filterparms.deltafilter,'order',2);
         
         gammaLFPcorr(cc) = corr(lowpassLFP.data,trygammaLFP.amp,'type','spearman');
         

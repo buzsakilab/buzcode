@@ -1,0 +1,7 @@
+#!/bin/bash
+# downloads larger data files for IO, ripple/event detection, ratemapping, behavioral trial detection, and LFP spectral processing tutorials
+
+
+wget https://buzsakilab.nyumc.org/datasets/TingleyD/DT9/20170505_396um_0um_merge/20170505_396um_0um_merge.lfp
+wget https://buzsakilab.nyumc.org/datasets/TingleyD/DT9/20170505_396um_0um_merge.CA1Ripples.events.mat
+wget https://buzsakilab.nyumc.org/datasets/TingleyD/DT9/20170505_396um_0um_merge/20170505_396um_0um_merge.firingMaps.cellinfo.mat
