@@ -233,7 +233,7 @@ for d = 2:length(recordingbytes)
     
 end
 
-save([basepath '\filesT'],'filesT');
+save(fullfile(basepath,'filesT'),'filesT');
 
 %% Also concatenate the other .dats
 for odidx = 1:length(otherdattypes)
