@@ -4954,28 +4954,26 @@ if isempty(SleepState) %If there is no saved SleepState already.
     error('No SleepState.states.mat detected');
 end
 
-try
-    dp = SleepState.detectorinfo.detectionparms;
-    
-    %if already exists, just take from saved data
-    if isfield(dp,'histsandthreshs')
-        histsandthreshs = dp.histsandthreshs;
-    elseif isfield(dp.SleepScoreMetrics,'histsandthreshs')
-        %this is the proper formatting, everything else in here is to deal
-        %with legacy issues (DL 3/18/18)
-        histsandthreshs = dp.SleepScoreMetrics.histsandthreshs;
-    end
-catch
+dp = SleepState.detectorinfo.detectionparms;
+
+%if already exists, just take from saved data
+if isfield(dp,'histsandthreshs')
+    histsandthreshs = dp.histsandthreshs;
+elseif isfield(dp.SleepScoreMetrics,'histsandthreshs')
+    %this is the proper formatting, everything else in here is to deal
+    %with legacy issues (DL 3/18/18)
+    histsandthreshs = dp.SleepScoreMetrics.histsandthreshs;
+else
     warning('We were unable to find histsandthreshs in your SleepState. Trying to recalculate...')
 
     load(fullfile(basePath,[baseName '.SleepScoreLFP.LFP.mat']));
     load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
-    
+
     [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
                                            basePath,SleepScoreLFP,EMGFromLFP,false);
-    
+
     histsandthreshs = SleepScoreMetrics.histsandthreshs;
-    
+
     SleepState.detectorinfo.detectionparms.SleepScoreMetrics = SleepScoreMetrics;
     SleepState.detectorinfo.StatePlotMaterials = StatePlotMaterials;
     save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState');
