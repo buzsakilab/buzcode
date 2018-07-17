@@ -11,7 +11,7 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %
 %   (optional)  
 %       'showfig'   true/false - show a summary figure of the results
-%       'savemat'   put your basePath here to save
+%       'saveMat'   put your basePath here to save
 %                   baseName.PowerSpectrumSlope.lfp.mat  (not yet
 %                   functional)
 %
@@ -19,8 +19,10 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %%
 p = inputParser;
 addParameter(p,'showfig',false,@islogical)
+addParameter(p,'saveMat',false)
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
+saveMat = p.Results.saveMat;
 
 %% For multiple lfp channels
 if length(lfp.channels)>1
@@ -80,6 +82,14 @@ specslope.rsq = rsq';
 specslope.resid = yresid;
 specslope.freqs = spec.freqs;
 
+specslope.channels = lfp.channels;
+
+if saveMat
+    basePath = saveMat;
+    baseName = bz_BasenameFromBasepath(basePath);
+    savename = fullfile(basePath,[baseName,'.PowerSpectrumSlope.lfp.mat']);
+    save(savename,'specslope');
+end
 
 %% Figure
 if SHOWFIG
@@ -140,7 +150,11 @@ figure
         set(gca,'XTickLabel',[])
         ylabel('LFP')
     end
-        
+
+if saveMat
+    figfolder = [basePath,filesep,'DetectionFigures'];
+    NiceSave('PowerSpectrumSlope',figfolder,baseName)
+end
         
 end
 

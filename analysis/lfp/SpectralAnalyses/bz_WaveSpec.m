@@ -24,7 +24,7 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %       'samplingRate' (only if input is not a buzcode structure)
 %       'intervals'  ADD THIS - ability to spec intervals
 %       'showprogress' true/false (default:false)
-%       'savelfp'   put the basePath to save an LFP file
+%       'saveMat'   put the basePath to save an LFP file
 %    =========================================================================
 %
 %OUTPUT
@@ -61,7 +61,7 @@ addParameter(parms,'ncyc',5,@isnumeric);
 addParameter(parms,'space','log');
 addParameter(parms,'samplingRate',[]);
 addParameter(parms,'showprogress',false,@islogical);
-addParameter(parms,'savelfp',false);
+addParameter(parms,'saveMat',false);
 
 parse(parms,varargin{:})
 frange = parms.Results.frange;
@@ -70,7 +70,7 @@ ncyc = parms.Results.ncyc;
 space = parms.Results.space;
 samplingRate = parms.Results.samplingRate;
 showprogress = parms.Results.showprogress;
-savelfp = parms.Results.savelfp;
+saveMat = parms.Results.saveMat;
 
 
 %lfp input
@@ -141,8 +141,8 @@ wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
 wavespec.filterparms.space = space;
 
-if savelfp
-    baseName = bz_BasenameFromBasepath(savelfp);
+if saveMat
+    baseName = bz_BasenameFromBasepath(saveMat);
     lfpfilename = fullfile(basePath,[baseName,'.wavespec.lfp.mat']);
     save(lfpfilename,wavespec)
 end
