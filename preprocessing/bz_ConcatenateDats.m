@@ -226,6 +226,15 @@ else
     disp('Primary .dats concatenated and size checked')
 end
 
+%% save times of each individual file concatenated
+filesT(1) = recordingbytes(1)/2;
+for d = 2:length(recordingbytes)
+    filesT(d) = filesT(d-1)+recordingbytes(d)/2;
+    
+end
+
+save(fullfile(basepath,'filesT'),'filesT');
+
 %% Also concatenate the other .dats
 for odidx = 1:length(otherdattypes)
     eval(['tdatpaths = ' otherdattypes{odidx} 'datpaths;']);
