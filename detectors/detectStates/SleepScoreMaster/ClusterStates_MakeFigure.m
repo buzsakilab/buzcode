@@ -1,5 +1,8 @@
-function ClusterStates_MakeFigure(SleepState,basePath) 
+function ClusterStates_MakeFigure(SleepState,basePath,noprompts) 
 
+if noprompts
+    figure('visible','off');
+end
 %Check needed here if Sleep state has the right stuff
 v2struct(SleepState.detectorinfo.detectionparms.SleepScoreMetrics)
 v2struct(SleepState.detectorinfo.StatePlotMaterials)
