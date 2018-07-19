@@ -1,8 +1,6 @@
 function ClusterStates_MakeFigure(SleepState,basePath,noprompts) 
 
-if noprompts
-    figure('visible','off');
-end
+
 %Check needed here if Sleep state has the right stuff
 v2struct(SleepState.detectorinfo.detectionparms.SleepScoreMetrics)
 v2struct(SleepState.detectorinfo.StatePlotMaterials)
@@ -99,7 +97,11 @@ IDX = bz_INTtoIDX(states,'length',max(t_clus));
 IDX(1:t_clus(1)-1)=[];
 NREMtimes = (broadbandSlowWave >swthresh);
 
-figure
+if noprompts
+    figure('visible','off');
+else
+    figure
+end
 	subplot(3,2,1)
         hold on
         bar(swhistbins(swhistbins>swthresh),swhist(swhistbins>swthresh),'FaceColor','b','barwidth',0.9,'linewidth',1)
@@ -148,7 +150,11 @@ saveas(gcf,[figloc,recordingname,'_SSCluster2D'],'jpeg')
 colormat = [[0 0 0];[0 0 1];[1 0 0]];
 coloridx = colormat(IDX,:);
 
-figure
+if noprompts
+    figure('visible','off');
+else
+    figure
+end
     subplot(1,3,[2,3])
         hold all
         scatter3(broadbandSlowWave,thratio,EMG,2,coloridx,'filled')
