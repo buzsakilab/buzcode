@@ -21,10 +21,11 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %       'nfreqs'  	number of frequencies               (default: 100
 %       'ncyc'      number of cycles in your wavelet    (default: 5)
 %       'space'     'log' or 'lin'  spacing of f's      (default: 'log')
+%       'fvector'   predefined vector of frequencies 
 %       'samplingRate' (only if input is not a buzcode structure)
 %       'intervals'  ADD THIS - ability to spec intervals
 %       'showprogress' true/false (default:false)
-%       'savelfp'   put the basePath to save an LFP file
+%       'saveMat'   put the basePath to save an LFP file
 %    =========================================================================
 %
 %OUTPUT
@@ -51,6 +52,8 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %
 %Last Updated: 10/9/15
 %DLevenstein
+%Modified by Antonio FR, 7/18/18
+
 %% Parse the inputs
 
 %Parameters
@@ -61,7 +64,8 @@ addParameter(parms,'ncyc',5,@isnumeric);
 addParameter(parms,'space','log');
 addParameter(parms,'samplingRate',[]);
 addParameter(parms,'showprogress',false,@islogical);
-addParameter(parms,'savelfp',false);
+addParameter(parms,'saveMat',false);
+addParameter(parms,'fvector',[]);
 
 parse(parms,varargin{:})
 frange = parms.Results.frange;
@@ -70,7 +74,8 @@ ncyc = parms.Results.ncyc;
 space = parms.Results.space;
 samplingRate = parms.Results.samplingRate;
 showprogress = parms.Results.showprogress;
-savelfp = parms.Results.savelfp;
+saveMat = parms.Results.saveMat;
+fvector = parms.Results.fvector;
 
 
 %lfp input
@@ -93,26 +98,26 @@ si = 1./samplingRate;
 
 
 %%
-
-
-
-
 if ~isa(data,'single') || ~isa(data,'double')
     data = single(data);
 end
 
 %Frequencies
-fmin = frange(1);
-fmax = frange(2);
-if strcmp(space,'log')
-    assert(fmin~=0,'Log-spaced frequencies cannot have min of 0')
-    freqs = logspace(log10(fmin),log10(fmax),nfreqs);
-elseif strcmp(space,'lin')
-    freqs = linspace(fmin,fmax,nfreqs);
+if ~isempty(fvector)
+    freqs = fvector;
+    nfreqs = length(fvector);
 else
-    display('Frequency spacing must be "lin" or "log".')
+    fmin = frange(1);
+    fmax = frange(2);
+    if strcmp(space,'log')
+        assert(fmin~=0,'Log-spaced frequencies cannot have min of 0')
+        freqs = logspace(log10(fmin),log10(fmax),nfreqs);
+    elseif strcmp(space,'lin')
+        freqs = linspace(fmin,fmax,nfreqs);
+    else
+        display('Frequency spacing must be "lin" or "log".')
+    end    
 end
-
 
 %Filter with wavelets
 spec = zeros(length(timestamps),nfreqs);
@@ -141,8 +146,8 @@ wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
 wavespec.filterparms.space = space;
 
-if savelfp
-    baseName = bz_BasenameFromBasepath(savelfp);
+if saveMat
+    baseName = bz_BasenameFromBasepath(saveMat);
     lfpfilename = fullfile(basePath,[baseName,'.wavespec.lfp.mat']);
     save(lfpfilename,wavespec)
 end

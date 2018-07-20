@@ -23,7 +23,7 @@
 % 'baseName-states.mat'. By default this file contains a structure with 3
 % fields: 
 %    'states' - the state vector is of length N, where N is the number
-%               of seconds	bins in your spectrogfram 
+%               of seconds	bins in your spectrogram 
 %               (N = round((length(eeg)/eegFS) - 1). It has a value between
 %               0 and 5 for each bin (0 = 'no state', 1 = 'awake', 2 = 
 %               'Light/Drowzy', 3 = 'NREM', 4 = 'Intermediate', 5 = 'REM').
