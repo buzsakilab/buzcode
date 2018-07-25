@@ -314,7 +314,7 @@ MergePoints.foldernames = recordingnames;
 MergePoints.filesmerged = datpaths;
 MergePoints.filesizes = datsizes;
 MergePoints.sizecheck = sizecheck;
-MergePoints.detectorinfo.detectorname = 'bz_MergeDats';
+MergePoints.detectorinfo.detectorname = 'bz_ConcatenateDats';
 MergePoints.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
 
 %Saving SleepStates
