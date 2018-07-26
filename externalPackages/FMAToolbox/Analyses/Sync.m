@@ -47,7 +47,7 @@ function [synchronized,indices] = Sync(samples,sync,varargin)
 % (at your option) any later version.
 
 % Default values
-durations = [-0.5 0.5];
+durations = [-.5 .5];
 verbose = false;
 
 % Check number of parameters
