@@ -1,4 +1,4 @@
-function parameters = LoadParameters(filename)
+function [parameters] = LoadParameters(filename)
 
 %LoadParameters - Load parameters from an XML file.
 %
