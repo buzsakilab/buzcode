@@ -142,7 +142,8 @@ catch
     disp('No .xml or .sessionInfo in top folder, trying subfolders')
     for ff = 1:length(recordingnames)
         try
-            [sessionInfo,xmlfilename] = LoadParameters(fullfile(basepath,recordingnames{ff}));
+            sessionInfo = LoadParameters(fullfile(basepath,recordingnames{ff}));
+            xmlfilename = fullfile(sessionInfo.session.path,[sessionInfo.session.name,'.xml']);
             [SUCCESS,MESSAGE,MESSAGEID] = copyfile(...
                 xmlfilename,...
                 fullfile(basepath,[basename,'.xml']),'f');
