@@ -199,14 +199,16 @@ else
 %     REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
 end
 
-histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
+histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,...
+    EMGthresh,THhist,THhistbins,THthresh);
 
 %% Ouput Structure: StateScoreMetrics
 LFPparams = SleepScoreLFP.params;
 THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
 SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
-    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,recordingname);
+    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,...
+    recordingname);
 %save(matfilename,'SleepScoreMetrics');
 
 StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);
