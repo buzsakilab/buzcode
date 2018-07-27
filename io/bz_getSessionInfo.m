@@ -71,7 +71,10 @@ elseif ~isfield(sessionInfo,'region') && ~noPrompts
             return
     end
 end
-    
+
+%Should check that sessionInfo.session.name and sesioninfo.session.path
+%match basePath....  if not, prompt the user to save with the correct
+%information.
     
 %% Save sessionInfo file   
 %Prompt user to save basePath/baseName.sessionInfo.mat 
