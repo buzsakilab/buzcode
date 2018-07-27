@@ -22,7 +22,14 @@ if exist(matfilename) & exist(plotmaterialsfilename) & overwrite == false
     return
 end
 
-%% Downsample and filter
+
+try
+    SWweights = SleepScoreLFP.params.SWweights;
+    SWfreqlist = SleepScoreLFP.params.SWfreqlist;
+catch
+    load('SWweights.mat')
+end
+%% Downsample and filter the LFP from PickSWTHChannel
 %Make Downsample to niquest frequency
 
 if SleepScoreLFP.sf == 1250
@@ -39,37 +46,48 @@ thLFP = downsample(SleepScoreLFP.thLFP,downsamplefactor);
 sf_LFP = SleepScoreLFP.sf/downsamplefactor;
 
 
-%% Calculate Spectrogram
+%% Calculate broadbandslowwave metric
 %display('FFT Spectrum for Broadband LFP')
-
-freqlist = logspace(0,2,100);
 window = 10;   %s
 noverlap = 9;  %s
-window = window*sf_LFP;
-noverlap = noverlap*sf_LFP;
-[swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window,noverlap,freqlist,sf_LFP);
-swFFTspec = abs(swFFTspec);
-[zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
 
-%% Remove transients before calculating SW histogram
-%this should be it's own whole section - removing/detecting transients
-totz = zscore(abs(sum(zFFTspec')));
-badtimes = find(totz>5);
-zFFTspec(badtimes,:) = 0;
- 
-%% Set Broadband filter weights for Slow Wave
-load('SWweights.mat')
-assert(isequal(freqlist,SWfreqlist), 'spectrogram freqs.  are not what they should be...')
-broadbandSlowWave = zFFTspec*SWweights';
- 
-%% Smooth and 0-1 normalize
-smoothfact = 10; %units of si_FFT
-thsmoothfact = 10; %used to be 15
+if strcmp(SWweights,'PSS')
+    lfp.data = swLFP;
+    lfp.timestamps = SleepScoreLFP.t;
+    lfp.samplingRate = SleepScoreLFP.sf;
+    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap);
+    broadbandSlowWave = -specslope.data; %So NREM is higher as opposed to lower
+    t_clus = specslope.timestamps;
+    swFFTfreqs = specslope.freqs;
+    swFFTspec = spec.amp;
+    badtimes = false;
+   % SWfreqlist = specslope.freqs;
+else
+    freqlist = logspace(0,2,100);
+    [swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
+    swFFTspec = abs(swFFTspec);
+    [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
+    % Remove transients before calculating SW histogram
+    %this should be it's own whole section - removing/detecting transients
+    totz = zscore(abs(sum(zFFTspec')));
+    badtimes = find(totz>5);
+    zFFTspec(badtimes,:) = 0;
 
+    %Calculate per-bin weights onto SlowWave
+    assert(isequal(freqlist,SWfreqlist),...
+        'spectrogram freqs.  are not what they should be...')
+    broadbandSlowWave = zFFTspec*SWweights';
+end
+
+%Smooth and 0-1 normalize
+smoothfact = 10; %units of si_FFT (currently 1s)
 broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
 broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
  
+%% Smooth and 0-1 normali
+thsmoothfact = 10; %used to be 15
+
 %% Calculate theta
 %display('FFT Spectrum for Theta')
 
@@ -79,7 +97,7 @@ f_theta = [5 10];
 freqlist = logspace(log10(f_all(1)),log10(f_all(2)),100);
 
 
-[thFFTspec,thFFTfreqs] = spectrogram(single(thLFP),window,noverlap,freqlist,sf_LFP);
+[thFFTspec,thFFTfreqs,t_thclu] = spectrogram(single(thLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
 thFFTspec = (abs(thFFTspec));
 [~,mu_th,sig_th] = zscore(log10(thFFTspec)');
 

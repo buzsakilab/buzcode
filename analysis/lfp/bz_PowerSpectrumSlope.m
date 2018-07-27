@@ -11,20 +11,32 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %
 %   (optional)  
 %       'showfig'   true/false - show a summary figure of the results
+%                   (default:false)
 %       'saveMat'   put your basePath here to save
-%                   baseName.PowerSpectrumSlope.lfp.mat  (not yet
-%                   functional)
+%                   baseName.PowerSpectrumSlope.lfp.mat
+%       'channels'  subset of channels to calculate PowerSpectrumSlope
+%                   (default: all)
 %
 %DLevenstein 2018
 %%
 p = inputParser;
 addParameter(p,'showfig',false,@islogical)
 addParameter(p,'saveMat',false)
+addParameter(p,'channels',[])
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
+channels = p.Results.channels;
 
 %% For multiple lfp channels
+if ~isempty(channels)
+    usechans = ismember(lfp.channels,channels);
+    lfp.data = lfp.data(:,usechans);
+    lfp.channels = lfp.channels(usechans);
+elseif ~isfield(lfp,'channels')
+    lfp.channels = nan;
+end
+
 if length(lfp.channels)>1
   %loop each channel and put the stuff in the right place
 	for cc = 1:length(lfp.channels)

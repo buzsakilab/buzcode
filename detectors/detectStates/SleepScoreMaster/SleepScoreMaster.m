@@ -86,11 +86,6 @@ end
 [datasetfolder,recordingname,extension] = fileparts(basePath);
 recordingname = [recordingname,extension]; % fileparts parses '.' into extension
 
-if ~exist('SWWeightsName','var')
-    SWWeightsName = 'SWweights.mat';
-end
-
-
 
 %% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
 %Select from dataset folder - need to check if .xml/lfp exist
@@ -133,7 +128,8 @@ defaultSavebool = true;    %Save Stuff (EMG, LFP)
 defaultSavedir = datasetfolder;
 
 defaultScoretime = [0 Inf];
-defaultSWWeightsName = 'SWweights.mat';
+%defaultSWWeightsName = 'SWweights.mat';
+defaultSWWeightsName = 'PSS';
 defaultNotch60Hz = 0;
 defaultNotchUnder3Hz = 0;
 defaultNotchHVS = 0;
