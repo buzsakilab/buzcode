@@ -253,7 +253,7 @@ for i=1:length(trials_unsorted)
        end
    end
 end
-
+%% TODO, add automatic removal of trials that are too short
 % cluster similarity
 for i=1:length(trials_unsorted)
     for j =1:length(trials_unsorted)
@@ -463,5 +463,5 @@ end
 title(tt);
 end
 
-% 
+%% update to return buzcode format
 % behavior = pos2behav(pos,'optitrack','trials',trials,'mapping',mapping,'map',map,'behavType','central alternation');
