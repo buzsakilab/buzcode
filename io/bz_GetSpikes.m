@@ -87,7 +87,7 @@ noPrompts = p.Results.noPrompts;
 [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
 
 
-samplingRate = sessionInfo.rates.wideband;
+spikes.samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
 
@@ -124,7 +124,7 @@ end
 tempFiles = zeros(length(cluFiles),1);
 for i = 1:length(cluFiles) 
     dummy = strsplit(cluFiles(i).name, '.'); % Check whether the component after the last dot is a number or not. If not, exclude the file/dir. 
-    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | isempty(str2num(dummy{length(dummy)})) 
+    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | isempty(str2num(dummy{length(dummy)})) | find(contains(dummy, 'clu')) ~= length(dummy)-1  
         tempFiles(i) = 1;
     end
 end
@@ -208,7 +208,7 @@ for i=1:length(cluFiles)
     for c = 1:length(cells)
        spikes.UID(count) = count; % this only works if all shanks are loaded... how do we optimize this?
        ind = find(clu == cells(c));
-       spikes.times{count} = res(ind) ./ samplingRate;
+       spikes.times{count} = res(ind) ./ spikes.samplingRate;
        spikes.shankID(count) = shankID;
        spikes.cluID(count) = cells(c);
 
