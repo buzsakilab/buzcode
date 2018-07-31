@@ -1,0 +1,10 @@
+chronux -u http://chronux.org/chronuxFiles/filesReleases/chronux_2_12.zip
+circular-statistics-toolbox-directional-statistics
+eeglab -u https://github.com/eeglabdevelopers/eeglab.git
+export_fig -u https://github.com/altmany/export_fig.git
+FilterM
+FMAToolbox
+plexonSDK
+WaveletToolbox
+mpm install xmltree -u https://www.artefact.tk/software/matlab/xml/xmltree-2.0.zip
+fastsearch
