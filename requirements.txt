@@ -1,0 +1,10 @@
+chronux -u http://chronux.org/chronuxFiles/filesReleases/chronux_2_12.zip
+circular-statistics-toolbox-directional-statistics
+eeglab -u https://github.com/eeglabdevelopers/eeglab.git
+export_fig -u https://github.com/altmany/export_fig.git
+FilterM - https://github.com/bendichter/FilterM.git
+plexonSDK
+WaveletToolbox
+xmltree -u https://github.com/bendichter/xmltree.git --allpaths
+FMAToolbox -u https://github.com/bendichter/FMAToolbox.git --allpaths
+matnwb --allpaths
