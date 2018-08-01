@@ -5,11 +5,11 @@
 % /buzcode/tutorials/exampleDataStructs/20170505_396um_0um_merge folder, 
 % it will not work otherwise!
 
-path = strsplit(pwd,'/');
+path = strsplit(pwd,filesep);
 if ~strcmp(path{end},'tutorials') & ~strcmp(path{end-1},'buzcode') 
    error('this script assumes you are running it from the /buzcode/tutorials folder...') 
 end
-cd exampleDataStructs/20170505_396um_0um_merge
+cd(['exampleDataStructs' filesep '20170505_396um_0um_merge'])
 
 %% loading data
 sessionInfo = bz_getSessionInfo;
