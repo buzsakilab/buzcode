@@ -1,7 +1,7 @@
-function processConvertOptitrack2Behav(fbasename,varargin)
+function processConvertOptitrack2behavior(fbasename,varargin)
 % USAGE
 %
-%   bz_processConvertOptitrack2Behav(fbasename,varargin)
+%   bz_processConvertOptitrack2behavior(fbasename,varargin)
 %    
 % 
 % INPUTS
@@ -24,7 +24,7 @@ function processConvertOptitrack2Behav(fbasename,varargin)
 % OUTPUTS
 %
 % 
-% This function assumes that a Motive (Optitrack) behavioral session 
+% This function assumes that a Motive (Optitrack) behaviorioral session 
 % has been exported to a .CSV file with default settings.
 % (http://wiki.optitrack.com/index.php?title=Data_Export:_CSV)
 %
@@ -133,17 +133,20 @@ newPos = interp1(frameT,pos,timestamps);
 
 error('need to remove NaN garbage still')
 
-behav.position.x = pos(:,2);
-behav.position.y = pos(:,3);
-behav.position.z = pos(:,4);
-behav.orientation.rx = pos(:,5);
-behav.orientation.ry = pos(:,6);
-behav.orientation.rz = pos(:,7);
-behav.orientation.rw = pos(:,8);
-behav.timestamps = pos(:,1);
-behav.errorPerMarker = pos(:,9);
-behav.frameCount = pos(:,10);
-save([fbasename '.tracking.behavior.mat'],'behav')
+behavior.timestamps = pos(:,1);
+
+behavior.orientation.rx = pos(:,4);
+behavior.orientation.ry = pos(:,5);
+behavior.orientation.rz = pos(:,6);
+behavior.orientation.rw = pos(:,7);
+
+behavior.position.x = pos(:,8);
+behavior.position.y = pos(:,9);
+behavior.position.z = pos(:,10);
+
+behavior.errorPerMarker = pos(:,11);
+behavior.frameCount = pos(:,2);
+save([fbasename '.tracking.behavior.mat'],'behavior')
 
 end
 
