@@ -111,7 +111,7 @@ if ~isa(data,'single') || ~isa(data,'double')
     data = single(data);
 end
 
-Frequencies
+%Frequencies
 if ~isempty(fvector)
     freqs = fvector;
     nfreqs = length(fvector);
