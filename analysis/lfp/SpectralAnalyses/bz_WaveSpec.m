@@ -160,7 +160,11 @@ wavespec.data = spec;
 wavespec.timestamps = timestamps;
 wavespec.freqs = freqs;
 wavespec.samplingRate = samplingRate;
-wavespec.channels = lfp.channels;
+if isstruct(lfp)
+    wavespec.channels = lfp.channels;
+else
+    wavespec.channels = NaN;
+end
 wavespec.filterparms.ncyc = ncyc;
 wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
