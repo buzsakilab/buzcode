@@ -209,13 +209,13 @@ end
 
 
 % For large amounts of data, read chunk by chunk
-maxSamplesPerChunk = 100000;
+maxSamplesPerChunk = 10000;
 nSamples = nSamplesPerChannel*nChannels;
 if nSamples <= maxSamplesPerChunk,
 	data = LoadChunk(f,nChannels,channels,nSamples/nChannels,precision,skip);
 else
 	% Determine chunk duration and number of chunks
-	nSamplesPerChunk = ceil(maxSamplesPerChunk/nChannels)*nChannels;
+	nSamplesPerChunk = floor(maxSamplesPerChunk/nChannels)*nChannels;
 	nChunks = floor(nSamples/nSamplesPerChunk);
 	% Preallocate memory
 	data = zeros(nSamplesPerChannel,length(channels),precision);
