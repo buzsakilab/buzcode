@@ -353,7 +353,10 @@ if spikes.numcells>0
     spikes.spindices = [alltimes groups];
 end
 
-
+%% Check if any cells made it through selection
+if isempty(spikes.times) | spikes.numcells == 0
+    spikes = [];
+end
 
 
 
