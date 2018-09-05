@@ -166,7 +166,7 @@ end
 % Position and number of samples (per channel) of the data subset
 if time,
 	dataOffset = floor(start*frequency)*nChannels*sampleSize;
-	nSamplesPerChannel = floor((duration*frequency));
+	nSamplesPerChannel = round((duration*frequency));
 else
 	dataOffset = offset*nChannels*sampleSize;
 end

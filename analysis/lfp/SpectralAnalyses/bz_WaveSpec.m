@@ -160,13 +160,13 @@ wavespec.data = spec;
 wavespec.timestamps = timestamps;
 wavespec.freqs = freqs;
 wavespec.samplingRate = samplingRate;
+if isstruct(lfp) && isfield(lfp,'channels')
+    wavespec.channels = lfp.channels;
+end
 wavespec.filterparms.ncyc = ncyc;
 wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
 wavespec.filterparms.space = space;
-if isfield(lfp,'channels')
-    wavespec.channels = lfp.channels;
-end
 
 if saveMatPath
     baseName = bz_BasenameFromBasepath(saveMatPath);
