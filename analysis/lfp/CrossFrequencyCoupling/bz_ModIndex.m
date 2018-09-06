@@ -1,4 +1,5 @@
 function [comod] = bz_ModIndex(lfp,phaserange,amprange,flagPlot)
+% [comod] = bz_ModIndex(lfp,phaserange,amprange,flagPlot)
 %This function calculates the modulation index of phase-amplitude between
 %phaserange (lower frequencies) to amplitude range (higher frequencies).
 %It can really take a long time if you do very small steps of frequency,

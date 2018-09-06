@@ -1,4 +1,4 @@
-function parameters = LoadParameters(filename)
+function [parameters] = LoadParameters(filename)
 
 %LoadParameters - Load parameters from an XML file.
 %
@@ -180,7 +180,7 @@ try
                     parameters.AnatGrps(a).Channels(b) = str2num(p.anatomicalDescription.channelGroups.group{a}.channel{b});
                 end 
             elseif isvector(p.anatomicalDescription.channelGroups.group{a}.channel)
-                parameters.AnatGrps(a).Channels = p.anatomicalDescription.channelGroups.group{a}.channel;
+                parameters.AnatGrps(a).Channels = str2num(p.anatomicalDescription.channelGroups.group{a}.channel);
             else
                 warning('Anatomy Groups seems to have an issue, eh?..') 
             end
