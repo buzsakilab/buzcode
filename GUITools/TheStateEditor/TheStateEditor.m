@@ -6205,7 +6205,7 @@ elseif isfield(SleepState,'ints')
     states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(timestartsecond)),states);
     states = cat(2,states,zeros(1,numsecsinrecording-length(states)));
 elseif isempty(SleepState)
-    states = zeros(1,length(StateInfo.fspec{1}.to));
+    states = zeros(1,length(timevector));
 else
    error('Your SleepState is broken.')
 end
