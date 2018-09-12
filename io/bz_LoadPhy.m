@@ -39,7 +39,8 @@ function [spikes] = bz_LoadPhy(varargin)
 % Parse options
 p = inputParser;
 addParameter(p,'basepath',pwd,@isstr);
-addParameter(p,'kilosort_path',ls('Kilosort*'),@isstr); % probably this line only works in windows
+%addParameter(p,'kilosort_path',ls('Kilosort*'),@isstr); % probably this line only works in windows
+addParameter(p,'kilosort_path',pwd,@isstr);
 addParameter(p,'getWaveforms',true,@islogical)
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'UID',[],@isvector);
@@ -163,7 +164,7 @@ if ~isempty(spikes.UID)
 end
 
 % Compute spike measures
-if ~isempty(spikes.UID)
+if ~isempty(spikes.UID) && getWave
     for ii = 1:size(spikes.UID,2)
         [~,tmp] = max(spikes.rawWaveform{ii}(1,41:end));
         p2pWidth = tmp/fs; % peak (negative) to peak (second positive) duration 
