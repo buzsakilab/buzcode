@@ -31,7 +31,7 @@ if strcmp(whichaxis,'y') || strcmp(whichaxis,'xy')
     if max(abs(ticks))>=3
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);
         tickstrings = cellfun(@(X) replace(X,'','^'),tickstrings,'uniformoutput',false);
-        tickstrings = cellfun(@(X) ['10',X(1:end-1)],tickstrings,'uniformoutput',false);
+        tickstrings = cellfun(@(X) [num2str(logbase),X(1:end-1)],tickstrings,'uniformoutput',false);
         set(gca,'YTickLabels',tickstrings)
     end
     
@@ -56,7 +56,7 @@ if strcmp(whichaxis,'x') || strcmp(whichaxis,'xy')
     if max(abs(ticks))>=3
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);
         tickstrings = cellfun(@(X) replace(X,'','^'),tickstrings,'uniformoutput',false);
-        tickstrings = cellfun(@(X) ['10',X(1:end-1)],tickstrings,'uniformoutput',false);
+        tickstrings = cellfun(@(X) [num2str(logbase),X(1:end-1)],tickstrings,'uniformoutput',false);
         set(gca,'XTickLabels',tickstrings)
     end
 end
@@ -79,7 +79,7 @@ if strcmp(whichaxis,'z')
     if max(abs(ticks))>=2
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);
         tickstrings = cellfun(@(X) replace(X,'','^'),tickstrings,'uniformoutput',false);
-        tickstrings = cellfun(@(X) ['10',X(1:end-1)],tickstrings,'uniformoutput',false);
+        tickstrings = cellfun(@(X) [num2str(logbase),X(1:end-1)],tickstrings,'uniformoutput',false);
         set(gca,'ZTickLabels',tickstrings)
     end
 end
@@ -105,7 +105,7 @@ if strcmp(whichaxis,'c')
     if max(abs(ticks))>=2
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);
         tickstrings = cellfun(@(X) replace(X,'','^'),tickstrings,'uniformoutput',false);
-        tickstrings = cellfun(@(X) ['10',X(1:end-1)],tickstrings,'uniformoutput',false);
+        tickstrings = cellfun(@(X) [num2str(logbase),X(1:end-1)],tickstrings,'uniformoutput',false);
         set(cb,'TickLabels',tickstrings)
     end
     

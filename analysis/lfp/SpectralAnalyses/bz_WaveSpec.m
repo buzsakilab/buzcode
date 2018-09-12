@@ -111,7 +111,7 @@ if ~isa(data,'single') || ~isa(data,'double')
     data = single(data);
 end
 
-Frequencies
+%Frequencies
 if ~isempty(fvector)
     freqs = fvector;
     nfreqs = length(fvector);
@@ -160,7 +160,9 @@ wavespec.data = spec;
 wavespec.timestamps = timestamps;
 wavespec.freqs = freqs;
 wavespec.samplingRate = samplingRate;
-wavespec.channels = lfp.channels;
+if isstruct(lfp) && isfield(lfp,'channels')
+    wavespec.channels = lfp.channels;
+end
 wavespec.filterparms.ncyc = ncyc;
 wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
