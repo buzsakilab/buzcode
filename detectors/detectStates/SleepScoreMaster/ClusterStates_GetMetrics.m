@@ -111,17 +111,14 @@ thratio = (thratio-min(thratio))./max(thratio-min(thratio));
  
 %% EMG
 dtEMG = 1/EMG.samplingFrequency;
-t_EMG = (1:length(EMG.data))*dtEMG;
-EMG = smooth(EMG.data,smoothfact/dtEMG);
-EMG = (EMG-min(EMG))./max(EMG-min(EMG));
+EMG.smoothed = smooth(EMG.data,smoothfact/dtEMG,'moving');
+EMG.smoothed = (EMG.smoothed-min(EMG.smoothed))./max(EMG.smoothed-min(EMG.smoothed));
 
-reclength = round(t_EMG(end));
+reclength = round(EMG.timestamps(end));
 
 %downsample to FFT time points;
-[~,t_intersect] = intersect(t_EMG,t_clus);
-EMG = EMG(t_intersect);
-t_EMG = t_EMG(t_intersect);
-
+t_EMG = interp1(EMG.timestamps,EMG.timestamps,t_clus,'nearest');
+EMG = interp1(EMG.timestamps,EMG.smoothed,t_clus,'nearest');
 
 
 %% Divide PC1 for SWS

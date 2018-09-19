@@ -360,9 +360,13 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
 
     %Calculate PC1 for plot/return
     if strcmp(SWweights,'PSS')
-        [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
+        [specslope,spec] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
             'channels',SWChannels(goodSWidx));
         broadbandSlowWave = specslope.data;
+        t_FFT = spec.timestamps;
+        FFTspec = spec.amp;
+        swFFTfreqs = spec.freqs;
+        [zFFTspec,mu,sig] = zscore((FFTspec)');
        % SWfreqlist = specslope.freqs;
     else
         [FFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,goodSWidx)),window*Fs,noverlap*Fs,swFFTfreqs,Fs);
@@ -377,7 +381,7 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
         %Calculate per-bin weights onto SlowWave
         broadbandSlowWave = zFFTspec*SWweights';
     end
-    %%
+
     broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
     broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
