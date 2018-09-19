@@ -205,6 +205,7 @@ elseif BUZCODE %BUZCODE has samples as a data structure
            filtered.data(:,i) = FiltFiltM(b,a,double(samples.data(:,i))); 
         end
 	hilb = hilbert(filtered.data(:,i));
+        filtered.hilb(:,i) = hilb;
         filtered.amp(:,i) = abs(hilb);
         filtered.phase(:,i) = angle(hilb);
     end

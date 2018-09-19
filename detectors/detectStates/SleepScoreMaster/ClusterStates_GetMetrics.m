@@ -58,7 +58,17 @@ badtimes = find(totz>5);
 zFFTspec(badtimes,:) = 0;
  
 %% Set Broadband filter weights for Slow Wave
-load('SWweights.mat')
+if exist('SleepScoreLFP','var')
+    if isfield(SleepScoreLFP,'params')
+        if isfield (SleepScoreLFP.params,'SWWeights')
+            SWweights = SleepScoreLFP.params.SWWeights;
+        end
+    end
+end
+if ~exist('SWweights','var')
+    load('SWweights.mat')
+end
+
 assert(isequal(freqlist,SWfreqlist), 'spectrogram freqs.  are not what they should be...')
 broadbandSlowWave = zFFTspec*SWweights';
  

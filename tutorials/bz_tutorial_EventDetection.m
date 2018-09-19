@@ -34,7 +34,7 @@
 %% 1i.  Specify variables
 
 % Confirm user is in buzcode/tutorial folder
-        path = strsplit(pwd,'\');
+        path = strsplit(pwd,filesep);
         if ~strcmp(path{end},'tutorials') & ~strcmp(path{end-1},'buzcode') 
             error('this script assumes you are running it from the /buzcode/tutorials folder...') 
         end
