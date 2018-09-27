@@ -215,10 +215,13 @@ for i=1:length(cluFiles)
        %Waveforms    
        if getWaveforms
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
+           if prod(size(wvforms))==length(wvforms)%in single-channel groups wvforms will squeeze too much and will have amplitude on D1 rather than D2
+               wvforms = wvforms';%fix here
+           end
            for t = 1:size(wvforms,1)
               [a(t) b(t)] = max(abs(wvforms(t,:))); 
            end
-           [aa bb] = max(a);
+           [aa bb] = max(a,[],2);
            spikes.rawWaveform{count} = wvforms(bb,:);
            spikes.maxWaveformCh(count) = spkGrpChans(bb);  
            %Regions (needs waveform peak)
