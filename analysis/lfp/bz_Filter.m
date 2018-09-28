@@ -24,6 +24,8 @@ function filtered = bz_Filter(samples,varargin)
 %                   automatically from samples.samplingRate for BUZCODE
 %     'FMAlegacy'   true/false, uses FMA legacy input style
 %                   (samples given as a list of (t,v1,v2,v3...) tuples)
+%     'fast'        true/false, uses FiltFiltM if true (doesn't work w/ new
+%                   version of matlab)
 %    =========================================================================
 %
 %OUTPUT
@@ -56,7 +58,7 @@ nyquist = 625; %written over later from samples.samplingRate if available
 type = 'cheby2';
 FMAlegacy = false;
 BUZCODE = false;
-matlabVersion = version('-release');
+fast = false;
 
 % Check number of parameters
 if nargin < 1 | mod(length(varargin),2) ~= 0,
@@ -113,7 +115,11 @@ for i = 1:2:length(varargin),
 			if ~isiscalar(nyquist,'>0'),
 				error('Incorrect value for property ''nyquist'' (type ''help <a href="matlab:help Filter">Filter</a>'' for details).');
             end
-            
+        case 'fast'
+            fast = varargin{i+1};
+            if ~islogical(fast)
+                error('Incorrect value for property ''FMALegacy''');
+            end    
         case 'fmalegacy'
             FMAlegacy = varargin{i+1};
             if ~islogical(FMAlegacy)
@@ -190,7 +196,7 @@ end
 if FMAlegacy %FMA has (samples given as a list of (t,v1,v2,v3...) tuples)
     filtered(:,1) = samples(:,1);
     for i = 2:size(samples,2),
-        if strcmp(matlabVersion,'2017a')
+        if ~fast
             filtered(:,i) = filtfilt(b,a,double(samples(:,i)));
         else
             filtered(:,i) = FiltFiltM(b,a,double(samples(:,i)));
@@ -199,7 +205,7 @@ if FMAlegacy %FMA has (samples given as a list of (t,v1,v2,v3...) tuples)
 elseif BUZCODE %BUZCODE has samples as a data structure
     filtered.timestamps = samples.timestamps;
     for i = 1:size(samples.data,2),
-        if strcmp(matlabVersion,'2017a')
+        if ~fast
            filtered.data(:,i) = filtfilt(b,a,double(samples.data(:,i)));
         else
            filtered.data(:,i) = FiltFiltM(b,a,double(samples.data(:,i))); 
@@ -215,7 +221,7 @@ elseif BUZCODE %BUZCODE has samples as a data structure
     filtered.samplingRate = samples.samplingRate;
 else %or if you just want filter a basic timeseries
     for i = 1:size(samples,2),
-        if strcmp(matlabVersion,'2017a')
+        if ~fast
             filtered(:,i) = filtfilt(b,a,double(samples(:,i)));
         else
             filtered(:,i) = FiltFiltM(b,a,double(samples(:,i)));    
