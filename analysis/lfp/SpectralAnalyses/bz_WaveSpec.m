@@ -159,6 +159,7 @@ end
 wavespec.data = spec;
 wavespec.timestamps = timestamps;
 wavespec.freqs = freqs;
+wavespec.nfreqs = nfreqs;
 wavespec.samplingRate = samplingRate;
 if isstruct(lfp) && isfield(lfp,'channels')
     wavespec.channels = lfp.channels;
