@@ -191,7 +191,7 @@ SR         = par.lfpSampleRate; % lfp sampling rate
 nChan      = par.nChannels;     % number of channels in the recording
 
 % 2) Channels
-if ~all(Channels > 0 & Channels < nChan)
+if ~all(Channels > 0 & Channels <= nChan)
     error(['%s: incompatible input for 2nd argument (Channels)\n', ...
             '\tAccording to the .xml file, the user did not supply\n', ...
             '\ta valid list of channels.\n'],mfname);

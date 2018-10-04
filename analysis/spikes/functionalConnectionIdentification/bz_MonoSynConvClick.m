@@ -57,7 +57,11 @@ function mono_res = bz_MonoSynConvClick (spikeIDs,spiketimes,varargin)
 
 
 fil = which('bz_MonoSynConvClick');
-sl = regexp(fil,'/');
+if ispc
+    sl = regexp(fil,'\');
+else
+    sl = regexp(fil,'/');
+end
 fil = fil(1:sl(end));
   foundMat = false;
 if exist([fil 'ProbSynMat.mat'],'file')==2
@@ -78,7 +82,7 @@ cells = unique(spikeIDs(:,1:2),'rows');
 nCel = size(cells,1);
 conv_w = .010/binSize;  % 10ms window
 alpha = 0.001; %high frequency cut off, must be .001 for causal p-value matrix
-plotit = true;
+plotit = false;
 sorted = false;
 
 if length(varargin) ==1 && iscell(varargin{1})
@@ -267,7 +271,7 @@ for refcellID=1:max(IDindex)
         end
         
         %check which is bigger
-        if (any(sigud(prebins)) && sigpre)
+        if (any(sigud(postbins)) && sigpre)
             
             %test if causal is bigger than anti causal
             
