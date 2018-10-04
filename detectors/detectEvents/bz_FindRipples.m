@@ -81,17 +81,23 @@ addParameter(p,'show','off',@isstr)
 addParameter(p,'noise',[],@ismatrix)
 addParameter(p,'passband',[130 200],@isnumeric)
 addParameter(p,'EMGThresh',.9,@isnumeric);
-addParameter(p,'saveMat',false,@islogical);
+addParameter(p,'saveMat',true,@islogical);
 
 if isstr(varargin{1})  % if first arg is basepath
-    addRequired(p,'basepath',@isstr)
-    addRequired(p,'channel',@isnumeric)    
-    parse(p,varargin{:})
+     addParameter(p,'basepath','')
+     addParameter(p,'channel',94)
+     parse(p,varargin{:})
+% %     basename = bz_BasenameFromBasepath(p.Results.basepath);
+%     basename = p.Results.basename;
+%     basepath = p.Results.basepath;
+%     passband = p.Results.passband;
+    EMG = 0;
+    basepath = p.Results.basepath; 'Z:\Buzsakilabspace\PeterPetersen\IntanData\MS21\Peter_MS21_180718_103455_concat';
+    channel = p.Results.channel;
     basename = bz_BasenameFromBasepath(p.Results.basepath);
-    basepath = p.Results.basepath;
-    passband = p.Results.passband;
-    EMGThresh = p.Results.EMGfilt;
+    EMGThresh = p.Results.EMGThresh;
     lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
+    passband = p.Results.passband;
     signal = bz_Filter(double(lfp.data),'filter','butter','passband',passband,'order', 3);
     timestamps = lfp.timestamps;
 elseif isnumeric(varargin{1}) % if first arg is filtered LFP
