@@ -1,8 +1,8 @@
 
 function [ csd, lfpAvg ] = bz_eventCSD (lfp, events, varargin)
 
-% [ CSD ] = bz_CSD (lfp, events, varargin)
-% Calculates event-triggered (i.e. SWRs)CSD map from a linear array of LFPs
+% [ CSD ] = bz_eventCSD (lfp, events, varargin)
+% Calculates event-triggered (i.e. SWRs) CSD map from a linear array of LFPs
 
 % INPUT
 %    lfp            a buzcode structure with fields lfp.data,
