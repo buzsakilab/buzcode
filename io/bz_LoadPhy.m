@@ -1,6 +1,5 @@
 
-
-function [spikes] = bz_loadPhy(varargin)
+function [spikes] = bz_LoadPhy(varargin)
 % Load kilosort/phy clusters
 %
 % USAGE
