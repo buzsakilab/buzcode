@@ -94,8 +94,9 @@ end
 % end
 
 %% If the dats are already merged quit
-if exist(fullfile(basepath,[basename,'.dat']),'file')
-    disp('.dat already exists in session directory, not merging subdats')
+if exist(fullfile(basepath,[basename,'.dat']),'file') && ...
+   exist(fullfile(basepath,[basename '.filesT.mat']),'file')
+    disp('.dat and filesT already exists in session directory')
     return
 end
 
@@ -182,6 +183,35 @@ if sortFiles
     fclose(fid);
 end
 
+%% save times of each individual file concatenated
+if exist(fullfile(basepath,[basename '.sessioninfo','.mat']),'file')
+    load(fullfile(basepath,[basename '.sessioninfo','.mat']));
+    fs = sessionInfo.rates.wideband;
+    nChannels = sessionInfo.nChannels;
+elseif exist(fullfile(basepath,[basename,'.xml']),'file')
+    [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', false);
+    fs = sessionInfo.rates.wideband;
+    nChannels = sessionInfo.nChannels;
+end
+
+filesT.times(1) = recordingbytes(1)/(2*nChannels*fs);
+for d = 2:length(recordingbytes)
+    filesT.times(d,1) = filesT.times(d-1)+recordingbytes(d)/(2*nChannels*fs);
+end
+filesT.int(1,1) = 0; filesT.int(1,2) = filesT.times(1);
+for d = 2:length(recordingbytes)
+    filesT.int(d,1) = filesT.times(d-1);
+    filesT.int(d,2) = filesT.times(d);
+end
+save(fullfile(basepath,[basename '.filesT.mat']),'filesT');
+
+%% If the dats are already merged quit
+if exist(fullfile(basepath,[basename,'.dat']),'file') && ...
+   exist(fullfile(basepath,[basename '.filesT.mat']),'file')
+    disp('.dat already exists in session directory, calculating only filesT')
+    return
+end
+
 %% Concatenate
 %     cs = strjoin(datpaths);
 %     catstring = ['! cat ', cs, ' > ',fullfile(basepath,[basename,'.dat'])];
@@ -225,15 +255,6 @@ if t.bytes ~= sum(recordingbytes)
 else
     disp('Primary .dats concatenated and size checked')
 end
-
-%% save times of each individual file concatenated
-filesT(1) = recordingbytes(1)/2;
-for d = 2:length(recordingbytes)
-    filesT(d) = filesT(d-1)+recordingbytes(d)/2;
-    
-end
-
-save(fullfile(basepath,'filesT'),'filesT');
 
 %% Also concatenate the other .dats
 for odidx = 1:length(otherdattypes)
