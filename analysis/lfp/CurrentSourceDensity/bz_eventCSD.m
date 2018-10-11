@@ -88,7 +88,7 @@ for e = 1:length(events)
     lfp_temp(:,:,e) = data(events(e)-twin(1):events(e)+twin(2),channels);
 end
 
-lfp_avg = nanmean(lfp_temp,3);
+lfp_avg = nanmean(lfp_temp,3)*-1;
 
 %% Conpute CSD
 
@@ -143,7 +143,8 @@ if plotLFP
     contourf(taxis,1:size(CSD,2),CSD',40,'LineColor','none');hold on;
     colormap jet; caxis([-cmax cmax]);
     set(gca,'YDir','reverse');xlabel('time (s)');ylabel('channel');title('CSD'); 
-   
+    plot([0 0],[1 size(CSD,2)],'--k');hold on;
+    
     subplot(1,2,2);
     for ch=1:size(lfp_avg,2)
         offset = 300*(ch-1);
@@ -153,7 +154,9 @@ if plotLFP
     end
     set(gca,'YDir','reverse','YTickLabel',[]);ylim([-1000 offset+1000]);xlim([taxis(1) taxis(end)]);
     xlabel('time (ms)');ylabel('channel');title('LFP');   
-    
+    plot([0 0],ylim,'--r');hold on;
+
+       
 elseif plotCSD  
     
      cmax = max(max(CSD)); 
@@ -162,6 +165,7 @@ elseif plotCSD
      contourf(taxis,1:size(CSD,2),CSD',40,'LineColor','none');hold on;
      colormap jet; caxis([-cmax cmax]);
      set(gca,'YDir','reverse','YTickLabel',[]);ylim([-1000 offset+1000]);xlim([taxis(1) taxis(end)]);
+     plot([0 0],[1 size(CSD,2)],'--k');hold on;
    
 end
 
