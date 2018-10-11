@@ -184,8 +184,7 @@ if ~isempty(spikes.UID)
     spikes.spindices = [alltimes groups];
 end
 
-<<<<<<< HEAD
-=======
+
 % Compute spike measures
 if ~isempty(spikes.UID) && getWave
     for ii = 1:size(spikes.UID,2)
@@ -193,6 +192,6 @@ if ~isempty(spikes.UID) && getWave
         p2pWidth = tmp/fs; % peak (negative) to peak (second positive) duration 
         [spikes.autocorr{ii}.xout,spikes.autocorr{ii}.r,spikes.autocorr{ii}.peakAutocorr] =...
             autocorr_spikes(spikes.ts{ii},fs,26,1);
-    end 
->>>>>>> buzsakilab/master
+    end
+end 
 end
