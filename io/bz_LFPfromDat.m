@@ -13,6 +13,8 @@ function bz_LFPfromDat(basepath,varargin)
 %
 %               Assumes presence of the following files:
 %                   basePath/baseName.dat
+%                   -or-
+%                   basePath/amplifier.dat
 %
 %                   (optional parameters files)
 %                   basePath/baseName.xml
@@ -60,8 +62,10 @@ lopass = p.Results.lopass;
 import iosr.dsp.*
 
 useGPU = false;
-if gpuDeviceCount>0
-    useGPU = true;
+try
+    if gpuDeviceCount>0
+        useGPU = true;
+    end
 end
 sizeInBytes = 2; %
 
@@ -87,7 +91,11 @@ end
 
 %Check the dat
 if ~exist(fdat,'file')
-    error('Dat file does not exist')
+    fdat = fullfile(basepath,'amplifier.dat'); %Try amplifier.dat
+    if ~exist(fdat,'file')
+        error('Dat file does not exist')
+    end
+    
 end
 fInfo = dir(fullfile(basepath, [basename '.dat']));
 

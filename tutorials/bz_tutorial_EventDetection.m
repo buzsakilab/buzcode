@@ -34,14 +34,14 @@
 %% 1i.  Specify variables
 
 % Confirm user is in buzcode/tutorial folder
-        path = strsplit(pwd,'/');
+        path = strsplit(pwd,filesep);
         if ~strcmp(path{end},'tutorials') & ~strcmp(path{end-1},'buzcode') 
             error('this script assumes you are running it from the /buzcode/tutorials folder...') 
         end
 
 % Specify global variables       
         basePath = fullfile(cd, 'exampleDataStructs','20170505_396um_0um_merge'); % This is the path to the tutorials folder that contains all data structures associated with the given recording session.
-        baseName = bz_BaseNameFromBasepath(basePath); % baseName is the base file name for each of the data structures, which corresponds to the name of the folder containing the data structures (i.e. 20170505_396um_0um_merge).         
+        baseName = bz_BasenameFromBasepath(basePath); % baseName is the base file name for each of the data structures, which corresponds to the name of the folder containing the data structures (i.e. 20170505_396um_0um_merge).         
         
 %% 1ii. Load sessioninfo
         sessionInfo = bz_getSessionInfo(basePath); % SessionInfo is a structure, where each field contains information about the recording session. For more information, see < https://github.com/buzsakilab/buzcode/wiki/Data-Formatting-Standards > . 

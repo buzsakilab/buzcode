@@ -1,4 +1,5 @@
 function [phaseamplitudemap,ampfreqs,phasecenters] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange)
+% [phaseamplitudemap,ampfreqs,phasecenters] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange)
 %This function calculates the mean amplitude of higher frequency bands at
 %a the phase for a given lower frequency band signal
 %
