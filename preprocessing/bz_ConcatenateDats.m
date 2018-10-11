@@ -251,9 +251,13 @@ eval(catstring)%execute concatention
 %     end
 % 
 %     save(fullfile(basepath,[basename '_DatInfo.mat']),'recordingbytes','recordingnames')
-
+<<<<<<< HEAD
+t = dir(newdatpath);
+if t.bytes ~= sum(datsizes.amplifier)
+=======
 %t = dir(newdatpath);
 if t.bytes ~= sum(recordingbytes)
+>>>>>>> origin/dev
     error('New .dat size not right.  Exiting')
     return
 else
@@ -261,6 +265,19 @@ else
     disp('Primary .dats concatenated and size checked')
 end
 
+<<<<<<< HEAD
+%% save times of each individual file concatenated
+%moved to events.mat
+% filesT(1) = datsizes.amplifier(1)/2;
+% for d = 2:length(datsizes.amplifier)
+%     filesT(d) = filesT(d-1)+datsizes.amplifier(d)/2;
+%     
+% end
+% 
+% save(fullfile(basepath,'filesT'),'filesT');
+
+=======
+>>>>>>> origin/dev
 %% Also concatenate the other .dats
 disp('Concatenating Other Dats..... continue to be patient')
 for odidx = 1:length(otherdattypes)
