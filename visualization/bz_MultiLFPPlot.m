@@ -20,6 +20,7 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %   'axhandle'  axes handle in which to put the plot
 %   'scaleLFP'  multiplicative factor to scale the y range of LFP
 %   'scalespikes' size of spike points (default:5)
+%   'spikeSpacingFactor' spacing b/w neurons
 %
 %
 %DLevenstein 2017
@@ -39,6 +40,7 @@ addParameter(p,'axhandle',gca)
 addParameter(p,'scaleLFP',1,@isnumeric)
 addParameter(p,'scalespikes',5,@isnumeric)
 addParameter(p,'plotcells',nan,@isnumeric)
+addParameter(p,'spikeSpacingFactor',1,@isnumeric)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
@@ -49,6 +51,7 @@ plotcells = p.Results.plotcells;
 ax = p.Results.axhandle;
 scaleLFP = p.Results.scaleLFP;
 scalespikes = p.Results.scalespikes;
+spikeSpacingFactor = p.Results.spikeSpacingFactor;
 
 if isempty(spikes)
     spikes = spikedefault;
@@ -56,9 +59,12 @@ else
     %Implement raster sorting - cell sort 
     if isempty(sortmetric)
         sortmetric = 1:max(spikes.spindices(:,2));
+        [~,cellsort] =sort(sortmetric);
+    else
+         cellsort = sortmetric;
     end
-    [~,cellsort] =sort(sortmetric);
-    
+
+   
     %Goups
     if ~isempty(cellgroups)
         for gg = 1:length(cellgroups)
@@ -105,19 +111,21 @@ winspikes = spikes.spindices(:,1)>=timewin(1) & spikes.spindices(:,1)<=timewin(2
 %% Calculate and implement spacing between channels
 
 %Space based on median absolute deviation over entire recording - robust to outliers.
-channelrange = 10.*mad(single(lfp.data(:,chindex)),1);
+channelrange = 15.*mad(single(lfp.data(windex,chindex)),1);
 lfpmidpoints = -cumsum(channelrange);
 lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfpmidpoints));
 
 spikeplotrange = [1 -lfpmidpoints(1)];
 spikes.plotdata = spikes.spindices(winspikes,:);
-spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff(spikeplotrange));
+spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff(spikeplotrange)).*spikeSpacingFactor;
 
 %% Do the plot
 ywinrange = fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange));
+% ywinrange(1) = ywinrange(1) .* scaleLFP;
 if ~isnan(spikes.spindices)
     ywinrange(2) = ywinrange(2)+max([spikes.plotdata(:,2);0]);
 end
+
 
 plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
 hold on

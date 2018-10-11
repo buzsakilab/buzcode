@@ -64,6 +64,9 @@ pks = pks(keep);
 locs = locs(keep);
 width = width(keep);
 
+starts = nan(length(width),1);
+stops = nan(length(width),1);
+
 exclude=[];
 for event = 1:length(pks)
     if locs(event)-durations(2) > 0
@@ -74,7 +77,7 @@ for event = 1:length(pks)
     if locs(event)+durations(2) <= length(popRate)
         forward = find(popRate(locs(event):locs(event)+durations(2))<0,1,'first');
     else
-        forward = find(popRate(locs(event):end)<0,1,'first');
+        forward = find(popRate(locs(event):end)<0,1,'first')-1;
     end
    
     if ~isempty(back) & ~isempty(forward) & back < locs(event) 
@@ -96,8 +99,10 @@ stops(exclude) = [];
 popBursts.sessionName = spikes.sessionName;
 popBursts.timestamps = [spkMat.timestamps(starts) spkMat.timestamps(stops)];
 popBursts.bursts = spkMat.timestamps(locs);
-popBursts.width = [stops-starts]';
+popBursts.width = [stops-starts];
 popBursts.amplitudes = pks;
+popBursts.nSpikes = [];
+popBursts.meanSpikes = [];
 for event = 1:length(popBursts.amplitudes)
     popBursts.nSpikes(event) = sum(sum(spkMat.data(starts(event):stops(event),:)));
     popBursts.meanSpikes(event) = mean(mean(spkMat.data(starts(event):stops(event),:)));
