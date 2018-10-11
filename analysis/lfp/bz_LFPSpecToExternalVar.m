@@ -58,11 +58,13 @@ end
 switch specparms.type
     case 'wavelet'
         %Calcualte the Wavelet Transform
-        [specvarcorr.freqs,~,spec] = WaveSpec(single(LFP.data),...
-            specparms.frange,specparms.nfreqs,specparms.ncyc,...
-            1/LFP.samplingRate,specparms.space);
-        spectimestamps = LFP.timestamps; %Wavelet timestamp are same as LFP        
-
+        [wavespec] = bz_WaveSpec(LFP,...
+            'frange',specparms.frange,'nfreqs',specparms.nfreqs,...
+            'ncyc',specparms.ncyc,'space',specparms.space);
+        
+        spectimestamps = wavespec.timestamps; %Wavelet timestamp are same as LFP        
+        spec = wavespec.data';
+        specvarcorr.freqs = wavespec.freqs;
         specbyvar.freqs = specvarcorr.freqs;
         
 	case 'FFT'

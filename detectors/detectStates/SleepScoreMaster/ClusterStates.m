@@ -4,7 +4,7 @@ function [ INT, IDX, t_IDX,PC1weights,PC1expvar,broadbandSlowWave,thratio,EMG,t_
 %
 %
 %
-%Dependencies: IDXtoINT_ss, INTtoIDX_ss
+%Dependencies: IDXtoINT_ss, bz_INTtoIDX
 %
 %Last Updated: 1/31/16
 %DLevenstein
@@ -13,7 +13,7 @@ function [ INT, IDX, t_IDX,PC1weights,PC1expvar,broadbandSlowWave,thratio,EMG,t_
 
 
 %% Min Win Parameters (s)
-if exist(
+%if exist(
 minSWS = 6;
 minWnexttoREM = 6;
 minWinREM = 6;       
@@ -231,7 +231,7 @@ INT = IDXtoINT_ss(IDX,3);
 Sints = INT{2};
 Slengths = Sints(:,2)-Sints(:,1);
 shortSints = {Sints(find(Slengths<=minSWS),:)};
-shortSidx = INTtoIDX_ss(shortSints,length(IDX));
+shortSidx = bz_INTtoIDX(shortSints,'length',length(IDX));
 %Change Short SWS to Wake
 IDX(shortSidx==1) = 1;   
 INT = IDXtoINT_ss(IDX,3);
@@ -250,7 +250,7 @@ Wlengths = Wints(:,2)-Wints(:,1);
 shortWRints = find(Wlengths(WRtrans)<=minWnexttoREM);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Wints(shortWRints,:)};
-shortWRidx = INTtoIDX_ss(shortWRints,length(IDX));
+shortWRidx = bz_INTtoIDX(shortWRints,'length',length(IDX));
 %Convert wake to rem
 IDX(shortWRidx==1) = 3;
 INT = IDXtoINT_ss(IDX,3);
@@ -270,7 +270,7 @@ Wlengths = Wints(:,2)-Wints(:,1);
 shortWRints = find(Wlengths(WRtrans)<=minWinREM);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Wints(shortWRints,:)};
-shortWRidx = INTtoIDX_ss(shortWRints,length(IDX));
+shortWRidx = bz_INTtoIDX(shortWRints,'length',length(IDX));
 %Convert wake to rem
 IDX(shortWRidx==1) = 3;
 IDX(IDX==6) = 1; %Convert NonMOV to WAKE
@@ -291,7 +291,7 @@ Rlengths = Rints(:,2)-Rints(:,1);
 shortWRints = find(Rlengths(WRtrans)<=minREMinW);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Rints(shortWRints,:)};
-shortWRidx = INTtoIDX_ss(shortWRints,length(IDX));
+shortWRidx = bz_INTtoIDX(shortWRints,'length',length(IDX));
 %Convert REM to WAKE
 IDX(shortWRidx==1) = 1;
 INT = IDXtoINT_ss(IDX,3);
@@ -300,7 +300,7 @@ INT = IDXtoINT_ss(IDX,3);
 Rints = INT{3};
 Rlengths = Rints(:,2)-Rints(:,1);
 shortRints = {Rints(find(Rlengths<=minREM),:)};
-shortRidx = INTtoIDX_ss(shortRints,length(IDX));
+shortRidx = bz_INTtoIDX(shortRints,'length',length(IDX));
 
 IDX(shortRidx==1) = 1;
 INT = IDXtoINT_ss(IDX,3);
@@ -310,7 +310,7 @@ INT = IDXtoINT_ss(IDX,3);
 Wints = INT{1};
 Wlengths = Wints(:,2)-Wints(:,1);
 shortWints = {Wints(find(Wlengths<=minWAKE),:)};
-shortWidx = INTtoIDX_ss(shortWints,length(IDX));
+shortWidx = bz_INTtoIDX(shortWints,'length',length(IDX));
 IDX(shortWidx==1) = 2;
 
 INT = IDXtoINT_ss(IDX,3);
@@ -319,7 +319,7 @@ INT = IDXtoINT_ss(IDX,3);
 Sints = INT{2};
 Slengths = Sints(:,2)-Sints(:,1);
 shortSints = {Sints(find(Slengths<=minSWS),:)};
-shortSidx = INTtoIDX_ss(shortSints,length(IDX));
+shortSidx = bz_INTtoIDX(shortSints,'length',length(IDX));
 %Change Short SWS to Wake
 IDX(shortSidx==1) = 1;   
 INT = IDXtoINT_ss(IDX,3);
@@ -577,7 +577,7 @@ figure
 
  end
  
-IDX = INTtoIDX_ss(INT,reclength);
+IDX = bz_INTtoIDX(INT,'length',reclength);
 t_IDX = 1:length(IDX);
 IDX = IDX';
 

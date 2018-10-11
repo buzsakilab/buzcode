@@ -1,22 +1,20 @@
-function [INT, IDX, t_IDX] = ClusterStates_DetermineStates(SleepScoreMetrics,MinWinParams,histsandthreshs)
+function [ints, idx, MinTimeWindowParms] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParms,histsandthreshs)
 % can input histsandthreshs from externally if needed... ie via manual
 % selection in stateeditor
 
 %% Basic parameters
 % Min Win Parameters (s)
-if exist('MinWinParams','var')
-     v2struct(MinWinParams)
-% 	fn = fieldnames(MinWinParams);
-%     for a = 1:length(fn);
-%         eval([fn{a} '=MinWinParams.' fn{a} ';']);
-%     end
+if exist('MinTimeWindowParms','var') && ~isempty(MinTimeWindowParms)
+     v2struct(MinTimeWindowParms)
 else%defaults as follows:
-    minSWS = 6;
-    minWnexttoREM = 6;
-    minWinREM = 6;       
-    minREMinW = 6;
-    minREM = 6;
-    minWAKE = 6;
+    minSWSsecs = 6;
+    minWnexttoREMsecs = 6;
+    minWinREMsecs = 6;       
+    minREMinWsecs = 6;
+    minREMsecs = 6;
+    minWAKEsecs = 6;
+    MinTimeWindowParms = v2struct(minSWSsecs,minWnexttoREMsecs,minWinREMsecs,...
+        minREMinWsecs,minREMsecs,minWAKEsecs);
 end
 
 % handling variables for determining thresholds/cutoffs
@@ -38,6 +36,7 @@ else % THthresh = 0;
     REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
 end    
 
+%USE bz_BimodalThresh(bimodaldata,varargin) here
 %%
 %OLD:
 %Index Vector: SWS=2, REM=3, MOV=6, NonMOV=1.   
@@ -52,7 +51,7 @@ IDX = NREMtimes+2*REMtimes+1;
 
 
 %% Minimum Interuptions
-INT = IDXtoINT_ss(IDX,3);
+INT = IDXtoINT(IDX,3);
 
 
 %Make the following repeated chunks of code into a single function.
@@ -60,11 +59,11 @@ INT = IDXtoINT_ss(IDX,3);
 %SWS  (to NonMOV)
 Sints = INT{2};
 Slengths = Sints(:,2)-Sints(:,1);
-shortSints = {Sints(find(Slengths<=minSWS),:)};
-shortSidx = INTtoIDX_ss(shortSints,length(IDX));
+shortSints = {Sints(find(Slengths<=minSWSsecs),:)};
+shortSidx = bz_INTtoIDX(shortSints,'length',length(IDX));
 %Change Short SWS to Wake
 IDX(shortSidx==1) = 1;   
-INT = IDXtoINT_ss(IDX,3);
+INT = IDXtoINT(IDX,3);
 
 %NonMOV next to REM   (to REM)
 Wints = INT{1};
@@ -77,13 +76,13 @@ WRtrans = find((trans)==2);
 WRtrans = union(WRtransON,WRtransOFF); %On or offset are RW
 %Find WAKE intervals that border REM and are less than min
 Wlengths = Wints(:,2)-Wints(:,1);
-shortWRints = find(Wlengths(WRtrans)<=minWnexttoREM);
+shortWRints = find(Wlengths(WRtrans)<=minWnexttoREMsecs);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Wints(shortWRints,:)};
-shortWRidx = INTtoIDX_ss(shortWRints,length(IDX));
+shortWRidx = bz_INTtoIDX(shortWRints,'length',length(IDX));
 %Convert wake to rem
 IDX(shortWRidx==1) = 3;
-INT = IDXtoINT_ss(IDX,3);
+INT = IDXtoINT(IDX,3);
 
 
 %NonMOV in REM   (to REM)
@@ -97,14 +96,14 @@ WRtrans = find((trans)==2);
 WRtrans = intersect(WRtransON,WRtransOFF); %Both onset and offset are RW
 %Find WAKE intervals that border REM and are less than min
 Wlengths = Wints(:,2)-Wints(:,1);
-shortWRints = find(Wlengths(WRtrans)<=minWinREM);
+shortWRints = find(Wlengths(WRtrans)<=minWinREMsecs);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Wints(shortWRints,:)};
-shortWRidx = INTtoIDX_ss(shortWRints,length(IDX));
+shortWRidx = bz_INTtoIDX(shortWRints,'length',length(IDX));
 %Convert wake to rem
 IDX(shortWRidx==1) = 3;
 IDX(IDX==6) = 1; %Convert NonMOV to WAKE
-INT = IDXtoINT_ss(IDX,3);
+INT = IDXtoINT(IDX,3);
 
 
 %REM in WAKE   (to WAKE)
@@ -118,53 +117,68 @@ WRtrans = find((trans)==-2);
 WRtrans = intersect(WRtransON,WRtransOFF); %Both onset and offset are RW
 %Find WAKE intervals that border REM and are less than min
 Rlengths = Rints(:,2)-Rints(:,1);
-shortWRints = find(Rlengths(WRtrans)<=minREMinW);
+shortWRints = find(Rlengths(WRtrans)<=minREMinWsecs);
 shortWRints = WRtrans(shortWRints);
 shortWRints = {Rints(shortWRints,:)};
-shortWRidx = INTtoIDX_ss(shortWRints,length(IDX));
+shortWRidx = bz_INTtoIDX(shortWRints,'length',length(IDX));
 %Convert REM to WAKE
 IDX(shortWRidx==1) = 1;
-INT = IDXtoINT_ss(IDX,3);
+INT = IDXtoINT(IDX,3);
 
 %REM (only applies to REM in the middle of SWS)    (to WAKE)
 Rints = INT{3};
 Rlengths = Rints(:,2)-Rints(:,1);
-shortRints = {Rints(find(Rlengths<=minREM),:)};
-shortRidx = INTtoIDX_ss(shortRints,length(IDX));
+shortRints = {Rints(find(Rlengths<=minREMsecs),:)};
+shortRidx = bz_INTtoIDX(shortRints,'length',length(IDX));
 
 IDX(shortRidx==1) = 1;
-INT = IDXtoINT_ss(IDX,3);
+INT = IDXtoINT(IDX,3);
 
 
 %WAKE   (to SWS)     essentiall a minimum MA time
 Wints = INT{1};
 Wlengths = Wints(:,2)-Wints(:,1);
-shortWints = {Wints(find(Wlengths<=minWAKE),:)};
-shortWidx = INTtoIDX_ss(shortWints,length(IDX));
+shortWints = {Wints(find(Wlengths<=minWAKEsecs),:)};
+shortWidx = bz_INTtoIDX(shortWints,'length',length(IDX));
 IDX(shortWidx==1) = 2;
 
-INT = IDXtoINT_ss(IDX,3);
+INT = IDXtoINT(IDX,3);
 
 %SWS  (to NonMOV)
 Sints = INT{2};
 Slengths = Sints(:,2)-Sints(:,1);
-shortSints = {Sints(find(Slengths<=minSWS),:)};
-shortSidx = INTtoIDX_ss(shortSints,length(IDX));
+shortSints = {Sints(find(Slengths<=minSWSsecs),:)};
+shortSidx = bz_INTtoIDX(shortSints,'length',length(IDX));
 %Change Short SWS to Wake
 IDX(shortSidx==1) = 1;   
-INT = IDXtoINT_ss(IDX,3);
+INT = IDXtoINT(IDX,3);
 
 
 
 
 %% Pad time to match recording time
 offset = SleepScoreMetrics.t_clus(1)-1; %t_FFT(1)-1;
-
 INT = cellfun(@(x) x+offset,INT,'UniformOutput',false);
 
-IDX = INTtoIDX_ss(INT,reclength);
-t_IDX = 1:length(IDX);
-IDX = IDX';
+%DL: this was in here but being re-wrote later... in next section. 
+%Leaving it as comment unless it turns out to have been necessary
+% IDX = bz_INTtoIDX(INT,'length',t_clus(end));
+% IDX = [0;IDX];  %T make start at 0;
+% t_IDX = [0:t_clus(end)]';
+
+
+%% Structure Output
+
+%Defaults - quick bug fix if some state doesn't exist
+ints.WAKEstate = [];ints.NREMstate = [];ints.REMstate = [];
+
+ints.WAKEstate = INT{1};
+ints.NREMstate = INT{2};
+ints.REMstate = INT{3};
+
+%Because TheStateEditor
+idx = bz_INTtoIDX(ints,'statenames',{'WAKE','','NREM','','REM'},'length',t_clus(end));
+
 
 end
 

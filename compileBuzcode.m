@@ -6,33 +6,39 @@ addpath(genpath('externalPackages'))
 compilefma % compiles FMAToolbox
 
 try
-cd('externalPackages/FilterM/')
+cd(['externalPackages' filesep 'FilterM' filesep ''])
 catch
     display('Please navigate to your local buzcode main directory')
 end
 
-% mex -O FilterX.c % compiles FilterM (faster filtering than filtfilt)
-mex('CFLAGS="\$CFLAGS -std=c99"', 'FilterX.c') % the above line fails with newer compilers but this works
-cd('../..')
-    
-
-cd('externalPackages/chronux_2_12/locfit/Source')
+if isunix | ismac
+    mex('CFLAGS="\$CFLAGS -std=c99"', 'FilterX.c') % the above line fails with newer compilers but this works
+    cd(['..' filesep '..'])
+elseif ispc
+    mex -O FilterX.c
+    cd(['..' filesep '..'])  
+end
+try
+cd(['externalPackages' filesep 'chronux_2_12' filesep 'locfit' filesep 'Source'])
 compile % compiles chronux
-cd('../../../../')
+cd(['..' filesep '..' filesep '..' filesep '..' filesep ''])
+catch
+    warning('CHRONUX DIDN''T COMPILE. sad.')
+end
 
-cd('externalPackages/xmltree-2.0/@xmltree/private/')
+cd(['externalPackages' filesep 'xmltree-2.0' filesep '@xmltree' filesep 'private' filesep ''])
 mex -O xml_findstr.c
-cd('../../../..')
+cd(['..' filesep '..' filesep '..' filesep '..'])
 
-cd('analysis/spikes/correlation/')
+cd(['analysis' filesep 'spikes' filesep 'correlation' filesep ''])
 mex -O CCGHeart.c
-cd('../../..')
+cd(['..' filesep '..' filesep '..'])
 
 % below is incomplete
 % below adds buzcode to the matlab path and saves
 
 
-% below adds the /buzcode/generalComputation/scripts/ folder to the system path
+% below adds the ' filesep 'buzcode' filesep 'generalComputation' filesep 'scripts' filesep ' folder to the system path
 if isunix
 
 

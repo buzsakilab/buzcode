@@ -54,7 +54,16 @@ emgchan = 2;
 sf_abf = 20000; %Sampling Frequency of the .abf file
 
 
-abffile = abfload(abfname);
+[abffile,si,file_info] = abfload(abfname);
+
+% %Prompt user for channel
+% numabfchans = length(abffile(1,:));
+% if ~exist('chanNums','var')
+%     emgchan = listdlg('ListString',file_info.recChNames,...
+%         'PromptString',['Which channels is Whisker? ']);
+%     %Replace this with prompt file_info.recChNames
+% end
+
 pulse_abf = abffile(:,timechan);
 EMG = abffile(:,emgchan);
 
@@ -86,7 +95,7 @@ EMGparms.NWhmerge = 0.02;       %Minimum internonwhisking duration (s)
 EMGz = NormToInt(EMG,'modZ'); %Modified Z score - robust to outliers
 EMGsm = RMSEnvelope(EMGz,EMGparms.gausswidth,1/sf_down);
 EMGsm = EMGsm-min(EMGsm);
-whisk.EMGenvelope = EMGsm;
+EMGwhisk.EMGenvelope = EMGsm;
 
 %% Set the thresholds by whisking troughs - 
 %find by "gradient descent"(ish) from initial guess
@@ -100,7 +109,7 @@ troughs = 10.^EMGbins(troughidx);
 
 %Get sign of gradient at each of the thresholds and use that to pick trough
 Whsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.Whthreshold),'nearest'));
-if Whsign==-1; 
+if Whsign==-1 
     EMGparms.Whthreshold = troughs(find(troughs>EMGparms.Whthreshold,1,'first'));
     if isempty(EMGparms.Whthreshold)
         EMGparms.Whthreshold = troughs(end);
@@ -110,7 +119,7 @@ elseif Whsign==1
 end
 
 NWhsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.NWhthreshold),'nearest'));
-if NWhsign==-1; 
+if NWhsign==-1 
     EMGparms.NWhthreshold = troughs(find(troughs>EMGparms.NWhthreshold,1,'first'));
 elseif NWhsign==1
     EMGparms.NWhthreshold = troughs(find(troughs<EMGparms.NWhthreshold,1,'last'));

@@ -85,6 +85,7 @@ for i=1:size(meanRates,1)
             fields{i}{fieldCount}.width = stop - start;
             fields{i}{fieldCount}.peakFR = pks(j);
             fields{i}{fieldCount}.peakLoc = locs(j);
+            fields{i}{fieldCount}.spkCount = locs(j);
             com = start; % calculate center of mass for field
             fields{i}{fieldCount}.COM = fields{i}{fieldCount}.peakLoc;
             while sum(meanRates(i,start:stop)) - sum(meanRates(i,start:com)) > sum(meanRates(i,start:stop))./2

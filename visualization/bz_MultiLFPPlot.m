@@ -13,7 +13,10 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %   'channels'  subset/ordering of channels to plot (0-index a la neuroscope)
 %               default is to take the channels as ordered in lfp.channels
 %   'timewin'   only plot a subwindow of time
-%   'spikes'    a buzcode spikes struct to display spikes below the LFP
+%   'spikes'    a buzcode spikes struct to display spikes above the LFP
+%   'sortmetric'metric by which to sort the cells in the raster (eg FR)
+%   'cellgroups'{Ngroups} cell array of logical arrays of group members
+%   'plotcells' list of cell UIDs to plot (not implemented. sad.)
 %   'axhandle'  axes handle in which to put the plot
 %   'scaleLFP'  multiplicative factor to scale the y range of LFP
 %   'scalespikes' size of spike points (default:5)
@@ -29,20 +32,62 @@ spikedefault.spindices = [nan nan];
 p = inputParser;
 addParameter(p,'channels','all',@isnumeric)
 addParameter(p,'timewin',[0 Inf],@isnumeric)
-addParameter(p,'spikes',spikedefault) %should have iscellinfo function
+addParameter(p,'spikes',[]) %should have iscellinfo function
+addParameter(p,'sortmetric',[])
+addParameter(p,'cellgroups',{})
 addParameter(p,'axhandle',gca)
 addParameter(p,'scaleLFP',1,@isnumeric)
 addParameter(p,'scalespikes',5,@isnumeric)
+addParameter(p,'plotcells',nan,@isnumeric)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
 spikes = p.Results.spikes;
+sortmetric = p.Results.sortmetric;
+cellgroups = p.Results.cellgroups;
+plotcells = p.Results.plotcells;
 ax = p.Results.axhandle;
 scaleLFP = p.Results.scaleLFP;
 scalespikes = p.Results.scalespikes;
 
 if isempty(spikes)
     spikes = spikedefault;
+else
+    %Implement raster sorting - cell sort 
+    if isempty(sortmetric)
+        sortmetric = 1:max(spikes.spindices(:,2));
+    end
+    [~,cellsort] =sort(sortmetric);
+    
+    %Goups
+    if ~isempty(cellgroups)
+        for gg = 1:length(cellgroups)
+            groupsort{gg} = intersect(cellsort,find(cellgroups{gg}),'stable');
+        end
+        cellsort = [groupsort{:}];
+        
+        %Cell sort should now map from CellID in spikes.spindices to their
+        %desired order in the raster, such that cellsort(IDX) is the
+        %UID of the IDXth cell in the raster
+    end
+    
+    %Sort the raster - this fails if every cell doesn't have a group
+    [~,sortraster] = sort(cellsort);
+    %sortraster(UID) is the position of cell UID in the raster
+%     if isempty(sortraster)
+%         sortraster = 1:max(spikes.spindices(:,2));
+%     end
+    %This accounts for cells that have no group
+    sortraster(end+1:max(spikes.spindices(:,2)))=nan;
+    %
+    
+    if ~isnan(plotcells)
+        temp = nan(size(sortraster));
+        temp(plotcells) = sortraster(plotcells);
+        sortraster = temp;
+    end
+    spikes.spindices(:,2) = sortraster(spikes.spindices(:,2));
+    spikes.spindices(isnan(spikes.spindices(:,2)),:) = [];
 end
 
 %% Channel and time stuff
@@ -67,10 +112,11 @@ lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfp
 spikeplotrange = [1 -lfpmidpoints(1)];
 spikes.plotdata = spikes.spindices(winspikes,:);
 spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff(spikeplotrange));
+
 %% Do the plot
 ywinrange = fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange));
 if ~isnan(spikes.spindices)
-    ywinrange(2) = ywinrange(2)+max(spikes.plotdata(:,2));
+    ywinrange(2) = ywinrange(2)+max([spikes.plotdata(:,2);0]);
 end
 
 plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
@@ -82,6 +128,7 @@ set(ax,'Ytick',fliplr(lfpmidpoints))
 set(ax,'yticklabels',fliplr(channels))
 ylim(ywinrange)
 xlim(timewin)
+box off
 
 
 end

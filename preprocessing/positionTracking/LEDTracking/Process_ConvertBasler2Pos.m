@@ -136,7 +136,7 @@ end
     recDuration = length(dat)/syncSampFq;
     
     timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';    
-    pos(pos==-1) = NaN;
+%     pos(pos==-1) = NaN;
     newPos = interp1(frameT,pos,timestamps);
     
     dlmwrite([fbasename '.pos'],[timestamps newPos],'delimiter','\t', 'precision', 32);

@@ -14,8 +14,6 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   OPTIONS
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false, overwrite all processing steps
-%   'rescore'       Default: false, do not overwrite channel selection or
-%                   EMG, but recluster and score
 %   'savebool'      Default: true
 %   'scoretime'     Default: [0 Inf]
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
@@ -47,7 +45,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'rejectChannels' A vector of channels to exclude from the analysis
 %   'noPrompts'     (default:false) an option to not prompt user of things
 %
-%OUTPUT
+%OUTPUT 
+%   !CHANGE THIS!
 %   StateIntervals  structure containing start/end times (seconds) of
 %                   NREM, REM, WAKE states and episodes. states is the 
 %                   "raw" state scoring. episodes are joined episodes of 
@@ -62,13 +61,12 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 
 %% Parameter setting
 % Min Win Parameters (s): basic detection paramaters (seconds)
-minSWS = 6;
-minWnexttoREM = 6;
-minWinREM = 6;       
-minREMinW = 6;
-minREM = 6;
-minWAKE = 6;
-MinWinParams = v2struct(minSWS,minWnexttoREM,minWinREM,minREMinW,minREM,minWAKE);
+MinTimeWindowParms.minSWSsecs = 6;
+MinTimeWindowParms.minWnexttoREMsecs = 6;
+MinTimeWindowParms.minWinREMsecs = 6;       
+MinTimeWindowParms.minREMinWsecs = 6;
+MinTimeWindowParms.minREMsecs = 6;
+MinTimeWindowParms.minWAKEsecs = 6;
 
 %% Recording Selection
 %if recname is 'select' or something
@@ -102,11 +100,11 @@ if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file') &
              'containing .lfp files'])
         %foldercontents = dir(basePath);
         %possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
-        [basePaths,baseNames] = bz_FindBasePaths(basePath); %Find all basePaths within the topPath
-        [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
-                        'ListString',baseNames);
-        recordingname = baseNames(s);
-        basePaths = basePaths(s);
+        [basePaths,recordingname] = bz_FindBasePaths(basePath,'select',true); %Find all basePaths within the topPath
+%         [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
+%                         'ListString',baseNames);
+%         recordingname = baseNames(s);
+%         basePaths = basePaths(s);
         
 end
 
@@ -152,15 +150,14 @@ addParameter(p,'Notch60Hz',defaultNotch60Hz)
 addParameter(p,'NotchUnder3Hz',defaultNotchUnder3Hz)
 addParameter(p,'NotchHVS',defaultNotchHVS)
 addParameter(p,'NotchTheta',defaultNotchTheta)
-addParameter(p,'SWChannels',defaultNotchTheta)
-addParameter(p,'ThetaChannels',defaultNotchTheta)
+addParameter(p,'SWChannels',defaultSWChannels)
+addParameter(p,'ThetaChannels',defaultThetaChannels)
 addParameter(p,'rejectChannels',[]);
 addParameter(p,'noPrompts',false);
 
 parse(p,varargin{:})
 %Clean up this junk...
 overwrite = p.Results.overwrite; 
-savebool = p.Results.savebool;
 savedir = p.Results.savedir;
 scoretime = p.Results.scoretime;
 SWWeightsName = p.Results.SWWeightsName;
@@ -179,11 +176,6 @@ savefolder = fullfile(savedir,recordingname);
 if ~exist(savefolder,'dir')
     mkdir(savefolder)
 end
-%Figure locations
-figloc = [fullfile(savefolder,'StateScoreFigures'),'/'];
-if ~exist(figloc,'dir')
-    mkdir(figloc)
-end
 
 %Filenames of metadata and SleepState.states.mat file to save
 sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
@@ -191,8 +183,21 @@ sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
 
 
+
 %% Get channels not to use
-parameters = bz_getSessionInfo(basePath);
+parameters = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
+% check that SW/Theta channels exist in rec..
+if length(SWChannels) > 1 
+    if sum(ismember(SWChannels,parameters.channels)) ~= length(SWChannels)
+        error('some of the SW input channels dont exist in this recording...?')
+    end   
+end
+if length(ThetaChannels) > 1 
+    if sum(ismember(ThetaChannels,parameters.channels)) ~= length(ThetaChannels)
+        error('some of the theta input channels dont exist in this recording...?')
+    end   
+end
+
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
     rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];
@@ -208,16 +213,16 @@ end
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
 EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
-                                     'rejectChannels',rejectChannels);
+                                     'rejectChannels',rejectChannels,'noPrompts',noPrompts);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
 %Determine the best channels for Slow Wave and Theta separation.
 %Described in Watson et al 2016, with modifications
 SleepScoreLFP = PickSWTHChannel(basePath,...
-                            figloc,scoretime,SWWeightsName,...
+                            scoretime,SWWeightsName,...
                             Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
                             SWChannels,ThetaChannels,rejectChannels,...
-                            overwrite);
+                            overwrite,'noPrompts',noPrompts);
 
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG
 
@@ -228,30 +233,42 @@ display('Quantifying metrics for state scoring')
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
-[stateintervals,stateIDX,~] = ClusterStates_DetermineStates(...
-                                           SleepScoreMetrics,MinWinParams);
+[ints,idx,MinTimeWindowParms] = ClusterStates_DetermineStates(...
+                                           SleepScoreMetrics,MinTimeWindowParms);
 
-%% MAKE THE STATE SCORE OUTPUT FIGURE
-ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
+
                                 
-%% JOIN STATES INTO EPISODES
+%% RECORD PARAMETERS from scoring
+detectionparms.userinputs = p.Results;
+detectionparms.MinTimeWindowParms = MinTimeWindowParms;
+detectionparms.SleepScoreMetrics = SleepScoreMetrics;
 
-NREMints = stateintervals{2};
-REMints = stateintervals{3};
-WAKEints = stateintervals{1};
+% note and keep special version of original hists and threshs
 
-[SleepState,durationparams] = StatesToFinalScoring(NREMints,WAKEints,REMints);
+SleepState.ints = ints;
+SleepState.idx = idx;
+SleepState.detectorinfo.detectorname = 'SleepScoreMaster';
+SleepState.detectorinfo.detectionparms = detectionparms;
+SleepState.detectorinfo.detectionparms.histsandthreshs_orig = detectionparms.SleepScoreMetrics.histsandthreshs;
+SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
+SleepState.detectorinfo.StatePlotMaterials = StatePlotMaterials;
 
-%bzStyle
-SleepState.detectorparams.SWchannum = SleepScoreLFP.SWchanID;
-SleepState.detectorparams.THchannum = SleepScoreLFP.THchanID;
-SleepState.detectorparams.durationparams = durationparams;
-SleepState.detectorname = 'SleepScoreMaster';
-SleepState.detectiondate = today;
+%Saving SleepStates
 save(bz_sleepstatepath,'SleepState');
 
+%% MAKE THE STATE SCORE OUTPUT FIGURE
+%ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
+ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+
+%% JOIN STATES INTO EPISODES
+
+% Extract states, Episodes, properly organize params etc, prep for final saving
+display('Calculating/Saving Episodes')
+StatesToEpisodes(SleepState,basePath);
+
 display(['Sleep Score ',recordingname,': Complete!']);
-%Prompt user here to manually check detection with TheStateEditor
+
+%% PROMPT USER TO MANUALLY CHECK DETECTION WITH THESTATEEDITOR
 if ~noPrompts
     str = input('Would you like to check detection with TheStateEditor? [Y/N] ','s');
     switch str

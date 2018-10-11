@@ -121,8 +121,8 @@ for i = 1:nGroups,
 	dist(:,i) = h;
 	% Stats
 	if ~isempty(p)
- 	  [stats.m(i),stats.r(i)] = CircularMean(p);
-%      [stats.m(i),~,~,stats.r(i)] = CircularMean(p);
+      [stats.m(i)] = circ_mean(p);
+      [stats.r(i)] = circ_r(p);
 	  stats.k(i) = Concentration(p);
 	  n = sum(groups(:,i));
 	  R = stats.r(i)*n;

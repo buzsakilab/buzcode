@@ -1,5 +1,5 @@
 function [ cluass,cluNRG ] = bz_GradDescCluster( simMat, varargin )
-%[cluass] = GradDescCluster(simMat) clusters recording sites given a pairwise 
+%[cluass] = bz_GradDescCluster(simMat) clusters recording sites given a pairwise 
 %similarity matrix using gradient descent to find minimize within-cluster 
 %interaction energy. (i.e. maximize within-cluster coherence, see Berenyi 
 %et al 2014 for details). 

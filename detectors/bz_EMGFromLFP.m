@@ -3,19 +3,21 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 % [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveMat)
 %
 % INPUTS
-%       basePath      - string combination of basepath and basename of recording
-%                           example: '/animal/recording/recording01'
+%       basePath            - string combination of basepath and basename of recording
+%                             example: '/animal/recording/recording01'
 %
 %   (Optional)
-%       'restrict'         - interval of time (relative to recording) to sleep score
+%       'restrict'          - interval of time (relative to recording) to sleep score
 %                            default = [0 inf]
 %       'specialChannels'   - vector of 'special' channels that you DO want to use for EMGCorr calc (will be added to those auto-selected by spike group)
 %       'rejectChannels'    - vector of 'bad' channels that you DO NOT want to use for EMGCorr calc
 %       'restrictChannels'  - use only these channels (Neuroscope numbers)
-%       'saveMat'         true/false - default:true
-%       'saveLocation'      default: basePath
-%       'overwrite'         true/false - overwrite saved EMGFromLFP.LFP.mat
-%                           default: false
+%       'saveMat'           - true/false - default:true
+%       'saveLocation'      - default: basePath
+%       'overwrite'         - true/false - overwrite saved EMGFromLFP.LFP.mat
+%                             default: false
+%       'samplingFrequency' - desired sampling rate for EMG output
+%       'noPrompts'     (default: false) prevents prompts about saving/adding metadata
 %       
 %
 % OUTPUTS
@@ -54,11 +56,11 @@ addParameter(p,'restrict',[0 inf],@isnumeric)
 addParameter(p,'specialChannels',[],@isnumeric)
 addParameter(p,'rejectChannels',[],@isnumeric)
 addParameter(p,'restrictChannels',[],@isnumeric)
-addParameter(p,'saveMat',1,@isnumeric)
+addParameter(p,'saveMat',true,@islogical)
 addParameter(p,'saveLocation','',@isstr)
 addParameter(p,'overwrite',true,@islogical)
 addParameter(p,'samplingFrequency',2,@isnumeric)
-
+addParameter(p,'noPrompts',false,@islogical);
 parse(p,varargin{:})
     
 restrict = p.Results.restrict;
@@ -68,6 +70,7 @@ restrictChannels = p.Results.restrictChannels;
 saveMat = p.Results.saveMat;
 overwrite = p.Results.overwrite;
 samplingFrequency = p.Results.samplingFrequency;
+noPrompts = p.Results.noPrompts;
 
 if ~isempty(p.Results.saveLocation)
     matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMGFromLFP.LFP.mat']);
@@ -89,11 +92,11 @@ display('Calculating EMGFromLFP from High Frequency LFP Correlation')
 
 %% get basics about.lfp/lfp file
 
-xml = bz_getSessionInfo(basePath); % now using the updated version
-if exist([basePath '/' xml.FileName '.lfp'])
-    lfpFile = [basePath '/' xml.FileName '.lfp'];
-elseif exist([basePath '/' xml.FileName '.eeg'])
-    lfpFile = [basePath '/' xml.FileName '.eeg'];
+xml = bz_getSessionInfo(basePath,'noPrompts',noPrompts); % now using the updated version
+if exist([basePath filesep xml.FileName '.lfp'])
+    lfpFile = [basePath filesep xml.FileName '.lfp'];
+elseif exist([basePath filesep xml.FileName '.eeg'])
+    lfpFile = [basePath filesep xml.FileName '.eeg'];
 else
     error('could not find an LFP or EEG file...')    
 end
@@ -111,7 +114,7 @@ else
 end
     
 binScootS = 1 ./ samplingFrequency;
-binScootSamps = Fs*binScootS;
+binScootSamps = round(Fs*binScootS); % must be integer, or error on line 190
 corrChunkSz = 20; %for batch-processed correlations
 
 
