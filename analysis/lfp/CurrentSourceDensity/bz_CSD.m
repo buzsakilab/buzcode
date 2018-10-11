@@ -72,7 +72,7 @@ win = p.Results.win*samplingRate;
 
 %% Compute CSD
 
-lfp_frag = data(win(1):win(2),channels);
+lfp_frag = data(win(1):win(2),channels)*-1;
 
 % detrend
 if doDetrend
