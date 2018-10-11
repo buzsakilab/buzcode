@@ -87,7 +87,7 @@ noPrompts = p.Results.noPrompts;
 [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
 
 
-samplingRate = sessionInfo.rates.wideband;
+spikes.samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
 
@@ -124,7 +124,7 @@ end
 tempFiles = zeros(length(cluFiles),1);
 for i = 1:length(cluFiles) 
     dummy = strsplit(cluFiles(i).name, '.'); % Check whether the component after the last dot is a number or not. If not, exclude the file/dir. 
-    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | isempty(str2num(dummy{length(dummy)})) 
+    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | isempty(str2num(dummy{length(dummy)})) | find(contains(dummy, 'clu')) ~= length(dummy)-1  
         tempFiles(i) = 1;
     end
 end
@@ -208,17 +208,20 @@ for i=1:length(cluFiles)
     for c = 1:length(cells)
        spikes.UID(count) = count; % this only works if all shanks are loaded... how do we optimize this?
        ind = find(clu == cells(c));
-       spikes.times{count} = res(ind) ./ samplingRate;
+       spikes.times{count} = res(ind) ./ spikes.samplingRate;
        spikes.shankID(count) = shankID;
        spikes.cluID(count) = cells(c);
 
        %Waveforms    
        if getWaveforms
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
+           if prod(size(wvforms))==length(wvforms)%in single-channel groups wvforms will squeeze too much and will have amplitude on D1 rather than D2
+               wvforms = wvforms';%fix here
+           end
            for t = 1:size(wvforms,1)
               [a(t) b(t)] = max(abs(wvforms(t,:))); 
            end
-           [aa bb] = max(a);
+           [aa bb] = max(a,[],2);
            spikes.rawWaveform{count} = wvforms(bb,:);
            spikes.maxWaveformCh(count) = spkGrpChans(bb);  
            %Regions (needs waveform peak)
@@ -353,7 +356,10 @@ if spikes.numcells>0
     spikes.spindices = [alltimes groups];
 end
 
-
+%% Check if any cells made it through selection
+if isempty(spikes.times) | spikes.numcells == 0
+    spikes = [];
+end
 
 
 

@@ -4774,6 +4774,7 @@ end
 SleepState = bz_LoadStates(basePath,'SleepState');
 
 paramsAvailBool = 0;
+detectnameAvailBool = 0;
 if isempty(SleepState)
     answer = questdlg({'No SleepState.states.mat. Would you like to run SleepScoreMaster?', 'WARNING: will lose current states!!!'},...
         'AutoScore?');
@@ -4786,15 +4787,24 @@ if isempty(SleepState)
     end
 elseif isfield(SleepState,'detectorinfo')
     if isfield(SleepState.detectorinfo,'detectorname')
+        detectorname = SleepState.detectorinfo.detectorname;
         detectnameAvailBool = 1;
     end
     if isfield(SleepState.detectorinfo,'detectionparms')
+        detectionparms = SleepState.detectorinfo.detectionparms
+        paramsAvailBool = 1;
+    end
+elseif isfield(SleepState,'detectorname') %old version of data
+    detectorname = SleepState.detectorname;
+    detectnameAvailBool = 1;
+    if isfield(SleepState,'detectorparms')
+        detectionparms = SleepState.detectorparms;
         paramsAvailBool = 1;
     end
 end
 
 if detectnameAvailBool
-    switch SleepState.detectorinfo.detectorname
+    switch detectorname
         case {'TheStateEditor'}
             answer = questdlg({'States manually detected. Would you like to run SleepScoreMaster?',...
                 'WARNING: will lose current states!!!'},...
@@ -4806,13 +4816,15 @@ if detectnameAvailBool
                     return
             end
     end
+else
+    disp('No Detector name recorded or found')
 end
         
 
 if paramsAvailBool 
     %DL: this seems weird to me... 
     %why do we assume the detectionparms in SleepState are auto?
-    F0.AutoScore.detectionparms =  SleepState.detectorinfo.detectionparms;
+    F0.AutoScore.detectionparms =  detectionparms;
 else
     F0.AutoScore.detectionparms = [];
 end
@@ -4954,28 +4966,63 @@ if isempty(SleepState) %If there is no saved SleepState already.
     error('No SleepState.states.mat detected');
 end
 
-try
-    dp = SleepState.detectorinfo.detectionparms;
+if isfield(SleepState,'detectorinfo')%handing different historical versions - for back compatibility
+    dp = SleepState.detectorinfo.detectionparms;%current version
+elseif isfield(SleepState,'detectorparams')
+    dp = SleepState.detectorparams;%old version
+end
     
-    %if already exists, just take from saved data
-    if isfield(dp,'histsandthreshs')
-        histsandthreshs = dp.histsandthreshs;
-    elseif isfield(dp.SleepScoreMetrics,'histsandthreshs')
+%if already exists, just take from saved data
+histsandthreshsOK = 0;
+if isfield(dp,'histsandthreshs')
+    histsandthreshs = dp.histsandthreshs;
+    histsandthreshsOK = 1;
+elseif isfield(dp,'SleepScoreMetrics')
+    if isfield(dp.SleepScoreMetrics,'histsandthreshs')
         %this is the proper formatting, everything else in here is to deal
         %with legacy issues (DL 3/18/18)
         histsandthreshs = dp.SleepScoreMetrics.histsandthreshs;
+    	histsandthreshsOK = 1;  
     end
-catch
+end
+%if not, try to re-make it
+if ~histsandthreshsOK
     warning('We were unable to find histsandthreshs in your SleepState. Trying to recalculate...')
 
-    load(fullfile(basePath,[baseName '.SleepScoreLFP.LFP.mat']));
-    load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+    loadgood = 1;
+    if exist(fullfile(basePath,[baseName '.SleepScoreLFP.LFP.mat']),'file')
+        load(fullfile(basePath,[baseName '.SleepScoreLFP.LFP.mat']));
+    else
+        loadgood = 0;%signify couldn't find preprocessed data
+    end
+    
+    if exist(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']),'file')
+        load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+    else
+        loadgood = 0;%signify couldn't find preprocessed data
+    end
+    
+    
+    if ~loadgood
+        answer = questdlg({'No SleepscoreLFP.LFP.mat or .EMGFromLFP.LFP.mat found. Would you like to run SleepScoreMaster?', 'WARNING: Will lose current states!!!'},...
+        'AutoScore?');
+        switch answer
+            case 'Yes'
+                %answer = questdlg('Use Loaded Channels?','Yes','No, Auto select channgels for scoring');
+                SleepScoreMaster(basePath)
+                load(fullfile(basePath,[baseName '.SleepScoreLFP.LFP.mat']));
+                load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+            case {'No','Cancel'}
+                return
+        end
+    end
+
     
     [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
                                            basePath,SleepScoreLFP,EMGFromLFP,false);
-    
+
     histsandthreshs = SleepScoreMetrics.histsandthreshs;
-    
+
     SleepState.detectorinfo.detectionparms.SleepScoreMetrics = SleepScoreMetrics;
     SleepState.detectorinfo.StatePlotMaterials = StatePlotMaterials;
     save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState');
@@ -6158,7 +6205,7 @@ elseif isfield(SleepState,'ints')
     states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(timestartsecond)),states);
     states = cat(2,states,zeros(1,numsecsinrecording-length(states)));
 elseif isempty(SleepState)
-    states = zeros(1,length(StateInfo.fspec{1}.to));
+    states = zeros(1,length(timevector));
 else
    error('Your SleepState is broken.')
 end
