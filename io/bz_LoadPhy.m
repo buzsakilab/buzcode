@@ -20,9 +20,7 @@ function [spikes] = bz_LoadPhy(varargin)
 %                   32). Total number of channels.
 % forceReload    -logical (default=false) to force loading from
 %                   res/clu/spk files
-% getFeatures    -logical (default=true) to compute cluster features
-% showFeatures   -logical (default=false) to show cluster features for each
-%                   cluster. This option force getFeatures to be true.
+
 %
 % OUTPUTS
 %
@@ -37,7 +35,10 @@ function [spikes] = bz_LoadPhy(varargin)
 %   .maxWaveformCh  -channel # with largest amplitude spike for each neuron
 %   .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
 %
-%   MV 2018
+%  HISTORY:
+%  9/2018  Manu Valero
+%  10/2018 AntonioFR    
+%  To do: Add a call to function for calculating cell features. 
 
 %% Parse options
 p = inputParser;
@@ -49,8 +50,6 @@ addParameter(p,'UID',[],@isvector);
 addParameter(p,'fs',30000,@isnumeric);
 addParameter(p,'nChannels',32,@isnumeric);
 addParameter(p,'forceReload',false,@islogical);
-addParameter(p,'getFeatures',true,@islogical);
-addParameter(p,'showFeatures',false,@islogical);
 
 parse(p,varargin{:});
 
@@ -62,10 +61,6 @@ UID = p.Results.UID;
 fs = p.Results.fs; % it will be overwritten if bz_getSessionInfo
 nChannels = p.Results.nChannels; % it will be overwritten if bz_getSessionInfo
 forceReload = p.Results.forceReload;
-getFeat = p.Results.getFeatures;
-showFeat = p.Results.showFeatures;
-
-if showFeat; getFeat = true; end
 
 try [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', false);
     fs = sessionInfo.rates.wideband;
@@ -85,7 +80,6 @@ else
     % spike_clusters = unique(spike_cluster_index);
     cluster_group = tdfread(fullfile(kilosort_path,'cluster_group.tsv'));
     shanks = readNPY(fullfile(kilosort_path, 'shanks.npy')); % done
-
 
     spikes = [];
     spikes.sessionName = sessionInfo.FileName;
@@ -140,12 +134,12 @@ else
         close(f)
     end
     
-    % spike measures
-    disp('Computing spike features... ');
-    if getFeat
-       % call to cell metric functions
-       
-    end
+%     % spike measures
+%     disp('Computing spike features... ');
+%     if getFeat
+%        % call to cell metric functions
+%        
+%     end
 end
 
 % saveMat (only saving if no exclusions)

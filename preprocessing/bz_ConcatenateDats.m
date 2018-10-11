@@ -248,7 +248,7 @@ eval(catstring)%execute concatention
 %     end
 % 
 %     save(fullfile(basepath,[basename '_DatInfo.mat']),'recordingbytes','recordingnames')
-t = dir(newdatpath);
+%t = dir(newdatpath);
 if t.bytes ~= sum(recordingbytes)
     error('New .dat size not right.  Exiting')
     return
