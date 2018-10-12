@@ -30,7 +30,9 @@ function [ripples] = bz_FindRipples(varargin)
 %     'thresholds'  thresholds for ripple beginning/end and peak, in multiples
 %                   of the stdev (default = [2 5]); must be integer values
 %     'durations'   min inter-ripple interval and max ripple duration, in ms
-%                   (default = [30 100])
+%                   (default = [30 100]). 
+%     'minDuration' min ripple duration. Keeping this input nomenclature for backwards
+%                   compatibility
 %     'restrict'    interval used to compute normalization (default = all)
 %     'frequency'   sampling rate (in Hz) (default = 1250Hz)
 %     'stdev'       reuse previously computed stdev
@@ -41,7 +43,8 @@ function [ripples] = bz_FindRipples(varargin)
 %     'passband'    N x 2 matrix of frequencies to filter for ripple detection 
 %                   (default = [130 200])
 %     'EMGThresh'   0-1 threshold of EMG to exclude noise
-%     'saveMat'     logical (default=true) to save in buzcode format
+%     'saveMat'     logical (default=false) to save in buzcode format
+%     'plotTopye'   1=original version (several plots); 2=only raw lfp
 %    =========================================================================
 %
 % OUTPUT
@@ -83,6 +86,9 @@ addParameter(p,'noise',[],@ismatrix)
 addParameter(p,'passband',[130 200],@isnumeric)
 addParameter(p,'EMGThresh',.9,@isnumeric);
 addParameter(p,'saveMat',false,@islogical);
+addParameter(p,'minDuration',20,@isnumeric)
+addParameter(p,'plotType',2,@isnumeric)
+
 
 if isstr(varargin{1})  % if first arg is basepath
     addRequired(p,'basepath',@isstr)
@@ -117,6 +123,8 @@ lowThresholdFactor = p.Results.thresholds(1);
 highThresholdFactor = p.Results.thresholds(2);
 minInterRippleInterval = p.Results.durations(1);
 maxRippleDuration = p.Results.durations(2);
+minRippleDuration = p.Results.minDuration;
+plotType = p.Results.plotType;
 
 %% filter and calculate noise
 
@@ -208,18 +216,30 @@ for i=1:size(thirdPass,1)
 end
 
 % Discard ripples that are way too long
-
 ripples = [timestamps(thirdPass(:,1)) timestamps(peakPosition) ...
            timestamps(thirdPass(:,2)) peakNormalizedPower];
 duration = ripples(:,3)-ripples(:,1);
-ripples(duration>maxRippleDuration/1000,:) = [];
+ripples(duration>maxRippleDuration/1000,:) = NaN;
+%disp(['After duration test: ' num2str(size(ripples,1)) ' events.']);
+
+% Discard ripples that are too short
+ripples(duration<minRippleDuration/1000,:) = NaN;
+ripples = ripples((all((~isnan(ripples)),2)),:);
+
 disp(['After duration test: ' num2str(size(ripples,1)) ' events.']);
 
 % If a noisy channel was provided, find ripple-like events and exclude them
 bad = [];
 if ~isempty(noise)
+    if length(noise) == 1 % you gave a channel number
+       noiselfp = bz_GetLFP(p.Results.noise,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
+       squaredNoise = bz_Filter(double(noiselfp.data),'filter','butter','passband',passband,'order', 3).^2;
+    else
+            
 	% Filter, square, and pseudo-normalize (divide by signal stdev) noise
 	squaredNoise = bz_Filter(double(noise),'filter','butter','passband',passband,'order', 3).^2;
+    end
+    
 	window = ones(windowLength,1)/windowLength;
 	normalizedSquaredNoise = unity(Filter0(window,sum(squaredNoise,2)),sd,[]);
 	excluded = logical(zeros(size(ripples,1),1));
@@ -259,10 +279,11 @@ end
 
 % Optionally, plot results
 if strcmp(show,'on')
+  if plotType == 1
 	figure;
 	if ~isempty(noise)
 		MultiPlotXY([timestamps signal],[timestamps squaredSignal],...
-            [timestamps normalizedSquaredSignal],[timestamps noise],...
+            [timestamps normalizedSquaredSignal],[timestamps squaredNoise],...
             [timestamps squaredNoise],[timestamps normalizedSquaredNoise]);
 		nPlots = 6;
 		subplot(nPlots,1,3);
@@ -300,7 +321,33 @@ if strcmp(show,'on')
 			plot(xlim,[lowThresholdFactor lowThresholdFactor],'k','linestyle','--');
 			plot(xlim,[highThresholdFactor highThresholdFactor],'k-');
 		end
-	end
+    end
+  elseif plotType == 2
+      lfpPlot = bz_Filter(double(lfp.data),'filter','butter','passband',[50 300],'order', 3);
+     
+		plot(timestamps,lfpPlot);hold on;
+  		yLim = ylim;
+		for j=1:size(ripples,1)
+			plot([ripples(j,1) ripples(j,1)],yLim,'g-');
+			plot([ripples(j,2) ripples(j,2)],yLim,'k-');
+			plot([ripples(j,3) ripples(j,3)],yLim,'r-');
+			if i == 3
+				plot([ripples(j,1) ripples(j,3)],[ripples(j,4) ripples(j,4)],'k-');
+			end
+		end
+		for j=1:size(bad,1)
+			plot([bad(j,1) bad(j,1)],yLim,'k-');
+			plot([bad(j,2) bad(j,2)],yLim,'k-');
+			plot([bad(j,3) bad(j,3)],yLim,'k-');
+			if i == 3
+				plot([bad(j,1) bad(j,3)],[bad(j,4) bad(j,4)],'k-');
+			end
+		end
+		if mod(i,3) == 0
+			plot(xlim,[lowThresholdFactor lowThresholdFactor],'k','linestyle','--');
+			plot(xlim,[highThresholdFactor highThresholdFactor],'k-');
+		end  
+  end
 end
 
 

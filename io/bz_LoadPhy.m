@@ -39,6 +39,7 @@ function [spikes] = bz_LoadPhy(varargin)
 %  9/2018  Manu Valero
 %  10/2018 AntonioFR    
 %  To do: Add a call to function for calculating cell features. 
+%         Fix directory search for Linux
 
 %% Parse options
 p = inputParser;
