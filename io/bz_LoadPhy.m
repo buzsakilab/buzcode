@@ -10,16 +10,17 @@ function [spikes] = bz_LoadPhy(varargin)
 %
 % basepath        -path to recording (where .dat are)
 % kilosort_path   -path to kilosort* folder after phy curing (by default
-%   .\kilosort_\)
+%                   .\kilosort_\)
 % getWaveforms    -logical (default=true) to load mean of raw waveform data
 % saveMat         -logical (default=false) to save in buzcode format
 % UID             -vector subset of UID's to load 
 % fs              -scalar (default is taken from sessionInfo, otherwise
-%   30000). Sampling frequency. 
+%                   30000). Sampling frequency. 
 % nChannels       -scalar (default is taken from sessionInfo, otherwise
-%   32). Total number of channels.
+%                   32). Total number of channels.
 % forceReload    -logical (default=false) to force loading from
-%                     res/clu/spk files
+%                   res/clu/spk files
+
 %
 % OUTPUTS
 %
@@ -34,9 +35,12 @@ function [spikes] = bz_LoadPhy(varargin)
 %   .maxWaveformCh  -channel # with largest amplitude spike for each neuron
 %   .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
 %
-%   Manu Valero 2018
+%  HISTORY:
+%  9/2018  Manu Valero
+%  10/2018 AntonioFR    
+%  To do: Add a call to function for calculating cell features. 
 
-% Parse options
+%% Parse options
 p = inputParser;
 addParameter(p,'basepath',pwd,@isstr);
 %addParameter(p,'kilosort_path',ls('Kilosort*'),@isstr); % probably this line only works in windows
@@ -78,18 +82,6 @@ else
     cluster_group = tdfread(fullfile(kilosort_path,'cluster_group.tsv'));
     shanks = readNPY(fullfile(kilosort_path, 'shanks.npy')); % done
 
-    % parameters for extract raw waveforms
-    if getWave
-        gwfparams.dataDir = strcat(pwd,'\',kilosort_path);    % KiloSort/Phy output folder
-        basepath = cd;
-        [~,basename] = fileparts(basepath);
-        gwfparams.fileName = [basepath,'\',basename,'.dat']; % AP band file from spikeGLX specifically
-        gwfparams.dataType = 'int16';            % Data type of 000.dat file (this should be BP filtered)
-        gwfparams.nCh = nChannels;               % Number of channels that were streamed to disk in .dat file
-        gwfparams.wfWin = [-40 41];              % Number of samples before and after spiketime to include in waveform
-        gwfparams.nWf = 2000;                      % Number of waveforms per unit to pull out
-    end
-
     spikes = [];
     spikes.sessionName = sessionInfo.FileName;
     jj = 1;
@@ -99,32 +91,61 @@ else
             spikes.UID(jj) = cluster_group.cluster_id(ii);
             spikes.times{jj} = double(spike_times(ids))/fs; % cluster time
             spikes.ts{jj} = double(spike_times(ids)); % cluster time
-            [~,cluster_id] = find(cluster_group.cluster_id == spikes.UID(jj));
+            cluster_id = find(cluster_group.cluster_id == spikes.UID(jj));
             spikes.shankID(jj) = shanks(cluster_id);
             % spikes.amplitudes{jj} = double(spike_amplitudes(ids));
-
-            if getWave
-                gwfparams.spikeTimes = spike_times(ids);
-                gwfparams.spikeClusters = spike_cluster_index(ids);
-                wf = getWaveForms(gwfparams);
-                wf.waveFormsMean = squeeze(wf.waveFormsMean);
-                [~, spikes.maxWaveformCh(jj)] = max(wf.waveFormsMean(:,41));
-                spikes.rawWaveform{jj} = wf.waveFormsMean(spikes.maxWaveformCh(jj),:);
-            end
-
             jj = jj + 1;
-            if jj > 2
-                fprintf(repmat('\b', 1, 9));
-            end
-            fprintf(' %2.1f%%...',ii/length(cluster_group.group)*100);
         end
     end
-    fprintf('\n');
 
-    % saveMat (only saving if no exclusions)
-    if saveMat
-        save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes');
+    % get waveforms
+    nPull = 1000; % number of spikes to pull out
+    wfWin = 0.008; % Larger size of waveform windows for filterning
+    filtFreq = 500;
+    hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
+
+    f = waitbar(0,'Getting waveforms...');
+    wfWin = round((wfWin * fs)/2);
+    if getWave
+        for ii = 1 : size(spikes.times,2)
+            spkTmp = spikes.times{ii};
+            if length(spkTmp) > nPull
+                spkTmp = spkTmp(randperm(length(spkTmp)));
+                spkTmp = spkTmp(1:nPull);
+            end
+            wf = [];
+            for jj = 1 : length(spkTmp)
+                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spikes.ts{ii}(jj) - (wfWin),...
+                    'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
+            end
+            wf = mean(wf,3);
+            for jj = 1 : size(wf,2)
+                wfF(:,jj) = filtfilt(hpFilt,wf(:,jj));
+            end
+            [~, spikes.maxWaveformCh(ii)] = max(abs(wfF(wfWin,:)));
+            rawWaveform{ii} = detrend(wf(:,spikes.maxWaveformCh(ii)) - mean(wf(:,spikes.maxWaveformCh(ii)))); 
+            filtWaveform{ii} = wfF(:,spikes.maxWaveformCh(ii)) - mean(wfF(:,spikes.maxWaveformCh(ii)));
+           
+            spikes.rawWaveform{ii} = rawWaveform{ii}(wfWin-(0.002*fs):wfWin+(0.002*fs)); % keep only +- 1ms of waveform
+            spikes.filtWaveform{ii} = filtWaveform{ii}(wfWin-(0.002*fs):wfWin+(0.002*fs)); 
+
+            % figure;plot(spikes.filtWaveform{ii},'r');hold on;plot(spikes.rawWaveform{ii},'b');
+            waitbar(ii/size(spikes.times,2),f,'Pulling out waveforms...');
+        end
+        close(f)
     end
+    
+%     % spike measures
+%     disp('Computing spike features... ');
+%     if getFeat
+%        % call to cell metric functions
+%        
+%     end
+end
+
+% saveMat (only saving if no exclusions)
+if saveMat
+    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes');
 end
 
 % filter by UID input
@@ -163,6 +184,8 @@ if ~isempty(spikes.UID)
     spikes.spindices = [alltimes groups];
 end
 
+<<<<<<< HEAD
+=======
 % Compute spike measures
 if ~isempty(spikes.UID) && getWave
     for ii = 1:size(spikes.UID,2)
@@ -171,4 +194,5 @@ if ~isempty(spikes.UID) && getWave
         [spikes.autocorr{ii}.xout,spikes.autocorr{ii}.r,spikes.autocorr{ii}.peakAutocorr] =...
             autocorr_spikes(spikes.ts{ii},fs,26,1);
     end 
+>>>>>>> buzsakilab/master
 end
