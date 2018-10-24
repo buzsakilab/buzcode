@@ -238,11 +238,11 @@ if ~isempty(noise)
 end
     %% lets try to also remove EMG artifact?
 if EMGThresh
-    sessionInfo = bz_getSessionInfo(pwd,'noprompts',true);
+    sessionInfo = bz_getSessionInfo(basepath,'noprompts',true);
     if exist([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
         load([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
     else
-        [EMGFromLFP] = bz_EMGFromLFP(pwd,'samplingFrequency',10,'savemat',false);
+        [EMGFromLFP] = bz_EMGFromLFP(basepath,'samplingFrequency',10,'savemat',false);
     end
     excluded = logical(zeros(size(ripples,1),1));
     for i = 1:size(ripples,1)
