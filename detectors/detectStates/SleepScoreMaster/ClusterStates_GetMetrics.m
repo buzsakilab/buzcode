@@ -54,14 +54,16 @@ window = 10;   %s
 noverlap = 9;  %s
 
 if strcmp(SWweights,'PSS')
+    %Put the LFP in the right structure format
     lfp.data = swLFP;
     lfp.timestamps = SleepScoreLFP.t;
     lfp.samplingRate = SleepScoreLFP.sf;
+    %Calculate PSS
     [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap);
     broadbandSlowWave = -specslope.data; %So NREM is higher as opposed to lower
     t_clus = specslope.timestamps;
     swFFTfreqs = specslope.freqs;
-    swFFTspec = spec.amp;
+    swFFTspec = 10.^spec.amp;
     badtimes = false;
    % SWfreqlist = specslope.freqs;
 else
@@ -83,8 +85,8 @@ else
 end
 
 %Smooth and 0-1 normalize
-smoothfact = 10; %units of si_FFT (currently 1s)
-broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
+smoothfact = 10; %units of seconds - smoothing factor
+broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_clus)));
 broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
  
@@ -109,7 +111,7 @@ allpower = sum((thFFTspec),1);
 thpower = sum((thFFTspec(thfreqs,:)),1);
 
 thratio = thpower./allpower;    %Narrowband Theta
-thratio = smooth(thratio,thsmoothfact);
+thratio = smooth(thratio,thsmoothfact./mean(diff(t_thclu)));
 thratio = (thratio-min(thratio))./max(thratio-min(thratio));
  
 %% EMG

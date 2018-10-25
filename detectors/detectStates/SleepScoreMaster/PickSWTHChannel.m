@@ -68,7 +68,7 @@ histbins = linspace(0,1,numhistbins);
 numfreqs = 100;
 swFFTfreqs = logspace(0,2,numfreqs);
 window = 10;
-noverlap = 9;
+noverlap = 5; %Updated to speed up (don't need to sample at fine time resolution for channel selection)
 
 %Smoothing Parameters
 smoothfact = 10; %units of si_FFT (currently, seconds)
@@ -136,7 +136,7 @@ downsamplefactor = 10;
 %     'start',scoretime(1),'duration',diff(scoretime));
 %Fs = Fs./downsamplefactor;
 allLFP = bz_GetLFP(usechannels,'basepath',basePath,...
-    'downsample',downsamplefactor,'intervals',scoretime);
+    'downsample',downsamplefactor,'intervals',scoretime,'noPrompts',noPrompts);
 Fs = allLFP.samplingRate;
 
 
@@ -169,7 +169,7 @@ parfor idx = 1:numSWChannels;
             'min.  ETR: ',num2str(round(estimatedremaining./60)),'min.'])
   % end
 
-    %% Get spectrogram
+    %% Get Slow Wave signal from weighted or slope of the spectrogram
     %Calcualte Z-scored Spectrogram
     LFPchanidx = find(usechannels==SWChannels(idx));
     
@@ -192,7 +192,7 @@ parfor idx = 1:numSWChannels;
         broadbandSlowWave = zFFTspec*SWweights';
     end
     %%
-    broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
+    broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_FFT)));
     broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
     %% Histogram and diptest of Slow Wave Power
@@ -266,7 +266,7 @@ THchanID = ThetaChannels(goodTHidx);   %best SW and theta channels
 downsample_save = Par.lfpSampleRate./250;
 
 swthLFP = bz_GetLFP([SWchanID,THchanID],'basepath',basePath,...
-    'downsample',downsample_save,'intervals',scoretime);
+    'downsample',downsample_save,'intervals',scoretime,'noPrompts',noPrompts);
 
 swLFP = (swthLFP.data(:,1));
 thLFP = (swthLFP.data(:,2));
@@ -384,7 +384,7 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
         broadbandSlowWave = zFFTspec*SWweights';
     end
 
-    broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
+    broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_FFT)));
     broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
      
