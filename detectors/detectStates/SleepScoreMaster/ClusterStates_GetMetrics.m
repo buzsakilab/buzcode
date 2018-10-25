@@ -23,6 +23,8 @@ if exist(matfilename) & exist(plotmaterialsfilename) & overwrite == false
 end
 
 
+%Get the SW weights from SleepScoreLFP - if it's not there, load the
+%weights
 try
     SWweights = SleepScoreLFP.params.SWweights;
     SWfreqlist = SleepScoreLFP.params.SWfreqlist;
@@ -77,6 +79,7 @@ else
     assert(isequal(freqlist,SWfreqlist),...
         'spectrogram freqs.  are not what they should be...')
     broadbandSlowWave = zFFTspec*SWweights';
+    
 end
 
 %Smooth and 0-1 normalize
@@ -214,14 +217,16 @@ else
 %     REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
 end
 
-histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
+histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,...
+    EMGthresh,THhist,THhistbins,THthresh);
 
 %% Ouput Structure: StateScoreMetrics
 LFPparams = SleepScoreLFP.params;
 THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
 SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
-    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,recordingname);
+    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,...
+    recordingname);
 %save(matfilename,'SleepScoreMetrics');
 
 StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);

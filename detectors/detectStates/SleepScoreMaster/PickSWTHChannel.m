@@ -1,4 +1,6 @@
-function [SleepScoreLFP] = PickSWTHChannel(basePath,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels,OVERWRITE,varargin)
+function [SleepScoreLFP] = PickSWTHChannel(basePath,scoretime,SWWeightsName,...
+    Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,...
+    rejectchannels,OVERWRITE,varargin)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % Optional
