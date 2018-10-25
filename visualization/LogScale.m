@@ -15,7 +15,7 @@ function [] = LogScale( whichaxis,logbase)
 
 if strcmp(whichaxis,'y') || strcmp(whichaxis,'xy')
     range = get(gca,'YLim');
-    range(1) = ceil(range(1)); range(2) = floor(range(2));
+    range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
     ticks = [range(1):range(2)];
     if length(ticks)<=3
         ticks = [range(1):0.5:range(2)];
@@ -26,7 +26,7 @@ if strcmp(whichaxis,'y') || strcmp(whichaxis,'xy')
     end
     
     set(gca,'YTick',ticks)
-    set(gca,'YTickLabels',round(logbase.^ticks,3,'significant'))
+    set(gca,'YTickLabels',round(logbase.^ticks,1,'significant'))
     
     if max(abs(ticks))>=3
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);
@@ -39,7 +39,7 @@ end
 
 if strcmp(whichaxis,'x') || strcmp(whichaxis,'xy')
     range = get(gca,'XLim');
-    range(1) = ceil(range(1)); range(2) = floor(range(2));
+    range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
     ticks = [range(1):range(2)];
     if length(ticks)<=3
         ticks = [range(1):0.5:range(2)];
@@ -51,7 +51,7 @@ if strcmp(whichaxis,'x') || strcmp(whichaxis,'xy')
         
     
     set(gca,'XTick',ticks)
-    set(gca,'XTickLabels',round(logbase.^ticks,3,'significant'))
+    set(gca,'XTickLabels',round(logbase.^ticks,1,'significant'))
     
     if max(abs(ticks))>=3
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);
@@ -63,7 +63,7 @@ end
 
 if strcmp(whichaxis,'z')
     range = get(gca,'ZLim');
-    range(1) = ceil(range(1)); range(2) = floor(range(2));
+    range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
     ticks = [range(1):range(2)];
     if length(ticks)<=3
         ticks = [range(1):0.5:range(2)];
@@ -74,7 +74,7 @@ if strcmp(whichaxis,'z')
     end
     
     set(gca,'ZTick',ticks)
-    set(gca,'ZTickLabels',round(logbase.^ticks,3,'significant'))
+    set(gca,'ZTickLabels',round(logbase.^ticks,1,'significant'))
     
     if max(abs(ticks))>=2
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);
@@ -87,7 +87,7 @@ end
 
 if strcmp(whichaxis,'c')
     range = get(gca,'CLim');
-    range(1) = ceil(range(1)); range(2) = floor(range(2));
+    range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
     ticks = [range(1):range(2)];
     if length(ticks)<=3
         ticks = [range(1):0.5:range(2)];
@@ -100,7 +100,7 @@ if strcmp(whichaxis,'c')
     cb = get(gca,'colorbar');
     
     set(cb,'Ticks',ticks)
-    set(cb,'TickLabels',round(logbase.^ticks,3,'significant'))
+    set(cb,'TickLabels',round(logbase.^ticks,1,'significant'))
     
     if max(abs(ticks))>=2
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);

@@ -24,7 +24,7 @@ if nargin == 1
 else
     dim = varargin{1};
 end
-if ~ismatrix(x) & ~isdvector(x),
+if ~isnumeric(x) & ~isdvector(x),
   error('Incorrect input - use vector or matrix (type ''help <a href="matlab:help sem">sem</a>'' for details).');
 end
 
