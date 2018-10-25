@@ -41,7 +41,7 @@ function [ripples] = bz_FindRipples(varargin)
 %     'passband'    N x 2 matrix of frequencies to filter for ripple detection 
 %                   (default = [130 200])
 %     'EMGThresh'   0-1 threshold of EMG to exclude noise
-%     'saveMat'     logical (default=true) to save in buzcode format
+%     'saveMat'     logical (default=false) to save in buzcode format
 %    =========================================================================
 %
 % OUTPUT
@@ -239,8 +239,9 @@ end
     %% lets try to also remove EMG artifact?
 if EMGThresh
     sessionInfo = bz_getSessionInfo(basepath,'noprompts',true);
-    if exist([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
-        load([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
+    EMGfilename = fullfile(basepath,[sessionInfo.FileName '.EMGFromLFP.LFP.mat']);
+    if exist(EMGfilename)
+        load(EMGfilename)   %should use a bz_load script here
     else
         [EMGFromLFP] = bz_EMGFromLFP(basepath,'samplingFrequency',10,'savemat',false);
     end
@@ -335,7 +336,7 @@ ripples.detectorinfo = detectorinfo;
 
 %Save
 if p.Results.saveMat
-    save([basepath filesep basename '.ripples.events.mat'],'ripples')
+    save(fullfile(basepath, [basename '.ripples.events.mat']),'ripples')
 end
 
 
