@@ -12,7 +12,7 @@ function [spikes] = bz_LoadPhy(varargin)
 % kilosort_path   -path to kilosort* folder after phy curing (by default
 %                   .\kilosort_\)
 % getWaveforms    -logical (default=true) to load mean of raw waveform data
-% saveMat         -logical (default=false) to save in buzcode format
+% saveMat         -logical (default=true) to save in buzcode format
 % UID             -vector subset of UID's to load 
 % fs              -scalar (default is taken from sessionInfo, otherwise
 %                   30000). Sampling frequency. 
@@ -34,17 +34,19 @@ function [spikes] = bz_LoadPhy(varargin)
 %   .amplitude:     amplitudes for cluster N
 %   .maxWaveformCh  -channel # with largest amplitude spike for each neuron
 %   .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
+%   .filtWaveform   -average filtered waveform on maxWaveformCh
 %
 %  HISTORY:
 %  9/2018  Manu Valero
 %  10/2018 AntonioFR    
 %  To do: Add a call to function for calculating cell features. 
+%         Fix directory search for Linux
 
 %% Parse options
 p = inputParser;
 addParameter(p,'basepath',pwd,@isstr);
-%addParameter(p,'kilosort_path',ls('Kilosort*'),@isstr); % probably this line only works in windows
-addParameter(p,'kilosort_path',pwd,@isstr);
+addParameter(p,'kilosort_path',ls('Kilosort*'),@isstr); % probably this line only works in windows
+%addParameter(p,'kilosort_path',pwd,@isstr);
 addParameter(p,'getWaveforms',true,@islogical)
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'UID',[],@isvector);
@@ -184,15 +186,12 @@ if ~isempty(spikes.UID)
     spikes.spindices = [alltimes groups];
 end
 
-<<<<<<< HEAD
-=======
-% Compute spike measures
-if ~isempty(spikes.UID) && getWave
-    for ii = 1:size(spikes.UID,2)
-        [~,tmp] = max(spikes.rawWaveform{ii}(1,41:end));
-        p2pWidth = tmp/fs; % peak (negative) to peak (second positive) duration 
-        [spikes.autocorr{ii}.xout,spikes.autocorr{ii}.r,spikes.autocorr{ii}.peakAutocorr] =...
-            autocorr_spikes(spikes.ts{ii},fs,26,1);
-    end 
->>>>>>> buzsakilab/master
-end
+% % Compute spike measures
+% if ~isempty(spikes.UID) && getWave
+%     for ii = 1:size(spikes.UID,2)
+%         [~,tmp] = max(spikes.rawWaveform{ii}(1,41:end));
+%         p2pWidth = tmp/fs; % peak (negative) to peak (second positive) duration 
+%         [spikes.autocorr{ii}.xout,spikes.autocorr{ii}.r,spikes.autocorr{ii}.peakAutocorr] =...
+%             autocorr_spikes(spikes.ts{ii},fs,26,1);
+%     end 
+% end
