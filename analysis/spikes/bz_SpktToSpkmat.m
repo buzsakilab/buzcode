@@ -29,6 +29,7 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %
 %DLevenstein 2015. Updated 2018 for buzcode
 %NOTE: in progres...
+%TODO: update to use movmean/movsum
 %% Options
 p = inputParser;
 addParameter(p,'win',[]);
