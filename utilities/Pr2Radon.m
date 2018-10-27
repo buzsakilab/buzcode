@@ -45,9 +45,9 @@ for pk = 1:length(locs)
     coeffs = fPolyFit(xx, yy, 1);
     slope(pk) = coeffs(1);
 
-    if abs(slope(pk)) < 4 * size(Pr,1) ./ size(Pr,2) & abs(slope(pk)) > 1 % rise/run limit to calc integral (must be in the frame)
+    if abs(slope(pk)) < 2 * size(Pr,1) ./ size(Pr,2) & abs(slope(pk)) > 1.5 % rise/run limit to calc integral (must be in the frame)
         for i=1:length(xx)
-%             inds = Restrict(xx(i)-10:xx(i)+10,[1 size(Pr,2)]);
+%             inds = Restrict(xx(i)-5:xx(i)+5,[1 size(Pr,2)]);
             if yy(i) > .5 & yy(i) < size(Pr,1) + .5
                 curve(i) = Pr(round(yy(i)),xx(i));
 %                 curve_fit(i) = sum(Pr(round(yy(i)),inds));
@@ -70,6 +70,9 @@ slope = slope(idx);
 
 if plotting
     offset = xp(I(locs(idx)));
+    if offset == 0
+        offset = .01;
+    end
     angle = theta(locs(idx));
     y(2) = y(1) + offset*sin(deg2rad(-angle));
     x(2) = x(1) + offset*cos(deg2rad(-angle));
@@ -84,6 +87,8 @@ if plotting
     hold on
     line([x(1) x(2)],[y(1) y(2)])
     plot(xx,yy,'r')
+%     plot(xx,yy-5,'w')
+%     plot(xx,yy+5,'w')
     title(integral)
 %     pause
 end
