@@ -62,8 +62,10 @@ lopass = p.Results.lopass;
 import iosr.dsp.*
 
 useGPU = false;
-if gpuDeviceCount>0
-    useGPU = true;
+try
+    if gpuDeviceCount>0
+        useGPU = true;
+    end
 end
 sizeInBytes = 2; %
 

@@ -29,6 +29,7 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %
 %DLevenstein 2015. Updated 2018 for buzcode
 %NOTE: in progres...
+%TODO: update to use movmean/movsum
 %% Options
 p = inputParser;
 addParameter(p,'win',[]);
@@ -113,7 +114,7 @@ end
 
 %% The Meat of the function
 
-numts = ceil((t_end-t_start)/dt);
+numts = round((t_end-t_start)/dt);
 
 %Remove spikes after t_end and before t_start (t_offset+t_start)
 spiketimes = cellfun(@(x) x(find(x<t_end)),spiketimes,'UniformOutput',false);
