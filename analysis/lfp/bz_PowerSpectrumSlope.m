@@ -9,22 +9,39 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %   winsize     size of the silding time window (s, 2-4 recommended)
 %   dt          sliding time interval (s)
 %
-%   (optional)  
+%   (optional)
+%       'frange'    (default: [4 100])
 %       'showfig'   true/false - show a summary figure of the results
+%                   (default:false)
 %       'saveMat'   put your basePath here to save
-%                   baseName.PowerSpectrumSlope.lfp.mat  (not yet
-%                   functional)
+%                   baseName.PowerSpectrumSlope.lfp.mat  (default: false)
+%       'channels'  subset of channels to calculate PowerSpectrumSlope
+%                   (default: all)
+%
 %
 %DLevenstein 2018
 %%
 p = inputParser;
 addParameter(p,'showfig',false,@islogical)
 addParameter(p,'saveMat',false)
+addParameter(p,'channels',[])
+addParameter(p,'frange',[4 100])
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
+channels = p.Results.channels;
+frange = p.Results.frange;
+
 
 %% For multiple lfp channels
+if ~isempty(channels)
+    usechans = ismember(lfp.channels,channels);
+    lfp.data = lfp.data(:,usechans);
+    lfp.channels = lfp.channels(usechans);
+elseif ~isfield(lfp,'channels')
+    lfp.channels = nan;
+end
+
 if length(lfp.channels)>1
   %loop each channel and put the stuff in the right place
 	for cc = 1:length(lfp.channels)
@@ -47,7 +64,7 @@ end
 %%
 %Calcluate spectrogram
 noverlap = winsize-dt;
-spec.freqs = logspace(0.5,2,200);
+spec.freqs = logspace(log10(frange(1)),log10(frange(2)),200);
 winsize_sf = round(winsize .*lfp.samplingRate);
 noverlap_sf = round(noverlap.*lfp.samplingRate);
 [spec.data,~,spec.timestamps] = spectrogram(single(lfp.data),winsize_sf,noverlap_sf,spec.freqs,lfp.samplingRate);
@@ -75,8 +92,11 @@ end
 specslope.data = s(:,1);
 specslope.intercept = s(:,2);
 specslope.timestamps = spec.timestamps';
+specslope.specgram = spec.amp;
 specslope.samplingRate = 1./dt;
-specslope.winsize = winsize;
+
+specslope.detectionparms.winsize = winsize;
+specslope.detectionparms.frange = frange;
 
 specslope.rsq = rsq';
 specslope.resid = yresid;

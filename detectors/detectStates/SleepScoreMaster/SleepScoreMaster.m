@@ -18,7 +18,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'scoretime'     Default: [0 Inf]
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
-%                   be used for SWS detection.  Default is 'SWweights.mat'
+%                   be used for SWS detection.  Default is to use Power Spectrum Slope ('PSS'),
+%                   but can also try 'SWweights.mat'
 %                     - For hippocampus-only recordings, enter
 %                     'SWweightsHPC.mat' for this
 %   'Notch60Hz'     Boolean 0 or 1.  Value of 1 will notch out the 57.5-62.5 Hz
@@ -86,11 +87,6 @@ end
 [datasetfolder,recordingname,extension] = fileparts(basePath);
 recordingname = [recordingname,extension]; % fileparts parses '.' into extension
 
-if ~exist('SWWeightsName','var')
-    SWWeightsName = 'SWweights.mat';
-end
-
-
 
 %% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
 %Select from dataset folder - need to check if .xml/lfp exist
@@ -133,7 +129,8 @@ defaultSavebool = true;    %Save Stuff (EMG, LFP)
 defaultSavedir = datasetfolder;
 
 defaultScoretime = [0 Inf];
-defaultSWWeightsName = 'SWweights.mat';
+%defaultSWWeightsName = 'SWweights.mat';
+defaultSWWeightsName = 'PSS';
 defaultNotch60Hz = 0;
 defaultNotchUnder3Hz = 0;
 defaultNotchHVS = 0;
