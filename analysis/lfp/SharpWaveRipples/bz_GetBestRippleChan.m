@@ -1,5 +1,6 @@
 function  [chan] = bz_GetBestRippleChan(lfp)
-% eventually this will detect which lfp channel has the highest SNR for the
+%[chan] = bz_GetBestRippleChan(lfp)
+%eventually this will detect which lfp channel has the highest SNR for the
 % ripple componenent of SPWR events....
 
 [b a]=butter(4,[140/625 180/625],'bandpass');

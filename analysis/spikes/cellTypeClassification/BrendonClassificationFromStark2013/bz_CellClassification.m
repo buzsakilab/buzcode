@@ -11,6 +11,7 @@ function  [CellClass] = bz_CellClassification (basePath, varargin)
 %            (default:true)
 % 'saveFig'- true/false, save a DetectionFigure for posterity/QC 
 %            (default:true)
+% 'showFig'  show the figure without saving (default: false)
 % 'forceReload'     -logical (default=false) to force reclassifying even if
 %                    the CellClass.cellinfo.mat already exists
 % 'noPrompts'          -logical (default) to supress any user prompts
@@ -40,6 +41,7 @@ addParameter(p,'knownE',[],@isvector);
 addParameter(p,'knownI',[],@isvector);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'saveFig',true,@islogical);
+addParameter(p,'showFig',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
 
@@ -49,6 +51,7 @@ knownE = p.Results.knownE;
 knownI = p.Results.knownI;
 SAVEMAT = p.Results.saveMat;
 SAVEFIG = p.Results.saveFig;
+SHOWFIG = p.Results.showFig;
 FORCERELOAD = p.Results.forceReload;
 noPrompts = p.Results.noPrompts;
 %%
@@ -167,7 +170,7 @@ if SAVEMAT
 end
 
 %%
-if SAVEFIG
+if SAVEFIG || SHOWFIG
     figure
     subplot(2,2,1)
         plot(CellClass.detectionparms.TroughPeakMs(CellClass.pE),...
@@ -193,6 +196,7 @@ if SAVEFIG
         plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pI),'color',[0.6 0 0])
         axis tight
         xlabel('t (ms)')
-        
+        if SAVEFIG
         NiceSave('CellClassification',figfolder,baseName)
+        end
 end
