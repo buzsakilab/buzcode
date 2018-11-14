@@ -10,8 +10,8 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %
 %       (options)
 %       'win'       [start stop] time interval to get spike matrix
-%       'binsize'   size of your time bins, in seconds
-%       'overlap'   overlap of your time bins
+%       'binsize'   size of your time bins, in seconds (default: 0.1)
+%       'overlap'   overlap of your time bins (default: 1, no overlap)
 %       'dt'  add (use instead of binsize/overlap)
 %
 %OUTPUT

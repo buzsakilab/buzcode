@@ -13,6 +13,8 @@ function [thresh,cross,bihist,diptest] = bz_BimodalThresh(bimodaldata,varargin)
 %       'maxhistbins' Maximum number of hist bins to try before giving up
 %       'startbins'  minimum number of hist bins (initial hist)
 %       'setthresh'     set your own threshold
+%       'diptest'   (true/false) use hardigans dip test for bimodality
+%                   (default: true)
 %
 %OUTPUS
 %   thresh          threshold
@@ -37,7 +39,9 @@ Schmidt = false;
 maxhistbins = 25;
 SETTHRESH = false;
 starthistbins = 10;
+DIPTEST = true;
 
+%Replace this with inputparser
 for i = 1:length(varargin)
 	switch(lower(varargin{i}))
         case 'maxthresh'
@@ -51,18 +55,22 @@ for i = 1:length(varargin)
         case 'setthresh'
             thresh = varargin{i+1};
             SETTHRESH = true;
+        case 'diptest'
+            DIPTEST = varargin{i+1}; 
     end
 end
 
 %Run hartigansdiptest for bimodality
-nboot = 500; %number of times for bootstrapped significance
-[diptest.dip, diptest.p_value]=hartigansdipsigniftest(bimodaldata,nboot);
+if DIPTEST
+    nboot = 500; %number of times for bootstrapped significance
+    [diptest.dip, diptest.p_value]=hartigansdipsigniftest(bimodaldata,nboot);
 
-if diptest.p_value>0.05  %add option to bipass this
-    display('Dip test says: not bimodal')
-    cross.upints = []; cross.downints = []; thresh=nan; 
-    [bihist.hist,bihist.bins]= hist(bimodaldata,starthistbins);
-    return
+    if diptest.p_value>0.05  %add option to bipass this
+        display('Dip test says: not bimodal')
+        cross.upints = []; cross.downints = []; thresh=nan; 
+        [bihist.hist,bihist.bins]= hist(bimodaldata,starthistbins);
+        return
+    end
 end
 
 %Remove data over the threshold... this is klugey
