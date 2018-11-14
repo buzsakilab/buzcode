@@ -33,6 +33,7 @@ function [tracking] = bz_processConvertOptitrack2Behav(fbasename,varargin)
 %
 % 
 % David Tingley, 2017 (adapted from A. Peyrache, convert2pos.m)
+% Antonio FR, 11/2018
 
 syncDatFile = 'digitalin.dat'; % defaults if args aren't given... assuming a single digitalin channel on Intan
 syncSampFq  = 20000;
