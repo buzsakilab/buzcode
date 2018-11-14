@@ -68,7 +68,7 @@ for ff = 1:length(fields)
     elseif (isstring(structin(1).(currentfield))||ischar(structin(1).(currentfield))) & NEST %For string in field
         structout.(currentfield) = {structin(:).(currentfield)};
     else %For simple array in field
-        %try
+        try
             %Concatenate Array
             if strcmp(dim,'match')
                 catdim = bz_FindCatableDims({structin(:).(currentfield)});
@@ -76,10 +76,10 @@ for ff = 1:length(fields)
                 catdim = dim;
             end
         structout.(currentfield) = cat(catdim(1),structin(:).(currentfield));
-%         catch
+         catch
 %            keyboard
 %             continue
-%         end
+         end
 	end
 
     
