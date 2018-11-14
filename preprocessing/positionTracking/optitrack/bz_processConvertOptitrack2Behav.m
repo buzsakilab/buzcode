@@ -1,4 +1,4 @@
-function [tracking] = bz_processConvertOptitrack2Behav(fbasename,varargin)
+function processConvertOptitrack2behavior(fbasename,varargin)
 % USAGE
 %
 %   bz_processConvertOptitrack2behavior(fbasename,varargin)
@@ -19,9 +19,6 @@ function [tracking] = bz_processConvertOptitrack2Behav(fbasename,varargin)
 %     'syncNbCh'    number of channels in the sync file (default = 1)
 %     'posSampFq'   sampling frequency of the final pos file (after
 %                   interpolation)
-%     'columnOrder' order of output variales in .csv file: frame, time, rx,
-%                   ry, rz, rw, x, y, z, error. Vector with postion of each
-%                   variable in the order specified here
 %    =========================================================================
 %
 % OUTPUTS
@@ -35,12 +32,11 @@ function [tracking] = bz_processConvertOptitrack2Behav(fbasename,varargin)
 % David Tingley, 2017 (adapted from A. Peyrache, convert2pos.m)
 % Antonio FR, 11/2018
 
-syncDatFile = 'digitalin.dat'; % defaults if args aren't given... assuming a single digitalin channel on Intan
+syncDatFile = ['digitalin.dat']; % defaults if args aren't given... assuming a single digitalin channel on Intan
 syncSampFq  = 20000;
 syncChan    = 1;
 syncNbCh    = 1;
 posSampFq   = 120; %in Hz
-columnOrder = 1:10; 
 
 % Parse options
 for i = 1:2:length(varargin)
@@ -55,7 +51,7 @@ for i = 1:2:length(varargin)
       end
     case 'syncsampfq'
       syncSampFq = varargin{i+1};
-      if ~isa(syncSampFq,'numeric')
+      if ~isa(frequency,'numeric')
         error('Incorrect value for property ''syncsampfq'' .');
       end
     case 'syncchan'
@@ -82,7 +78,7 @@ end
 
 if exist([fbasename '.csv'],'file') % assumes csv naming matches basename
     dat = importdata([fbasename '.csv']);
-    dat = scrubTracking(dat); % smooth and interpolate tracking data
+    dat = scrubTracking(dat); 
 elseif ~isempty(dir('*.csv')) % looks for any csv file in the current recording folder
     csv = dir('*.csv');
     dat = importdata(csv.name);
@@ -98,27 +94,21 @@ else
     error('couldnt find a .csv tracking file')
 end
 
-%%
-pos = dat.data; % all tracking variables   
+pos = dat.data;    
 
-% read optitrack sync channel
 fid = fopen(syncDatFile); 
 dig = fread(fid,[syncNbCh inf],'int16=>int16');  % default type for Intan digitalin
 dig = dig(syncChan,:);
 
-t = (0:length(dig)-1)'/syncSampFq; % time vector in sec
+t = (0:length(dig)-1)'/syncSampFq;
 
-% get frames
 dPos = find(diff(dig)==1);
 dNeg = find(diff(dig)==-1);
 
 if length(dPos) == length(dNeg)+1
     dPos = dPos(1:end-1);
-elseif length(dNeg) == length(dPos)+1
-    dNeg = dNeg(1:end-1);
-elseif abs(length(dNeg)-length(dPos)) > 1
-    warning('some problem with frames');
-    keyboard
+elseif length(dPos) > length(dNeg)+1 || length(dPos) < length(dNeg)
+     keyboard
 end
 
 % Frame timing is the middle of shuter opening
@@ -142,27 +132,22 @@ timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';
 pos(pos==-1) = NaN;
 newPos = interp1(frameT,pos,timestamps);
 
-%error('need to remove NaN garbage still')
+error('need to remove NaN garbage still')
 
-%% create output structure 
+behavior.timestamps = pos(:,1);
 
-tracking.timestamps = newPos(:,columnOrder(1));
-tracking.frameCount = newPos(:,columnOrder(2));
+behavior.orientation.rx = pos(:,4);
+behavior.orientation.ry = pos(:,5);
+behavior.orientation.rz = pos(:,6);
+behavior.orientation.rw = pos(:,7);
 
-tracking.orientation.rx = newPos(:,columnOrder(3));
-tracking.orientation.ry = newPos(:,columnOrder(4));
-tracking.orientation.rz = newPos(:,columnOrder(5));
-tracking.orientation.rw = newPos(:,columnOrder(6));
+behavior.position.x = pos(:,8);
+behavior.position.y = pos(:,9);
+behavior.position.z = pos(:,10);
 
-tracking.position.x = newPos(:,columnOrder(7));
-tracking.position.y = newPos(:,columnOrder(8));
-tracking.position.z = newPos(:,columnOrder(9));
-
-if  size(newPos,2) >= 10
-tracking.errorPerMarker = newPos(:,columnOrder(10));
-end
-
-save([fbasename '.tracking.behavior.mat'],'tracking');
+behavior.errorPerMarker = pos(:,11);
+behavior.frameCount = pos(:,2);
+save([fbasename '.tracking.behavior.mat'],'behavior')
 
 end
 
