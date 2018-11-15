@@ -146,7 +146,7 @@ newPos = interp1(frameT,pos,timestamps);
 
 %% create output structure 
 
-tracking.timestamps = newPos(:,columnOrder(1));
+tracking.timestamps = timestamps;
 tracking.frameCount = newPos(:,columnOrder(2));
 
 tracking.orientation.rx = newPos(:,columnOrder(3));
