@@ -128,20 +128,23 @@ frameT = (t(dPos)+t(dNeg))/2;
 % recording. So we skip the last frames of the TTL
 
 if length(frameT)<size(pos,1)
-    warning('Too many video frames!')
-    keyboard
+    warning('Too many video frames!'); % maybe because intan was stopped before Optitrack
+    %keyboard
+    pos(pos==-1) = NaN;
+    pos = pos(1:length(frameT),:); % ???
 elseif length(frameT)>size(pos,1)
     frameT = frameT(1:size(pos,1));
 end
 
-% We now interpolate the data at 120 Hz (or sampling fqcy specified in
-% arguments)
+% We now interpolate the data at 120 Hz (or sampling fqcy specified in arguments)
 recDuration = length(dig)/syncSampFq;
 
 timestamps = (0:1/posSampFq:recDuration-1/posSampFq)';
 pos(pos==-1) = NaN;
+try 
 newPos = interp1(frameT,pos,timestamps);
-
+catch
+end
 %error('need to remove NaN garbage still')
 
 %% create output structure 
