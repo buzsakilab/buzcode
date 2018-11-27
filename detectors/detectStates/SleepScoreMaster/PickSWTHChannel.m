@@ -51,7 +51,6 @@ end
 
 %% FMA
 Par = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
-Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
 
 if isfield(Par,'SpkGrps')
@@ -69,31 +68,33 @@ histbins = linspace(0,1,numhistbins);
 numfreqs = 100;
 swFFTfreqs = logspace(0,2,numfreqs);
 window = 10;
-noverlap = 9;
-window = window*Fs;
-noverlap = noverlap*Fs;
+noverlap = 5; %Updated to speed up (don't need to sample at fine time resolution for channel selection)
 
 %Smoothing Parameters
-smoothfact = 10; %units of si_FFT
+smoothfact = 10; %units of si_FFT (currently, seconds)
 thsmoothfact = 10;
 
 %For SW calculation
 %Load the slowwave filter weights
-if ~exist('SWWeightsName','var')
-    SWWeightsName = 'SWweights.mat';
-end
-load(SWWeightsName)% 'SWweights.mat' by default
-%Alter the filter weights if requested by the user
-if Notch60Hz; SWweights(SWfreqlist<=62.5 & SWfreqlist>=57.5) = 0; end
-if NotchUnder3Hz; SWweights(SWfreqlist<=3) = 0; end
-if NotchHVS
-    SWweights(SWfreqlist<=18 & SWfreqlist>=12) = 0;
-    SWweights(SWfreqlist<=10 & SWfreqlist>=4) = 0;
-end
-if NotchTheta; SWweights(SWfreqlist<=10 & SWfreqlist>=4) = 0; end
+if ~exist('SWWeightsName','var') | strcmp(SWWeightsName,'PSS')
+    %SWWeightsName = 'SWweights.mat';
+    SWweights = 'PSS';
+    SWWeightsName = 'PSS';
+    SWfreqlist = logspace(0.5,2,200); %should get this from bz_PowerSpectrumSlope...
+else
+    load(SWWeightsName)% 'SWweights.mat' by default
+    %Alter the filter weights if requested by the user
+    if Notch60Hz; SWweights(SWfreqlist<=62.5 & SWfreqlist>=57.5) = 0; end
+    if NotchUnder3Hz; SWweights(SWfreqlist<=3) = 0; end
+    if NotchHVS
+        SWweights(SWfreqlist<=18 & SWfreqlist>=12) = 0;
+        SWweights(SWfreqlist<=10 & SWfreqlist>=4) = 0;
+    end
+    if NotchTheta; SWweights(SWfreqlist<=10 & SWfreqlist>=4) = 0; end
 
-assert(isequal(swFFTfreqs,SWfreqlist), 'spectrogram freqs.  are not what they should be...')
-   
+    assert(isequal(swFFTfreqs,SWfreqlist),...
+        'spectrogram freqs.  are not what they should be...')
+end 
 
 %For Theta Calculation
 f_all = [2 20];
@@ -130,13 +131,16 @@ numThetaChannels = length(ThetaChannels);
 
 %% Load LFP files from .lfp
 downsamplefactor = 10;
-allLFP = bz_LoadBinary(rawlfppath,'frequency',Fs,...
-    'nchannels',nChannels,'channels',usechannels+1,'downsample',downsamplefactor,...
-    'start',scoretime(1),'duration',diff(scoretime));
-%allLFP = double(allLFP); % hack fix
-Fs = Fs./downsamplefactor;
+% allLFP = bz_LoadBinary(rawlfppath,'frequency',Fs,...
+%     'nchannels',nChannels,'channels',usechannels+1,'downsample',downsamplefactor,...
+%     'start',scoretime(1),'duration',diff(scoretime));
+%Fs = Fs./downsamplefactor;
+allLFP = bz_GetLFP(usechannels,'basepath',basePath,...
+    'downsample',downsamplefactor,'intervals',scoretime,'noPrompts',noPrompts);
+Fs = allLFP.samplingRate;
 
-%% For each channel, calculate the PC1 and check it
+
+%% Set up containers for parfor loop
 swhists = zeros(numhistbins,numSWChannels);
 dipSW = zeros(numSWChannels,1);
 
@@ -149,7 +153,7 @@ peakTH = zeros(numThetaChannels,1);
 parfor_progress(numSWChannels);
 tstart = tic;
 parfor idx = 1:numSWChannels;
-%channum = 1;
+%idx = 1;
 
     %Progress Counter
     timespent=toc(tstart);
@@ -165,21 +169,30 @@ parfor idx = 1:numSWChannels;
             'min.  ETR: ',num2str(round(estimatedremaining./60)),'min.'])
   % end
 
-    %% Get spectrogram
+    %% Get Slow Wave signal from weighted or slope of the spectrogram
     %Calcualte Z-scored Spectrogram
     LFPchanidx = find(usechannels==SWChannels(idx));
-    FFTspec = spectrogram(single(allLFP(:,LFPchanidx)),window,noverlap,swFFTfreqs,Fs);
-    FFTspec = abs(FFTspec);
-    [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
-    % Remove transients before calculating SW histogram
-    %this should be it's own whole section - removing/detecting transients
-    totz = zscore(abs(sum(zFFTspec')));
-    badtimes = find(totz>5);
-    zFFTspec(badtimes,:) = 0;
-  
-    %% Calculate per-bin weights onto SlowWave
-    broadbandSlowWave = zFFTspec*SWweights';
-    broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
+    
+    if strcmp(SWweights,'PSS')
+        [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
+            'channels',SWChannels(idx));
+        broadbandSlowWave = specslope.data;
+        SWfreqlist = specslope.freqs;
+    else
+        [FFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,LFPchanidx)),window*Fs,noverlap*Fs,swFFTfreqs,Fs);
+        FFTspec = abs(FFTspec);
+        [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
+        % Remove transients before calculating SW histogram
+        %this should be it's own whole section - removing/detecting transients
+        totz = zscore(abs(sum(zFFTspec')));
+        badtimes = find(totz>5);
+        zFFTspec(badtimes,:) = 0;
+
+        %% Calculate per-bin weights onto SlowWave
+        broadbandSlowWave = zFFTspec*SWweights';
+    end
+    %%
+    broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_FFT)));
     broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
     %% Histogram and diptest of Slow Wave Power
@@ -190,6 +203,7 @@ parfor idx = 1:numSWChannels;
     dipSW(idx) = hartigansdiptest_ss(sort(broadbandSlowWave));
 end
 parfor_progress(0);
+
 %% Get info to allow to pick Theta channel
 parfor_progress(numSWChannels);
 tstart = tic;
@@ -211,7 +225,7 @@ parfor idx = 1:numThetaChannels;
 
     %% Get spectrogram and calculate theta ratio
     LFPchanidx = find(usechannels==ThetaChannels(idx));
-    thFFTspec = spectrogram(single(allLFP(:,LFPchanidx)),window,noverlap,thFFTfreqs,Fs);
+    thFFTspec = spectrogram(single(allLFP.data(:,LFPchanidx)),window*Fs,noverlap*Fs,thFFTfreqs,Fs);
     thFFTspec = (abs(thFFTspec));
 
     thfreqs = find(thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
@@ -248,16 +262,16 @@ SWchanID = SWChannels(goodSWidx);      %Channel IDnumber of the
 THchanID = ThetaChannels(goodTHidx);   %best SW and theta channels
 
 %% Load the best channels at sampling frequency needed for clustering later
+%This needs to be converted to buzcode bz_getLFP....
 downsample_save = Par.lfpSampleRate./250;
-sf = Par.lfpSampleRate./downsample_save;
-swthLFP = bz_LoadBinary(rawlfppath,'frequency',Par.lfpSampleRate,...
-    'downsample',downsample_save,...
-    'nchannels',nChannels,'channels',[SWchanID,THchanID]+1,...
-    'start',scoretime(1),'duration',diff(scoretime));
 
-swLFP = (swthLFP(:,1));
-thLFP = (swthLFP(:,2));
-t = [1:length(swLFP)]./sf;
+swthLFP = bz_GetLFP([SWchanID,THchanID],'basepath',basePath,...
+    'downsample',downsample_save,'intervals',scoretime,'noPrompts',noPrompts);
+
+swLFP = (swthLFP.data(:,1));
+thLFP = (swthLFP.data(:,2));
+t = swthLFP.timestamps;
+sf = swthLFP.samplingRate;
 
 
 %% SleepScoreLFP output
@@ -347,20 +361,34 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
 
 
     %Calculate PC1 for plot/return
-    [FFTspec,swFFTfreqs,t_FFT] = spectrogram(double(allLFP(:,goodSWidx)),window,noverlap,swFFTfreqs,Fs);
-    FFTspec = abs(FFTspec);
-    [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
+    if strcmp(SWweights,'PSS')
+        [specslope,spec] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
+            'channels',SWChannels(goodSWidx));
+        broadbandSlowWave = specslope.data;
+        t_FFT = spec.timestamps;
+        FFTspec = spec.amp;
+        swFFTfreqs = spec.freqs;
+        [zFFTspec,mu,sig] = zscore((FFTspec)');
+       % SWfreqlist = specslope.freqs;
+    else
+        [FFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,goodSWidx)),window*Fs,noverlap*Fs,swFFTfreqs,Fs);
+        FFTspec = abs(FFTspec);
+        [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
+        % Remove transients before calculating SW histogram
+        %this should be it's own whole section - removing/detecting transients
+        totz = zscore(abs(sum(zFFTspec')));
+        badtimes = find(totz>5);
+        zFFTspec(badtimes,:) = 0;
 
-    totz = zscore(abs(sum(zFFTspec')));
-    badtimes = find(totz>5);
-    zFFTspec(badtimes,:) = 0;
-    
-     %[COEFF, SCORE, LATENT] = pca(zFFTspec);
-    %broadbandSlowWave = SCORE(:,1);
-     broadbandSlowWave = zFFTspec*SWweights';
-     broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
-     broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
+        %Calculate per-bin weights onto SlowWave
+        broadbandSlowWave = zFFTspec*SWweights';
+    end
 
+    broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_FFT)));
+    broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
+
+     
+     
 chanfig =figure('visible','off');
 	subplot(5,1,1:2)
         imagesc(t_FFT,log2(swFFTfreqs),log10(FFTspec))
@@ -378,7 +406,7 @@ chanfig =figure('visible','off');
         set(gca,'XTick',[]);
      
     %Calculate Theta ratio for plot/return    
-    [thFFTspec,thFFTfreqs,t_FFT] = spectrogram(double(allLFP(:,goodTHidx)),window,noverlap,thFFTfreqs,Fs);
+    [thFFTspec,thFFTfreqs,t_FFT] = spectrogram(double(allLFP.data(:,goodTHidx)),window*Fs,noverlap*Fs,thFFTfreqs,Fs);
     thFFTspec = abs(thFFTspec);
     [zFFTspec,mu,sig] = zscore(log10(thFFTspec)');
         
