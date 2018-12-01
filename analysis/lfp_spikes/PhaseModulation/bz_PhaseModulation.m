@@ -39,6 +39,7 @@
 %                    phasestats.mode     distribution mode
 %                    phasestats.k        concentration
 %                    phasestats.p        p-value for Rayleigh test
+%                    phasestats.r        mean resultant length
 %
 % 
 % Calculates distribution of spikes over various phases from a specified

@@ -14,7 +14,7 @@ if ~exist('basePath','var')
     basePath = pwd;
 end
 
-if bz_isSession % only worth continuing if it's a session..
+if bz_isSession(basePath) % only worth continuing if it's a session..
     sessionInfo = bz_getSessionInfo(basePath,'noprompts',true);
 
     if bz_isSessionInfo(sessionInfo) 

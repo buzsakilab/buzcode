@@ -100,11 +100,11 @@ if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file') &
              'containing .lfp files'])
         %foldercontents = dir(basePath);
         %possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
-        [basePaths,baseNames] = bz_FindBasePaths(basePath); %Find all basePaths within the topPath
-        [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
-                        'ListString',baseNames);
-        recordingname = baseNames(s);
-        basePaths = basePaths(s);
+        [basePaths,recordingname] = bz_FindBasePaths(basePath,'select',true); %Find all basePaths within the topPath
+%         [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
+%                         'ListString',baseNames);
+%         recordingname = baseNames(s);
+%         basePaths = basePaths(s);
         
 end
 
@@ -185,7 +185,7 @@ bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']
 
 
 %% Get channels not to use
-parameters = bz_getSessionInfo(basePath);
+parameters = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 % check that SW/Theta channels exist in rec..
 if length(SWChannels) > 1 
     if sum(ismember(SWChannels,parameters.channels)) ~= length(SWChannels)
@@ -213,7 +213,7 @@ end
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
 EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
-                                     'rejectChannels',rejectChannels);
+                                     'rejectChannels',rejectChannels,'noPrompts',noPrompts);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
 %Determine the best channels for Slow Wave and Theta separation.
@@ -222,7 +222,7 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
                             scoretime,SWWeightsName,...
                             Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
                             SWChannels,ThetaChannels,rejectChannels,...
-                            overwrite);
+                            overwrite,'noPrompts',noPrompts);
 
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG
 
@@ -258,7 +258,7 @@ save(bz_sleepstatepath,'SleepState');
 
 %% MAKE THE STATE SCORE OUTPUT FIGURE
 %ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
-ClusterStates_MakeFigure(SleepState,basePath);
+ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
 
 %% JOIN STATES INTO EPISODES
 

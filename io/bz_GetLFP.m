@@ -14,15 +14,17 @@ function [lfp] = bz_GetLFP(varargin)
 %                        list of channels to load (use keyword 'all' for all)
 %                        channID is 0-indexing, a la neuroscope
 %  Name-value paired inputs:
-%    basepath           - folder in which .lfp file will be found (default
+%    'basepath'           - folder in which .lfp file will be found (default
 %                           is pwd)
 %                           folder should follow buzcode standard:
 %                           whateverPath/baseName
 %                           and contain file baseName.lfp
-%    basename           -base file name to load
-%    intervals          -list of time intervals [0 10; 20 30] to read from 
+%    'basename'           -base file name to load
+%    'intervals'          -list of time intervals [0 10; 20 30] to read from 
 %                           the LFP file (default is [0 inf])
-%    noPrompts          -logical (default) to supress any user prompts
+%    'downsample'         -factor to downsample the LFP (i.e. 'downsample',5
+%                           will load a 1250Hz .lfp file at 250Hz)
+%    'noPrompts'          -logical (default) to supress any user prompts
 %
 %  OUTPUT
 %
@@ -70,6 +72,7 @@ addParameter(p,'basename','',@isstr)
 addParameter(p,'intervals',[],@isnumeric)
 addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
+addParameter(p,'downsample',1,@isnumeric);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
@@ -77,6 +80,7 @@ addParameter(p,'noPrompts',false,@islogical);
 parse(p,varargin{:})
 basename = p.Results.basename;
 channels = p.Results.channels;
+downsamplefactor = p.Results.downsample;
 basepath = p.Results.basepath;
 noPrompts = p.Results.noPrompts;
 
@@ -126,7 +130,11 @@ try
 catch
     samplingRate = sessionInfo.rates.lfp; % old ugliness we need to get rid of
 end
+samplingRateLFP = samplingRate./downsamplefactor;
 
+if mod(samplingRateLFP,1)~=0
+    error('samplingRate/downsamplefactor must be an integer')
+end
 %% Channel load options
 %Right now this assumes that all means channels 0:nunchannels-1 (neuroscope
 %indexing), we could also add options for this to be select region or spike
@@ -149,12 +157,13 @@ for i = 1:nIntervals
     lfp(i).data = bz_LoadBinary([basepath filesep lfp.Filename],...
         'duration',double(lfp(i).duration),...
                   'frequency',samplingRate,'nchannels',sessionInfo.nChannels,...
-                  'start',double(lfp(i).interval(1)),'channels',channels+1);
-    lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRate):...
+                  'start',double(lfp(i).interval(1)),'channels',channels+1,...
+                  'downsample',downsamplefactor);
+    lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRateLFP):...
                         (lfp(i).interval(1)+(length(lfp(i).data)-1)/...
-                        samplingRate)]';
+                        samplingRateLFP)]';
     lfp(i).channels = channels;
-    lfp(i).samplingRate = samplingRate;
+    lfp(i).samplingRate = samplingRateLFP;
     % check if duration is inf, and reset to actual duration...
     if lfp(i).interval(2) == inf
         lfp(i).interval(2) = length(lfp(i).timestamps)/lfp(i).samplingRate;

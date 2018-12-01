@@ -58,7 +58,17 @@ badtimes = find(totz>5);
 zFFTspec(badtimes,:) = 0;
  
 %% Set Broadband filter weights for Slow Wave
-load('SWweights.mat')
+if exist('SleepScoreLFP','var')
+    if isfield(SleepScoreLFP,'params')
+        if isfield (SleepScoreLFP.params,'SWWeights')
+            SWweights = SleepScoreLFP.params.SWWeights;
+        end
+    end
+end
+if ~exist('SWweights','var')
+    load('SWweights.mat')
+end
+
 assert(isequal(freqlist,SWfreqlist), 'spectrogram freqs.  are not what they should be...')
 broadbandSlowWave = zFFTspec*SWweights';
  
@@ -199,14 +209,16 @@ else
 %     REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
 end
 
-histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,EMGthresh,THhist,THhistbins,THthresh);
+histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,...
+    EMGthresh,THhist,THhistbins,THthresh);
 
 %% Ouput Structure: StateScoreMetrics
 LFPparams = SleepScoreLFP.params;
 THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
 SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
-    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,recordingname);
+    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,...
+    recordingname);
 %save(matfilename,'SleepScoreMetrics');
 
 StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);

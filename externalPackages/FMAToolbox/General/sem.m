@@ -1,4 +1,4 @@
-function s = sem(x)
+function s = sem(x,varargin)
 
 %sem - Compute standard error of the mean (SEM).
 %
@@ -7,6 +7,7 @@ function s = sem(x)
 %    s = sem(x)
 %
 %    x              vector or matrix over which the SEM should be computed
+%    dim            dimension to run SEM across (default = 1)
 
 % Copyright (C) 2008-2013 by Michaël Zugaro
 %
@@ -18,11 +19,16 @@ function s = sem(x)
 if nargin < 1,
   error('Incorrect number of parameters (type ''help <a href="matlab:help sem">sem</a>'' for details).');
 end
-
-if ~isdmatrix(x) & ~isdvector(x),
+if nargin == 1
+    dim = 1;
+else
+    dim = varargin{1};
+end
+if ~isnumeric(x) & ~isdvector(x),
   error('Incorrect input - use vector or matrix (type ''help <a href="matlab:help sem">sem</a>'' for details).');
 end
 
-if any(size(x)==1), x = x(:); end
+% if any(size(x)==1), x = x(:); end
 
-s = std(x)/sqrt(size(x,1));
+% s = std(x,[],dim)./sqrt(size(x,1));
+s = nanstd(x,[],dim) ./ sqrt(sum(~isnan(x),dim));

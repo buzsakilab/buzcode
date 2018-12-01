@@ -156,6 +156,7 @@ CellClass.pI = ~ELike';
 CellClass.label = cell(size(CellClass.UID));
 CellClass.label(CellClass.pE) = {'pE'};
 CellClass.label(CellClass.pI) = {'pI'};
+CellClass.celltypes = {'pE','pI'}; %should this include pI if there are no pI cells?
 CellClass.detectionparms.TroughPeakMs = x';
 CellClass.detectionparms.SpikeWidthMs = y';
 CellClass.detectionparms.PyrBoundary = PyrBoundary;

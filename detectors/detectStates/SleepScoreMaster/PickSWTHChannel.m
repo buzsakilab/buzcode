@@ -1,8 +1,18 @@
-function [SleepScoreLFP] = PickSWTHChannel(basePath,scoretime,SWWeightsName,Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,rejectchannels,OVERWRITE);
+function [SleepScoreLFP] = PickSWTHChannel(basePath,scoretime,SWWeightsName,...
+    Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,...
+    rejectchannels,OVERWRITE,varargin)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
+% Optional
+%       'noPrompts'     (default: false) prevents prompts about saving/adding metadata
 %
 %% Buzcode name of the SleepScoreLFP.LFP.mat file
+p = inputParser;
+addParameter(p,'noPrompts',false,@islogical);
+parse(p,varargin{:})
+noPrompts = p.Results.noPrompts;
+
+
 [datasetfolder,recordingname,extension] = fileparts(basePath);
 recordingname = [recordingname extension];
 
@@ -40,7 +50,7 @@ else
 end
 
 %% FMA
-Par = bz_getSessionInfo(basePath);
+Par = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 Fs = Par.lfpSampleRate; % Hz, LFP sampling rate
 nChannels = Par.nChannels;
 

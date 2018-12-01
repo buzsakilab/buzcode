@@ -24,7 +24,7 @@ function data = bz_LoadBinary(filename,varargin)
 %                   default = 0)
 %     'samples'     number of samples (per channel) to read (default = Inf)
 %     'nChannels'   number of data channels in the file (default = 1)
-%     'channels'    channels to read (default = all)
+%     'channels'    channels to read, base 1 (default = all)
 %     'precision'   sample precision (default = 'int16')
 %     'skip'        number of bytes to skip after each value is read
 %                   (default = 0)
@@ -43,7 +43,7 @@ function data = bz_LoadBinary(filename,varargin)
 % Default values
 nChannels = 1;
 precision = 'int16';
-warning(['this function assumes int16 precision, if your file is not int16 use load/resample.m'])
+%warning(['this function assumes int16 precision, if your file is not int16 use load/resample.m'])
 skip = 0;
 frequency = 20000;
 channels = [];
@@ -166,7 +166,7 @@ end
 % Position and number of samples (per channel) of the data subset
 if time,
 	dataOffset = floor(start*frequency)*nChannels*sampleSize;
-	nSamplesPerChannel = floor((duration*frequency));
+	nSamplesPerChannel = round((duration*frequency));
 else
 	dataOffset = offset*nChannels*sampleSize;
 end

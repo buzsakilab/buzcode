@@ -22,7 +22,7 @@ classdef poisson_naive_bayes_CL
 %       (i.e., the lambda values) for each class.
 % 
 %  2. [predicted_labels decision_values] = test(cl, XTe)
-%       This method takes the test data and calculates the log of the likelihood
+%       This method takes the test data an[d calculates the log of the likelihood
 %       function for each class (which are the decision values), and returns the class
 %       with the highest likelihood as the predicted_label.  
 %
@@ -86,10 +86,10 @@ classdef poisson_naive_bayes_CL
             end
 
             % sanity check to make sure the training data only contains integers
-           if sum(sum(abs(round(XTr) - XTr))) > 10.^-2  % (not having it be exactly zero to account for round off error)
-               error(['The training data must only contain integers to use this classifier.  Make sure the data was loaded as integers (e.g., using the appropriate flag in ' ...
-                   'basic_DS/generalization_DS datasources, and that only appropriate feature preprocessors were used (e.g., do not use the zscore_normalize_FP)'])
-           end
+%            if sum(sum(abs(round(XTr) - XTr))) > 10.^-2  % (not having it be exactly zero to account for round off error)
+%                error(['The training data must only contain integers to use this classifier.  Make sure the data was loaded as integers (e.g., using the appropriate flag in ' ...
+%                    'basic_DS/generalization_DS datasources, and that only appropriate feature preprocessors were used (e.g., do not use the zscore_normalize_FP)'])
+%            end
             
                 
             
@@ -118,10 +118,10 @@ classdef poisson_naive_bayes_CL
             
             
             % sanity check to make sure the test data only contains integers
-           if sum(sum(abs(round(XTe) - XTe))) > 10.^-2   % (not having it be exactly zero to account for round off error)
-               error(['The test data must only contain integers to use this classifier.  Make sure the data was loaded as integers (e.g., using the appropriate flag in ' ...
-                   'basic_DS/generalization_DS datasources, and that only appropriate feature preprocessors were used (e.g., do not use the zscore_normalize_FP)'])
-           end
+%            if sum(sum(abs(round(XTe) - XTe))) > 10.^-2   % (not having it be exactly zero to account for round off error)
+%                error(['The test data must only contain integers to use this classifier.  Make sure the data was loaded as integers (e.g., using the appropriate flag in ' ...
+%                    'basic_DS/generalization_DS datasources, and that only appropriate feature preprocessors were used (e.g., do not use the zscore_normalize_FP)'])
+%            end
             
             
             

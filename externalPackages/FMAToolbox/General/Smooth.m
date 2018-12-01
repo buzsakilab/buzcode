@@ -145,18 +145,21 @@ end
 if vector,
 	% Vector smoothing
 	% Prepend/append data to limit edge effects
+    %% This changes the behavior of Smooth, to avoid linear variable edge effects
 	if strcmp(type,'l'),
 		% For linear data, flip edge data
 		% top = 2*data(1)-flipud(data(1:vKernelSize));
 		% bottom = 2*data(end)-flipud(data(end-vKernelSize+1:end));
-		top = flipud(data(1:vKernelSize));
-		bottom = flipud(data(end-vKernelSize+1:end));
+% 		top = flipud(data(1:vKernelSize));
+% 		bottom = flipud(data(end-vKernelSize+1:end));
 	else
 		% For circular data, wrap edge data
 		top = data(end-vKernelSize+1:end);
 		bottom = data(1:vKernelSize);
+        data = [top;data;bottom];
 	end
-	data = [top;data;bottom];
+% 	data = [top;data;bottom];
+%%
 	% Convolve (and return central part)
 	tmp = conv(vKernel,data);
 	n = size(tmp,1);

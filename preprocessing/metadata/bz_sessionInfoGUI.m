@@ -20,11 +20,15 @@ end
 fieldoptions = {'Regions','Bad Channels','quit'};
 
 %Get the spike groups into selection format
-for ss = 1:sessionInfo.spikeGroups.nGroups
-    spikegroups.(['sg',num2str(ss)]) = { {'{0}','1'},...
-        ['SpikeGroup',num2str(ss),...
-        ' (',num2str(sessionInfo.spikeGroups.groups{ss}(1)),', ... ,',...
-        num2str(sessionInfo.spikeGroups.groups{ss}(end)),')']};
+if ~isempty(sessionInfo.spikeGroups.groups)
+    for ss = 1:sessionInfo.spikeGroups.nGroups
+        spikegroups.(['sg',num2str(ss)]) = { {'{0}','1'},...
+            ['SpikeGroup',num2str(ss),...
+            ' (',num2str(sessionInfo.spikeGroups.groups{ss}(1)),', ... ,',...
+            num2str(sessionInfo.spikeGroups.groups{ss}(end)),')']};
+    end
+else
+    spikegroups = 'No Spike Groups';
 end
 
 %% Loop For user input modes
