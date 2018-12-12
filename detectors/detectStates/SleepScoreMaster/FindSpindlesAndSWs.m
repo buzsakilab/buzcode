@@ -1,4 +1,4 @@
-function [ pSpindleInts,cycletimemap,deltapeaks,SpindleStats ] = FindSpindlesAndSWs(datasetfolder,recname,figfolder,StateIntervals)
+function [ pSpindleInts,cycletimemap,deltapeaks,SpindleStats ] = FindSpindlesAndSWs(basepath,figfolder,StateIntervals)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 %
@@ -20,20 +20,27 @@ function [ pSpindleInts,cycletimemap,deltapeaks,SpindleStats ] = FindSpindlesAnd
 % probegroups = {1:4,5:6}; %Group 1: Cingulate.  %Group2: HPC jenn1
 %numprobes = length(probegroups);
 
-
-
-xmlfilename = [datasetfolder,'/',recname,'/',recname,'.xml'];
-if exist (fullfile(datasetfolder,recname,[recname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recname,[recname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recname,[recname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recname,[recname,'.lfp']);
-else 
-    display('No .lfp file')
+if ~exist('basepath','var')
+    basepath = cd;
 end
+basename = bz_BasenameFromBasepath(basepath);
 
 
-SetCurrentSession(xmlfilename)
-global DATA;
+% xmlfilename = [basepath,'/',basename,'/',basename,'.xml'];
+% if exist (fullfile(basepath,basename,[basename,'.lfp']),'file')
+%     rawlfppath = fullfile(basepath,basename,[basename,'.lfp']);
+% elseif exist (fullfile(basepath,basename,[basename,'.lfp']),'file')
+%     rawlfppath = fullfile(basepath,basename,[basename,'.lfp']);
+% else 
+%     display('No .lfp file')
+% end
+xmlfilename = fullfile(basepath,[basename,'.xml']);
+rawlfppath = fullfile(basepath,[basename,'.lfp']);
+
+
+
+% SetCurrentSession(xmlfilename)
+% global DATA;
 
 spikegroups = DATA.spikeGroups.groups;
 
@@ -50,7 +57,7 @@ numgroups = length(spikegroups);
 %% Load the channel map to get the cortical channels
 CTXlabels = {'mPFC','ACC','MotorCtx','OFC'};
 
-spikegroupanatomyfilename = fullfile(datasetfolder,recname,[recname,'_SpikeGroupAnatomy.csv']);
+spikegroupanatomyfilename = fullfile(basepath,basename,[basename,'_SpikeGroupAnatomy.csv']);
 spkgroupanatomy=readtable(spikegroupanatomyfilename);
 
 ctxgroups = ismember(spkgroupanatomy.AnatomicalSite,CTXlabels);
@@ -60,14 +67,14 @@ ctxchannels = [spikegroups{ctxgroups}];
 %%
 
 if ~exist('StateIntervals','var')
-    load(fullfile(datasetfolder,recname,[recname,'_SleepScore.mat']));
+    load(fullfile(basepath,basename,[basename,'_SleepScore.mat']));
 end
 
 
 NREMint = StateIntervals.NREMstate;
 
-if exist (fullfile(datasetfolder,recname,[recname,'_GoodSleepInterval.mat']),'file')
-   load(fullfile(datasetfolder,recname,[recname,'_GoodSleepInterval.mat']));
+if exist (fullfile(basepath,basename,[basename,'_GoodSleepInterval.mat']),'file')
+   load(fullfile(basepath,basename,[basename,'_GoodSleepInterval.mat']));
    [NREMint] = RestrictInts(NREMint,GoodSleepInterval); 
 end
 
@@ -81,11 +88,11 @@ end
 %Put this into DetectSPINDLES
 
 %% Delta Peak Times
-[deltapeaks] = DeltaPeakTimes(ctxchannels,NREMint,figfolder,recname);
+[deltapeaks] = DeltaPeakTimes(ctxchannels,NREMint,figfolder,basename);
 
 
 %% Characteriation of pSpindle LFP and peaks (add peaks characterization from below)
-[SpindleStats] = SpindleIntLFP(pSpindleInts,cycletimemap,deltapeaks,ctxchannels,NREMint,figfolder,recname)
+[SpindleStats] = SpindleIntLFP(pSpindleInts,cycletimemap,deltapeaks,ctxchannels,NREMint,figfolder,basename)
 
 
 
