@@ -247,14 +247,14 @@ if ~(exist('rawEeg', 'var') & exist('Chs', 'var') & exist('nCh', 'var') & exist(
             if FileExistsIn([baseName,'.lfp'])
                 suffix = '.lfp';
             else
-%                 try 
-%                     basepath = cd;
-%                     eeglfppath = findsessioneeglfpfile(baseName,basepath);
-%                 catch
-                    disp(['Error: ', baseName, '.eeg or .lfp not found.'])
-                    disp(['Quitting now. Bye bye.']);
-                    return
-%                 end
+% %                 try 
+% %                     basepath = cd;
+% %                     eeglfppath = findsessioneeglfpfile(baseName,basepath);
+% %                 catch
+%                     disp(['Error: ', baseName, '.eeg or .lfp not found.'])
+%                     disp(['Quitting now. Bye bye.']);
+%                     return
+% %                 end
             end
         end
         
@@ -729,6 +729,7 @@ FO.newStates = {};
 FO.currAction = 'Browse';
 FO.eegFS = eegFS;
 
+
 FO.overlayLines = {};
 
 posvar = get(0,'Screensize');
@@ -1090,7 +1091,7 @@ set(FO.eventDisp, 'String', Eoptions, 'CallBack', {@EventNumber}, 'Value', 2);
 FO.eventNum = 1;
 
 %Save raw eeg for offline use
-FO.saveEEGButton = uicontrol('style', 'pushbutton', 'String', 'Save Raw EEG', 'Units', 'normalized', 'Position',  [0.87, 0.15, 0.1, 0.04]);
+FO.saveEEGButton = uicontrol('style', 'pushbutton', 'String', 'Export Raw EEG', 'Units', 'normalized', 'Position',  [0.87, 0.15, 0.1, 0.04]);
 set(FO.saveEEGButton, 'Callback', {@saveRawEEG});
 
 %Undo/Redo state buttons
@@ -1586,9 +1587,9 @@ switch(lfpClick)
             case 'Add'
                 switch(clickType)
                     case 'Single'
-                        addStateLine(pointTo);
+                        FO = addStateLine(pointTo);
                     case 'Double'
-                        addStateLine(pointTo);
+                        FO = addStateLine(pointTo);
                     case 'Hold'
                         c = holdC;
                         d = (c(1) - FO.xplotLims(1))./diff(FO.xplotLims);
@@ -1813,7 +1814,7 @@ switch(lfpClick)
             case 'Add'
                 switch(clickType)
                     case 'Single'
-                        addStateLine(pointTo);
+                        FO = addStateLine(pointTo);
                     case 'Hold'
                         c = holdC;
                         d = (c(1) - FO.xplotLims(1))./diff(FO.xplotLims);
@@ -1934,11 +1935,20 @@ switch(lfpClick)
 end
 
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+disp(FO.startLine)
+
+
 FO.clickPoint = pointTo;
 guidata(obj, FO);
 if updateEegToClick == 1
     updateEEG(pointTo);
 end
+
+if ~isempty(FO.startLine)
+    1;
+end
+
+
 UpdateText;
 end
 
@@ -2065,9 +2075,9 @@ function Nothing(e, src)
 a = 0;
 end
 
-function addStateLine(location)
+function FO = addStateLine(location)
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-if isempty(FO.startLine)
+if isempty(FO.startLine) 
     ax = FO.lax;
     yl = get(ax, 'YLim');
     axes(ax);
@@ -2099,25 +2109,27 @@ if isempty(FO.startLine)
     FO.startLocation = location;
     guidata(FO.fig, FO); 
     
-else
-    
-    FO.currAction = 'Browse';
-    
+else    
     for i = 1:length(FO.startLine)
         delete(FO.startLine{i});
     end
     FO.startLine = {};
     
     guidata(FO.fig, FO); 
-    addState(location);
-    obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+    FO = addState(location);
+
+    FO.currAction = 'Browse';
+    FO.startLocation = [];
+    guidata(FO.fig, FO); 
+
+%     obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); 
 end
 guidata(FO.fig, FO); 
 UpdateText;
 end
 
-function addState(loc2)
-obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
+function FO = addState(loc2)
+obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); 
 s = FO.currentState;
 f1 = dsearchn(FO.to, FO.startLocation);
 f2 = dsearchn(FO.to, loc2);
@@ -2145,13 +2157,13 @@ FO.newStates{end + 1}.state = newState;
 FO.newStates{end}.location = f(1);
 FO.startLocation  = [];
 guidata(FO.fig, FO); 
-modifyStates(f(1), newState);
+FO = modifyStates(f(1), newState);
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
 updateEEG;
 UpdateText;
 end
 
-function modifyStates(startLoc, newState, varargin)
+function FO = modifyStates(startLoc, newState, varargin)
 
 if isempty(varargin)
     makeGrey = 1;
@@ -2749,7 +2761,6 @@ end
 
 function UpdateText
 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj);
-
 action = FO.currAction;
 
 switch action
@@ -2819,6 +2830,7 @@ else
         end
     end
 end
+
 guidata(FO.fig, FO); 
 end
 
