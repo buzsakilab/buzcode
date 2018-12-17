@@ -178,6 +178,7 @@ parfor idx = 1:numSWChannels;
             'channels',SWChannels(idx));
         broadbandSlowWave = specslope.data;
         SWfreqlist = specslope.freqs;
+        broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
     else
         [FFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,LFPchanidx)),window*Fs,noverlap*Fs,swFFTfreqs,Fs);
         FFTspec = abs(FFTspec);
@@ -190,9 +191,9 @@ parfor idx = 1:numSWChannels;
 
         %% Calculate per-bin weights onto SlowWave
         broadbandSlowWave = zFFTspec*SWweights';
+        broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_FFT)));
     end
     %%
-    broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_FFT)));
     broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
     %% Histogram and diptest of Slow Wave Power

@@ -12,16 +12,22 @@ if ~exist(basepath,'dir')
     basepath = fullfile(getdropbox,'Data','KetamineDataset',basename);
 end
 
+%% Check if already bins made
+if exist(fullfile(basepath,[basename '_RecordingSecondVectors.mat']),'file')
+    disp([fullfile(basepath,[basename '_RecordingSecondVectors.mat']) ' already exists, not re-making'])
+end
 
-load(fullfile(basepath,[basename '_DatsMetadata.mat']))
+
+%% Make bins if not already there
+load(fullfile(basepath,[basename '_DatInfo.mat']))
 load(fullfile(basepath,[basename '_SecondsFromLightsOn.mat']))
 
-RecordingSeconds = .1:.1:sum(DatsMetadata.Recordings.Seconds);
+RecordingSeconds = .1:.1:sum(DatInfo.Files.Seconds);
 
 % Clock seconds since light on (on day 1)
 FromLightOn_ByClockSeconds = [];
 RecordingStartsFromLightOnByClock = SecondsAfterLightCycleStart_PerFile;
-RecordingEndsFromLightOnByClock = SecondsAfterLightCycleStart_PerFile+DatsMetadata.Recordings.Seconds;
+RecordingEndsFromLightOnByClock = SecondsAfterLightCycleStart_PerFile+DatInfo.Files.Seconds;
 for a = 1:length(RecordingStartsFromLightOnByClock)
     FromLightOn_ByClockSeconds = cat(2,FromLightOn_ByClockSeconds,RecordingStartsFromLightOnByClock(a)+.1:.1:RecordingEndsFromLightOnByClock(a));
 end
