@@ -17,7 +17,6 @@ end
 
 %Get the view window and events inside it
 thiseventwin = timepoint+FO.winsize.*[-0.5 0.5];
-inwinevents = FO.EventTimes(FO.EventTimes>=thiseventwin(1) &FO.EventTimes<=thiseventwin(2));
 
 %Plot
 %viewwin = subplot(3,1,2,'ButtonDownFcn',@MouseClick);
@@ -26,8 +25,18 @@ hold(FO.viewwin,'off')
 bz_MultiLFPPlot(FO.data.lfp,'timewin',thiseventwin,'spikes',FO.data.spikes,...
     'axhandle',FO.viewwin,'scaleLFP',FO.scaleLFP)
 hold on
-plot(FO.viewwin,inwinevents,zeros(size(inwinevents)),'o','color',[0 0.6 0])
+if isfield(FO,'EventStarts')
+    inwinevents = FO.EventTimes(FO.EventTimes>=thiseventwin(1) &FO.EventTimes<=thiseventwin(2));
 
+    inwinstarts = FO.EventStarts(FO.EventStarts>=thiseventwin(1) &FO.EventStarts<=thiseventwin(2));
+    inwinstops = FO.EventStops(FO.EventStops>=thiseventwin(1) &FO.EventStops<=thiseventwin(2));
+
+    plot(FO.viewwin,inwinstarts,zeros(size(inwinstarts))-500,'o','color',[0 0.6 0],'markersize',15,'linewidth',3)
+    plot(FO.viewwin,inwinstops,zeros(size(inwinstops))-500,'o','color',[0.6 0 0],'markersize',15,'linewidth',3)
+else
+    inwinevents = FO.EventTimes(FO.EventTimes>=thiseventwin(1) &FO.EventTimes<=thiseventwin(2));
+    plot(FO.viewwin,inwinevents,zeros(size(inwinevents)),'o','color',[0 0.6 0],'markersize',15,'linewidth',3)
+end
 
 %Passthrough info from the plot
 viewinfo.thiseventwin = thiseventwin;

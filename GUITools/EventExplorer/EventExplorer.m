@@ -80,16 +80,22 @@ switch eventstype
         FO.viewmode = 'timepoint';
 end
 
+%% 
+FO.baseName = baseName;
+FO.EventName = eventsname;
+FO.basePath = basePath;
+
 %For events with start/stops, use the mean of the two as a marker. In the
 %future replace with with start/stop markers
 if size(exploreint,2)==2 %For events with start/stops, use the 
-    exploreint = mean(exploreint,2);
+    exploreint_mean = mean(exploreint,2);
+    FO.EventTimes = exploreint_mean;
+    FO.EventStarts = exploreint(:,1);
+    FO.EventStops = exploreint(:,2);
+else
+    FO.EventTimes = exploreint;
 end
-%% 
-FO.baseName = baseName;
-FO.EventTimes = exploreint;
-FO.EventName = eventsname;
-FO.basePath = basePath;
+
 
 %Load EventExplorer data from events file 
 REVIEWDONE = false;
@@ -110,7 +116,7 @@ if exist(FO.EEbuzcodefilename,'file')
     FO.FlagsAndComments.timepoint = EventExplorer.FlagsAndComments; 
 end
 
-FO.FlagsAndComments = MergeFlagsComments(FO.FlagsAndComments,FO.EventTimes);
+% FO.FlagsAndComments = MergeFlagsComments(FO.FlagsAndComments,FO.EventTimes);
 %% Load The Data, eh?
 %could put to function: EE_Initiate
 
