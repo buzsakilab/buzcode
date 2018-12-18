@@ -101,6 +101,8 @@ for a = 1:length(d)
         %Check for amplifier.dat or subfolderbaseName.dat 
         if exist(fullfile(basepath,d(a).name,[d(a).name,'.dat']),'file')
             ampfile = fullfile(basepath,d(a).name,[d(a).name,'.dat']);
+        elseif exist(fullfile(basepath,d(a).name,'amplifier_analogin_auxiliary_int16.dat'),'file')%Luke Sjulson's Modified code to record all 16bit signals in one file
+            ampfile = fullfile(basepath,d(a).name,'amplifier_analogin_auxiliary_int16.dat');
         else
             ampfile = fullfile(basepath,d(a).name,'amplifier.dat');
         end
@@ -157,7 +159,6 @@ end
 %% Sort files according to time of recording
 
 if sortFiles
-
     try
         names2sort = cellfun(@(X) str2num(X(end-5:end)),recordingnames,'UniformOutput',false);
         names2sort = cell2mat(names2sort);

@@ -525,7 +525,7 @@ else
                 tos = fspec{1}.to;
                 times = EMGFromLFP.timestamps;
                 vals = EMGFromLFP.data;
-                motion = ResampleTolerant(vals,length(tos),length(times));
+                motion = ResampleTolerant_IN(vals,length(tos),length(times));
             case 'None'
                 motion = [];
                 MotionType = 'none';
@@ -3290,7 +3290,7 @@ fn = fieldnames(t);
 t = getfield(t,fn{1});
 vals = t(:,2);
 times = t(:,1);
-motion = ResampleTolerant(vals,length(tos),length(times));
+motion = ResampleTolerant_IN(vals,length(tos),length(times));
 
 end
 
@@ -5261,7 +5261,7 @@ end
 end
 
 
-function newvals = ResampleTolerant(vals,length1,length2)
+function newvals = ResampleTolerant_IN(vals,length1,length2)
 % Wrapper around the resample function that allows it to work even if
 % the product of the lengths are long enough to overwhelm the resample.m 
 % limit of 2^31

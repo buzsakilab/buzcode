@@ -81,7 +81,9 @@ end
 if exist(matfilename,'file') && ~overwrite
     display('EMGFromLFP Correlation already calculated - loading from EMGFromLFP.LFP.mat')
     load(matfilename)
-    if exist('EMGCorr','var'); EMGFromLFP = EMGCorr; end %for backcompadibility
+    if exist('EMGCorr','var')%for backcompatability
+        EMGFromLFP = EMGCorr; 
+    end 
     if ~exist('EMGFromLFP','var')
         display([matfilename,' does not contain a variable called EMGFromLFP'])
     end
@@ -129,23 +131,30 @@ corrChunkSz = 20; %for batch-processed correlations
 % spkgrpstouse is a list of spike groups to find channels from 
 
 % get list of spike groups (aka shanks) that should be used
+usablechannels = [];
+spkgrpstouse = [];
+for gidx = 1:length(SpkGrps)
+    usableshankchannels{gidx} = setdiff(SpkGrps(gidx).Channels,rejectChannels);
+    usablechannels = cat(2,usablechannels,usableshankchannels{gidx});
+    if ~isempty(usableshankchannels{gidx})
+        spkgrpstouse = cat(2,spkgrpstouse,gidx);
+    end
+end
 
-spkgrpstouse = 1:length(SpkGrps);
 % check for good/bad shanks and update here
 % spkgrpstouse = unique(cat(1,spkgrpstouse,specialshanks)); % this is redundant with taking all shanks.
 
 % get list of channels (1 from each good spike group)
 xcorr_chs = [];
-for i=1:length(spkgrpstouse)
-    
+for gidx=1:length(spkgrpstouse)
     %Remove rejectChannels
-    usableshankchannels = setdiff(SpkGrps(spkgrpstouse(i)).Channels,rejectChannels);
+%     usableshankchannels = setdiff(SpkGrps(spkgrpstouse(i)).Channels,rejectChannels);
         
    %add first channel from shank (superficial) and last channel from shank (deepest)
-   if ~isempty(usableshankchannels)
-      xcorr_chs = [xcorr_chs, usableshankchannels(1)]; % fast mode? 
-      if spkgrpstouse == 1 % if only one shank, then use top and bottom channels
-          xcorr_chs = [xcorr_chs, usableshankchannels(end)]; 
+   if ~isempty(usableshankchannels{gidx})
+      xcorr_chs = [xcorr_chs, usableshankchannels{gidx}(1)]; % fast mode? 
+      if length(spkgrpstouse) == 1 % if only one shank, then use top and bottom channels
+          xcorr_chs = [xcorr_chs, usableshankchannels{gidx}(end)]; 
       end
    end
 end
@@ -153,8 +162,8 @@ xcorr_chs = unique([xcorr_chs,specialChannels]);
 
 % If restrict channel case:
 if ~isempty(restrictChannels)
-xcorr_chs = restrictChannels;
-end;
+    xcorr_chs = restrictChannels;
+end
 
 %% Read and filter channel
 % read channels

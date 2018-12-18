@@ -255,7 +255,11 @@ save(bz_sleepstatepath,'SleepState');
 
 %% MAKE THE STATE SCORE OUTPUT FIGURE
 %ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
-ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+try
+    ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+catch
+    disp('Figure making error')
+end
 
 %% JOIN STATES INTO EPISODES
 

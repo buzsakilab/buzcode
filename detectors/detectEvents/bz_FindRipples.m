@@ -76,7 +76,7 @@ warning('this function is under development and may not work... yet')
 
 % Default values
 p = inputParser;
-addParameter(p,'thresholds',[2 5],@isivector)
+addParameter(p,'thresholds',[2 5],@isnumeric)
 addParameter(p,'durations',[30 100],@isnumeric)
 addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'frequency',1250,@isnumeric)
@@ -133,7 +133,8 @@ plotType = p.Results.plotType;
 windowLength = frequency/frequency*11;
 
 % Square and normalize signal
-squaredSignal = signal.^2;
+% squaredSignal = signal.^2;
+squaredSignal = abs(signal);
 window = ones(windowLength,1)/windowLength;
 keep = [];
 if ~isempty(restrict)
@@ -228,7 +229,7 @@ ripples = ripples((all((~isnan(ripples)),2)),:);
 
 disp(['After duration test: ' num2str(size(ripples,1)) ' events.']);
 
-% If a noisy channel was provided, find ripple-like events and exclude them
+% If a noise channel was provided, find ripple-like events and exclude them
 bad = [];
 if ~isempty(noise)
     if length(noise) == 1 % you gave a channel number

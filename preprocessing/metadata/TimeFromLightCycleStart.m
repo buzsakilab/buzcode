@@ -104,7 +104,7 @@ switch recsys
             end
         end
         SecondsAfterLightCycleStart_PerFile = nan(1,length(d));
-        for a = 1:length(d);
+        for a = 1:length(d)
             seconds = getintanfilestarttime(d(a).name,lightsondatenum,lightsonhours,lightsonminutes,lightsonseconds);
             if a == 1 
                SecondsAfterLightCycleStart = seconds;
