@@ -2201,7 +2201,7 @@ end
 FO.clickPoint = pointTo;
 
 if FO.EegUpdateBoolean
-    updateEEG(pointTo);
+    FO = updateEEG(FO,pointTo);
 end
 FO = UpdateGUI(FO);
 guidata(FO.fig, FO); 

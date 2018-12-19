@@ -182,15 +182,15 @@ bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']
 
 
 %% Get channels not to use
-parameters = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
+sessionInfo = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 % check that SW/Theta channels exist in rec..
 if length(SWChannels) > 1 
-    if sum(ismember(SWChannels,parameters.channels)) ~= length(SWChannels)
+    if sum(ismember(SWChannels,sessionInfo.channels)) ~= length(SWChannels)
         error('some of the SW input channels dont exist in this recording...?')
     end   
 end
 if length(ThetaChannels) > 1 
-    if sum(ismember(ThetaChannels,parameters.channels)) ~= length(ThetaChannels)
+    if sum(ismember(ThetaChannels,sessionInfo.channels)) ~= length(ThetaChannels)
         error('some of the theta input channels dont exist in this recording...?')
     end   
 end
@@ -198,8 +198,8 @@ end
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
     rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];
-elseif isfield(parameters,'badchannels')
-    rejectChannels = [rejectChannels parameters.badchannels]; %get badchannels from the .xml
+elseif isfield(sessionInfo,'badchannels')
+    rejectChannels = [rejectChannels sessionInfo.badchannels]; %get badchannels from the .xml
 else
     display('No baseName.SessionMetadata.mat, no badchannels in your xml - so no rejected channels')
 end
