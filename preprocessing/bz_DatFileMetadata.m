@@ -1,4 +1,4 @@
-function DatsMetadata = bz_DatsMetadataMake(basepath)
+function DatsMetadata = bz_DatFileMetadata(basepath)
 % Store basic info about the original dat files: names and bytes
 % Brendon Watson 2016-8
 
@@ -141,7 +141,10 @@ switch recsys
                    end
 
                    t = dir(fullfile(basepath,d(didx).name,'amplifier.dat'));
-                   if ~isempty(t) %if original .dat still around
+                   t2 = dir(fullfile(basepath,d(didx).name,'amplifier_analogin_auxiliary_int16.dat'));
+                   if ~isempty(t2) %if original .dat still around.  Handling Luke's RHD software to put all 16bit into same file
+                       DatsMetadata.Recordings.Bytes(thisidx) = t2.bytes;                       
+                   elseif ~isempty(t) %if original .dat still around
                        DatsMetadata.Recordings.Bytes(thisidx) = t.bytes;
                    else%if no .dat around
                        disp([DatsMetadata.Recordings.Names{end} ' not found']);

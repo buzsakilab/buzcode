@@ -180,7 +180,7 @@ betweenpeaks = EMGhistbins(LOCS(1):LOCS(2));
 
 EMGthresh = betweenpeaks(diploc);
 
-MOVtimes = (broadbandSlowWave<swthresh & EMG>EMGthresh);
+MOVtimes = (broadbandSlowWave(:)<swthresh & EMG(:)>EMGthresh);
 
 
 %% Then Divide Theta

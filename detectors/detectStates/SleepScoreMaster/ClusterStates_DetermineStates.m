@@ -29,11 +29,11 @@ v2struct(histsandthreshs)%Expand and get values out of these fields
 
 %% Re-Do this code (should be same as in ClusterStates_GetParams.m) to see if theta is bimodal
 NREMtimes = (broadbandSlowWave >swthresh);
-MOVtimes = (broadbandSlowWave<swthresh & EMG>EMGthresh);
+MOVtimes = (broadbandSlowWave(:)<swthresh & EMG(:)>EMGthresh);
 if THthresh ~= 0
-    REMtimes = (broadbandSlowWave<swthresh & EMG<EMGthresh & thratio>THthresh);
+    REMtimes = (broadbandSlowWave(:)<swthresh & EMG(:)<EMGthresh & thratio(:)>THthresh);
 else % THthresh = 0;
-    REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
+    REMtimes =(broadbandSlowWave(:)<swthresh & EMG(:)<EMGthresh);
 end    
 
 %USE bz_BimodalThresh(bimodaldata,varargin) here
