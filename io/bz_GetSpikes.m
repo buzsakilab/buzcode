@@ -175,6 +175,9 @@ end
 % use the .res files to get spike times
 count = 1;
 
+if isempty(sessionInfo.spikeGroups.groups)
+    sessionInfo.spikeGroups = sessionInfo.AnatGrps;
+end
 for i=1:length(cluFiles) 
     disp(['working on ' cluFiles(i).name])
     
@@ -183,10 +186,10 @@ for i=1:length(cluFiles)
     clu = load(fullfile(basepath,cluFiles(i).name));
     clu = clu(2:end); % toss the first sample to match res/spk files
     res = load(fullfile(basepath,resFiles(i).name));
-    nSamples = sessionInfo.spikeGroups.nSamples(shankID);
     spkGrpChans = sessionInfo.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
     
     if getWaveforms && sum(clu)>0 %bug fix if no clusters 
+        nSamples = sessionInfo.spikeGroups.nSamples(shankID);
         % load waveforms
         chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
         fid = fopen(fullfile(basepath,spkFiles(i).name),'r');

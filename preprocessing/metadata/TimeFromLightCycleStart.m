@@ -1,4 +1,4 @@
-function TimeFromLightCycleStart(basepath,lightsonhours,lightsonminutes,lightsonseconds)
+function [SecondsAfterLightCycleStart_PerFile,SecondsAfterLightCycleStart] =  TimeFromLightCycleStart(basepath,lightsonhours,lightsonminutes,lightsonseconds)
 % Zeitgeber times of recording files... based on file names and/or metadata
 % files.  
 % Inputs: 
@@ -24,10 +24,13 @@ if ~exist('basepath','var')
 end
 basename = bz_BasenameFromBasepath(basepath);
 
+disp(basepath)
+disp(basename)
+
 savepath = fullfile(basepath,[basename '_SecondsFromLightsOn.mat']);
 
 % lightson = 07:00:00;
-lightsonhours_default = 7;
+lightsonhours_default = 6;
 lightsonminutes_default = 0;
 lightsonseconds_default = 0;
 if ~exist('lightsonhours','var')
@@ -83,11 +86,12 @@ lightsondatenum = datenum(bdateyear,bdatemonth,bdateday);
 
 switch recsys
     case 'Amplipex'%if from an amplipex
+       d = dir(fullfile(basepath,[basename(1:end-3) '*' '.meta']));%if I record over new year's eve I'll have to handle it :)
        fname1 = fullfile(basepath,[basename '-01.meta']);%explicitly look for -01
        seconds = getmetafilestarttime(fname1,lightsondatenum,lightsonhours,lightsonminutes,lightsonseconds);
        SecondsAfterLightCycleStart = seconds;
        SecondsAfterLightCycleStart_PerFile = nan(1,length(d));
-       for a = 1:length(d);
+       for a = 1:length(d)
            fname = fullfile(basepath,d(a).name);  
            seconds = getmetafilestarttime(fname,lightsondatenum,lightsonhours,lightsonminutes,lightsonseconds);
            SecondsAfterLightCycleStart_PerFile(a) = seconds;
@@ -100,7 +104,7 @@ switch recsys
             end
         end
         SecondsAfterLightCycleStart_PerFile = nan(1,length(d));
-        for a = 1:length(d);
+        for a = 1:length(d)
             seconds = getintanfilestarttime(d(a).name,lightsondatenum,lightsonhours,lightsonminutes,lightsonseconds);
             if a == 1 
                SecondsAfterLightCycleStart = seconds;
