@@ -71,8 +71,8 @@ end
         trough(m) = MIN2;
         clear MIN2 MAX3 MAX4 I2 I3 I4
    end
-    cell_metrics.rawWaveform.PeaktoTrough = (t_before/sr*2)';
-    cell_metrics.rawWaveform.TroughtoPeak = (t_after/sr*2)';
+    cell_metrics.rawWaveform.PeaktoTrough = (t_before/(sr*2))';
+    cell_metrics.rawWaveform.TroughtoPeak = (t_after/(sr*2))';
     cell_metrics.rawWaveform.AB_ratio = ((peakB-peakA)./(peakA+peakB))';
     cell_metrics.rawWaveform.trough = (trough)';   
      
