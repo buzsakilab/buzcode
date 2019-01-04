@@ -83,7 +83,7 @@ sf_down = sf_abf./downsamplefactor;
 %%
 
 EMGparms.gausswidth = 0.05;  %Gaussian width for smoothing (s)
-EMGparms.Whthreshold = 3;    %EMG Threshold for Whisking (modSTDs)
+EMGparms.Whthreshold = 0.5;    %EMG Threshold for Whisking (modSTDs)
 EMGparms.NWhthreshold = 0.5;    %EMG Threshold for Whisking (modSTDs)
 %EMGparms.threshold = 1;    %EMG Threshold for Whisking (modSTDs)
 EMGparms.minwhisk = 0.1;     %Minimum whisking duration (s)

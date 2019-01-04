@@ -19,10 +19,11 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %                        basepath
 %   'spikes'            -A buzcode-style spike structure 
 %   'NREMInts'          -Interval of times for NREM 
-%                       -(Default: loaded from SleepState.states.mat, 
+%                        (Default: loaded from SleepState.states.mat, 
 %                                   run SleepScoreMaster if not exist)
+%                        use [0 Inf] to detect over all time points
 %   'DetectionChannel'  -Channel with the most robust Slow Waves. (0-Indexing a la neuroscope). 
-%                       -(Default: 'autoselect')
+%                        (Default: 'autoselect')
 %                        'useold' to use channel from existing SlowWaves.events.mat              
 %   'noSpikes'          -true/false - set to true to not use spike information
 %                        (default: false)
