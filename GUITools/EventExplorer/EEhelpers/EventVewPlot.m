@@ -4,11 +4,13 @@ function [ viewinfo ] = EventVewPlot
 obj = findobj('tag','EventExplorerMaster');  FO = guidata(obj); 
 
 %Two options of current timepoint: Event Number, arbitraty timepoint
+%FA/misses for DetectionReview
 switch FO.viewmode
     case 'timepoint' 
         timepoint = FO.currevent;
     case 'events'
-        timepoint = FO.EventTimes(FO.currevent);
+        %Always use the start. Could update to midpoint if needed
+        timepoint = FO.EventTimes(FO.currevent,1); 
     case 'FAs'
         timepoint = FO.DetectionReview.falsealarm(FO.currevent);
     case 'misses'
@@ -25,22 +27,32 @@ hold(FO.viewwin,'off')
 bz_MultiLFPPlot(FO.data.lfp,'timewin',thiseventwin,'spikes',FO.data.spikes,...
     'axhandle',FO.viewwin,'scaleLFP',FO.scaleLFP)
 hold on
-if isfield(FO,'EventStarts')
-    inwinevents = FO.EventTimes(FO.EventTimes>=thiseventwin(1) &FO.EventTimes<=thiseventwin(2));
+if size(FO.EventTimes,2) == 1 %Single timepoint events
+    inwinevents = FO.EventTimes>=thiseventwin(1) & FO.EventTimes<=thiseventwin(2);
+    inwineventtimes = FO.EventTimes(inwinevents);
+    plot(FO.viewwin,inwineventtimes,zeros(size(inwineventtimes)),...
+        'o','color',[0 0.6 0],'markersize',5,'linewidth',3)
 
-    inwinstarts = FO.EventStarts(FO.EventStarts>=thiseventwin(1) &FO.EventStarts<=thiseventwin(2));
-    inwinstops = FO.EventStops(FO.EventStops>=thiseventwin(1) &FO.EventStops<=thiseventwin(2));
+elseif size(FO.EventTimes,2) == 2 %Events with start/stops
+    %Events that end after the window start or start before the window end
+    inwinevents = FO.EventTimes(:,2) >=thiseventwin(1) & FO.EventTimes(:,1)<=thiseventwin(2);
+    
+    inwineventtimes = mean(FO.EventTimes(inwinevents,:),2); %Take the midpoint
+    inwinstarts = FO.EventTimes(inwinevents,1);
+    inwinstops = FO.EventTimes(inwinevents,2);
 
-    plot(FO.viewwin,inwinstarts,zeros(size(inwinstarts))-500,'o','color',[0 0.6 0],'markersize',15,'linewidth',3)
-    plot(FO.viewwin,inwinstops,zeros(size(inwinstops))-500,'o','color',[0.6 0 0],'markersize',15,'linewidth',3)
+    plot(FO.viewwin,inwinstarts,zeros(size(inwinstarts))-500,...
+        'o','color',[0 0.6 0],'markersize',5,'linewidth',3)
+    plot(FO.viewwin,inwinstops,zeros(size(inwinstops))-500,...
+        'o','color',[0.6 0 0],'markersize',5,'linewidth',3)
+    
 else
-    inwinevents = FO.EventTimes(FO.EventTimes>=thiseventwin(1) &FO.EventTimes<=thiseventwin(2));
-    plot(FO.viewwin,inwinevents,zeros(size(inwinevents)),'o','color',[0 0.6 0],'markersize',15,'linewidth',3)
+    error('EventTimes error, call in the big guns!')
 end
 
 %Passthrough info from the plot
 viewinfo.thiseventwin = thiseventwin;
-viewinfo.inwinevents = inwinevents;
+viewinfo.inwinevents = inwineventtimes;
 
 %UPdate event number display
 set(FO.thiseventdisplay,'String',round(FO.currevent))

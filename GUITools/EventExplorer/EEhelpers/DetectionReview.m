@@ -98,7 +98,8 @@ while counter>0 && QUITLOOP~=true
         elseif length(FO.markedevents(FO.markedevents(:,3)==3,1))==1 && length(inwinevents)==1
             newfalsealarms = inwinevents;
         else
-        newfalsealarms = interp1(inwinevents,inwinevents,FO.markedevents(FO.markedevents(:,3)==3,1),'nearest');
+            newfalsealarms = interp1(inwinevents,inwinevents,...
+                FO.markedevents(FO.markedevents(:,3)==3,1),'nearest');
         end
         falsealarm = [falsealarm; newfalsealarms];
     end
