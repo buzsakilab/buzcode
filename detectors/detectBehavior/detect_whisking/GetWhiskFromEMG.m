@@ -21,7 +21,7 @@ function [ EMGwhisk ] = GetWhiskFromEMG( basePath,varargin )
 %       'whiskmerge'    Min. interwhisking duration (s)     (default: 0.1)
 %       'NWhmerge'      Min. internonwhisking duration (s)  (default: 0.02)
 %   (options - not yet implemented)
-%       'SHOWFIG'       show a detection figure (default: true)
+%       'showfig'       show a detection figure (default: true)
 %       'saveMat'       save the output in a baseName.EMGwhisk.behavior.mat file
 %       'PulseChannel'
 %       'EMGChannel'
@@ -52,7 +52,7 @@ addParameter(p,'minwhisk',0.1,@isnumeric)
 addParameter(p,'minNWh',0.1,@isnumeric)
 addParameter(p,'whiskmerge',0.1,@isnumeric)
 addParameter(p,'NWhmerge',0.02,@isnumeric)
-addParameter(p,'SHOWFIG',true,@islogical)
+addParameter(p,'showfig',true,@islogical)
 addParameter(p,'saveMat',true,@islogical)
 
 parse(p,varargin{:})
@@ -141,7 +141,22 @@ if strcmp(EMGparms.Whthreshold,'auto')
     if Whsign==-1 
         EMGparms.Whthreshold = troughs(find(troughs>EMGparms.Whthreshold,1,'first'));
         if isempty(EMGparms.Whthreshold)
-            EMGparms.Whthreshold = troughs(end);
+            warning('NO DIP! Try Setting manual Wh threshold, saving distribution...')
+            figure
+                %subplot(4,2,6)
+                    hist(log10(EMGsm),100)
+                    hold on
+                    %plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g')
+                    %plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r')
+                    axis tight
+                    xlabel('EMG Envelope (modZ)');
+                    xlim([-1.5 max(log10(EMGsm))])
+
+                    LogScale('x',10)
+                    
+                    NiceSave('FAILEDWhiskingDetection',figfolder,baseName)
+            EMGwhisk = [];
+            return
         end
     elseif Whsign==1
         EMGparms.Whthreshold = troughs(find(troughs<EMGparms.Whthreshold,1,'last'));
@@ -153,6 +168,25 @@ if strcmp(EMGparms.NWhthreshold,'auto')
     NWhsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.NWhthreshold),'nearest'));
     if NWhsign==-1 
         EMGparms.NWhthreshold = troughs(find(troughs>EMGparms.NWhthreshold,1,'first'));
+        if isempty(EMGparms.NWhthreshold)
+            warning('NO DIP! Try Setting manual NWh threshold, saving distribution...')
+            
+            figure
+                %subplot(4,2,6)
+                    hist(log10(EMGsm),100)
+                    hold on
+                    plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g')
+                    %plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r')
+                    axis tight
+                    xlim([-1.5 max(log10(EMGsm))])
+
+                    xlabel('EMG Envelope (modZ)');
+                    LogScale('x',10)
+                    
+                    NiceSave('FAILEDWhiskingDetection',figfolder,baseName)
+            EMGwhisk = [];
+            return
+        end
     elseif NWhsign==1
         EMGparms.NWhthreshold = troughs(find(troughs<EMGparms.NWhthreshold,1,'last'));
     end
