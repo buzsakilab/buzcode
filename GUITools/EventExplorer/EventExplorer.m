@@ -449,7 +449,7 @@ function FlagsAndComments = MergeFlagsComments(FlagsAndComments,EventTimes)
     %any flagged events are flagged.
     %NOTE: this could be done more efficiently with uniquetol or
     %ismembertol
-    timetol = 0.01; %within 10ms
+    timetol = 0.02; %within 20ms
     
     %Make sure FlagsAndComments has both events and timepoints
     
