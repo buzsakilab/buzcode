@@ -51,8 +51,8 @@ addParameter(p,'whiskmerge',0.1,@isnumeric)
 addParameter(p,'NWhmerge',0.02,@isnumeric)
 addParameter(p,'showfig',true,@islogical)
 addParameter(p,'saveMat',true,@islogical)
-addParameter(p,'PulseChannel',[])
-addParameter(p,'EMGChannel',[])
+addParameter(p,'PulseChannel',1)
+addParameter(p,'EMGChannel',2)
 addParameter(p,'EMGanalysis',true,@islogical)
 
 parse(p,varargin{:})
@@ -95,18 +95,6 @@ end
 
 %% Clampex File
 
-if isempty(EMGparms.PulseChannel)
-    timechan = 1;
-else
-    timechan = EMGparms.PulseChannel;
-end
-
-if isempty(EMGparms.EMGChannel)
-    emgchan = 2;
-else
-    emgchan = EMGparms.EMGChannel;
-end
-
 sf_abf = 20000; %Sampling Frequency of the .abf file
 
 [abffile,si,file_info] = abfload(abfname);
@@ -119,8 +107,8 @@ sf_abf = 20000; %Sampling Frequency of the .abf file
 %     %Replace this with prompt file_info.recChNames
 % end
 
-pulse_abf = abffile(:,timechan);
-EMG = abffile(:,emgchan);
+pulse_abf = abffile(:,EMGparms.PulseChannel);
+EMG = abffile(:,EMGparms.EMGChannel);
 
 t_abf = [1:length(EMG)]'./sf_abf;
 
