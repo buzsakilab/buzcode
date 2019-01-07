@@ -200,9 +200,11 @@ if isunix
     catstring = ['! cat ', cs, ' > ',newdatpath];
 elseif ispc  
     if length(datpaths.amplifier)>1
-        for didx = 1:length(datpaths.amplifier)
-            datpathsplus{didx} = [datpaths.amplifier{didx} '+'];
+        for didx = 1:length(datpaths.amplifier)-1
+            datpathsplus{didx} = [datpaths.amplifier{didx} ' +'];
         end
+        %Last file string shouldn't end with '+'
+        datpathsplus{length(datpaths.amplifier)} = [datpaths.amplifier{length(datpaths.amplifier)}];
     else
         datpathsplus = datpaths.amplifier;
     end
