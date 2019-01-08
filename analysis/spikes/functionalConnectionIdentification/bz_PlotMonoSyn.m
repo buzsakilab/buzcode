@@ -1,9 +1,6 @@
 function keep_con = bz_PlotMonoSyn(ccgR,sig_con,Pred,Bounds,completeIndex,binSize,duration)
-
-
 % Manual sorting
-%click to delete the ccg (turns pink)
-
+% click to deselect the ccg (turns pink)
 
 keep_con = sig_con;
 window  =false(size(ccgR,1),1);
@@ -14,14 +11,14 @@ t = (-halfBins:halfBins)'*binSize;
 
 allcel = unique(sig_con(:));
 %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+h = figure('KeyReleaseFcn', {@keyPress},'Name','MonoSynCon inspector','NumberTitle','off','renderer','opengl');
+
 for i=1:length(allcel)
+    cla, clf
+    
     prs = sig_con(any(sig_con==allcel(i),2),:);
-    
-    
-    h = figure;
     ha = tight_subplot(ceil(sqrt(1+size(prs,1))),ceil(sqrt(1+size(prs,1))),[.02 .01]);
-    set(h,'position',[ 1           1        1920        1001])
-    
     for j=1:length(ha)
            axes(ha(j))
         if j<=size(prs,1)
@@ -30,38 +27,27 @@ for i=1:length(allcel)
                 prs1 = fliplr(prs1);
             end
             
-         
-            
-            
             exc=ccgR(:,prs1(1),prs1(2));
             exc(exc<Bounds(:,prs1(1),prs1(2),1)|~window)=0;
             
             inh=ccgR(:,prs1(1),prs1(2));
             inh(inh>Bounds(:,prs1(1),prs1(2),2)|~window)=0;
             
-            
-            
-            bar(t,ccgR(:,prs1(1),prs1(2)));
+            bar(t,ccgR(:,prs1(1),prs1(2)),1,'FaceColor','b','EdgeColor','b');
             hold on;
+            
             % Plot predicted values
             plot(t,Pred(:,prs1(1),prs1(2)),'g');
+            
             %Plot upper and lower boundaries
             plot(t,Bounds(:,prs1(1),prs1(2),1),'r--');
             plot(t,Bounds(:,prs1(1),prs1(2),2),'r--');
             
-            
             % Plot signif increased bins in red
-            
-            
-            
-            bar(t,exc,'r');
+            bar(t,exc,1,'FaceColor','r','EdgeColor','r');
+
             % Plot signif lower bins in blue
-            
-            bar(t,inh,'c');
-            
-            
-            
-            
+            bar(t,inh,1,'FaceColor','c','EdgeColor','c');
             
             upL = get(gca,'ylim');
             plot([0 0],[0 upL(2)],'k')
@@ -69,13 +55,11 @@ for i=1:length(allcel)
             
             text(min(t) +.1*abs(min(t)),double(max(ccgR(:,prs(j,1),prs(j,2)))),['max cnt: ' num2str(max(ccgR(:,prs(j,1),prs(j,2))))])
             
-            
             set(gca,'yticklabel',[],'xtick',[min(t) 0 max(t)],'xticklabel',[])
             
             tcel = setdiff(prs(j,:),allcel(i,:));
             targ=completeIndex(completeIndex(:,3)==tcel,1:2);
             xlabel(['sh: ' num2str(targ(1)) ' cell '  num2str(targ(2))]);
-            
             
             %the bad ones are in pink
             if  ~ismember(prs(j,:),keep_con,'rows')
@@ -85,67 +69,50 @@ for i=1:length(allcel)
             
             set(gca,'UserData',j,'ButtonDownFcn',@subplotclick);
             
-            
-            
             % Plot an inset with the ACG
-            
-            
             thisacg = ccgR(:,tcel,tcel);
-            
-            
+
             axh = AxesInsetBars(gca,.2,[.5 .5 .5],t,thisacg);
             axhpos = get(axh,'Position');
             set(axh,'Position',[axhpos(1) axhpos(2)-axhpos(4)*.2 axhpos(3) axhpos(4)],'XTickLabel',[]);
-            
-            
+
         elseif j<length(ha)
             axis off
-            
         else
-            
-            
-            
-            bar(t,ccgR(:,allcel(i),allcel(i)),'k');
+            bar(t,ccgR(:,allcel(i),allcel(i)),1,'FaceColor','k','EdgeColor','k');
             xlim([min(t) max(t)]);
             xlabel('Reference Cell ACG');
-            
-            
             targ=completeIndex(completeIndex(:,3) == allcel(i),1:2);
-            
-            
             mtit(['Reference Cell sh: ' num2str(targ(1)) ' cell '  num2str(targ(2))])
             
-            
-            waitfor(h)
-            
+            uiwait(h);
         end
     end
     
 end
-
+close(h)
 
     function subplotclick(obj,ev) %when an axes is clicked
-        
         figobj = get(obj,'Parent');
         axdata = get(obj,'UserData');
-        
-        
-        
-        clr = get(obj,'Color');
-        if sum(clr == [1 1 1])==3%if white (ie synapse), set to pink (bad), remember as bad
+        clr2 = get(obj,'Color');
+        if sum(clr2 == [1 1 1])==3%if white (ie synapse), set to pink (bad), remember as bad
             set(obj,'Color',[1 .75 .75])
-            
-            
-            
-            
-          
-            
-               keep_con(ismember(keep_con,prs(axdata,:),'rows'),:)=[];
-            
-            
-        elseif sum(clr == [1 .75 .75])==3%if pink, set to white, set to good
+            keep_con(ismember(keep_con,prs(axdata,:),'rows'),:)=[];
+        elseif sum(clr2 == [1 .75 .75])==3%if pink, set to white, set to good
             set(obj,'Color',[1 1 1])
            keep_con = [keep_con;prs(axdata,:)];
+        end
+    end
+
+    function advance
+        uiresume(h);
+    end
+
+    function keyPress(src, e)
+        switch e.Key
+            case 'space'
+                uiresume(h);
         end
     end
 end
@@ -168,6 +135,6 @@ figpos = get(h,'Position');
 newpos = [figpos(1)+(1-ratio)*figpos(3) figpos(2)+(1-ratio)*figpos(4) ratio*figpos(3) ratio*figpos(4)];
 axh = axes('Position',newpos);
 
-bar(xdata,ydata,'FaceColor',color,'EdgeColor',color)
+bar(xdata,ydata,1,'FaceColor',color,'EdgeColor',color)
 axis tight
 end
