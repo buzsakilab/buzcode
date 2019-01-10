@@ -144,7 +144,7 @@ figure
         ylabel('f (Hz)')
         axis xy
         xlim(bigsamplewin)
-        set(gca,'XTickLabel',[])
+        bz_ScaleBar('s')
     subplot(8,1,3)
         plot(lfp.timestamps,lfp.data,'k')
         axis tight
@@ -158,8 +158,8 @@ figure
         axis tight
         box off
         xlim(bigsamplewin)
-        ylabel('PSS');xlabel('Time (s)')
-        
+        set(gca,'XTickLabel',[])
+         
     subplot(6,2,7)
         hist(specslope.data,10)
         box off
@@ -181,8 +181,10 @@ figure
         box off
         xlim(exwin(bb,:)');ylim(lfprange)
         set(gca,'XTickLabel',[])
+        set(gca,'YTicks',[])
         ylabel('LFP')
     end
+        bz_ScaleBar('s')
 
 if saveMat
     figfolder = [basePath,filesep,'DetectionFigures'];
