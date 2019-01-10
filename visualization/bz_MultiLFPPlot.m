@@ -109,7 +109,7 @@ winspikes = spikes.spindices(:,1)>=timewin(1) & spikes.spindices(:,1)<=timewin(2
 
 %Space based on median absolute deviation over entire recording - robust to outliers.
 randtimes = randsample(size(lfp.data,1),1000);
-channelrange = 12.*mad(single(lfp.data(randtimes,chindex)),1);
+channelrange = 10.*mad(single(lfp.data(randtimes,chindex)),1);
 lfpmidpoints = -cumsum(channelrange);
 lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfpmidpoints));
 
