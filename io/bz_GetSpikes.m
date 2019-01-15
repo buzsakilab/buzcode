@@ -67,7 +67,7 @@ addParameter(p,'spikeGroups','all',spikeGroupsValidation);
 addParameter(p,'region','',@isstr); % won't work without sessionInfodata 
 addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
-addParameter(p,'getWaveforms',true,@islogical)
+addParameter(p,'getWaveforms',true)
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
@@ -116,7 +116,7 @@ disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
 cluFiles = dir([basepath filesep '*.clu*']);  
 resFiles = dir([basepath filesep '*.res*']);
-if getWaveforms
+if any(getWaveforms)
     spkFiles = dir([basepath filesep '*.spk*']);
 end
 
@@ -135,7 +135,7 @@ for i = 1:length(resFiles)
         tempFiles(i) = 1;
     end
 end
-if getWaveforms
+if any(getWaveforms)
     resFiles(tempFiles==1)=[];
     tempFiles = zeros(length(spkFiles),1);
     for i = 1:length(spkFiles)
@@ -162,7 +162,7 @@ end
 [shanks ind] = sort(shanks);
 cluFiles = cluFiles(ind); %Bug here if there are any files x.clu.x that are not your desired clus
 resFiles = resFiles(ind);
-if getWaveforms
+if any(getWaveforms)
     spkFiles = spkFiles(ind);
 end
 
@@ -188,7 +188,7 @@ for i=1:length(cluFiles)
     res = load(fullfile(basepath,resFiles(i).name));
     spkGrpChans = sessionInfo.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
     
-    if getWaveforms && sum(clu)>0 %bug fix if no clusters 
+    if any(getWaveforms) && sum(clu)>0 %bug fix if no clusters 
         nSamples = sessionInfo.spikeGroups.nSamples(shankID);
         % load waveforms
         chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
@@ -197,8 +197,13 @@ for i=1:length(cluFiles)
         try %bug in some spk files... wrong number of samples?
             wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
         catch
-            error(['something is wrong with your .spk file, no waveforms.',...
-                ' Use ''getWaveforms'', false while you get that figured out.'])
+            if strcmp(getWaveforms,'force')
+                wav = nan(chansPerSpikeGrp,nSamples,1);
+            else
+            error(['something is wrong with ',spkFiles(i).name,...
+                ' Use ''getWaveforms'', false to skip waveforms or ',...
+                '''getWaveforms'', ''force'' to write nans on bad shanks.'])
+            end
         end
         wav = permute(wav,[3 1 2]);
     end
@@ -216,7 +221,7 @@ for i=1:length(cluFiles)
        spikes.cluID(count) = cells(c);
 
        %Waveforms    
-       if getWaveforms
+       if any(getWaveforms)
            wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
            if prod(size(wvforms))==length(wvforms)%in single-channel groups wvforms will squeeze too much and will have amplitude on D1 rather than D2
                wvforms = wvforms';%fix here
@@ -275,7 +280,7 @@ if ~strcmp(spikeGroups,'all')
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
     
-    if getWaveforms
+    if any(getWaveforms)
     for r = 1:length(toRemove)
         if toRemove(r) == 1
          spikes.rawWaveform{r} = [];
@@ -310,7 +315,7 @@ if ~isempty(region)
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
     
-    if getWaveforms
+    if any(getWaveforms)
     if isfield(spikes,'rawWaveform')
         for r = 1:length(toRemove)
             if toRemove(r) == 1
@@ -337,7 +342,7 @@ if ~isempty(UID)
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
     
-    if getWaveforms
+    if any(getWaveforms)
     for r = 1:length(toRemove)
         if toRemove(r) == 1
          spikes.rawWaveform{r} = [];
