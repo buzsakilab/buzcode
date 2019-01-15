@@ -11,12 +11,14 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %
 %   (optional)
 %       'frange'    (default: [4 100])
-%       'showfig'   true/false - show a summary figure of the results
-%                   (default:false)
-%       'saveMat'   put your basePath here to save
-%                   baseName.PowerSpectrumSlope.lfp.mat  (default: false)
 %       'channels'  subset of channels to calculate PowerSpectrumSlope
 %                   (default: all)
+%       'showfig'   true/false - show a summary figure of the results
+%                   (default:false)
+%       'saveMat'   put your basePath here to save/load
+%                   baseName.PowerSpectrumSlope.lfp.mat  (default: false)
+%       'Redetect'  (default: false) to force redetection even if saved
+%                   file exists
 %
 %
 %DLevenstein 2018
@@ -26,12 +28,26 @@ addParameter(p,'showfig',false,@islogical)
 addParameter(p,'saveMat',false)
 addParameter(p,'channels',[])
 addParameter(p,'frange',[4 100])
+addParameter(p,'Redetect',false)
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
 channels = p.Results.channels;
 frange = p.Results.frange;
+REDETECT = p.Results.Redetect;
 
+
+%%
+if saveMat
+    basePath = saveMat;
+    baseName = bz_BasenameFromBasepath(basePath);
+    savename = fullfile(basePath,[baseName,'.PowerSpectrumSlope.lfp.mat']);
+    
+    if exist(savename,'file') && ~REDETECT
+        load(savename)
+        return
+    end
+end
 
 %% For multiple lfp channels
 if ~isempty(channels)
@@ -105,10 +121,7 @@ specslope.freqs = spec.freqs;
 specslope.channels = lfp.channels;
 
 if saveMat
-    basePath = saveMat;
-    baseName = bz_BasenameFromBasepath(basePath);
-    savename = fullfile(basePath,[baseName,'.PowerSpectrumSlope.lfp.mat']);
-    save(savename,'specslope');
+    save(savename,'specslope','spec');
 end
 
 %% Figure
@@ -131,7 +144,7 @@ figure
         ylabel('f (Hz)')
         axis xy
         xlim(bigsamplewin)
-        set(gca,'XTickLabel',[])
+        bz_ScaleBar('s')
     subplot(8,1,3)
         plot(lfp.timestamps,lfp.data,'k')
         axis tight
@@ -145,8 +158,8 @@ figure
         axis tight
         box off
         xlim(bigsamplewin)
-        ylabel('PSS');xlabel('Time (s)')
-        
+        set(gca,'XTickLabel',[])
+         
     subplot(6,2,7)
         hist(specslope.data,10)
         box off
@@ -168,8 +181,10 @@ figure
         box off
         xlim(exwin(bb,:)');ylim(lfprange)
         set(gca,'XTickLabel',[])
+        set(gca,'YTicks',[])
         ylabel('LFP')
     end
+        bz_ScaleBar('s')
 
 if saveMat
     figfolder = [basePath,filesep,'DetectionFigures'];
