@@ -47,7 +47,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'noPrompts'     (default:false) an option to not prompt user of things
 %
 %OUTPUT 
-%   !CHANGE THIS!
+%   !THIS IS OUT OF DATE - UPDATE!
 %   StateIntervals  structure containing start/end times (seconds) of
 %                   NREM, REM, WAKE states and episodes. states is the 
 %                   "raw" state scoring. episodes are joined episodes of 

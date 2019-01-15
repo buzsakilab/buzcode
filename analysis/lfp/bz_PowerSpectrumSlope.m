@@ -181,7 +181,7 @@ figure
         box off
         xlim(exwin(bb,:)');ylim(lfprange)
         set(gca,'XTickLabel',[])
-        set(gca,'YTicks',[])
+        set(gca,'YTick',[])
         ylabel('LFP')
     end
         bz_ScaleBar('s')
