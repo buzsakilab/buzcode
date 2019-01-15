@@ -94,22 +94,22 @@ display('Calculating EMGFromLFP from High Frequency LFP Correlation')
 
 %% get basics about.lfp/lfp file
 
-xml = bz_getSessionInfo(basePath,'noPrompts',noPrompts); % now using the updated version
-if exist([basePath filesep xml.FileName '.lfp'])
-    lfpFile = [basePath filesep xml.FileName '.lfp'];
-elseif exist([basePath filesep xml.FileName '.eeg'])
-    lfpFile = [basePath filesep xml.FileName '.eeg'];
+sessionInfo = bz_getSessionInfo(basePath,'noPrompts',noPrompts); % now using the updated version
+if exist([basePath filesep sessionInfo.FileName '.lfp'])
+    lfpFile = [basePath filesep sessionInfo.FileName '.lfp'];
+elseif exist([basePath filesep sessionInfo.FileName '.eeg'])
+    lfpFile = [basePath filesep sessionInfo.FileName '.eeg'];
 else
     error('could not find an LFP or EEG file...')    
 end
 
-Fs = xml.lfpSampleRate; % Hz, LFP sampling rate
-nChannels = xml.nChannels;
+Fs = sessionInfo.lfpSampleRate; % Hz, LFP sampling rate
+nChannels = sessionInfo.nChannels;
 
-if isfield(xml,'SpkGrps')
-    SpkGrps = xml.SpkGrps;
-elseif isfield(xml,'AnatGrps')
-    SpkGrps = xml.AnatGrps;
+if isfield(sessionInfo,'SpkGrps')
+    SpkGrps = sessionInfo.SpkGrps;
+elseif isfield(sessionInfo,'AnatGrps')
+    SpkGrps = sessionInfo.AnatGrps;
     display('No SpikeGroups, Using AnatomyGroups')
 else
     error('No SpikeGroups...')
@@ -175,7 +175,9 @@ lfp = bz_LoadBinary(lfpFile ,'nChannels',nChannels,'channels',xcorr_chs+1,...
 % Filter first in high frequency band to remove low-freq physiologically
 % correlated LFPs (e.g., theta, delta, SPWs, etc.)
 
-xcorr_freqband = [275 300 600 625]; % Hz
+maxfreqband = floor(max([625 Fs/2]));
+% xcorr_freqband = [275 300 600 625]; % Hz
+xcorr_freqband = [275 300 maxfreqband-25 maxfreqband]; % Hz
 lfp = filtsig_in(lfp, Fs, xcorr_freqband);
 
 %% xcorr 'strength' is the summed correlation coefficients between channel
