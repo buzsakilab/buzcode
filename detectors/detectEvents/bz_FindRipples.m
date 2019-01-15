@@ -44,7 +44,7 @@ function [ripples] = bz_FindRipples(varargin)
 %                   (default = [130 200])
 %     'EMGThresh'   0-1 threshold of EMG to exclude noise
 %     'saveMat'     logical (default=false) to save in buzcode format
-%     'plotTopye'   1=original version (several plots); 2=only raw lfp
+%     'plotType'   1=original version (several plots); 2=only raw lfp
 %    =========================================================================
 %
 % OUTPUT
@@ -76,7 +76,7 @@ warning('this function is under development and may not work... yet')
 
 % Default values
 p = inputParser;
-addParameter(p,'thresholds',[2 5],@isivector)
+addParameter(p,'thresholds',[2 5],@isnumeric)
 addParameter(p,'durations',[30 100],@isnumeric)
 addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'frequency',1250,@isnumeric)
@@ -133,7 +133,8 @@ plotType = p.Results.plotType;
 windowLength = frequency/frequency*11;
 
 % Square and normalize signal
-squaredSignal = signal.^2;
+% squaredSignal = signal.^2;
+squaredSignal = abs(signal);
 window = ones(windowLength,1)/windowLength;
 keep = [];
 if ~isempty(restrict)
@@ -228,7 +229,7 @@ ripples = ripples((all((~isnan(ripples)),2)),:);
 
 disp(['After duration test: ' num2str(size(ripples,1)) ' events.']);
 
-% If a noisy channel was provided, find ripple-like events and exclude them
+% If a noise channel was provided, find ripple-like events and exclude them
 bad = [];
 if ~isempty(noise)
     if length(noise) == 1 % you gave a channel number
@@ -258,11 +259,12 @@ if ~isempty(noise)
 end
     %% lets try to also remove EMG artifact?
 if EMGThresh
-    sessionInfo = bz_getSessionInfo(pwd,'noprompts',true);
-    if exist([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
-        load([sessionInfo.FileName '.EMGFromLFP.LFP.mat'])
+    sessionInfo = bz_getSessionInfo(basepath,'noprompts',true);
+    EMGfilename = fullfile(basepath,[sessionInfo.FileName '.EMGFromLFP.LFP.mat']);
+    if exist(EMGfilename)
+        load(EMGfilename)   %should use a bz_load script here
     else
-        [EMGFromLFP] = bz_EMGFromLFP(pwd,'samplingFrequency',10,'savemat',false);
+        [EMGFromLFP] = bz_EMGFromLFP(basepath,'samplingFrequency',10,'savemat',false);
     end
     excluded = logical(zeros(size(ripples,1),1));
     for i = 1:size(ripples,1)
@@ -382,7 +384,7 @@ ripples.detectorinfo = detectorinfo;
 
 %Save
 if p.Results.saveMat
-    save([basepath filesep basename '.ripples.events.mat'],'ripples')
+    save(fullfile(basepath, [basename '.ripples.events.mat']),'ripples')
 end
 
 

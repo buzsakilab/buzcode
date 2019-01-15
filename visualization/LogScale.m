@@ -21,14 +21,14 @@ if strcmp(whichaxis,'y') || strcmp(whichaxis,'xy')
         ticks = [range(1):0.5:range(2)];
     end
     
-    if length(ticks)>=5
+    if length(ticks)>5
         ticks = ticks(1:2:end);
     end
     
     set(gca,'YTick',ticks)
-    set(gca,'YTickLabels',round(logbase.^ticks,1,'significant'))
+    set(gca,'YTickLabels',round(logbase.^ticks,2,'significant'))
     
-    if max(abs(ticks))>=3
+    if max(abs(ticks))>=3 && logbase==10
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);
         tickstrings = cellfun(@(X) replace(X,'','^'),tickstrings,'uniformoutput',false);
         tickstrings = cellfun(@(X) [num2str(logbase),X(1:end-1)],tickstrings,'uniformoutput',false);
@@ -51,9 +51,9 @@ if strcmp(whichaxis,'x') || strcmp(whichaxis,'xy')
         
     
     set(gca,'XTick',ticks)
-    set(gca,'XTickLabels',round(logbase.^ticks,1,'significant'))
+    set(gca,'XTickLabels',round(logbase.^ticks,2,'significant'))
     
-    if max(abs(ticks))>=3
+    if max(abs(ticks))>=3 && logbase==10
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);
         tickstrings = cellfun(@(X) replace(X,'','^'),tickstrings,'uniformoutput',false);
         tickstrings = cellfun(@(X) [num2str(logbase),X(1:end-1)],tickstrings,'uniformoutput',false);
@@ -69,12 +69,12 @@ if strcmp(whichaxis,'z')
         ticks = [range(1):0.5:range(2)];
     end
     
-    if length(ticks)>=5
+    if length(ticks)>5
         ticks = ticks(1:2:end);
     end
     
     set(gca,'ZTick',ticks)
-    set(gca,'ZTickLabels',round(logbase.^ticks,1,'significant'))
+    set(gca,'ZTickLabels',round(logbase.^ticks,2,'significant'))
     
     if max(abs(ticks))>=2
         tickstrings = cellfun(@num2str,(num2cell(ticks)),'uniformoutput',false);

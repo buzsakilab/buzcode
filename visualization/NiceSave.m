@@ -9,6 +9,8 @@ function [  ] = NiceSave(figname,figfolder,baseName,figtype)
 %   figtype     (optional)
 %
 %DLevenstein Fall 2016
+%TODO: add option to not overwrite old figure, but instead save as
+%'figname02' etc.
 %%
 
 if ~exist('figtype','var')

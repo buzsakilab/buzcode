@@ -66,7 +66,8 @@ clusterfig = figure('visible','off');
         plot(t_clus,broadbandSlowWave,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('SW')
-        xlim([t_clus(1) t_clus(end)])
+        box on
+        ylim([0 1])
         xlim(viewwin)
         set(gca,'XTickLabel',{})
         
@@ -75,7 +76,8 @@ clusterfig = figure('visible','off');
         plot(t_clus,thratio,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('Theta')
-        xlim([t_clus(1) t_clus(end)])
+        box on
+        ylim([0 1])
         xlim(viewwin)
         set(gca,'XTickLabel',{})
         
@@ -84,7 +86,8 @@ clusterfig = figure('visible','off');
         plot(t_EMG,EMG,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('EMG')
-        xlim([t_clus(1) t_clus(end)])
+        box on
+        ylim([0 1])
         xlim(viewwin)
         xlabel('t (s)')
         

@@ -18,7 +18,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'scoretime'     Default: [0 Inf]
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
-%                   be used for SWS detection.  Default is 'SWweights.mat'
+%                   be used for SWS detection.  Default is to use Power Spectrum Slope ('PSS'),
+%                   but can also try 'SWweights.mat'
 %                     - For hippocampus-only recordings, enter
 %                     'SWweightsHPC.mat' for this
 %   'Notch60Hz'     Boolean 0 or 1.  Value of 1 will notch out the 57.5-62.5 Hz
@@ -86,11 +87,6 @@ end
 [datasetfolder,recordingname,extension] = fileparts(basePath);
 recordingname = [recordingname,extension]; % fileparts parses '.' into extension
 
-if ~exist('SWWeightsName','var')
-    SWWeightsName = 'SWweights.mat';
-end
-
-
 
 %% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
 %Select from dataset folder - need to check if .xml/lfp exist
@@ -133,7 +129,8 @@ defaultSavebool = true;    %Save Stuff (EMG, LFP)
 defaultSavedir = datasetfolder;
 
 defaultScoretime = [0 Inf];
-defaultSWWeightsName = 'SWweights.mat';
+%defaultSWWeightsName = 'SWweights.mat';
+defaultSWWeightsName = 'PSS';
 defaultNotch60Hz = 0;
 defaultNotchUnder3Hz = 0;
 defaultNotchHVS = 0;
@@ -185,15 +182,15 @@ bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']
 
 
 %% Get channels not to use
-parameters = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
+sessionInfo = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 % check that SW/Theta channels exist in rec..
 if length(SWChannels) > 1 
-    if sum(ismember(SWChannels,parameters.channels)) ~= length(SWChannels)
+    if sum(ismember(SWChannels,sessionInfo.channels)) ~= length(SWChannels)
         error('some of the SW input channels dont exist in this recording...?')
     end   
 end
 if length(ThetaChannels) > 1 
-    if sum(ismember(ThetaChannels,parameters.channels)) ~= length(ThetaChannels)
+    if sum(ismember(ThetaChannels,sessionInfo.channels)) ~= length(ThetaChannels)
         error('some of the theta input channels dont exist in this recording...?')
     end   
 end
@@ -201,8 +198,8 @@ end
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
     rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];
-elseif isfield(parameters,'badchannels')
-    rejectChannels = [rejectChannels parameters.badchannels]; %get badchannels from the .xml
+elseif isfield(sessionInfo,'badchannels')
+    rejectChannels = [rejectChannels sessionInfo.badchannels]; %get badchannels from the .xml
 else
     display('No baseName.SessionMetadata.mat, no badchannels in your xml - so no rejected channels')
 end
@@ -258,7 +255,11 @@ save(bz_sleepstatepath,'SleepState');
 
 %% MAKE THE STATE SCORE OUTPUT FIGURE
 %ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
-ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+try
+    ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+catch
+    disp('Figure making error')
+end
 
 %% JOIN STATES INTO EPISODES
 
