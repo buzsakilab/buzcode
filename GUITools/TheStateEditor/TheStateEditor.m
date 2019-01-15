@@ -3211,7 +3211,7 @@ switch get(FO.overlayDisp, 'Value')
             guidata(overlaychoicefig,localguidata)
             waitfor(overlaychoicefig)
               
-            choices = get(FO.fig,'userdata');
+            choices = get(obj,'userdata');
             for cidx = 1:length(choices)%for each channel/choice (should be same)
                 switch choices(cidx)
                     case 1
@@ -3222,7 +3222,7 @@ switch get(FO.overlayDisp, 'Value')
                 if length(t) > length(FO.to)
                     t = t(1:length(FO.to));
                 elseif length(t) < length(FO.to)
-                    t = cat(1,t,zeros(length(FO.to) - length(t),1));
+                    t = cat(1,t,zeros(length(FO.to) - length(t),1))
                 end
                 t = t';
                 t = t - prctile(t, 1);
