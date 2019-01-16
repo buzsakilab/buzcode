@@ -70,7 +70,7 @@ if strcmp(SWweights,'PSS')
     lfp.timestamps = SleepScoreLFP.t;
     lfp.samplingRate = SleepScoreLFP.sf;
     %Calculate PSS
-    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,'frange',[4 80]);
+    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,'frange',[4 90]);
     broadbandSlowWave = -specslope.data; %So NREM is higher as opposed to lower
     t_clus = specslope.timestamps;
     swFFTfreqs = specslope.freqs;
