@@ -80,7 +80,7 @@ if ~exist('SWWeightsName','var') | strcmp(SWWeightsName,'PSS')
     %SWWeightsName = 'SWweights.mat';
     SWweights = 'PSS';
     SWWeightsName = 'PSS';
-    SWfreqlist = logspace(0,2,200); %should get this from bz_PowerSpectrumSlope...
+    SWfreqlist = logspace(0.5,2,200); %should get this from bz_PowerSpectrumSlope...
 else
     load(SWWeightsName)% 'SWweights.mat' by default
     %Alter the filter weights if requested by the user
@@ -175,7 +175,7 @@ parfor idx = 1:numSWChannels;
     
     if strcmp(SWweights,'PSS')
         [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',SWChannels(idx),'frange',[1 100]);
+            'channels',SWChannels(idx),'frange',[4 100]);
         broadbandSlowWave = specslope.data;
         SWfreqlist = specslope.freqs;
         broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
@@ -364,7 +364,7 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
     %Calculate PC1 for plot/return
     if strcmp(SWweights,'PSS')
         [specslope,spec] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',SWChannels(goodSWidx),'frange',[1 100]);
+            'channels',SWChannels(goodSWidx),'frange',[4 100]);
         broadbandSlowWave = specslope.data;
         t_FFT = spec.timestamps;
         FFTspec = spec.amp;
