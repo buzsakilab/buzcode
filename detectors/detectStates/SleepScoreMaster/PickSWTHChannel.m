@@ -171,7 +171,7 @@ parfor idx = 1:numSWChannels;
     
     if strcmp(SWweights,'PSS')
         [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',SWChannels(idx),'frange',[4 80]);
+            'channels',SWChannels(idx),'frange',[4 90]);
         broadbandSlowWave = specslope.data;
         SWfreqlist = specslope.freqs;
         broadbandSlowWave = smooth(broadbandSlowWave,smoothfact.*specslope.samplingRate);
@@ -360,7 +360,7 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
     %Calculate PC1 for plot/return
     if strcmp(SWweights,'PSS')
         [specslope,spec] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',SWChannels(goodSWidx),'frange',[4 80]);
+            'channels',SWChannels(goodSWidx),'frange',[4 90]);
         broadbandSlowWave = specslope.data;
         t_FFT = spec.timestamps;
         FFTspec = spec.amp;
