@@ -198,7 +198,8 @@ for i=1:length(cluFiles)
             wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
         catch
             if strcmp(getWaveforms,'force')
-                wav = nan(chansPerSpikeGrp,nSamples,1);
+                wav = nan(chansPerSpikeGrp,nSamples,length(clu));
+                display([spkFiles(i).name,' error.'])
             else
             error(['something is wrong with ',spkFiles(i).name,...
                 ' Use ''getWaveforms'', false to skip waveforms or ',...

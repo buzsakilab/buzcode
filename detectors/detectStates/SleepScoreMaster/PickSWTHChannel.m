@@ -373,8 +373,8 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
        % SWfreqlist = specslope.freqs;
     else
         [FFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,goodSWidx)),window*Fs,noverlap*Fs,swFFTfreqs,Fs);
-        FFTspec = abs(FFTspec);
-        [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
+        FFTspec = log10(abs(FFTspec));
+        [zFFTspec,mu,sig] = zscore((FFTspec)');
         % Remove transients before calculating SW histogram
         %this should be it's own whole section - removing/detecting transients
         totz = zscore(abs(sum(zFFTspec')));
@@ -392,7 +392,7 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
      
 chanfig =figure('visible','off');
 	subplot(5,1,1:2)
-        imagesc(t_FFT,log2(swFFTfreqs),log10(FFTspec))
+        imagesc(t_FFT,log2(swFFTfreqs),(FFTspec))
         axis xy
         LogScale_ss('y',2)
         caxis([min(mu)-2.5*max(sig) max(mu)+2.5*max(sig)])
