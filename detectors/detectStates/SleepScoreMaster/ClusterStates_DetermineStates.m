@@ -34,21 +34,25 @@ v2struct(histsandthreshs)%Expand and get values out of these fields
 %midpoint between the dip and the opposite peak, this
 %reduces noise. We should add the option to turn this
 %on/off somewhere before this.
+
+%This should be put into histsandthreshs for TheStateEditor check boxes
 if isfield(MinTimeWindowParms,'stickytrigger')
     Schmidt = MinTimeWindowParms.stickytrigger;
+    stickySW = Schmidt; stickyTH=Schmidt; stickyEMG=Schmidt;
 else
     Schmidt = false;
     MinTimeWindowParms.stickytrigger = Schmidt;
+    stickySW = Schmidt; stickyTH=Schmidt; stickyEMG=Schmidt;
 end
 
 [~,~,~,~,NREMtimes] = bz_BimodalThresh(broadbandSlowWave(:),...
-    'setthresh',swthresh,'diptest',false,'Schmidt',Schmidt,'0Inf',true);
+    'setthresh',swthresh,'diptest',false,'Schmidt',stickySW,'0Inf',true);
 
 [~,~,~,~,hightheta] = bz_BimodalThresh(thratio(:),...
-    'setthresh',THthresh,'diptest',false,'Schmidt',Schmidt,'0Inf',true);
+    'setthresh',THthresh,'diptest',false,'Schmidt',stickyTH,'0Inf',true);
 
 [~,~,~,~,highEMG] = bz_BimodalThresh(EMG(:),...
-    'setthresh',EMGthresh,'diptest',false,'Schmidt',Schmidt,'0Inf',true);
+    'setthresh',EMGthresh,'diptest',false,'Schmidt',stickyEMG,'0Inf',true);
 
 REMtimes = (~NREMtimes & ~highEMG & hightheta);
 
