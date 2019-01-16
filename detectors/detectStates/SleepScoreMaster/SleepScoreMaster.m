@@ -171,7 +171,6 @@ MinTimeWindowParms.minWinREMsecs = 6;
 MinTimeWindowParms.minREMinWsecs = 6;
 MinTimeWindowParms.minREMsecs = 6;
 MinTimeWindowParms.minWAKEsecs = 6;
-MinTimeWindowParms.stickytrigger = stickytrigger;
 %% Database File Management 
 savefolder = fullfile(savedir,recordingname);
 if ~exist(savefolder,'dir')
@@ -230,7 +229,8 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 %Calculate the scoring metrics: broadbandLFP, theta, EMG in 
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,SleepScoreLFP,EMGFromLFP,overwrite);
+                                           basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
+                                           'allSticky',stickytrigger);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
