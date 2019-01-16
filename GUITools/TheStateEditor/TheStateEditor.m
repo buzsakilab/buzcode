@@ -357,7 +357,16 @@ else
         
         if exist([baseName '.SleepScoreLFP.LFP.mat'],'file')
             load([baseName '.SleepScoreLFP.LFP.mat'])
-            defaultchans = [num2str(SleepScoreLFP.SWchanID),',',num2str(SleepScoreLFP.THchanID)];
+            defaultchans = unique([SleepScoreLFP.SWchanID SleepScoreLFP.THchanID]);
+            if length(defaultchans)<2
+                defaultchans = num2str(defaultchans);
+            elseif length(defaultchans)>=2
+                dcout = num2str(defaultchans(1));
+                for chanidx = 2
+                    dcout = strcat(dcout,',',num2str(defaultchans(chanidx)));
+                end
+                defaultchans = dcout;
+            end
         else
             defaultchans = '';
         end
@@ -3024,6 +3033,7 @@ set(FO.eegWidthDisp, 'String', ['\bf\color{red}\fontsize{11}', num2str(FO.eegDis
 
 set(FO.xlimbox, 'String', int2str(round(diff(get(FO.sax{1}, 'XLim')))));
 % guidata(FO.fig, FO); 
+figure(FO.fig)
 end
 
 function ResizeFreqY(direction)

@@ -51,6 +51,7 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %
 %
 %DLevenstein 2016/2017
+%If used, please cite: Levenstein et al 2018, currently on bioRxiv
 %TO DO
 %-incorporate multiple channels for detection of slow wave, which is robust
 %on all (deep) lfp channels in the local cortical population
