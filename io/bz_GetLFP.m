@@ -118,7 +118,16 @@ if isempty(basename)
    end
    
 else
-   lfp.Filename = [basename '.lfp'];
+   d = dir([basepath filesep basename '.lfp']);
+   if length(d) > 1 % we assume one .lfp file or this should break
+       error('there is more than one .lfp file in this directory?');
+   elseif length(d) == 0
+       d = dir([basepath filesep basename '.eeg']);
+       if isempty(d)
+           error('could not find an lfp/eeg file..')
+       end
+   end
+   lfp.Filename = d.name;   
 end
 
 %% things we can parse from sessionInfo or xml file
