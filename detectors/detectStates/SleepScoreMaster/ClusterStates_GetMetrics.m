@@ -1,5 +1,5 @@
 function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-    basePath,SleepScoreLFP,EMG,overwrite)
+    basePath,SleepScoreLFP,EMG,overwrite,varargin)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
@@ -9,7 +9,18 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 %
 %Last Updated: 1/31/16
 %DLevenstein
+%% Params
+p = inputParser;
+addParameter(p,'allSticky',false)
+parse(p,varargin{:})
+allSticky = p.Results.allSticky; 
 
+%This is the sticky trigger passed through to DetermineStates via histsandthreshs
+if allSticky
+    stickySW = true; stickyTH=true; stickyEMG=true;
+else
+    stickySW = false; stickyTH=false; stickyEMG=false;
+end
 %% Buzcode name of the SleepScoreMetrics.LFP.mat file
 [datasetfolder,recordingname,extension] = fileparts(basePath);
 recordingname = [recordingname,extension]; % fileparts parses '.' into extension
@@ -220,7 +231,8 @@ else
 end
 
 histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,...
-    EMGthresh,THhist,THhistbins,THthresh);
+    EMGthresh,THhist,THhistbins,THthresh,...
+    stickySW,stickyTH,stickyEMG);
 
 %% Ouput Structure: StateScoreMetrics
 LFPparams = SleepScoreLFP.params;

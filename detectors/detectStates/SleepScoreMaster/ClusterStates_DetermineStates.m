@@ -1,4 +1,5 @@
-function [ints, idx, MinTimeWindowParms] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParms,histsandthreshs)
+function [ints, idx, MinTimeWindowParms] = ClusterStates_DetermineStates(...
+    SleepScoreMetrics,MinTimeWindowParms,histsandthreshs)
 % can input histsandthreshs from externally if needed... ie via manual
 % selection in stateeditor
 
@@ -32,18 +33,12 @@ v2struct(histsandthreshs)%Expand and get values out of these fields
 %This switch turns on a "schmidt trigger", or sticky trigger,
 %which means that threshold crossings have to reach the
 %midpoint between the dip and the opposite peak, this
-%reduces noise. We should add the option to turn this
-%on/off somewhere before this.
+%reduces noise. Passed through via histsandthreshs from checkboxes in
+%TheStateEditor or 'stickytrigger',true in SleepScoreMaster via GetMetrics
+if ~exist('stickySW','var'); stickySW = false; end
+if ~exist('stickyTH','var'); stickyTH = false; end
+if ~exist('stickyEMG','var'); stickyEMG = false; end
 
-%This should be put into histsandthreshs for TheStateEditor check boxes
-if isfield(MinTimeWindowParms,'stickytrigger')
-    Schmidt = MinTimeWindowParms.stickytrigger;
-    stickySW = Schmidt; stickyTH=Schmidt; stickyEMG=Schmidt;
-else
-    Schmidt = false;
-    MinTimeWindowParms.stickytrigger = Schmidt;
-    stickySW = Schmidt; stickyTH=Schmidt; stickyEMG=Schmidt;
-end
 
 [~,~,~,~,NREMtimes] = bz_BimodalThresh(broadbandSlowWave(:),...
     'setthresh',swthresh,'diptest',false,'Schmidt',stickySW,'0Inf',true);
@@ -66,7 +61,6 @@ REMtimes = (~NREMtimes & ~highEMG & hightheta);
 %     REMtimes =(broadbandSlowWave(:)<swthresh & EMG(:)<EMGthresh);
 % end    
 
-%USE bz_BimodalThresh(bimodaldata,varargin) here
 %%
 %OLD:
 %Index Vector: SWS=2, REM=3, MOV=6, NonMOV=1.   
