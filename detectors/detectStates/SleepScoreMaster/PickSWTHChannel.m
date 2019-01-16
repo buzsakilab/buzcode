@@ -131,10 +131,6 @@ numThetaChannels = length(ThetaChannels);
 
 %% Load LFP files from .lfp
 downsamplefactor = 10;
-% allLFP = bz_LoadBinary(rawlfppath,'frequency',Fs,...
-%     'nchannels',nChannels,'channels',usechannels+1,'downsample',downsamplefactor,...
-%     'start',scoretime(1),'duration',diff(scoretime));
-%Fs = Fs./downsamplefactor;
 allLFP = bz_GetLFP(usechannels,'basepath',basePath,'basename',recordingname,...
     'downsample',downsamplefactor,'intervals',scoretime,'noPrompts',noPrompts);
 Fs = allLFP.samplingRate;
@@ -175,10 +171,10 @@ parfor idx = 1:numSWChannels;
     
     if strcmp(SWweights,'PSS')
         [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',SWChannels(idx),'frange',[4 100]);
+            'channels',SWChannels(idx),'frange',[4 80]);
         broadbandSlowWave = specslope.data;
         SWfreqlist = specslope.freqs;
-        broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
+        broadbandSlowWave = smooth(broadbandSlowWave,smoothfact.*specslope.samplingRate);
     else
         [FFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,LFPchanidx)),window*Fs,noverlap*Fs,swFFTfreqs,Fs);
         FFTspec = abs(FFTspec);
@@ -364,7 +360,7 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
     %Calculate PC1 for plot/return
     if strcmp(SWweights,'PSS')
         [specslope,spec] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',SWChannels(goodSWidx),'frange',[4 100]);
+            'channels',SWChannels(goodSWidx),'frange',[4 80]);
         broadbandSlowWave = specslope.data;
         t_FFT = spec.timestamps;
         FFTspec = spec.amp;
