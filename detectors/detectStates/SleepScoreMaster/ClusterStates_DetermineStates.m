@@ -41,13 +41,13 @@ if ~exist('stickyEMG','var'); stickyEMG = false; end
 
 
 [~,~,~,~,NREMtimes] = bz_BimodalThresh(broadbandSlowWave(:),...
-    'setthresh',swthresh,'diptest',false,'Schmidt',stickySW,'0Inf',true);
+    'setthresh',swthresh,'diptest',false,'Schmidt',stickySW,'0Inf',false);
 
 [~,~,~,~,hightheta] = bz_BimodalThresh(thratio(:),...
-    'setthresh',THthresh,'diptest',false,'Schmidt',stickyTH,'0Inf',true);
+    'setthresh',THthresh,'diptest',false,'Schmidt',stickyTH,'0Inf',false);
 
 [~,~,~,~,highEMG] = bz_BimodalThresh(EMG(:),...
-    'setthresh',EMGthresh,'diptest',false,'Schmidt',stickyEMG,'0Inf',true);
+    'setthresh',EMGthresh,'diptest',false,'Schmidt',stickyEMG,'0Inf',false);
 
 REMtimes = (~NREMtimes & ~highEMG & hightheta);
 

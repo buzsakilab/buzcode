@@ -20,6 +20,16 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       'Redetect'  (default: false) to force redetection even if saved
 %                   file exists
 %
+%OUTPUTS
+%   specslope
+%       .data
+%       .timestamps
+%       .intercept
+%   spec
+%       .data       complex-valued spectrogram
+%       .timestamps
+%       .amp        log10-transformed amplitude of the spectrogram
+%
 %
 %DLevenstein 2018
 %%
