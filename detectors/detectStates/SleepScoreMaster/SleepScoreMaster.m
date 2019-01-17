@@ -39,6 +39,10 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %                   transform the cortical spectrum to approximately
 %                   hippocampal, may also be necessary with High Voltage
 %                   Spindles
+%   'stickytrigger' Implements a "sticky" trigger for threshold crossings,
+%                   in which metrics must reach halfway between threshold
+%                   and opposite peak to count as crossing (reduces
+%                   flickering, good for HPC recordings) (default:false)
 %   'SWChannels'    A vector list of channels that may be chosen for SW
 %                   signal
 %   'ThetaChannels' A vector list of channels that may be chosen for Theta
@@ -47,7 +51,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'noPrompts'     (default:false) an option to not prompt user of things
 %
 %OUTPUT 
-%   !CHANGE THIS!
+%   !THIS IS OUT OF DATE - UPDATE!
 %   StateIntervals  structure containing start/end times (seconds) of
 %                   NREM, REM, WAKE states and episodes. states is the 
 %                   "raw" state scoring. episodes are joined episodes of 
@@ -59,16 +63,6 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   
 %
 % DLevenstein and BWatson 2015/16
-
-%% Parameter setting
-% Min Win Parameters (s): basic detection paramaters (seconds)
-MinTimeWindowParms.minSWSsecs = 6;
-MinTimeWindowParms.minWnexttoREMsecs = 6;
-MinTimeWindowParms.minWinREMsecs = 6;       
-MinTimeWindowParms.minREMinWsecs = 6;
-MinTimeWindowParms.minREMsecs = 6;
-MinTimeWindowParms.minWAKEsecs = 6;
-
 %% Recording Selection
 %if recname is 'select' or something
 %use uigetfile to pick and get list of filenames
@@ -151,6 +145,7 @@ addParameter(p,'SWChannels',defaultSWChannels)
 addParameter(p,'ThetaChannels',defaultThetaChannels)
 addParameter(p,'rejectChannels',[]);
 addParameter(p,'noPrompts',false);
+addParameter(p,'stickytrigger',false);
 
 parse(p,varargin{:})
 %Clean up this junk...
@@ -166,8 +161,16 @@ SWChannels = p.Results.SWChannels;
 ThetaChannels = p.Results.ThetaChannels;
 rejectChannels = p.Results.rejectChannels;
 noPrompts = p.Results.noPrompts;
+stickytrigger = p.Results.stickytrigger;
 
-
+%% Parameter setting
+% Min Win Parameters (s): basic detection paramaters (seconds)
+MinTimeWindowParms.minSWSsecs = 6;
+MinTimeWindowParms.minWnexttoREMsecs = 6;
+MinTimeWindowParms.minWinREMsecs = 6;       
+MinTimeWindowParms.minREMinWsecs = 6;
+MinTimeWindowParms.minREMsecs = 6;
+MinTimeWindowParms.minWAKEsecs = 6;
 %% Database File Management 
 savefolder = fullfile(savedir,recordingname);
 if ~exist(savefolder,'dir')
@@ -226,7 +229,8 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 %Calculate the scoring metrics: broadbandLFP, theta, EMG in 
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,SleepScoreLFP,EMGFromLFP,overwrite);
+                                           basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
+                                           'allSticky',stickytrigger);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')

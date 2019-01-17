@@ -49,6 +49,8 @@ if nargin < 2 | mod(length(varargin),2) ~= 0,
 end
 
 % Check parameters
+intervals = double(intervals);
+samples = double(samples);
 if ~isdmatrix(intervals) || size(intervals,2) ~= 2,
   error('Incorrect intervals (type ''help <a href="matlab:help Restrict">Restrict</a>'' for details).');
 end

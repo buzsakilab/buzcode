@@ -3221,7 +3221,7 @@ switch get(FO.overlayDisp, 'Value')
             guidata(overlaychoicefig,localguidata)
             waitfor(overlaychoicefig)
               
-            choices = get(obj,'userdata');
+            choices = get(FO.fig,'userdata');
             for cidx = 1:length(choices)%for each channel/choice (should be same)
                 switch choices(cidx)
                     case 1
@@ -3232,7 +3232,7 @@ switch get(FO.overlayDisp, 'Value')
                 if length(t) > length(FO.to)
                     t = t(1:length(FO.to));
                 elseif length(t) < length(FO.to)
-                    t = cat(1,t,zeros(length(FO.to) - length(t),1))
+                    t = cat(1,t,zeros(length(FO.to) - length(t),1));
                 end
                 t = t';
                 t = t - prctile(t, 1);
@@ -5309,10 +5309,12 @@ else
         return
     end
 end
+if ~isfield(histsandthreshs,'stickySW'); histsandthreshs.stickySW = false; end
+if ~isfield(histsandthreshs,'stickyTH'); histsandthreshs.stickyTH = false; end
+if ~isfield(histsandthreshs,'stickyEMG');histsandthreshs.stickyEMG = false; end
 FO.AutoScore.histsandthreshs = histsandthreshs;
 
 % get histograms and thresholds of original detection
-
 HistAndThreshOrigAlready_Bool = 0;
 if isfield(SleepState,'detectorinfo')
     if isfield(SleepState.detectorinfo,'detectionparms')
@@ -5341,46 +5343,48 @@ set(h, 'ToolBar', 'none');
 ax1 = subplot(3,1,1,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.swhistbins,histsandthreshs.swhist)
 swline = plot(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1),'tag','bw');
-% swline = imline(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1));
-% set(swline,'UserData','swline')
-% id = addNewPositionCallback(swline,@(pos) title(mat2str(pos,3)));
 xlabel('SWS Band Power (NREM vs other)')
 ylabel('Counts (sec)')
 ResetToInitButton_sw = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.95, 0.15, 0.05]);
 set(ResetToInitButton_sw,'Callback',@ResetToInitSw);
 ResetToOrigButton_sw = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.85, 0.9, 0.15, 0.05]);
 set(ResetToOrigButton_sw,'Callback',@ResetToOrigSw);
+StickyThreshCheck_sw = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.85, 0.85, 0.15, 0.05],...
+    'Value',histsandthreshs.stickySW);
+%set(StickyThreshCheck_sw,'Callback',@SetStickySw);
 
-title('Click in plots to reset X value of thresholds')
+title({'Click in plots to reset X value of thresholds',...
+    'Setting thresholds to ''Sticky'' will reduce noise'})
 
 %middle plot: EMG amplitude
 ax2 = subplot(3,1,2,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.EMGhistbins,histsandthreshs.EMGhist)
 EMGline = plot(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2),'tag','bw');
-% EMGline = imline(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2));
-% set(EMGline,'UserData','EMGline')
-% id = addNewPositionCallback(EMGline,@(pos) title(mat2str(pos,3)));
 xlabel('EMG (300-600Hz Correlation, active WAKE vs REM/inactive)')
 ylabel('Counts (sec)')
 ResetToInitButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.62, 0.15, 0.05]);
 set(ResetToInitButton_EMG,'Callback',@ResetToInitEMG);
 ResetToOrigButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.85, 0.57, 0.15, 0.05]);
 set(ResetToOrigButton_EMG,'Callback',@ResetToOrigEMG);
+StickyThreshCheck_EMG = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.85, 0.52, 0.15, 0.05],...
+    'Value',histsandthreshs.stickyEMG);
+%set(StickyThreshCheck_EMG,'Callback',@SetStickyEMG);
 
 %bottom plot: Theta power
 ax3 = subplot(3,1,3,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.THhistbins,histsandthreshs.THhist)
 THline = plot(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3),'tag','bw');
-% THline = imline(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3));
-% set(THline,'UserData','THline')
-% id = addNewPositionCallback(THline,@(pos) title(mat2str(pos,3)));
 xlabel('Theta ratio (5-10Hz/2-15Hz, REM vs inactive WAKE)')
 ylabel('Counts (sec)')
 ResetToInitButton_TH = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.29, 0.15, 0.05]);
 set(ResetToInitButton_TH,'Callback',@ResetToInitTH);
 ResetToOrigButton_TH = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.85, 0.24, 0.15, 0.05]);
 set(ResetToOrigButton_TH,'Callback',@ResetToOrigTH);
+StickyThreshCheck_TH = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.85, 0.19, 0.15, 0.05],...
+    'Value',histsandthreshs.stickyTH);
+%set(StickyThreshCheck_TH,'Callback',@SetStickyTH);
 
+%RESCORE!
 ReScoreButton = uicontrol('style', 'pushbutton', 'String', 'Re-Score', 'Units', 'normalized', 'Position',  [0.4, 0.01, 0.2, 0.05]);
 set(ReScoreButton,'Callback',@ReClusterStates_In);
 
@@ -5392,6 +5396,9 @@ AutoClusterFig.ax3 = ax3;
 AutoClusterFig.swline = swline;
 AutoClusterFig.EMGline = EMGline;
 AutoClusterFig.THline = THline;
+AutoClusterFig.stickySWbox = StickyThreshCheck_sw;
+AutoClusterFig.stickyEMGbox = StickyThreshCheck_EMG;
+AutoClusterFig.stickyTHbox = StickyThreshCheck_TH;
 AutoClusterFig.histsandthreshs_init = histsandthreshs;%store first value
 
 FO.AutoClusterFig = AutoClusterFig;
@@ -5518,7 +5525,6 @@ if isfield(FO,'AutoScore')
     end
 end
 if ~exist('dp','var')
-    % load([baseName '.SleepScoreMetrics.LFP.mat'])
     SleepState = bz_LoadStates(basePath,'SleepState');
     dp = SleepState.detectorinfo.detectionparms;
 end
@@ -5533,6 +5539,11 @@ THthresh = THthresh(1,1);
 FO.AutoScore.histsandthreshs.swthresh = swthresh;
 FO.AutoScore.histsandthreshs.EMGthresh = EMGthresh;
 FO.AutoScore.histsandthreshs.THthresh = THthresh;
+
+FO.AutoScore.histsandthreshs.stickySW = FO.AutoClusterFig.stickySWbox.Value;
+FO.AutoScore.histsandthreshs.stickyTH = FO.AutoClusterFig.stickyTHbox.Value;
+FO.AutoScore.histsandthreshs.stickyEMG = FO.AutoClusterFig.stickyEMGbox.Value;
+
 
 if ~isfield(dp,'MinTimeWindowParms')
     display('No MinTimeWindowParms found... using defaults')
@@ -5608,6 +5619,13 @@ y = [0 max(FO.AutoClusterFig.histsandthreshs_init.THhist)];
 x = [FO.AutoClusterFig.histsandthreshs_init.THthresh FO.AutoClusterFig.histsandthreshs_init.THthresh];
 set(FO.AutoClusterFig.THline,'XData',x);
 end
+
+% function SetStickySw(obj,ev)
+% obj = findobj('tag','StateEditorMaster');
+% FO = guidata(obj(end));
+% 
+% set(FO.AutoClusterFig.swline,'XData',x);
+% end
 
 function [ INT ] = IDXtoINT_In( IDX ,numstates)
 %IDXtoINT_In(IDX) Converts state indices to state on/offsets
