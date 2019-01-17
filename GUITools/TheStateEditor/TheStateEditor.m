@@ -2571,11 +2571,20 @@ SleepState.detectorinfo.LastManualUpdate = datestr(now,'yyyy-mm-dd');
 save([baseName '.SleepState.states.mat'],'SleepState')
 
 
+%Make a new figure
+try
+    ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+catch
+    disp('Figure making error')
+end
+
 %If autoscored, calculate and save new StateEpisodes
 switch STATESFILETYPE
     case 'auto'
         StatesToEpisodes(SleepState,basePath);
 end
+
+
 
 b = msgbox(['Saved work to ', baseName, '.SleepState.states.mat']);
 saved = 1;
