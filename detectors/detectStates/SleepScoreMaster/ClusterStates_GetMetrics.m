@@ -61,8 +61,10 @@ sf_LFP = SleepScoreLFP.sf/downsamplefactor;
 
 %% Calculate broadbandslowwave metric
 %display('FFT Spectrum for Broadband LFP')
+%Timing Parameters
 window = 10;   %s
 noverlap = 9;  %s
+smoothfact = 10; %units of seconds - smoothing factor
 
 if strcmp(SWweights,'PSS')
     %Put the LFP in the right structure format
@@ -74,8 +76,9 @@ if strcmp(SWweights,'PSS')
     broadbandSlowWave = -specslope.data; %So NREM is higher as opposed to lower
     t_clus = specslope.timestamps;
     swFFTfreqs = specslope.freqs;
-    swFFTspec = 10.^spec.amp;
+    swFFTspec = 10.^spec.amp; %To reverse log10 in bz_PowerSpectrumSlope
     badtimes = false;
+    %ADD HERE: Bad times detection using swFFTspec similar to below. make bad times nan
    % SWfreqlist = specslope.freqs;
 else
     freqlist = logspace(0,2,100);
@@ -83,7 +86,6 @@ else
     swFFTspec = abs(swFFTspec);
     [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
     % Remove transients before calculating SW histogram
-    %this should be it's own whole section - removing/detecting transients
     totz = zscore(abs(sum(zFFTspec')));
     badtimes = find(totz>5);
     zFFTspec(badtimes,:) = 0;
@@ -96,7 +98,6 @@ else
 end
 
 %Smooth and 0-1 normalize
-smoothfact = 10; %units of seconds - smoothing factor
 broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_clus)));
 broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
