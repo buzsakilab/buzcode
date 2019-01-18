@@ -1087,7 +1087,7 @@ FO.hanningWDisp = uicontrol('style', 'popup', 'Units', 'normalized', 'Position',
 set(FO.hanningWDisp, 'String', optString, 'CallBack', {@ChangeSmoothingWindow}, 'Value', find(Woptions == FO.hanningW));
 
 %Overlay stuff
-Ooptions = ['none|(5-10Hz)/(0.5-4Hz)|Choose from file'];
+Ooptions = ['none|(5-10Hz)/(0.5-4Hz)|From SleepScoreMaster|Choose from file'];
 a = annotation('textbox', 'Units', 'normalized', 'Position', [0.855, 0.46, 0.1355, 0.03], 'EdgeColor', 'none');
 set(a, 'String', 'Overlay Display:');
 FO.overlayDisp = uicontrol('style', 'popup', 'Units', 'normalized', 'Position', [0.8800    0.45    0.0800    0.01]);
@@ -2573,7 +2573,7 @@ save([baseName '.SleepState.states.mat'],'SleepState')
 
 %Make a new figure
 try
-    ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+    ClusterStates_MakeFigure(SleepState,basePath,true);
 catch
     disp('Figure making error')
 end
@@ -3174,7 +3174,81 @@ switch get(FO.overlayDisp, 'Value')
             FO.overlayLines{i} = plot(FO.to, m, '-w', 'LineWidth', 2.5);
         end
     case 3
-        helpdlg({['2 Choices: 1) Choose a SleepState.States.mat file or 2) a simpler mat with a single variable with n columns of time bins'],...
+        %Load SleepState.states.mat
+        basePath = FO.basePath;
+        SleepState = bz_LoadStates(basePath,'SleepState');   
+        
+        maxF = FO.maxFreq;
+        
+        broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
+        thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
+        EMG = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.EMG;
+%             clear SleepState
+        chans = FO.Chs;
+
+        overlaychoicefig = figure('closerequestfcn',@OverlaySleepStateSelectCallback);
+        for cidx = 1:length(chans)
+               bg(cidx) = uibuttongroup(overlaychoicefig,...
+                  'Position',[(cidx-1)*.33 0 .3 1],...
+                  'Title',['Overlay for Ch' num2str(chans(cidx))]);
+
+                % Create radio buttons in the button group.
+                r1(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
+                      'String','Broaband SlowWave Power',...
+                      'Units','Normalized',....
+                      'Position',[.05 .55 1 .1]);
+                r2(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
+                      'String','Theta Ratio 5-10Hz/2-20Hz',...
+                      'Units','Normalized',....
+                      'Position',[.05 .1 1 .08]);
+
+                if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.SWchanID
+                    r1(cidx).Value = true;
+                    r2(cidx).Value = false;
+                end
+                if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.THchanID
+                    r1(cidx).Value = false;
+                    r2(cidx).Value = true;
+                end
+
+        end            
+        closebutt = uicontrol('style','pushbutton','units','normalized',... %lol butt.
+            'position',[.91 .05 .08 .1],'String','Finish',...
+            'callback',@OverlaySleepStateSelectCallback);
+        localguidata = v2struct(overlaychoicefig,bg,r1,r2,closebutt);
+        guidata(overlaychoicefig,localguidata)
+        waitfor(overlaychoicefig)
+
+        choices = get(FO.fig,'userdata');
+        for cidx = 1:length(choices)%for each channel/choice (should be same)
+            switch choices(cidx)
+                case 1
+                    t = broadbandSlowWave;
+                case 2
+                    t = thratio;
+            end
+            if length(t) > length(FO.to)
+                t = t(1:length(FO.to));
+            elseif length(t) < length(FO.to)
+                t = cat(1,t,zeros(length(FO.to) - length(t),1));
+            end
+            t = t';
+            t = t - prctile(t, 1);
+            t = t./prctile(t, 99);
+            range = maxF*(1/2);
+            base = maxF*(1/2);
+            t  = t*range;
+            t = t + base;
+
+            axes(FO.sax{cidx});
+            hold on;
+            FO.overlayLines{cidx} = plot(FO.to, t, '-w', 'LineWidth', 2.5);
+        end
+                        
+  
+        
+    case 4
+        helpdlg({['load a .mat with a single variable with n columns of time bins'],...
             ['(n = ', int2str(length(FO.to)),') and up to ', int2str(FO.nCh), ' rows. Successive rows of the'],...
             ['input will be displayed overlayed on on successive'],...
             ['spectrogram channels']});
@@ -3183,125 +3257,52 @@ switch get(FO.overlayDisp, 'Value')
         
         maxF = FO.maxFreq;
         
-        SleepStateTypeBool = 0;
-        if length(name)>22
-            if strcmp(name(end-21:end),'.SleepState.states.mat')
-                SleepStateTypeBool = 1;
+
+        if name == 0
+            guidata(FO.fig, FO); 
+            set(FO.overlayDisp, 'Value', 1);
+        else
+
+            input1 = load([path, name]);
+
+            if isstruct(input1)
+                t = fieldnames(input1);
+                input1 = input1.(t{1});
             end
-        end
-        if SleepStateTypeBool  %if sleepstate.states.mat type file
-            load(fullfile(path,name))%will get SleepState struct
-            broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
-            thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
-            EMG = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.EMG;
-%             clear SleepState
-            chans = FO.Chs;
-            
-            overlaychoicefig = figure('closerequestfcn',@OverlaySleepStateSelectCallback);
-            for cidx = 1:length(chans)
-                   bg(cidx) = uibuttongroup(overlaychoicefig,...
-                      'Position',[(cidx-1)*.33 0 .3 1],...
-                      'Title',['Overlay for Ch' num2str(chans(cidx))]);
-                  
-                    % Create radio buttons in the button group.
-                    r1(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
-                          'String','Broaband SlowWave Power',...
-                          'Units','Normalized',....
-                          'Position',[.05 .55 1 .1]);
-                    r2(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
-                          'String','Theta Ratio 5-10Hz/2-20Hz',...
-                          'Units','Normalized',....
-                          'Position',[.05 .1 1 .08]);
-                      
-                    if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.SWchanID
-                        r1(cidx).Value = true;
-                        r2(cidx).Value = false;
-                    end
-                    if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.THchanID
-                        r1(cidx).Value = false;
-                        r2(cidx).Value = true;
-                    end
-                      
-            end            
-            closebutt = uicontrol('style','pushbutton','units','normalized',...
-                'position',[.91 .05 .08 .1],'String','Finish',...
-                'callback',@OverlaySleepStateSelectCallback);
-            localguidata = v2struct(overlaychoicefig,bg,r1,r2,closebutt);
-            guidata(overlaychoicefig,localguidata)
-            waitfor(overlaychoicefig)
-              
-            choices = get(FO.fig,'userdata');
-            for cidx = 1:length(choices)%for each channel/choice (should be same)
-                switch choices(cidx)
-                    case 1
-                        t = broadbandSlowWave;
-                    case 2
-                        t = thratio;
+
+
+            if size(input1, 2) ~= length(FO.to)
+                b = msgbox('Error: number of columns in input does not match the number of bins');
+                uiwait(b);
+
+                set(FO.overlayDisp, 'Value', 1);
+                guidata(FO.fig, FO); 
+                return;
+            end
+
+            if ~isempty(FO.overlayLines)
+                for i = 1:length(FO.overlayLines)
+                    delete(FO.overlayLines{i})
                 end
-                if length(t) > length(FO.to)
-                    t = t(1:length(FO.to));
-                elseif length(t) < length(FO.to)
-                    t = cat(1,t,zeros(length(FO.to) - length(t),1));
-                end
-                t = t';
-                t = t - prctile(t, 1);
-                t = t./prctile(t, 99);
+                FO.overlayLines = {};
+            end
+
+            m1 = min([FO.nCh; size(input1, 1)]);
+            maxF = FO.maxFreq;
+            for i = 1:m1
+                m = input1(i, :);
+                m = m - prctile(m, 1);
+                m = m./prctile(m, 99);
                 range = maxF*(1/2);
                 base = maxF*(1/2);
-                t  = t*range;
-                t = t + base;
-
-                axes(FO.sax{cidx});
+                m  = m*range;
+                m = m + base;
+                axes(FO.sax{i});
                 hold on;
-                FO.overlayLines{cidx} = plot(FO.to, t, '-w', 'LineWidth', 2.5);
+                FO.overlayLines{i} = plot(FO.to, m, '-w', 'LineWidth', 2.5);
             end
-                        
-        else %if simple mat
-            if name == 0
-                guidata(FO.fig, FO); 
-                set(FO.overlayDisp, 'Value', 1);
-            else
-
-                input1 = load([path, name]);
-
-                if isstruct(input1)
-                    t = fieldnames(input1);
-                    input1 = input1.(t{1});
-                end
-
-
-                if size(input1, 2) ~= length(FO.to)
-                    b = msgbox('Error: number of columns in input does not match the number of bins');
-                    uiwait(b);
-
-                    set(FO.overlayDisp, 'Value', 1);
-                    guidata(FO.fig, FO); 
-                    return;
-                end
-
-                if ~isempty(FO.overlayLines)
-                    for i = 1:length(FO.overlayLines)
-                        delete(FO.overlayLines{i})
-                    end
-                    FO.overlayLines = {};
-                end
-
-                m1 = min([FO.nCh; size(input1, 1)]);
-                maxF = FO.maxFreq;
-                for i = 1:m1
-                    m = input1(i, :);
-                    m = m - prctile(m, 1);
-                    m = m./prctile(m, 99);
-                    range = maxF*(1/2);
-                    base = maxF*(1/2);
-                    m  = m*range;
-                    m = m + base;
-                    axes(FO.sax{i});
-                    hold on;
-                    FO.overlayLines{i} = plot(FO.to, m, '-w', 'LineWidth', 2.5);
-                end
-            end
-        end        
+        end
+                
 end
 
 guidata(FO.fig, FO); 
