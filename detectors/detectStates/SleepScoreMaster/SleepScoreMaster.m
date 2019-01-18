@@ -15,7 +15,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false, overwrite all processing steps
 %   'savebool'      Default: true
-%   'scoretime'     Default: [0 Inf]
+%   'scoretime'     Default: [0 Inf] NOTE: must be continous interval until
+%                   someone updates this...
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
 %                   be used for SWS detection.  Default is to use Power Spectrum Slope ('PSS'),
