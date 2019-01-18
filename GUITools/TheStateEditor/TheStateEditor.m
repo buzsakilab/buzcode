@@ -3306,7 +3306,7 @@ switch get(FO.overlayDisp, 'Value')
 end
 
 guidata(FO.fig, FO); 
-FO = UpdateGUI(FO);;
+FO = UpdateGUI(FO);
 
 end
 
