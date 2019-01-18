@@ -13,7 +13,7 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 p = inputParser;
 addParameter(p,'onSticky',false)
 parse(p,varargin{:})
-onSticky = p.Results.allSticky; 
+onSticky = p.Results.onSticky; 
 
 %This is the sticky trigger passed through to DetermineStates via histsandthreshs
 if onSticky
