@@ -213,7 +213,7 @@ end
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
-EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
+EMGFromLFP = bz_EMGFromLFP(basePath,'overwrite',overwrite,...
                                      'rejectChannels',rejectChannels,'noPrompts',noPrompts);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS

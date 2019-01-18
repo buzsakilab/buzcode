@@ -83,7 +83,7 @@ clusterfig = figure('visible','off');
         
    	subplot(6,1,6)
         hold on
-        plot(t_EMG,EMG,'k')
+        plot(t_clus,EMG,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('EMG')
         box on

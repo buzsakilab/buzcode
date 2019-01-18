@@ -129,16 +129,19 @@ thratio = (thratio-min(thratio))./max(thratio-min(thratio));
 %% EMG
 dtEMG = 1/EMG.samplingFrequency;
 EMG.smoothed = smooth(EMG.data,smoothfact/dtEMG,'moving');
-EMG.smoothed = (EMG.smoothed-min(EMG.smoothed))./max(EMG.smoothed-min(EMG.smoothed));
 
-reclength = round(EMG.timestamps(end));
+reclength = round(EMG.timestamps(end)); %What does this get used for?
 
-%downsample to FFT time points;
-t_EMG = interp1(EMG.timestamps,EMG.timestamps,t_clus,'nearest');
+%interpolate to FFT time points;
+%t_EMG = interp1(EMG.timestamps,EMG.timestamps,t_clus,'nearest');% use t_clus
 EMG = interp1(EMG.timestamps,EMG.smoothed,t_clus,'nearest');
+
+%Min/Max Normalize
+EMG = (EMG-min(EMG))./max(EMG-min(EMG));
 
 
 %% Divide PC1 for SWS
+%Note: can replace all of this with calls to bz_BimodalThresh
 numpeaks = 1;
 numbins = 12;
 %numbins = 12; %for Poster...
@@ -239,7 +242,7 @@ histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,...
 LFPparams = SleepScoreLFP.params;
 THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
-SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,t_EMG,...
+SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,...
     t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,...
     recordingname);
 %save(matfilename,'SleepScoreMetrics');
