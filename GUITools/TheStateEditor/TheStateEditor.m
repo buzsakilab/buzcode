@@ -88,7 +88,7 @@
 % http://www.artefact.tk/software/matlab/xml/
 %
 %created by Andres Grosmark at Gyuri Buzsaki's lab, 12/2012.
-%Improvements by Brendon Watson
+%Improvements by Brendon Watson, DLevenstein
 %Many subfunctions, mostly from Anton Sirota, but also from Adrien Peyrache
 %and others have been included as subfunctions of this script to reduce
 %dependency issues.
