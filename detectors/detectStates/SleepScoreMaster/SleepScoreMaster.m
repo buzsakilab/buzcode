@@ -40,8 +40,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %                   transform the cortical spectrum to approximately
 %                   hippocampal, may also be necessary with High Voltage
 %                   Spindles
-%   'stickytrigger' Implements a "sticky" trigger for threshold crossings,
-%                   in which metrics must reach halfway between threshold
+%   'stickytrigger' Implements a "sticky" trigger for SW/EMG threshold 
+%                   crossings: metrics must reach halfway between threshold
 %                   and opposite peak to count as crossing (reduces
 %                   flickering, good for HPC recordings) (default:false)
 %   'SWChannels'    A vector list of channels that may be chosen for SW
@@ -231,7 +231,7 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
                                            basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
-                                           'allSticky',stickytrigger);
+                                           'onSticky',stickytrigger);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
