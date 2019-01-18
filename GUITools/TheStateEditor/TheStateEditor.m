@@ -3182,8 +3182,6 @@ switch get(FO.overlayDisp, 'Value')
         
         broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
         thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
-        EMG = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.EMG;
-%             clear SleepState
         chans = FO.Chs;
 
         overlaychoicefig = figure('closerequestfcn',@OverlaySleepStateSelectCallback);
