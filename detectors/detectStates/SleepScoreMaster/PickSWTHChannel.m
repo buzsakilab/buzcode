@@ -131,11 +131,7 @@ numThetaChannels = length(ThetaChannels);
 
 %% Load LFP files from .lfp
 downsamplefactor = 10;
-% allLFP = bz_LoadBinary(rawlfppath,'frequency',Fs,...
-%     'nchannels',nChannels,'channels',usechannels+1,'downsample',downsamplefactor,...
-%     'start',scoretime(1),'duration',diff(scoretime));
-%Fs = Fs./downsamplefactor;
-allLFP = bz_GetLFP(usechannels,'basepath',basePath,...
+allLFP = bz_GetLFP(usechannels,'basepath',basePath,'basename',recordingname,...
     'downsample',downsamplefactor,'intervals',scoretime,'noPrompts',noPrompts);
 Fs = allLFP.samplingRate;
 
@@ -175,10 +171,11 @@ parfor idx = 1:numSWChannels;
     
     if strcmp(SWweights,'PSS')
         [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',SWChannels(idx));
+            'channels',SWChannels(idx),'frange',[4 90]);
         broadbandSlowWave = specslope.data;
         SWfreqlist = specslope.freqs;
-        broadbandSlowWave = smooth(broadbandSlowWave,smoothfact);
+        specdt = 1./specslope.samplingRate;
+
     else
         [FFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,LFPchanidx)),window*Fs,noverlap*Fs,swFFTfreqs,Fs);
         FFTspec = abs(FFTspec);
@@ -188,12 +185,14 @@ parfor idx = 1:numSWChannels;
         totz = zscore(abs(sum(zFFTspec')));
         badtimes = find(totz>5);
         zFFTspec(badtimes,:) = 0;
-
-        %% Calculate per-bin weights onto SlowWave
+        
+        specdt = mean(diff(t_FFT));
+        %Calculate per-bin weights onto SlowWave
         broadbandSlowWave = zFFTspec*SWweights';
-        broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_FFT)));
     end
     %%
+    
+    broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
     broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
 
     %% Histogram and diptest of Slow Wave Power
@@ -266,7 +265,7 @@ THchanID = ThetaChannels(goodTHidx);   %best SW and theta channels
 %This needs to be converted to buzcode bz_getLFP....
 downsample_save = Par.lfpSampleRate./250;
 
-swthLFP = bz_GetLFP([SWchanID,THchanID],'basepath',basePath,...
+swthLFP = bz_GetLFP([SWchanID,THchanID],'basepath',basePath,'basename',recordingname,...
     'downsample',downsample_save,'intervals',scoretime,'noPrompts',noPrompts);
 
 swLFP = (swthLFP.data(:,1));
@@ -364,7 +363,7 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
     %Calculate PC1 for plot/return
     if strcmp(SWweights,'PSS')
         [specslope,spec] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',SWChannels(goodSWidx));
+            'channels',SWChannels(goodSWidx),'frange',[4 90]);
         broadbandSlowWave = specslope.data;
         t_FFT = spec.timestamps;
         FFTspec = spec.amp;
@@ -373,8 +372,8 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
        % SWfreqlist = specslope.freqs;
     else
         [FFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,goodSWidx)),window*Fs,noverlap*Fs,swFFTfreqs,Fs);
-        FFTspec = abs(FFTspec);
-        [zFFTspec,mu,sig] = zscore(log10(FFTspec)');
+        FFTspec = log10(abs(FFTspec));
+        [zFFTspec,mu,sig] = zscore((FFTspec)');
         % Remove transients before calculating SW histogram
         %this should be it's own whole section - removing/detecting transients
         totz = zscore(abs(sum(zFFTspec')));
@@ -392,7 +391,7 @@ saveas(thfig,[figfolder,recordingname,'_FindBestTH'],'jpeg')
      
 chanfig =figure('visible','off');
 	subplot(5,1,1:2)
-        imagesc(t_FFT,log2(swFFTfreqs),log10(FFTspec))
+        imagesc(t_FFT,log2(swFFTfreqs),(FFTspec))
         axis xy
         LogScale_ss('y',2)
         caxis([min(mu)-2.5*max(sig) max(mu)+2.5*max(sig)])

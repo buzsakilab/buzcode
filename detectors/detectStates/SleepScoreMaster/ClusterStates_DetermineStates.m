@@ -1,4 +1,5 @@
-function [ints, idx, MinTimeWindowParms] = ClusterStates_DetermineStates(SleepScoreMetrics,MinTimeWindowParms,histsandthreshs)
+function [ints, idx, MinTimeWindowParms] = ClusterStates_DetermineStates(...
+    SleepScoreMetrics,MinTimeWindowParms,histsandthreshs)
 % can input histsandthreshs from externally if needed... ie via manual
 % selection in stateeditor
 
@@ -28,15 +29,38 @@ end
 v2struct(histsandthreshs)%Expand and get values out of these fields
 
 %% Re-Do this code (should be same as in ClusterStates_GetParams.m) to see if theta is bimodal
-NREMtimes = (broadbandSlowWave >swthresh);
-MOVtimes = (broadbandSlowWave(:)<swthresh & EMG(:)>EMGthresh);
-if THthresh ~= 0
-    REMtimes = (broadbandSlowWave(:)<swthresh & EMG(:)<EMGthresh & thratio(:)>THthresh);
-else % THthresh = 0;
-    REMtimes =(broadbandSlowWave(:)<swthresh & EMG(:)<EMGthresh);
-end    
 
-%USE bz_BimodalThresh(bimodaldata,varargin) here
+%This switch turns on a "schmidt trigger", or sticky trigger,
+%which means that threshold crossings have to reach the
+%midpoint between the dip and the opposite peak, this
+%reduces noise. Passed through via histsandthreshs from checkboxes in
+%TheStateEditor or 'stickytrigger',true in SleepScoreMaster via GetMetrics
+if ~exist('stickySW','var'); stickySW = false; end
+if ~exist('stickyTH','var'); stickyTH = false; end
+if ~exist('stickyEMG','var'); stickyEMG = false; end
+
+
+[~,~,~,~,NREMtimes] = bz_BimodalThresh(broadbandSlowWave(:),'startbins',15,...
+    'setthresh',swthresh,'diptest',false,'Schmidt',stickySW,'0Inf',true);
+
+[~,~,~,~,hightheta] = bz_BimodalThresh(thratio(:),'startbins',15,...
+    'setthresh',THthresh,'diptest',false,'Schmidt',stickyTH,'0Inf',true);
+
+[~,~,~,~,highEMG] = bz_BimodalThresh(EMG(:),'startbins',15,...
+    'setthresh',EMGthresh,'diptest',false,'Schmidt',stickyEMG,'0Inf',true);
+
+REMtimes = (~NREMtimes & ~highEMG & hightheta);
+
+
+%OLD
+%NREMtimes = (broadbandSlowWave >swthresh);
+%MOVtimes = (broadbandSlowWave(:)<swthresh & EMG(:)>EMGthresh); Not actually used
+% if THthresh ~= 0
+%     REMtimes = (broadbandSlowWave(:)<swthresh & EMG(:)<EMGthresh & thratio(:)>THthresh);
+% else % THthresh = 0;
+%     REMtimes =(broadbandSlowWave(:)<swthresh & EMG(:)<EMGthresh);
+% end    
+
 %%
 %OLD:
 %Index Vector: SWS=2, REM=3, MOV=6, NonMOV=1.   
@@ -150,7 +174,12 @@ Slengths = Sints(:,2)-Sints(:,1);
 shortSints = {Sints(find(Slengths<=minSWSsecs),:)};
 shortSidx = bz_INTtoIDX(shortSints,'length',length(IDX));
 %Change Short SWS to Wake
-IDX(shortSidx==1) = 1;   
+IDX(shortSidx==1) = 1;
+
+%Here: use SleepScoreMetrics.t_clus to align IDX to timestamps that are
+%then passed through to get final start/stops (set any timestamps that
+%weren't scored (i.e. weren't extracted in the SleepScoreLFP to 0)
+
 INT = IDXtoINT(IDX,3);
 
 
