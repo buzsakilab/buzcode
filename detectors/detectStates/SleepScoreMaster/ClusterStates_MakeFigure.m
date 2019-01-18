@@ -150,7 +150,8 @@ end
 saveas(gcf,[figloc,recordingname,'_SSCluster2D'],'jpeg')
 %saveas(gcf,['/Users/dlevenstein/Code Library/SleepScoreDevelopment/StateScoreFigures/','ThetaEMGExample'],'jpeg')
 %% Figure: Clustering
-colormat = [[0 0 0];[0 0 1];[1 0 0]];
+colormat = [[0 0 0];[0 0 1];[1 0 0];[nan nan nan]];
+IDX(IDX==0) = 4;
 coloridx = colormat(IDX,:);
 
 if noprompts

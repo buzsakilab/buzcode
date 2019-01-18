@@ -2573,7 +2573,7 @@ save([baseName '.SleepState.states.mat'],'SleepState')
 
 %Make a new figure
 try
-    ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+    ClusterStates_MakeFigure(SleepState,basePath,true);
 catch
     disp('Figure making error')
 end

@@ -41,13 +41,13 @@ if ~exist('stickyEMG','var'); stickyEMG = false; end
 
 
 [~,~,~,~,NREMtimes] = bz_BimodalThresh(broadbandSlowWave(:),...
-    'setthresh',swthresh,'diptest',false,'Schmidt',stickySW,'0Inf',false);
+    'setthresh',swthresh,'diptest',false,'Schmidt',stickySW,'0Inf',true);
 
 [~,~,~,~,hightheta] = bz_BimodalThresh(thratio(:),...
-    'setthresh',THthresh,'diptest',false,'Schmidt',stickyTH,'0Inf',false);
+    'setthresh',THthresh,'diptest',false,'Schmidt',stickyTH,'0Inf',true);
 
 [~,~,~,~,highEMG] = bz_BimodalThresh(EMG(:),...
-    'setthresh',EMGthresh,'diptest',false,'Schmidt',stickyEMG,'0Inf',false);
+    'setthresh',EMGthresh,'diptest',false,'Schmidt',stickyEMG,'0Inf',true);
 
 REMtimes = (~NREMtimes & ~highEMG & hightheta);
 
@@ -174,7 +174,12 @@ Slengths = Sints(:,2)-Sints(:,1);
 shortSints = {Sints(find(Slengths<=minSWSsecs),:)};
 shortSidx = bz_INTtoIDX(shortSints,'length',length(IDX));
 %Change Short SWS to Wake
-IDX(shortSidx==1) = 1;   
+IDX(shortSidx==1) = 1;
+
+%Here: use SleepScoreMetrics.t_clus to align IDX to timestamps that are
+%then passed through to get final start/stops (set any timestamps that
+%weren't scored (i.e. weren't extracted in the SleepScoreLFP to 0)
+
 INT = IDXtoINT(IDX,3);
 
 
