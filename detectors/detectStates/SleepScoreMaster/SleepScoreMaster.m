@@ -262,6 +262,7 @@ save(bz_sleepstatepath,'SleepState');
 %ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
 try
     ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+    disp('Figures Saved to StateScoreFigures')
 catch
     disp('Figure making error')
 end

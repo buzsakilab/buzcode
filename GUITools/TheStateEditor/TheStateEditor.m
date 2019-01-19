@@ -439,7 +439,10 @@ else
         fspec = {};
         
         disp(['Loading eeg channels: ', int2str(Chs)]);
-        
+%         try %first try bz_getLFP
+%             eeg1 = bz_GetLFP(Chs,'basepath',FO.basePath,'noPrompts',true);
+%             eeg1 = single(eeg1.data);
+%         catch
         try
             %First try Anton's LoadBinary
             eeg1 = LoadBinary([baseName, suffix], Chs+1, nCh, [], 'int16', 'single');
@@ -447,7 +450,8 @@ else
             %Otherwise try to use Micheal Zugaro
             eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs+1, 'nChannels', nCh)';
             eeg1 = single(eeg1);
-         end
+        end
+%         end
         disp('Done.');
         for i = 1:length(Chs)
             
@@ -2574,6 +2578,7 @@ save([baseName '.SleepState.states.mat'],'SleepState')
 %Make a new figure
 try
     ClusterStates_MakeFigure(SleepState,basePath,true);
+    disp('Figures Saved to StateScoreFigures')
 catch
     disp('Figure making error')
 end
