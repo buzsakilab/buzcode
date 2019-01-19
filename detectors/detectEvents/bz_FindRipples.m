@@ -139,7 +139,7 @@ window = ones(windowLength,1)/windowLength;
 keep = [];
 if ~isempty(restrict)
     for i=1:size(restrict,1)
-        keep(timestamps>=restrict(i,1)&timestamps<=restrict(i,2)) = 1;
+        keep = InIntervals(timestamps,restrict);
     end
 end
 keep = logical(keep); 
