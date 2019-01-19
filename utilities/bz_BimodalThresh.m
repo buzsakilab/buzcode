@@ -168,18 +168,39 @@ switch ZINF
             upforup(end) = [];
         end
     case true
-        if crossup(1) < crossdown(1)
-            downfordown = [0;downfordown];
+        switch Schmidt
+            case false   %Regular threshold assumes first state 
+                         %is opposite first crossing
+                if crossup(1) < crossdown(1)
+                    downfordown = [0;downfordown];
+                end
+                if crossdown(end) > crossup(end)
+                    upfordown = [upfordown;Inf];
+                end
+                if crossdown(1) < crossup(1)
+                    upforup = [0;upforup];
+                end
+                if crossup(end) > crossdown(end)
+                    downforup = [downforup;Inf];
+                end
+            case true   %Sticky threshold assumes first threshold crossing  
+                         %is in first state
+                if crossup(1) < crossdown(1)
+                    upfordown(1) = [];
+                    upforup(1) = 0;
+                end
+                if crossdown(end) > crossup(end)
+                    upfordown = [upfordown;Inf];
+                end
+                if crossdown(1) < crossup(1)
+                    downforup(1) = [];
+                    downfordown(1) = 0;
+                end
+                if crossup(end) > crossdown(end)
+                    downforup = [downforup;Inf];
+                end
         end
-        if crossdown(end) > crossup(end)
-            upfordown = [upfordown;Inf];
-        end
-        if crossdown(1) < crossup(1)
-            upforup = [0;upforup];
-        end
-        if crossup(end) > crossdown(end)
-            downforup = [downforup;Inf];
-        end
+        
 end
     
 

@@ -15,7 +15,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false, overwrite all processing steps
 %   'savebool'      Default: true
-%   'scoretime'     Default: [0 Inf]
+%   'scoretime'     Default: [0 Inf] NOTE: must be continous interval until
+%                   someone updates this...
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
 %                   be used for SWS detection.  Default is to use Power Spectrum Slope ('PSS'),
@@ -39,8 +40,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %                   transform the cortical spectrum to approximately
 %                   hippocampal, may also be necessary with High Voltage
 %                   Spindles
-%   'stickytrigger' Implements a "sticky" trigger for threshold crossings,
-%                   in which metrics must reach halfway between threshold
+%   'stickytrigger' Implements a "sticky" trigger for SW/EMG threshold 
+%                   crossings: metrics must reach halfway between threshold
 %                   and opposite peak to count as crossing (reduces
 %                   flickering, good for HPC recordings) (default:false)
 %   'SWChannels'    A vector list of channels that may be chosen for SW
@@ -212,7 +213,7 @@ end
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
-EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
+EMGFromLFP = bz_EMGFromLFP(basePath,'overwrite',overwrite,...
                                      'rejectChannels',rejectChannels,'noPrompts',noPrompts);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
@@ -230,7 +231,7 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
                                            basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
-                                           'allSticky',stickytrigger);
+                                           'onSticky',stickytrigger);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
@@ -261,6 +262,7 @@ save(bz_sleepstatepath,'SleepState');
 %ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
 try
     ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+    disp('Figures Saved to StateScoreFigures')
 catch
     disp('Figure making error')
 end
