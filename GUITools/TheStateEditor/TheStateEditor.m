@@ -3144,7 +3144,7 @@ FO = guidata(e);
 unsmoothedSpec = getappdata(gcf,'unsmoothedSpec');
 
 switch get(FO.overlayDisp, 'Value')
-    case 1
+    case 1  %none
         if isempty(FO.overlayLines)
             return;
         else
@@ -3153,7 +3153,7 @@ switch get(FO.overlayDisp, 'Value')
             end
             FO.overlayLines = {};
         end
-    case 2
+    case 2  %Theta ratio
         if ~isempty(FO.overlayLines)
             for i = 1:length(FO.overlayLines)
                 delete(FO.overlayLines{i})
@@ -3178,8 +3178,7 @@ switch get(FO.overlayDisp, 'Value')
             hold on;
             FO.overlayLines{i} = plot(FO.to, m, '-w', 'LineWidth', 2.5);
         end
-    case 3
-        %Load SleepState.states.mat
+    case 3  %From SleepScoreMaster
         basePath = FO.basePath;
         SleepState = bz_LoadStates(basePath,'SleepState');   
         
@@ -3250,7 +3249,7 @@ switch get(FO.overlayDisp, 'Value')
                         
   
         
-    case 4
+    case 4  %From File
         helpdlg({['load a .mat with a single variable with n columns of time bins'],...
             ['(n = ', int2str(length(FO.to)),') and up to ', int2str(FO.nCh), ' rows. Successive rows of the'],...
             ['input will be displayed overlayed on on successive'],...
