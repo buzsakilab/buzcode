@@ -3267,41 +3267,53 @@ switch get(FO.overlayDisp, 'Value')
 
             input1 = load([path, name]);
 
-            if isstruct(input1)
+            if isstruct(input1) && ~isfield(input1,'timestamps')
                 t = fieldnames(input1);
                 input1 = input1.(t{1});
             end
-
-
-            if size(input1, 2) ~= length(FO.to)
-                b = msgbox('Error: number of columns in input does not match the number of bins');
-                uiwait(b);
-
-                set(FO.overlayDisp, 'Value', 1);
-                guidata(FO.fig, FO); 
-                return;
-            end
-
-            if ~isempty(FO.overlayLines)
-                for i = 1:length(FO.overlayLines)
-                    delete(FO.overlayLines{i})
-                end
-                FO.overlayLines = {};
-            end
-
-            m1 = min([FO.nCh; size(input1, 1)]);
-            maxF = FO.maxFreq;
-            for i = 1:m1
-                m = input1(i, :);
-                m = m - prctile(m, 1);
-                m = m./prctile(m, 99);
-                range = maxF*(1/2);
-                base = maxF*(1/2);
-                m  = m*range;
-                m = m + base;
-                axes(FO.sax{i});
+            
+            %Buzcode structure with timestamps and data - still needs
+            %work....
+            if isfield(input1,'timestamps')
+                maxF = FO.maxFreq;
+                
+                [ m ] = bz_NormToRange(input1.data,[0.5*maxF maxF]);
                 hold on;
-                FO.overlayLines{i} = plot(FO.to, m, '-w', 'LineWidth', 2.5);
+                FO.overlayLines{1} = plot(input1.timestamps, m, '-w', 'LineWidth', 2.5);
+            else
+
+
+                if size(input1, 2) ~= length(FO.to)
+                    b = msgbox('Error: number of columns in input does not match the number of bins');
+                    uiwait(b);
+
+                    set(FO.overlayDisp, 'Value', 1);
+                    guidata(FO.fig, FO); 
+                    return;
+                end
+
+                if ~isempty(FO.overlayLines)
+                    for i = 1:length(FO.overlayLines)
+                        delete(FO.overlayLines{i})
+                    end
+                    FO.overlayLines = {};
+                end
+
+                m1 = min([FO.nCh; size(input1, 1)]);
+                maxF = FO.maxFreq;
+                for i = 1:m1
+                    m = input1(i, :);
+                    m = m - prctile(m, 1);
+                    m = m./prctile(m, 99);
+                    range = maxF*(1/2);
+                    base = maxF*(1/2);
+                    m  = m*range;
+                    m = m + base;
+                    axes(FO.sax{i});
+                    hold on;
+                    FO.overlayLines{i} = plot(FO.to, m, '-w', 'LineWidth', 2.5);
+                end
+            
             end
         end
                 
