@@ -25,7 +25,7 @@ function [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       .data
 %       .timestamps
 %       .intercept
-%   spec
+%   specgram
 %       .data       complex-valued spectrogram
 %       .timestamps
 %       .amp        log10-transformed amplitude of the spectrogram
