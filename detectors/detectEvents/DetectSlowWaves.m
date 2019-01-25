@@ -24,7 +24,9 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %                        use [0 Inf] to detect over all time points
 %   'DetectionChannel'  -Channel with the most robust Slow Waves. (0-Indexing a la neuroscope). 
 %                        (Default: 'autoselect')
-%                        'useold' to use channel from existing SlowWaves.events.mat              
+%                        'useold' to use channel from existing SlowWaves.events.mat 
+%                        If providing lfp via the 'lfp' input, make sure to
+%                        give a detection channel here.
 %   'noSpikes'          -true/false - set to true to not use spike information
 %                        (default: false)
 %   'CTXChans'          -LFP channels that are in the cortex...  

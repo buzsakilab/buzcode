@@ -1,7 +1,7 @@
 function [  ] = bz_ScaleBar( units )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-        whihold on
+        hold on
        % units = 'AU';
         yrange = get(gca,'ylim');
         xrange = get(gca,'xlim');
