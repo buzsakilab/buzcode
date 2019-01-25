@@ -59,7 +59,7 @@ addParameter(p,'rejectChannels',[],@isnumeric)
 addParameter(p,'restrictChannels',[],@isnumeric)
 addParameter(p,'saveMat',true,@islogical)
 addParameter(p,'saveLocation','',@isstr)
-addParameter(p,'overwrite',true,@islogical)
+addParameter(p,'overwrite',false,@islogical)
 addParameter(p,'samplingFrequency',2,@isnumeric)
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'fromDat',false,@islogical);

@@ -1,4 +1,4 @@
-function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
+function [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %[specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt) calculates the
 %slope of the power spectrum, a metric of cortical state and E/I balance
 %see Gao, Peterson, Voytek 2016;  Waston, Ding, Buzsaki 2017
@@ -71,18 +71,26 @@ end
 if length(lfp.channels)>1
   %loop each channel and put the stuff in the right place
 	for cc = 1:length(lfp.channels)
+        if mod(cc,4)==1
+            display([num2str(cc),' of ',...
+                num2str(length(lfp.channels)),' complete!'])
+        end
         lfp_temp = lfp; 
-        lfp_temp.data = lfp_temp.data(:,cc); lfp_temp.channels = lfp_temp.channels(cc);
+        lfp_temp.data = lfp_temp.data(:,cc); 
+        lfp_temp.channels = lfp_temp.channels(cc);
         specslope_temp = bz_PowerSpectrumSlope(lfp_temp,winsize,dt,varargin{:});
         
         if ~exist('specslope','var')
             specslope = specslope_temp;
+            %Don't save the big stuff for multiple channels.
+            specslope.resid = [];
         else
             specslope.data(:,cc) = specslope_temp.data;
             specslope.intercept(:,cc) = specslope_temp.intercept;
             specslope.rsq(:,cc) = specslope_temp.rsq;
-            specslope.resid(:,:,cc) = specslope_temp.resid;
+            specslope.specgram(:,:,cc) = specslope_temp.specgram;
         end
+        
 	end
     specslope.channels = lfp.channels;
     return
