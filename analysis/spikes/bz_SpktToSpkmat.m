@@ -172,6 +172,7 @@ t = [0:size(spkmat,1)-1]'*dt+0.5*dt+t_start; %time vector (midpoint)
 spikemat.data = spkmat;
 spikemat.timestamps = t;
 spikemat.dt = dt;
+spikemat.binsize = binsize;
 
 end
 
