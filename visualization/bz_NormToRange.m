@@ -1,5 +1,5 @@
 function [ normdata ] = bz_NormToRange(data,range,databounds)
-%[ normdata ] = NormToRange(data,range,databounds) normalizes some data to
+%[ normdata ] = bz_NormToRange(data,range,databounds) normalizes some data to
 %fit in some range.
 %
 %INPUTS
@@ -13,6 +13,8 @@ function [ normdata ] = bz_NormToRange(data,range,databounds)
 %
 %DLevenstein 2019
 %%
+if isempty(data); normdata = []; return; end
+
 if ~exist('range','var') || strcmp(range,'ylim')
     range = get(gca,'ylim');
 end
