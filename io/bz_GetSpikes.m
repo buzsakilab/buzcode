@@ -15,6 +15,8 @@ function spikes = bz_GetSpikes(varargin)
 %    getWaveforms    -logical (default=true) to load mean of raw waveform data
 %    forceReload     -logical (default=false) to force loading from
 %                     res/clu/spk files
+%    onlyLoad        -[shankID cluID] pairs to EXCLUSIVELY LOAD from 
+%                       clu/res/fet to spikes.cellinfo.mat file
 %    saveMat         -logical (default=false) to save in buzcode format
 %    noPrompts       -logical (default=false) to supress any user prompts
 %    
@@ -71,6 +73,7 @@ addParameter(p,'getWaveforms',true)
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'onlyLoad',[]);
 
 parse(p,varargin{:})
 
@@ -82,6 +85,7 @@ getWaveforms = p.Results.getWaveforms;
 forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 noPrompts = p.Results.noPrompts;
+onlyLoad = p.Results.onlyLoad;
 
 
 [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
@@ -198,7 +202,8 @@ for i=1:length(cluFiles)
             wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
         catch
             if strcmp(getWaveforms,'force')
-                wav = nan(chansPerSpikeGrp,nSamples,1);
+                wav = nan(chansPerSpikeGrp,nSamples,length(clu));
+                display([spkFiles(i).name,' error.'])
             else
             error(['something is wrong with ',spkFiles(i).name,...
                 ' Use ''getWaveforms'', false to skip waveforms or ',...
@@ -255,8 +260,22 @@ for i=1:length(cluFiles)
     end
 end
 
-spikes.sessionName = sessionInfo.FileName;
 
+if ~isempty(onlyLoad)
+    toRemove = true(size(spikes.UID));
+    for cc = 1:size(onlyLoad,1)
+        whichUID = ismember(spikes.shankID,onlyLoad(cc,1)) & ismember(spikes.cluID,onlyLoad(cc,2));
+        toRemove(whichUID) = false;
+        if ~any(whichUID)
+            display(['No unit with shankID:',num2str(onlyLoad(cc,1)),...
+                ' cluID:',num2str(onlyLoad(cc,2))])
+        end
+    end
+    spikes = removeCells(toRemove,spikes,getWaveforms);
+end
+
+
+spikes.sessionName = sessionInfo.FileName;
 end
 
 %% save to buzcode format (before exclusions)
@@ -265,32 +284,15 @@ if saveMat
 end
 
 
-%% filter by spikeGroups input
+%% EXCLUSIONS %%
+
+%filter by spikeGroups input
 if ~strcmp(spikeGroups,'all')
     [toRemove] = ~ismember(spikes.shankID,spikeGroups);
-    spikes.UID(toRemove) = [];
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.times{r} = [];
-         spikes.region{r} = [];
-        end
-    end
-    spikes.times = removeEmptyCells(spikes.times);
-    spikes.region = removeEmptyCells(spikes.region);
-    spikes.cluID(toRemove) = [];
-    spikes.shankID(toRemove) = [];
-    
-    if any(getWaveforms)
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.rawWaveform{r} = [];
-        end
-    end
-    spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
-    spikes.maxWaveformCh(toRemove) = [];
-    end
+    spikes = removeCells(toRemove,spikes,getWaveforms);
 end
-%% filter by region input
+
+%filter by region input
 if ~isempty(region)
     if ~isfield(spikes,'region') %if no region information in metadata
         error(['You selected to load cells from region "',region,...
@@ -302,55 +304,14 @@ if ~isempty(region)
         warning(['You selected to load cells from region "',region,...
             '", but none of your cells are from that region'])
     end
-  
-    spikes.UID(toRemove) = [];
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.times{r} = [];
-         spikes.region{r} = [];
-        end
-    end
-    spikes.times = removeEmptyCells(spikes.times);
-    spikes.region = removeEmptyCells(spikes.region);
-    spikes.cluID(toRemove) = [];
-    spikes.shankID(toRemove) = [];
     
-    if any(getWaveforms)
-    if isfield(spikes,'rawWaveform')
-        for r = 1:length(toRemove)
-            if toRemove(r) == 1
-             spikes.rawWaveform{r} = [];
-            end
-        end
-        spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
-        spikes.maxWaveformCh(toRemove) = [];
-    end
-    end
+    spikes = removeCells(toRemove,spikes,getWaveforms);
 end
-%% filter by UID input
+
+%filter by UID input
 if ~isempty(UID)
-        [toRemove] = ~ismember(spikes.UID,UID);
-    spikes.UID(toRemove) = [];
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.times{r} = [];
-         spikes.region{r} = [];
-        end
-    end
-    spikes.times = removeEmptyCells(spikes.times);
-    spikes.region = removeEmptyCells(spikes.region);
-    spikes.cluID(toRemove) = [];
-    spikes.shankID(toRemove) = [];
-    
-    if any(getWaveforms)
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.rawWaveform{r} = [];
-        end
-    end
-    spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
-    spikes.maxWaveformCh(toRemove) = [];
-    end
+	[toRemove] = ~ismember(spikes.UID,UID);
+    spikes = removeCells(toRemove,spikes,getWaveforms);   
 end
 
 %% Generate spindices matrics
@@ -368,6 +329,41 @@ end
 if isempty(spikes.times) | spikes.numcells == 0
     spikes = [];
 end
+
+
+
+end
+
+
+
+function spikes = removeCells(toRemove,spikes,getWaveforms)
+%Function to remove cells from the structure. toRemove is the INDEX of
+%the UID in spikes.UID
+
+    spikes.UID(toRemove) = [];
+    for r = 1:length(toRemove)
+        if toRemove(r) == 1
+         spikes.times{r} = [];
+         spikes.region{r} = [];
+        end
+    end
+    spikes.times = removeEmptyCells(spikes.times);
+    spikes.region = removeEmptyCells(spikes.region);
+    spikes.cluID(toRemove) = [];
+    spikes.shankID(toRemove) = [];
+    
+    if any(getWaveforms)
+    for r = 1:length(toRemove)
+        if toRemove(r) == 1
+         spikes.rawWaveform{r} = [];
+        end
+    end
+    spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
+    spikes.maxWaveformCh(toRemove) = [];
+    end
+    
+end
+
 
 
 

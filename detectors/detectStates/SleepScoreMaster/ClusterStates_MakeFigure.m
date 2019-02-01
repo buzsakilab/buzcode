@@ -83,7 +83,7 @@ clusterfig = figure('visible','off');
         
    	subplot(6,1,6)
         hold on
-        plot(t_EMG,EMG,'k')
+        plot(t_clus,EMG,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('EMG')
         box on
@@ -150,7 +150,8 @@ end
 saveas(gcf,[figloc,recordingname,'_SSCluster2D'],'jpeg')
 %saveas(gcf,['/Users/dlevenstein/Code Library/SleepScoreDevelopment/StateScoreFigures/','ThetaEMGExample'],'jpeg')
 %% Figure: Clustering
-colormat = [[0 0 0];[0 0 1];[1 0 0]];
+colormat = [[0 0 0];[0 0 1];[1 0 0];[nan nan nan]];
+IDX(IDX==0) = 4;
 coloridx = colormat(IDX,:);
 
 if noprompts

@@ -88,29 +88,23 @@ FO.basePath = basePath;
 %NOTE: F0.EventTimes should either be Nevents x 1 or Nevents x 2 (starts/stops).
 %If (starts/stops), flags/etc will be associated with the start time
 FO.EventTimes = exploreint;
-% if size(exploreint,2)==2 %For events with start/stops, use the 
-%     exploreint_mean = mean(exploreint,2);
-%     FO.EventTimes = exploreint_mean;
-%     FO.EventStarts = exploreint(:,1);
-%     FO.EventStops = exploreint(:,2);
-% else
-%     FO.EventTimes = exploreint;
-% end
-
-%Initialize an empty flags and comments (FaC) structure
-%This stores any user
-FO.FlagsAndComments = InitFlagsAndComments;
 
 %Load any EventExplorer data from events file (events FaC)
 REVIEWDONE = false;
 if isfield(events,'EventExplorer')
     if isfield(events.EventExplorer,'FlagsAndComments')
         FO.FlagsAndComments.events = events.EventExplorer.FlagsAndComments;
+    else
+        FO.FlagsAndComments.events.flags = [];
+        FO.FlagsAndComments.events.comments = {};
     end
     if isfield(events.EventExplorer,'DetectionReview')
         REVIEWDONE=true;
         FO.DetectionReview = events.EventExplorer.DetectionReview;
     end
+else
+	FO.FlagsAndComments.events.flags = [];
+	FO.FlagsAndComments.events.comments = {};
 end
 
 %Load EventExplorer metadata if it exists (timestamps FaC)
@@ -118,6 +112,9 @@ FO.EEbuzcodefilename = fullfile(basePath,[baseName,'.EventExplorer.SessionMetada
 if exist(FO.EEbuzcodefilename,'file')
     load(FO.EEbuzcodefilename)
     FO.FlagsAndComments.timepoint = EventExplorer.FlagsAndComments; 
+else
+	FO.FlagsAndComments.timepoint.flags = [];
+	FO.FlagsAndComments.timepoint.comments = {};
 end
 
 %Align any preexisting FaC (timestamps and events)
@@ -295,12 +292,6 @@ function KeyDefinitions(f, e)
         case 'rightarrow';  NextEvent(obj);
         case 'leftarrow';   PrevEvent(obj)
     end
-end
-
-function [ FlagsAndComments ] = InitFlagsAndComments
-%This function initiates the Flags and Comments Structure
-        FlagsAndComments.events.flags = [];
-        FlagsAndComments.events.comments = {};
 end
 
 function NextEvent(obj,eventdata)

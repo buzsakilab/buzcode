@@ -1,6 +1,6 @@
 function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 % USAGE
-% [EMGCorr] = bz_EMGCorrFromLFP(basePath,restrict,specialChannels,rejectChannels,saveMat)
+% [EMGCorr] = bz_EMGCorrFromLFP(basePath)
 %
 % INPUTS
 %       basePath            - string combination of basepath and basename of recording
@@ -18,6 +18,7 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 %                             default: false
 %       'samplingFrequency' - desired sampling rate for EMG output
 %       'noPrompts'     (default: false) prevents prompts about saving/adding metadata
+%       'fromDat'           -uses the .dat file instead of .lfp (default:false)
 %       
 %
 % OUTPUTS
@@ -58,9 +59,10 @@ addParameter(p,'rejectChannels',[],@isnumeric)
 addParameter(p,'restrictChannels',[],@isnumeric)
 addParameter(p,'saveMat',true,@islogical)
 addParameter(p,'saveLocation','',@isstr)
-addParameter(p,'overwrite',true,@islogical)
+addParameter(p,'overwrite',false,@islogical)
 addParameter(p,'samplingFrequency',2,@isnumeric)
 addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'fromDat',false,@islogical);
 parse(p,varargin{:})
     
 restrict = p.Results.restrict;
@@ -71,6 +73,7 @@ saveMat = p.Results.saveMat;
 overwrite = p.Results.overwrite;
 samplingFrequency = p.Results.samplingFrequency;
 noPrompts = p.Results.noPrompts;
+fromDat = p.Results.fromDat;
 
 if ~isempty(p.Results.saveLocation)
     matfilename = fullfile(p.Results.saveLocation,[recordingname,'.EMGFromLFP.LFP.mat']);
@@ -95,15 +98,29 @@ display('Calculating EMGFromLFP from High Frequency LFP Correlation')
 %% get basics about.lfp/lfp file
 
 sessionInfo = bz_getSessionInfo(basePath,'noPrompts',noPrompts); % now using the updated version
-if exist([basePath filesep sessionInfo.FileName '.lfp'])
-    lfpFile = [basePath filesep sessionInfo.FileName '.lfp'];
-elseif exist([basePath filesep sessionInfo.FileName '.eeg'])
-    lfpFile = [basePath filesep sessionInfo.FileName '.eeg'];
-else
-    error('could not find an LFP or EEG file...')    
-end
+switch fromDat
+    case false
+        if exist([basePath filesep sessionInfo.FileName '.lfp'])
+            lfpFile = [basePath filesep sessionInfo.FileName '.lfp'];
+        elseif exist([basePath filesep sessionInfo.FileName '.eeg'])
+            lfpFile = [basePath filesep sessionInfo.FileName '.eeg'];
+        else
+            error('could not find an LFP or EEG file...')    
+        end
+        
+        Fs = sessionInfo.lfpSampleRate; % Hz, LFP sampling rate
 
-Fs = sessionInfo.lfpSampleRate; % Hz, LFP sampling rate
+
+    case true
+        if exist([basePath filesep sessionInfo.FileName '.dat'])
+            datFile = [basePath filesep sessionInfo.FileName '.dat'];
+        else
+            error('could not find a dat file...')    
+        end
+        
+        datFs = sessionInfo.rates.wideband;
+        Fs = sessionInfo.lfpSampleRate; % Hz, LFP sampling rate
+end
 nChannels = sessionInfo.nChannels;
 
 if isfield(sessionInfo,'SpkGrps')
@@ -153,8 +170,9 @@ for gidx=1:length(spkgrpstouse)
    %add first channel from shank (superficial) and last channel from shank (deepest)
    if ~isempty(usableshankchannels{gidx})
       xcorr_chs = [xcorr_chs, usableshankchannels{gidx}(1)]; % fast mode? 
-      if length(spkgrpstouse) == 1 % if only one shank, then use top and bottom channels
-          xcorr_chs = [xcorr_chs, usableshankchannels{gidx}(end)]; 
+      if length(spkgrpstouse) == 1 % if only one shank, then use top, bottom, middle channels
+          xcorr_chs = [xcorr_chs, usableshankchannels{gidx}(round(end.*0.33)),...
+              usableshankchannels{gidx}(round(end.*0.66)), usableshankchannels{gidx}(end)]; 
       end
    end
 end
@@ -169,8 +187,15 @@ end
 % read channels
  % bz_sessionInfo is 0 indexed (neuroscope) channels, 
                            % but Loadbinary.m takes 1-indexed channel #'s
-lfp = bz_LoadBinary(lfpFile ,'nChannels',nChannels,'channels',xcorr_chs+1,...
-    'start',restrict(1),'duration',diff(restrict)); %read and convert to mV    
+switch fromDat
+    case false
+        lfp = bz_LoadBinary(lfpFile ,'nChannels',nChannels,'channels',xcorr_chs+1,...
+            'start',restrict(1),'duration',diff(restrict),'frequency',Fs); %read and convert to mV    
+    case true
+        lfp = bz_LoadBinary(datFile ,'nChannels',nChannels,'channels',xcorr_chs+1,...
+            'start',restrict(1),'duration',diff(restrict),'frequency',datFs,...
+            'downsample',datFs./Fs); %read and convert to mV  
+end
 
 % Filter first in high frequency band to remove low-freq physiologically
 % correlated LFPs (e.g., theta, delta, SPWs, etc.)
