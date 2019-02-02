@@ -308,8 +308,8 @@ synchmat = sum(spikemat.data>0,2);
 ratemat = sum(spikemat.data,2);
 
 %NREM spike rate histogram
-[tspike_NREM,tidx_NREM] = RestrictInts(spikemat.timestamps,NREMInts);
-tspike_NREM = tspike_NREM(:,1);
+tidx_NREM = InIntervals(spikemat.timestamps,NREMInts);
+tspike_NREM = spikemat.timestamps(tidx_NREM);
 synchmat_NREM = synchmat(tidx_NREM);
 ratemat_NREM = ratemat(tidx_NREM);
 
