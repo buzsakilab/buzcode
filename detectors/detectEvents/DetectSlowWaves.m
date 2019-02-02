@@ -29,6 +29,8 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %                        give a detection channel here.
 %   'noSpikes'          -true/false - set to true to not use spike information
 %                        (default: false)
+%   'MUAspikes'       -true/false - use MUA peaks (500-5000Hz) extracted 
+%                        from the .dat file instead of spikes
 %   'CTXChans'          -LFP channels that are in the cortex...  
 %                        default: region 'CTX' from baseName.sessionInfo.mat or xml
 %   'sensitivity'       -sensititivity (0-1) for determining LFP thresholds
@@ -74,6 +76,7 @@ addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'showFig',true,@islogical);
 addParameter(p,'noSpikes',false,@islogical);
+addParameter(p,'MUAspikes',false,@islogical);
 addParameter(p,'DetectionChannel','autoselect');
 addParameter(p,'NREMInts',[]);
 addParameter(p,'lfp',[]);
@@ -96,6 +99,7 @@ ratethresh = p.Results.sensitivity;
 filterparms = p.Results.filterparms;
 lfp = p.Results.lfp;
 spikes = p.Results.spikes;
+MUAspikes = p.Results.MUAspikes;
 
 %Defaults
 if ~exist('basePath','var')
@@ -123,6 +127,11 @@ if NOSPIKES
 elseif ~isempty(spikes)
     allspikes = sort(cat(1,spikes.times{:}));
     numcells = length(spikes.UID);
+elseif MUAspikes
+    [ MUA ] = MUAfromDat( basePath,'usepeaks',true,'saveMat',true );
+    spikes = MUA.peaks;
+    allspikes = sort(cat(1,spikes.times{:}));
+    numcells = length(spikes.times);
 else
     spikes = bz_GetSpikes('basepath',basePath,'region','CTX');
     if isempty(spikes)
@@ -204,7 +213,15 @@ display('Filtering LFP')
 deltaLFP = bz_Filter(lfp,'passband',filterparms.deltafilter,'filter','fir1','order',1);
 deltaLFP.normamp = NormToInt(deltaLFP.data,'modZ',NREMInts,deltaLFP.samplingRate);
 
+%switch useMUA
+%    case false
 gammaLFP = bz_Filter(lfp,'passband',filterparms.gammafilter,'filter','fir1','order',4);
+%    case true
+%         [ MUA ] = MUAfromDat( basePath,'channels',SWChan);
+%         gammaLFP.amp = MUA.data;
+%         gammaLFP.samplingRate = MUA.samplingRate;
+%         gammaLFP.timestamps = MUA.timestamps;
+% end
 gammaLFP.smoothamp = smooth(gammaLFP.amp,round(filterparms.gammasmoothwin.*gammaLFP.samplingRate),'moving' );
 gammaLFP.normamp = NormToInt(gammaLFP.smoothamp,'modZ',NREMInts,gammaLFP.samplingRate,'moving',filterparms.gammanormwin);
 
@@ -418,8 +435,11 @@ subplot(6,1,4)
     plot(samplewin,-thresholds.GAMMAdipthresh.*[1 1],'g--')
     plot(samplewin,thresholds.DELTApeakthresh.*[1 1],'b--')
 
-    
-NiceSave('SlowOscillation',figfolder,baseName)
+try    
+    NiceSave('SlowOscillation',figfolder,baseName)
+catch
+    display('ERROR SAVING FIGURE')
+end
 end
 
 %% Ouput in .event.mat format
@@ -646,33 +666,33 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
         ss = sampleDELTA(pp);
         switch NOSPIKES
             case false
-        %Spikes around the delta
-        nearpeakspikes = allspikes >= DELTApeaks(ss)-win & allspikes <= DELTApeaks(ss)+win;
-        relspktime = [relspktime; allspikes(nearpeakspikes)-DELTApeaks(ss)];
-        spkpeakheight = [spkpeakheight; DELTAPeakheight(ss).*ones(sum(nearpeakspikes),1)];
+                %Spikes around the delta
+                nearpeakspikes = allspikes >= DELTApeaks(ss)-win & allspikes <= DELTApeaks(ss)+win;
+                relspktime = [relspktime; allspikes(nearpeakspikes)-DELTApeaks(ss)];
+                spkpeakheight = [spkpeakheight; DELTAPeakheight(ss).*ones(sum(nearpeakspikes),1)];
             case true
-        %Gamma around the delta
-        [~,groupidx] = min(abs(DELTAPeakheight(ss)-DELTAmagbins)); %Which row (magnitude) is this peak in?
-        nearpeakgammaSPK(:,groupidx) =nansum([nearpeakgammaSPK(:,groupidx), ...
-            gammaLFP.normamp(DELTApeakIDX(ss)+[-1.*gammaLFP.samplingRate:gammaLFP.samplingRate])],2);
+                %Gamma around the delta
+                [~,groupidx] = min(abs(DELTAPeakheight(ss)-DELTAmagbins)); %Which row (magnitude) is this peak in?
+                nearpeakgammaSPK(:,groupidx) =nansum([nearpeakgammaSPK(:,groupidx), ...
+                    gammaLFP.normamp(DELTApeakIDX(ss)+[-1.*gammaLFP.samplingRate:gammaLFP.samplingRate])],2);
         end
-        %Delta around the delta
-        [~,groupidx] = min(abs(DELTAPeakheight(ss)-DELTAmagbins)); %Which row (magnitude) is this peak in?
-        nearpeakdelta(:,groupidx) =nansum([nearpeakdelta(:,groupidx), ...
-            deltaLFP.normamp(DELTApeakIDX(ss)+[-1.*deltaLFP.samplingRate:deltaLFP.samplingRate])],2);
+            %Delta around the delta
+            [~,groupidx] = min(abs(DELTAPeakheight(ss)-DELTAmagbins)); %Which row (magnitude) is this peak in?
+            nearpeakdelta(:,groupidx) =nansum([nearpeakdelta(:,groupidx), ...
+                deltaLFP.normamp(DELTApeakIDX(ss)+[-1.*deltaLFP.samplingRate:deltaLFP.samplingRate])],2);
     end
     peakmagdist = hist(DELTAPeakheight(sampleDELTA),DELTAmagbins);
     deltapower_byDELTAmag = bsxfun(@(A,B) A./B,nearpeakdelta,peakmagdist);
     switch NOSPIKES
         case false
             %Mean Spike rate around delta peaks
-        spikehistmat = hist3([relspktime,spkpeakheight],{timebins,DELTAmagbins});
-        ratemat_byDELTAmag = bsxfun(@(A,B) A./B./mean(diff(timebins))./numcells,spikehistmat,peakmagdist);
+            spikehistmat = hist3([relspktime,spkpeakheight],{timebins,DELTAmagbins});
+            ratemat_byDELTAmag = bsxfun(@(A,B) A./B./mean(diff(timebins))./numcells,spikehistmat,peakmagdist);
         case true
             %Mean High gamma around delta peaks
-        ratemat_byDELTAmag = bsxfun(@(A,B) A./B,nearpeakgammaSPK,peakmagdist);
-        lfptimebins = -win:1./deltaLFP.samplingRate:win;
-        ratemat_byDELTAmag = interp1(lfptimebins,ratemat_byDELTAmag,timebins);
+            ratemat_byDELTAmag = bsxfun(@(A,B) A./B,nearpeakgammaSPK,peakmagdist);
+            lfptimebins = -win:1./deltaLFP.samplingRate:win;
+            ratemat_byDELTAmag = interp1(lfptimebins,ratemat_byDELTAmag,timebins);
     end
 
     
