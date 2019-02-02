@@ -18,7 +18,7 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %                        rather just input the lfp instead of loading from
 %                        basepath
 %   'spikes'            -A buzcode-style spike structure 
-%   'NREMInts'          -Interval of times for NREM 
+%   'NREMInts'          -Interval of times for NREM (seconds) 
 %                        (Default: loaded from SleepState.states.mat, 
 %                                   run SleepScoreMaster if not exist)
 %                        use [0 Inf] to detect over all time points
@@ -301,15 +301,14 @@ UPDOWNdurhist.UP = UPDOWNdurhist.UP./sum(UPDOWNdurhist.UP);
 switch NOSPIKES
     case false
 display('Binning Spikes')
-dt = 0.005; %dt = 5ms
-overlap = 8; %Overlap = 8 dt
-winsize = dt*overlap; %meaning windows are 40ms big (previously 30)
-[spikemat,t_spkmat,spindices] = SpktToSpkmat(spikes.times, [], dt,overlap);
-synchmat = sum(spikemat>0,2);
-ratemat = sum(spikemat,2);
+overlap = 6; %Overlap = 8 dt
+binsize = 0.03; %meaning windows are 40ms big (previously 30)
+spikemat = bz_SpktToSpkmat(spikes, 'binsize', binsize,'overlap',overlap);
+synchmat = sum(spikemat.data>0,2);
+ratemat = sum(spikemat.data,2);
 
 %NREM spike rate histogram
-[tspike_NREM,tidx_NREM] = RestrictInts(t_spkmat,NREMInts);
+[tspike_NREM,tidx_NREM] = RestrictInts(spikemat.timestamps,NREMInts);
 tspike_NREM = tspike_NREM(:,1);
 synchmat_NREM = synchmat(tidx_NREM);
 ratemat_NREM = ratemat(tidx_NREM);

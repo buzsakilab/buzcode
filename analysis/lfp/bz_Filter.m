@@ -144,6 +144,7 @@ if isstruct(samples)
     end
     if ~isfield(samples,'timestamps')
         warning('Your input structure has no .timestamps field, one will be provided for you')
+        samples.timestamps = [0:length(samples.data)-1]./samples.samplingRate;
     end
     nyquist = 0.5.*samples.samplingRate;
 end
