@@ -167,7 +167,7 @@ end
 
 %Remove the overhang from intervals
 keepIDX = InIntervals(timestamps,intervals);
-data = data(keepIDX);
+spec = spec(keepIDX,:);
 timestamps = timestamps(keepIDX);
 %% Output in buzcode format
 wavespec.data = spec;
