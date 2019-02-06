@@ -113,11 +113,11 @@ joinwindur = 0.01;
 baseName = bz_BasenameFromBasepath(basePath);
 figfolder = fullfile(basePath,'DetectionFigures');
 savefile = fullfile(basePath,[baseName,'.SlowWaves.events.mat']);
-if exist(savefile,'file') && ~FORCEREDETECT
-    display(['Slow Oscillation already Detected, loading ',baseName,'.SlowWaves.events.mat'])
-    SlowWaves = bz_LoadEvents(basePath,'SlowWaves');
-    return
-end
+% if exist(savefile,'file') && ~FORCEREDETECT
+%     display(['Slow Oscillation already Detected, loading ',baseName,'.SlowWaves.events.mat'])
+%     SlowWaves = bz_LoadEvents(basePath,'SlowWaves');
+%     return
+% end
 %% Collect all the Necessary Pieces of Information: Spikes, States, LFP
 
 %Spikes in the CTX Spike Groups - assumes region ('CTX')
