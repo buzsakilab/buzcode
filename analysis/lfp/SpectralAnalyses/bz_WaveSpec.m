@@ -26,7 +26,8 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %       'fvector'   predefined vector of frequencies 
 %       'space'     'log' or 'lin'  spacing of f's      (default: 'log')
 %       'samplingRate' (only if input is not a buzcode structure)
-%       'intervals'  ADD THIS - ability to spec intervals
+%       'intervals'  restrict your spectrogram to timestamps in specific
+%                   intervals
 %       'showprogress' true/false (default:false)
 %       'saveMat '   put the basePath to save an LFP file
 %       'MatNameExtraText'   text(X) to add to name as in: 'basename.wavespec(text).lfp.mat'
@@ -73,6 +74,7 @@ addParameter(parms,'roundfreqs',false,@islogical);
 addParameter(parms,'saveMatPath',[]);
 addParameter(parms,'MatNameExtraText',[]);
 addParameter(parms,'fvector',[]);
+addParameter(parms,'intervals',[-Inf Inf])
 
 parse(parms,varargin{:})
 frange = parms.Results.frange;
@@ -85,6 +87,7 @@ roundfreqs = parms.Results.roundfreqs;
 saveMatPath = parms.Results.saveMatPath;
 MatNameExtraText = parms.Results.MatNameExtraText;
 fvector = parms.Results.fvector;
+intervals = parms.Results.intervals;
 
 
 %lfp input
@@ -105,6 +108,13 @@ end
 
 si = 1./samplingRate;
 
+%Restrict to intervals, with overhang to remove edge effects at transitions
+%(then remove later)
+overhang = (2*ncyc)./frange(1);
+overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
+keepIDX = InIntervals(timestamps,overint);
+data = data(keepIDX);
+timestamps = timestamps(keepIDX);
 
 %%
 if ~isa(data,'single') || ~isa(data,'double')
@@ -155,6 +165,10 @@ for cidx = 1:size(data,2)
     clear tspec
 end
 
+%Remove the overhang from intervals
+keepIDX = InIntervals(timestamps,intervals);
+spec = spec(keepIDX,:);
+timestamps = timestamps(keepIDX);
 %% Output in buzcode format
 wavespec.data = spec;
 wavespec.timestamps = timestamps;
@@ -179,9 +193,9 @@ if saveMatPath
     
     s = whos('wavespec');
     if s.bytes>=1073741824%if greater than 2GB
+        disp('wavespec variable greater than 2GB, saving as v7.3 .mat file')
         save(lfpfilename,'wavespec','-v7.3')
     else
-        disp('wavespec variable greater than 2GB, saving as v7.3 .mat file')
         save(lfpfilename,'wavespec')
     end
 end

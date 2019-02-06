@@ -1,7 +1,7 @@
 function [thresh,cross,bihist,diptest,overthresh] = bz_BimodalThresh(bimodaldata,varargin)
-%[thresh,cross,bihist] = BimodalThresh(bimodaldata) takes bimodal time
-%series data, calculates the threshold between the modes (i.e. UP vs DOWN states),
-%and returns the crossing times (i.e. UP/DOWN onset/offset times)
+%[thresh,cross,bihist,diptest,overthresh] = BimodalThresh(bimodaldata) 
+%takes bimodal time series data, calculates the threshold between the modes
+%(i.e. UP vs DOWN states), and returns the crossing times (i.e. UP/DOWN onset/offset times)
 %
 %INPUTS
 %   bimodaldata     vector of bimodal data
@@ -10,6 +10,7 @@ function [thresh,cross,bihist,diptest,overthresh] = bz_BimodalThresh(bimodaldata
 %       'maxthresh' sets a maximum threshold
 %       'Schmidt'   Schmidt trigger uses halfway points between trough and 
 %                   lower/upper peaks for DOWN/UP state thresholds
+%                   (default: false)
 %       'maxhistbins' Maximum number of hist bins to try before giving up
 %       'startbins'  minimum number of hist bins (initial hist)
 %       'setthresh'     set your own threshold
@@ -209,7 +210,7 @@ cross.upints = [upforup downforup];
 cross.downints = [downfordown upfordown];
 
 overthresh = bz_INTtoIDX({cross.downints,cross.upints},'length',length(bimodaldata))-1;
-
+overthresh(overthresh==-1) = nan;
 
 end
 
