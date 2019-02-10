@@ -1,4 +1,4 @@
-function [  ] = NiceSave(figname,figfolder,baseName,figtype)
+function [  ] = NiceSave(figname,figfolder,baseName,varargin)
 %NiceSave(figname,figfolder,baseName,figtype) formats the figure for best viewing
 %and saves it as a .pdf in figfolder with name recname_figname.pdf
 %
@@ -6,22 +6,30 @@ function [  ] = NiceSave(figname,figfolder,baseName,figtype)
 %   figname     string with title of figure
 %   figfolder   folder to save figure to
 %   baseName    name of the recording ([] for none)
-%   figtype     (optional)
+%   'figtype'     'pdf','jpeg',etc
+%   'includeDate' default: false. include date in filename
 %
 %DLevenstein Fall 2016
 %TODO: add option to not overwrite old figure, but instead save as
 %'figname02' etc.
 %%
+p = inputParser;
+addParameter(p,'figtype','pdf')
+addParameter(p,'includeDate',false)
+parse(p,varargin{:})
+figtype = p.Results.figtype;
+includeDate = p.Results.includeDate;
 
-if ~exist('figtype','var')
-    figtype = 'pdf';
-end
+
+%%
 
 if ~exist(figfolder,'dir')
     mkdir(figfolder)
 end
 
-
+if includeDate
+   figname = [figname,date];
+end
 %set(gcf,'TickDir','out')
 
 set(gcf,'PaperOrientation','landscape');
