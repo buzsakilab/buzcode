@@ -85,6 +85,10 @@ addParameter(p,'CTXChans','all');
 addParameter(p,'sensitivity',0.6,ratevalidation);
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'filterparms',filterparms,filterparmsvalidate);
+addParameter(p,'minwindur',0.04);
+addParameter(p,'joinwindur',0.01);
+
+
 parse(p,varargin{:})
 
 FORCEREDETECT = p.Results.forceReload;
@@ -100,15 +104,14 @@ filterparms = p.Results.filterparms;
 lfp = p.Results.lfp;
 spikes = p.Results.spikes;
 MUAspikes = p.Results.MUAspikes;
+minwindur = p.Results.minwindur;
+joinwindur = p.Results.joinwindur;
 
 %Defaults
 if ~exist('basePath','var')
     basePath = pwd;
 end
 
-%Put this as optional input...
-minwindur = 0.04;
-joinwindur = 0.01;
 %% File Management
 baseName = bz_BasenameFromBasepath(basePath);
 figfolder = fullfile(basePath,'DetectionFigures');
@@ -275,7 +278,7 @@ if ~NOSPIKES
 end
 
 %Merge close DOWNs, take larger of the two peaks
-[DOWNints,mergedidx] = MergeSeparatedInts(DOWNints,minwindur);
+[DOWNints,mergedidx] = MergeSeparatedInts(DOWNints,joinwindur);
 [SWpeakmag,newSWidx] = cellfun(@(X) max(SWpeakmag(X)),mergedidx,'UniformOutput',false);
 newSWidx = cellfun(@(X,Y) X(Y),mergedidx,newSWidx);
 SWpeaks = SWpeaks(newSWidx);
@@ -621,7 +624,7 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
     DELTAPeakheight = peakheights(keepPeaks);
     [~,DELTApeakIDX] = ismember(DELTApeaks,deltaLFP.timestamps);
 
-    [peakheights,GAMMAdips] = findpeaks(-gammaLFP.normamp,gammaLFP.timestamps,'MinPeakHeight',0.3,'MinPeakDistance',minwindur);
+    [peakheights,GAMMAdips] = findpeaks(-gammaLFP.normamp,gammaLFP.timestamps,'MinPeakHeight',0.2,'MinPeakDistance',minwindur);
     [GAMMAdips,keepPeaks] = RestrictInts(GAMMAdips,NREMInts);
     GAMMAdipdepth = peakheights(keepPeaks);
     [~,GAMMAdipIDX] = ismember(GAMMAdips,gammaLFP.timestamps);
