@@ -583,7 +583,7 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes,f
     display(['Selected Channel: ',num2str(usechan)])
     
     %% Figure
-    if SHOWFIG
+   
     figure('name',[baseName,' Slow Wave Channel Selection'])
     subplot(2,2,1)
         hist(gammaLFPcorr)
@@ -609,7 +609,7 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes,f
     end
         
     NiceSave('SlowWaveChannelSelect',figfolder,baseName)
-    end
+    
 end
 
 
