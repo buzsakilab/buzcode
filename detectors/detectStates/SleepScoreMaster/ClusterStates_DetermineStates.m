@@ -189,13 +189,6 @@ INT = IDXtoINT(IDX,3);
 offset = SleepScoreMetrics.t_clus(1)-1; %t_FFT(1)-1;
 INT = cellfun(@(x) x+offset,INT,'UniformOutput',false);
 
-%DL: this was in here but being re-wrote later... in next section. 
-%Leaving it as comment unless it turns out to have been necessary
-% IDX = bz_INTtoIDX(INT,'length',t_clus(end));
-% IDX = [0;IDX];  %T make start at 0;
-% t_IDX = [0:t_clus(end)]';
-
-
 %% Structure Output
 
 %Defaults - quick bug fix if some state doesn't exist

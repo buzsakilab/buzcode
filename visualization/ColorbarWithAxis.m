@@ -13,6 +13,7 @@ labelloc = 'side';
 scale = 'lin';
 
 barlocation = 'eastoutside';
+inclusive = {'',''};
 
 %%
 cb = colorbar(barlocation);
@@ -37,11 +38,11 @@ cb.Ticks = [cbounds(1) mean(cbounds) cbounds(2)];
 
 switch scale
     case 'log'
-        cb.TickLabels = {['< ',num2str(2.^(cbounds(1)))],2.^(mean(cbounds)),...
-            ['> ',num2str(2.^(cbounds(2)))]};
+        cb.TickLabels = {[inclusive{1},num2str(2.^(cbounds(1)))],2.^(mean(cbounds)),...
+            [inclusive{2},num2str(2.^(cbounds(2)))]};
     case 'lin'
-        cb.TickLabels = {['< ',num2str(cbounds(1))],mean(cbounds),...
-            ['> ',num2str(cbounds(2))]};
+        cb.TickLabels = {[inclusive{1},num2str(cbounds(1))],mean(cbounds),...
+            [inclusive{2},num2str(cbounds(2))]};
 end
 
 end

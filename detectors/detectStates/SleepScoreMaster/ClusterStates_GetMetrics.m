@@ -11,13 +11,13 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 %DLevenstein
 %% Params
 p = inputParser;
-addParameter(p,'allSticky',false)
+addParameter(p,'onSticky',false)
 parse(p,varargin{:})
-allSticky = p.Results.allSticky; 
+onSticky = p.Results.onSticky; 
 
 %This is the sticky trigger passed through to DetermineStates via histsandthreshs
-if allSticky
-    stickySW = true; stickyTH=true; stickyEMG=true;
+if onSticky
+    stickySW = true; stickyTH=false; stickyEMG=true;
 else
     stickySW = false; stickyTH=false; stickyEMG=false;
 end

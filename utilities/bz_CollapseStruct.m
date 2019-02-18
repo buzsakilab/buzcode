@@ -53,14 +53,11 @@ for ff = 1:length(fields)
        structout.(currentfield) = bz_CollapseStruct(structout.(currentfield),dim,combine,true);
        continue
     elseif iscell(structin(1).(currentfield)) & NEST %For cell array in field
-%             if strcmp(dim,'match')
-%                 catdim = bz_FindCatableDims({structin(:).(currentfield)});
-%             else
-%                 catdim = dim;
-%             end
-%         structout.(currentfield) = cat(catdim,structin(:).(currentfield));
             if strcmp(dim,'match')
                 catdim = bz_FindCatableDims({structin(:).(currentfield)});
+                if length(catdim)>1
+                    catdim = catdim(1); %Change this to be the largest dimension
+                end
             else
                 catdim = dim;
             end

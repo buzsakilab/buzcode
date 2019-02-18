@@ -133,13 +133,13 @@ plotType = p.Results.plotType;
 windowLength = frequency/frequency*11;
 
 % Square and normalize signal
-% squaredSignal = signal.^2;
-squaredSignal = abs(signal);
+squaredSignal = signal.^2;
+% squaredSignal = abs(opsignal);
 window = ones(windowLength,1)/windowLength;
 keep = [];
 if ~isempty(restrict)
     for i=1:size(restrict,1)
-        keep(timestamps>=restrict(i,1)&timestamps<=restrict(i,2)) = 1;
+        keep = InIntervals(timestamps,restrict);
     end
 end
 keep = logical(keep); 
