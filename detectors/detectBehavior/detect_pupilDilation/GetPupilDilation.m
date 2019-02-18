@@ -418,7 +418,7 @@ pupildilation.unstabledetection.unstableframes = unstableframes;
 pupildilation.pupilxy = pupcoords;
 
 pupildilation.detectorname = 'GetPupilDilation';
-pupildilation.detectiondate = today('datetime');
+pupildilation.detectiondate = datetime('today');
 pupildilation.detectorparms.mask = eyemask;
 pupildilation.detectorparms.intensitythresh = intensitythresh;
 pupildilation.detectorparms.unstablewindow = unstablewindow;

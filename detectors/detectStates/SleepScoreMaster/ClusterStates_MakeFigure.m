@@ -66,7 +66,8 @@ clusterfig = figure('visible','off');
         plot(t_clus,broadbandSlowWave,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('SW')
-        xlim([t_clus(1) t_clus(end)])
+        box on
+        ylim([0 1])
         xlim(viewwin)
         set(gca,'XTickLabel',{})
         
@@ -75,16 +76,18 @@ clusterfig = figure('visible','off');
         plot(t_clus,thratio,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('Theta')
-        xlim([t_clus(1) t_clus(end)])
+        box on
+        ylim([0 1])
         xlim(viewwin)
         set(gca,'XTickLabel',{})
         
    	subplot(6,1,6)
         hold on
-        plot(t_EMG,EMG,'k')
+        plot(t_clus,EMG,'k')
         %plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('EMG')
-        xlim([t_clus(1) t_clus(end)])
+        box on
+        ylim([0 1])
         xlim(viewwin)
         xlabel('t (s)')
         
@@ -147,7 +150,8 @@ end
 saveas(gcf,[figloc,recordingname,'_SSCluster2D'],'jpeg')
 %saveas(gcf,['/Users/dlevenstein/Code Library/SleepScoreDevelopment/StateScoreFigures/','ThetaEMGExample'],'jpeg')
 %% Figure: Clustering
-colormat = [[0 0 0];[0 0 1];[1 0 0]];
+colormat = [[0 0 0];[0 0 1];[1 0 0];[nan nan nan]];
+IDX(IDX==0) = 4;
 coloridx = colormat(IDX,:);
 
 if noprompts

@@ -26,6 +26,9 @@ function filtered = bz_Filter(samples,varargin)
 %                   (samples given as a list of (t,v1,v2,v3...) tuples)
 %     'fast'        true/false, uses FiltFiltM if true (doesn't work w/ new
 %                   version of matlab)
+%     'channels'    if input is a buzcode lfp structure with field
+%                   samples.channels, will only filter the selected
+%                   channels
 %    =========================================================================
 %
 %OUTPUT
@@ -59,6 +62,7 @@ type = 'cheby2';
 FMAlegacy = false;
 BUZCODE = false;
 fast = false;
+channels = [];
 
 % Check number of parameters
 if nargin < 1 | mod(length(varargin),2) ~= 0,
@@ -125,6 +129,9 @@ for i = 1:2:length(varargin),
             if ~islogical(FMAlegacy)
                 error('Incorrect value for property ''FMALegacy''');
             end
+            
+        case 'channels'
+            channels = varargin{i+1};
 
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help Filter">Filter</a>'' for details).']);
@@ -144,6 +151,7 @@ if isstruct(samples)
     end
     if ~isfield(samples,'timestamps')
         warning('Your input structure has no .timestamps field, one will be provided for you')
+        samples.timestamps = [0:length(samples.data)-1]./samples.samplingRate;
     end
     nyquist = 0.5.*samples.samplingRate;
 end
@@ -204,6 +212,12 @@ if FMAlegacy %FMA has (samples given as a list of (t,v1,v2,v3...) tuples)
     end
 elseif BUZCODE %BUZCODE has samples as a data structure
     filtered.timestamps = samples.timestamps;
+    
+    if ~isempty(channels)
+        [~,usechannels] = ismember(channels,samples.channels);
+        samples.data = samples.data(:,usechannels);
+        filtered.channels = samples.channels(usechannels);
+    end
     for i = 1:size(samples.data,2),
         if ~fast
            filtered.data(:,i) = filtfilt(b,a,double(samples.data(:,i)));

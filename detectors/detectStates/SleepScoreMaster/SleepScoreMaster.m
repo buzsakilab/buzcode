@@ -15,10 +15,12 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false, overwrite all processing steps
 %   'savebool'      Default: true
-%   'scoretime'     Default: [0 Inf]
+%   'scoretime'     Default: [0 Inf] NOTE: must be continous interval until
+%                   someone updates this...
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
-%                   be used for SWS detection.  Default is 'SWweights.mat'
+%                   be used for SWS detection.  Default is to use Power Spectrum Slope ('PSS'),
+%                   but can also try 'SWweights.mat'
 %                     - For hippocampus-only recordings, enter
 %                     'SWweightsHPC.mat' for this
 %   'Notch60Hz'     Boolean 0 or 1.  Value of 1 will notch out the 57.5-62.5 Hz
@@ -38,6 +40,10 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %                   transform the cortical spectrum to approximately
 %                   hippocampal, may also be necessary with High Voltage
 %                   Spindles
+%   'stickytrigger' Implements a "sticky" trigger for SW/EMG threshold 
+%                   crossings: metrics must reach halfway between threshold
+%                   and opposite peak to count as crossing (reduces
+%                   flickering, good for HPC recordings) (default:false)
 %   'SWChannels'    A vector list of channels that may be chosen for SW
 %                   signal
 %   'ThetaChannels' A vector list of channels that may be chosen for Theta
@@ -46,7 +52,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'noPrompts'     (default:false) an option to not prompt user of things
 %
 %OUTPUT 
-%   !CHANGE THIS!
+%   !THIS IS OUT OF DATE - UPDATE!
 %   StateIntervals  structure containing start/end times (seconds) of
 %                   NREM, REM, WAKE states and episodes. states is the 
 %                   "raw" state scoring. episodes are joined episodes of 
@@ -58,16 +64,6 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   
 %
 % DLevenstein and BWatson 2015/16
-
-%% Parameter setting
-% Min Win Parameters (s): basic detection paramaters (seconds)
-MinTimeWindowParms.minSWSsecs = 6;
-MinTimeWindowParms.minWnexttoREMsecs = 6;
-MinTimeWindowParms.minWinREMsecs = 6;       
-MinTimeWindowParms.minREMinWsecs = 6;
-MinTimeWindowParms.minREMsecs = 6;
-MinTimeWindowParms.minWAKEsecs = 6;
-
 %% Recording Selection
 %if recname is 'select' or something
 %use uigetfile to pick and get list of filenames
@@ -85,11 +81,6 @@ end
 %Separate datasetfolder and recordingname
 [datasetfolder,recordingname,extension] = fileparts(basePath);
 recordingname = [recordingname,extension]; % fileparts parses '.' into extension
-
-if ~exist('SWWeightsName','var')
-    SWWeightsName = 'SWweights.mat';
-end
-
 
 
 %% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
@@ -133,7 +124,8 @@ defaultSavebool = true;    %Save Stuff (EMG, LFP)
 defaultSavedir = datasetfolder;
 
 defaultScoretime = [0 Inf];
-defaultSWWeightsName = 'SWweights.mat';
+%defaultSWWeightsName = 'SWweights.mat';
+defaultSWWeightsName = 'PSS';
 defaultNotch60Hz = 0;
 defaultNotchUnder3Hz = 0;
 defaultNotchHVS = 0;
@@ -154,6 +146,7 @@ addParameter(p,'SWChannels',defaultSWChannels)
 addParameter(p,'ThetaChannels',defaultThetaChannels)
 addParameter(p,'rejectChannels',[]);
 addParameter(p,'noPrompts',false);
+addParameter(p,'stickytrigger',false);
 
 parse(p,varargin{:})
 %Clean up this junk...
@@ -169,8 +162,16 @@ SWChannels = p.Results.SWChannels;
 ThetaChannels = p.Results.ThetaChannels;
 rejectChannels = p.Results.rejectChannels;
 noPrompts = p.Results.noPrompts;
+stickytrigger = p.Results.stickytrigger;
 
-
+%% Parameter setting
+% Min Win Parameters (s): basic detection paramaters (seconds)
+MinTimeWindowParms.minSWSsecs = 6;
+MinTimeWindowParms.minWnexttoREMsecs = 6;
+MinTimeWindowParms.minWinREMsecs = 6;       
+MinTimeWindowParms.minREMinWsecs = 6;
+MinTimeWindowParms.minREMsecs = 6;
+MinTimeWindowParms.minWAKEsecs = 6;
 %% Database File Management 
 savefolder = fullfile(savedir,recordingname);
 if ~exist(savefolder,'dir')
@@ -185,15 +186,15 @@ bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']
 
 
 %% Get channels not to use
-parameters = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
+sessionInfo = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 % check that SW/Theta channels exist in rec..
 if length(SWChannels) > 1 
-    if sum(ismember(SWChannels,parameters.channels)) ~= length(SWChannels)
+    if sum(ismember(SWChannels,sessionInfo.channels)) ~= length(SWChannels)
         error('some of the SW input channels dont exist in this recording...?')
     end   
 end
 if length(ThetaChannels) > 1 
-    if sum(ismember(ThetaChannels,parameters.channels)) ~= length(ThetaChannels)
+    if sum(ismember(ThetaChannels,sessionInfo.channels)) ~= length(ThetaChannels)
         error('some of the theta input channels dont exist in this recording...?')
     end   
 end
@@ -201,8 +202,8 @@ end
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
     rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];
-elseif isfield(parameters,'badchannels')
-    rejectChannels = [rejectChannels parameters.badchannels]; %get badchannels from the .xml
+elseif isfield(sessionInfo,'badchannels')
+    rejectChannels = [rejectChannels sessionInfo.badchannels]; %get badchannels from the .xml
 else
     display('No baseName.SessionMetadata.mat, no badchannels in your xml - so no rejected channels')
 end
@@ -212,7 +213,7 @@ end
 % Load/Calculate EMG based on cross-shank correlations 
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
-EMGFromLFP = bz_EMGFromLFP(basePath,'restrict',scoretime,'overwrite',overwrite,...
+EMGFromLFP = bz_EMGFromLFP(basePath,'overwrite',overwrite,...
                                      'rejectChannels',rejectChannels,'noPrompts',noPrompts);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
@@ -229,7 +230,8 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 %Calculate the scoring metrics: broadbandLFP, theta, EMG in 
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,SleepScoreLFP,EMGFromLFP,overwrite);
+                                           basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
+                                           'onSticky',stickytrigger);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
@@ -258,7 +260,12 @@ save(bz_sleepstatepath,'SleepState');
 
 %% MAKE THE STATE SCORE OUTPUT FIGURE
 %ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
-ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+try
+    ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+    disp('Figures Saved to StateScoreFigures')
+catch
+    disp('Figure making error')
+end
 
 %% JOIN STATES INTO EPISODES
 

@@ -69,9 +69,11 @@ else
     outname = 'auxiliary_fragment.dat';
 end
 NumCh = length(aux_input_channels);
-m = memmapfile(inname,'Format','uint16','writable',false);
+m = memmapfile(inname,'Format','uint16');
 h1 = fopen(outname,'W');
-fwrite(h1,m.Data(timeperiod(1)*NumCh*SampRate+1:timeperiod(end)*NumCh*SampRate),'uint16');
+for i = timeperiod(1)+1:timeperiod(2)
+    fwrite(h1,m.Data((i-1)*NumCh*SampRate+1:i*NumCh*SampRate),'uint16');
+end
 fclose(h1);
 
 %% analogin.dat
@@ -87,9 +89,11 @@ if ~isempty(d)
         outname = 'analogin_fragment.dat';
     end
     NumCh = length(board_adc_channels);
-    m = memmapfile(inname,'Format','uint16','writable',false);
+    m = memmapfile(inname,'Format','uint16');
     h2 = fopen(outname,'W');
-    fwrite(h2,m.Data(timeperiod(1)*NumCh*SampRate+1:timeperiod(end)*NumCh*SampRate),'uint16');
+    for i = timeperiod(1)+1:timeperiod(2)
+        fwrite(h2,m.Data((i-1)*NumCh*SampRate+1:i*NumCh*SampRate),'uint16');
+    end
     fclose(h2);
 end
 
@@ -106,9 +110,11 @@ if ~isempty(d)
         outname = 'digitalin_fragment.dat';
     end
     disp('Writing digitalin file')
-    m = memmapfile(inname,'Format','uint16','writable',false);
+    m = memmapfile(inname,'Format','uint16');
     h3 = fopen(outname,'W');
-    fwrite(h3,m.Data(timeperiod(1)*SampRate+1:timeperiod(end)*SampRate),'uint16');
+    for i = timeperiod(1)+1:timeperiod(2)
+        fwrite(h3,m.Data((i-1)*NumCh*SampRate+1:i*NumCh*SampRate),'uint16');
+    end
     fclose(h3);
 end
 
