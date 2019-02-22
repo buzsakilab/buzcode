@@ -96,7 +96,7 @@ l = int2str(floor(log10(max(max(intervals*100))))+2);
 
 % Determine if intervals overlap (in which case we must use a 'slow' algorithm)
 [intervals,intorder] = sortrows(intervals,1);
-di = i(2:end,1)-i(1:end-1,2);
+di = intervals(2:end,1)-intervals(1:end-1,2);
 overlap = any(di<0);
 if ~overlap,
 	% Fast algorithm: for the next interval, start from the end of the previous interval
