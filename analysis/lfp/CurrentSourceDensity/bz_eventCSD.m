@@ -137,7 +137,6 @@ if plotLFP
     
     taxis = (-(twin(1)/samplingRate):(1/samplingRate):(twin(2)/samplingRate))*1e3;
     cmax = max(max(CSD)); 
-
     figure;
     subplot(1,2,1);
     contourf(taxis,1:size(CSD,2),CSD',40,'LineColor','none');hold on;
