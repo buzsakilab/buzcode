@@ -95,7 +95,7 @@ end
 l = int2str(floor(log10(max(max(intervals*100))))+2);
 
 % Determine if intervals overlap (in which case we must use a 'slow' algorithm)
-i = sortrows(intervals,1);
+[intervals,intorder] = sortrows(intervals,1);
 di = i(2:end,1)-i(1:end-1,2);
 overlap = any(di<0);
 if ~overlap,
@@ -122,7 +122,7 @@ for i = 1:n,
 	if ~isempty(more),
 		previous = more(k); % See note above about algorithm
 		nMore = more(2)-more(1)+1;
-		interval(more(1):more(2)) = i;
+		interval(more(1):more(2)) = find(intorder==i);
 		status(more(1):more(2)) = 1;
 		index(more(1):more(2)) = (1:nMore);
 	end

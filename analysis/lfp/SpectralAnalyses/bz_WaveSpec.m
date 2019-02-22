@@ -110,7 +110,7 @@ si = 1./samplingRate;
 
 %Restrict to intervals, with overhang to remove edge effects at transitions
 %(then remove later)
-overhang = (2*ncyc)./frange(1);
+overhang = (ncyc)./frange(1);
 overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
 keepIDX = InIntervals(timestamps,overint);
 data = data(keepIDX);
