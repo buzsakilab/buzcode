@@ -44,13 +44,14 @@ end
 
 if strcmp(whichaxis,'x') || strcmp(whichaxis,'xy')
     range = get(gca,'XLim');
-    range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
+    %range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
+    range(1) = ceil(range(1)); range(2) = floor(range(2));
     ticks = [range(1):range(2)];
     if length(ticks)<=3
         ticks = [range(1):0.5:range(2)];
     end
     
-    if length(ticks)>=5
+    if length(ticks)>5
         ticks = ticks(1:2:end);
     end
         
