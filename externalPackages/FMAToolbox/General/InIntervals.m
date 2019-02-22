@@ -122,7 +122,7 @@ for i = 1:n,
 	if ~isempty(more),
 		previous = more(k); % See note above about algorithm
 		nMore = more(2)-more(1)+1;
-		interval(more(1):more(2)) = find(intorder==i);
+		interval(more(1):more(2)) = intorder(i);
 		status(more(1):more(2)) = 1;
 		index(more(1):more(2)) = (1:nMore);
 	end
