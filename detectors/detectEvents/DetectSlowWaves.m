@@ -459,6 +459,12 @@ SlowWaves.detectorinfo.detectiondate = datetime('today');
 SlowWaves.detectorinfo.detectionintervals = NREMInts;
 SlowWaves.detectorinfo.detectionchannel = SWChan;
 
+try
+    bz_tagChannel(basePath,SWChan,'SWChan');
+catch
+    display('Unable to save channel tag in sessionInfo')
+end
+
 if SAVEMAT
     save(savefile,'SlowWaves')
 end
