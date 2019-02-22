@@ -3184,69 +3184,72 @@ switch get(FO.overlayDisp, 'Value')
         
         maxF = FO.maxFreq;
         
-        broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
-        thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
-        chans = FO.Chs;
+        if isempty(SleepState.detectorinfo.detectionparms.SleepScoreMetrics)
+            disp('No SleepScoreMetrics to Overlay')
+        else
+            broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
+            thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
+            chans = FO.Chs;
 
-        overlaychoicefig = figure('closerequestfcn',@OverlaySleepStateSelectCallback);
-        for cidx = 1:length(chans)
-               bg(cidx) = uibuttongroup(overlaychoicefig,...
-                  'Position',[(cidx-1)*.33 0 .3 1],...
-                  'Title',['Overlay for Ch' num2str(chans(cidx))]);
+            overlaychoicefig = figure('closerequestfcn',@OverlaySleepStateSelectCallback);
+            for cidx = 1:length(chans)
+                   bg(cidx) = uibuttongroup(overlaychoicefig,...
+                      'Position',[(cidx-1)*.33 0 .3 1],...
+                      'Title',['Overlay for Ch' num2str(chans(cidx))]);
 
-                % Create radio buttons in the button group.
-                r1(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
-                      'String','Broaband SlowWave Power',...
-                      'Units','Normalized',....
-                      'Position',[.05 .55 1 .1]);
-                r2(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
-                      'String','Theta Ratio 5-10Hz/2-20Hz',...
-                      'Units','Normalized',....
-                      'Position',[.05 .1 1 .08]);
+                    % Create radio buttons in the button group.
+                    r1(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
+                          'String','Broaband SlowWave Power',...
+                          'Units','Normalized',....
+                          'Position',[.05 .55 1 .1]);
+                    r2(cidx) = uicontrol(bg(cidx),'Style','radiobutton',...
+                          'String','Theta Ratio 5-10Hz/2-20Hz',...
+                          'Units','Normalized',....
+                          'Position',[.05 .1 1 .08]);
 
-                if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.SWchanID
-                    r1(cidx).Value = true;
-                    r2(cidx).Value = false;
+                    if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.SWchanID
+                        r1(cidx).Value = true;
+                        r2(cidx).Value = false;
+                    end
+                    if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.THchanID
+                        r1(cidx).Value = false;
+                        r2(cidx).Value = true;
+                    end
+
+            end            
+            closebutt = uicontrol('style','pushbutton','units','normalized',... %lol butt. - Good Dan
+                'position',[.91 .05 .08 .1],'String','Finish',...
+                'callback',@OverlaySleepStateSelectCallback);
+            localguidata = v2struct(overlaychoicefig,bg,r1,r2,closebutt);
+            guidata(overlaychoicefig,localguidata)
+            waitfor(overlaychoicefig)
+
+            choices = get(FO.fig,'userdata');
+            for cidx = 1:length(choices)%for each channel/choice (should be same)
+                switch choices(cidx)
+                    case 1
+                        t = broadbandSlowWave;
+                    case 2
+                        t = thratio;
                 end
-                if chans(cidx) == SleepState.detectorinfo.detectionparms.SleepScoreMetrics.THchanID
-                    r1(cidx).Value = false;
-                    r2(cidx).Value = true;
+                if length(t) > length(FO.to)
+                    t = t(1:length(FO.to));
+                elseif length(t) < length(FO.to)
+                    t = cat(1,t,zeros(length(FO.to) - length(t),1));
                 end
+                t = t';
+                t = t - prctile(t, 1);
+                t = t./prctile(t, 99);
+                range = maxF*(1/2);
+                base = maxF*(1/2);
+                t  = t*range;
+                t = t + base;
 
-        end            
-        closebutt = uicontrol('style','pushbutton','units','normalized',... %lol butt.
-            'position',[.91 .05 .08 .1],'String','Finish',...
-            'callback',@OverlaySleepStateSelectCallback);
-        localguidata = v2struct(overlaychoicefig,bg,r1,r2,closebutt);
-        guidata(overlaychoicefig,localguidata)
-        waitfor(overlaychoicefig)
-
-        choices = get(FO.fig,'userdata');
-        for cidx = 1:length(choices)%for each channel/choice (should be same)
-            switch choices(cidx)
-                case 1
-                    t = broadbandSlowWave;
-                case 2
-                    t = thratio;
+                axes(FO.sax{cidx});
+                hold on;
+                FO.overlayLines{cidx} = plot(FO.to, t, '-w', 'LineWidth', 2.5);
             end
-            if length(t) > length(FO.to)
-                t = t(1:length(FO.to));
-            elseif length(t) < length(FO.to)
-                t = cat(1,t,zeros(length(FO.to) - length(t),1));
-            end
-            t = t';
-            t = t - prctile(t, 1);
-            t = t./prctile(t, 99);
-            range = maxF*(1/2);
-            base = maxF*(1/2);
-            t  = t*range;
-            t = t + base;
-
-            axes(FO.sax{cidx});
-            hold on;
-            FO.overlayLines{cidx} = plot(FO.to, t, '-w', 'LineWidth', 2.5);
-        end
-                        
+        end                        
   
         
     case 4  %From File
