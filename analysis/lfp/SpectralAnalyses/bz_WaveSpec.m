@@ -161,9 +161,7 @@ for cidx = 1:size(data,2)
     tspec = zeros(length(timestamps),nfreqs);
     for f_i = 1:nfreqs
         if showprogress
-            if mod(f_i,10) == 1
-                display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
-            end  
+            bz_Counter(f_i,nfreqs,'Frequency')
         end
         wavelet = MorletWavelet(freqs(f_i),ncyc,si);
         tspec(:,f_i) = FConv(wavelet',data(:,cidx));
