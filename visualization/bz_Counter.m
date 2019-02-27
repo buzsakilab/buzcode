@@ -13,7 +13,7 @@ else
     for j=0:log10(current-1)
       fprintf('\b'); % delete previous counter display
     end
-    fprintf('%d',f_i)
+    fprintf('%d',current)
 end
 
 
