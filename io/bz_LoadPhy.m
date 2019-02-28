@@ -95,7 +95,7 @@ else
     spikes.sessionName = sessionInfo.FileName;
     jj = 1;
     for ii = 1:length(cluster_group.group)
-        if strcmp(cluster_group.group(ii,:),'good ')
+        if strcmpi(strtrim(cluster_group.group(ii,:)),'good')
             ids = find(spike_cluster_index == cluster_group.cluster_id(ii)); % cluster id
             spikes.UID(jj) = cluster_group.cluster_id(ii);
             spikes.times{jj} = double(spike_times(ids))/fs; % cluster time
