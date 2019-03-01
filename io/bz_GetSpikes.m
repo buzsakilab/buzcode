@@ -124,7 +124,6 @@ if any(getWaveforms)
     spkFiles = dir([basepath filesep '*.spk*']);
 end
 
-if ~exist(
 
 % remove *temp*, *autosave*, and *.clu.str files/directories
 tempFiles = zeros(length(cluFiles),1);
