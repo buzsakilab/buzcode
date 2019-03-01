@@ -57,6 +57,10 @@ if isempty(spikes)
     spikes = spikedefault;
 else
     %Implement raster sorting - cell sort 
+    if min(spikes.spindices(:,2))==0
+        spikes.spindices(:,2) = spikes.spindices(:,2)+1;
+    end
+    
     if isempty(sortmetric)
         sortmetric = 1:max(spikes.spindices(:,2));
     end
