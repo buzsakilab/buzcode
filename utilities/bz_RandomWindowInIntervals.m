@@ -16,6 +16,12 @@ if exist('nwins','var')
     for nn = 1:nwins
         window(nn,:) = bz_RandomWindowInIntervals(intervals,winsize);
         %Should exclude the window from intervals here...
+        [~,startin] = InIntervals(window(nn,1),intervals);
+        [~,endin] = InIntervals(window(nn,2),intervals);
+        newint_pre = [intervals(startin,1) window(nn,1)];
+        newint_post = [window(nn,2) intervals(endin,2)];
+        intervals(startin,:) = [];
+        intervals = [intervals; newint_pre; newint_post];
     end
     return
 end

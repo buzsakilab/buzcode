@@ -28,7 +28,7 @@ if ~exist(figfolder,'dir')
 end
 
 if includeDate
-   figname = [figname,date];
+   figname = [figname,'_',date];
 end
 %set(gcf,'TickDir','out')
 

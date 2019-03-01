@@ -43,7 +43,12 @@ baseNames_keep = p.Results.baseNames;
 
 if dataset
     %Figure out which basePaths to look at
-    [basePaths,baseNames] = bz_FindBasePaths(basePath,'select',true);
+    if isempty(baseNames_keep)
+        select = true;
+    else
+        select = false;
+    end
+    [basePaths,baseNames] = bz_FindBasePaths(basePath,'select',select);
     
     %Only Keep baseNames passed in 
     if ~isempty(baseNames_keep)

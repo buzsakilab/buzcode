@@ -136,7 +136,10 @@ elseif MUAspikes
     allspikes = sort(cat(1,spikes.times{:}));
     numcells = length(spikes.times);
 else
-    spikes = bz_GetSpikes('basepath',basePath,'region','CTX');
+    try spikes = bz_GetSpikes('basepath',basePath,'region','CTX','noPrompts',noPrompts);
+    catch
+        spikes = bz_GetSpikes('basepath',basePath,'noPrompts',noPrompts);
+    end
     if isempty(spikes)
         button = questdlg({['No spikes found (baseName.spikes.cellinfo.mat or clu/res/fet), '...
             'would you like to run in ''noSpikes'' mode?'],...
@@ -460,6 +463,12 @@ SlowWaves.detectorinfo.detectiondate = datetime('today');
 SlowWaves.detectorinfo.detectionintervals = NREMInts;
 SlowWaves.detectorinfo.detectionchannel = SWChan;
 
+try
+    bz_tagChannel(basePath,SWChan,'SWChan');
+catch
+    display('Unable to save channel tag in sessionInfo')
+end
+
 if SAVEMAT
     save(savefile,'SlowWaves')
 end
@@ -517,7 +526,7 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes,f
     
     %Calculate binned spike rate for correlation with gamma/anticorrelation
     %with LFP
-    if strcmp(spikes,'NOSPIKES'); NOSPIKES=true; end
+    if strcmp(spikes,'NOSPIKES'); NOSPIKES=true; else NOSPIKES=false; end
     if ~NOSPIKES
         dt = 0.005; %dt = 5ms
         overlap = 8; %Overlap = 8 dt

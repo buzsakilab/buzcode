@@ -149,6 +149,9 @@ try
 catch
     FO.lookatchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
         'Which LFP channel would you like to look at?']);
+    if isempty(FO.lookatchannel)
+        return
+    end
     FO.lookatchannel = str2num(FO.lookatchannel{1});
 end
    
@@ -561,7 +564,11 @@ FO = guidata(obj);
         %Save the General EventExplorer metadata file
         if isfield(FO,'FlagsAndComments')
             EventExplorer.FlagsAndComments = FO.FlagsAndComments.timepoint;
-            save(FO.EEbuzcodefilename,'EventExplorer')
+            try
+                save(FO.EEbuzcodefilename,'EventExplorer')
+            catch
+                disp('unable to save Flags and Comments')
+            end
         end
     end
 delete(FO.fig)
