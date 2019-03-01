@@ -104,18 +104,15 @@ end
 
 %lfp input
 if isstruct(lfp)
-    data = lfp.data;
-    timestamps = lfp.timestamps;
     samplingRate = lfp.samplingRate;
 elseif isempty(lfp)
     wavespec = lfp;
     return
-elseif iscell(lfp) %for multiple trials
-    celllengths = cellfun(@length,lfp);
-    data = vertcat(lfp{:});
 elseif isnumeric(lfp)
-    data = lfp;
-    timestamps = [1:length(lfp)]'./samplingRate;
+    data_temp = lfp;
+    clear lfp
+    lfp.data = data_temp;
+    lfp.timestamps = [1:length(lfp)]'./samplingRate;
 end
 
 si = 1./samplingRate;
@@ -124,19 +121,18 @@ si = 1./samplingRate;
 %(then remove later)
 overhang = (ncyc)./frange(1);
 overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
-keepIDX = InIntervals(timestamps,overint);
-data = data(keepIDX);
-timestamps = timestamps(keepIDX);
+keepIDX = InIntervals(lfp.timestamps,overint);
+lfp.data = lfp.data(keepIDX);
+lfp.timestamps = lfp.timestamps(keepIDX);
 
 %%
-if ~isa(data,'single') || ~isa(data,'double')
-    data = single(data);
+if ~isa(lfp.data,'single') || ~isa(lfp.data,'double')
+    lfp.data = single(lfp.data);
 end
 
 %Frequencies
 if ~isempty(fvector)
     freqs = fvector;
-    nfreqs = length(fvector);
 else
     fmin = frange(1);
     fmax = frange(2);
@@ -153,35 +149,29 @@ end
 if roundfreqs
     freqs = unique(round(freqs));
 end
-nfreqs = size(freqs,2);
 
 %Filter with wavelets
-spec = [];
-for cidx = 1:size(data,2)
-    tspec = zeros(length(timestamps),nfreqs);
+nfreqs = size(freqs,2);
+nchan = size(lfp.data,2);
+ntime = size(lfp.data,1);
+wavespec.data = nan(ntime,nfreqs,nchan);
+wavespec.timestamps = lfp.timestamps;
+for cidx = 1:nchan
     for f_i = 1:nfreqs
         if showprogress
             bz_Counter(f_i,nfreqs,'Frequency')
         end
         wavelet = MorletWavelet(freqs(f_i),ncyc,si);
-        tspec(:,f_i) = FConv(wavelet',data(:,cidx));
+        wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
     end
-
-    if exist('celllengths','var')
-        tspec = mat2cell(tspec,nfreqs,celllengths);
-    end
-    
-    spec = cat(3,spec,tspec);
-    clear tspec
 end
-
-%Remove the overhang from intervals
-keepIDX = InIntervals(timestamps,intervals);
-spec = spec(keepIDX,:);
-timestamps = timestamps(keepIDX);
+clear lfp
 %% Output in buzcode format
-wavespec.data = spec;
-wavespec.timestamps = timestamps;
+%Remove the overhang from intervals
+keepIDX = InIntervals(wavespec.timestamps,intervals);
+wavespec.data = wavespec.data(keepIDX,:);
+wavespec.timestamps = wavespec.timestamps(keepIDX);
+
 wavespec.freqs = freqs;
 wavespec.nfreqs = nfreqs;
 wavespec.samplingRate = samplingRate;
