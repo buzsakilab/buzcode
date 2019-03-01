@@ -153,7 +153,12 @@ if isstruct(samples)
         warning('Your input structure has no .timestamps field, one will be provided for you')
         samples.timestamps = [0:length(samples.data)-1]./samples.samplingRate;
     end
-    nyquist = 0.5.*samples.samplingRate;
+    
+    if length(samples.samplingRate) > 1 
+       nyquist = 0.5.*samples.samplingRate(1); 
+    else
+       nyquist = 0.5.*samples.samplingRate;
+    end
 end
 
 if isempty(passband) && isempty(stopband),
