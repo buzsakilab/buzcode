@@ -155,6 +155,7 @@ nfreqs = size(freqs,2);
 nchan = size(lfp.data,2);
 ntime = size(lfp.data,1);
 wavespec.data = nan(ntime,nfreqs,nchan);
+wavespec.timestamps = lfp.timestamps;
 for cidx = 1:nchan
     for f_i = 1:nfreqs
         if showprogress
@@ -164,12 +165,12 @@ for cidx = 1:nchan
         wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
     end
 end
-
+clear lfp
 %% Output in buzcode format
 %Remove the overhang from intervals
-keepIDX = InIntervals(lfp.timestamps,intervals);
+keepIDX = InIntervals(wavespec.timestamps,intervals);
 wavespec.data = wavespec.data(keepIDX,:);
-wavespec.timestamps = lfp.timestamps(keepIDX);
+wavespec.timestamps = wavespec.timestamps(keepIDX);
 
 wavespec.freqs = freqs;
 wavespec.nfreqs = nfreqs;
