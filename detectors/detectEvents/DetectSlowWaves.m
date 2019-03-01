@@ -277,7 +277,7 @@ if ~NOSPIKES
 end
 
 %Merge close DOWNs, take larger of the two peaks
-[DOWNints,mergedidx] = MergeSeparatedInts(DOWNints,minwindur);
+[DOWNints,mergedidx] = MergeSeparatedInts(DOWNints,joinwindur);
 [SWpeakmag,newSWidx] = cellfun(@(X) max(SWpeakmag(X)),mergedidx,'UniformOutput',false);
 newSWidx = cellfun(@(X,Y) X(Y),mergedidx,newSWidx);
 SWpeaks = SWpeaks(newSWidx);
