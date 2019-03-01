@@ -23,7 +23,7 @@ function AnimalMetadata = bz_AnimalMetadataTextTemplate(basepath)
 
 
 %% Initial variable parsing
-if ~exist('bedasepath','var')
+if ~exist('basepath','var')
     basepath = cd;
 elseif isempty(basepath)
     basepath = cd;
@@ -37,12 +37,12 @@ AnimalMetadata.AnimalName = 'Ket1';
 AnimalMetadata.AnimalBasepath = '/balrog_zpool/Ket1';%this can be changed for each computer and can then act as a handle for all subsequent analyses
 
 % Determine which modules to use for this animal... 1 for use, 0 for not use 
-AnimalMetadata.Modules.AnimalAndSurgery = 1;
-AnimalMetadata.Modules.ExtracellEphys = 1;
-AnimalMetadata.Modules.Optogenetics = 0;
-AnimalMetadata.Modules.Virus = 0;
-AnimalMetadata.Modules.IntracellEphys = 0;
-AnimalMetadata.Modules.Imaging = 0;
+AnimalMetadata.Modules.AnimalAndSurgery = true;
+AnimalMetadata.Modules.ExtracellEphys = true;
+AnimalMetadata.Modules.Optogenetics = false;
+AnimalMetadata.Modules.Virus = false;
+AnimalMetadata.Modules.IntracellEphys = false;
+AnimalMetadata.Modules.Imaging = false;
 
 % Surgery and Animal metadata
 if AnimalMetadata.Modules.AnimalAndSurgery

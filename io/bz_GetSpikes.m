@@ -119,7 +119,7 @@ else % do the below then filter by inputs... (Load from clu/res/fet)
 disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
 cluFiles = dir([basepath filesep '*.clu*']);  
-resFiles = dir([basepath filesep '*.res*']);
+resFiles = dir([basepath filesep '*.res.*']);
 if any(getWaveforms)
     spkFiles = dir([basepath filesep '*.spk*']);
 end
