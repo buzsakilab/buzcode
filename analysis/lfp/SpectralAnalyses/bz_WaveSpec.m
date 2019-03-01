@@ -154,14 +154,14 @@ end
 nfreqs = size(freqs,2);
 nchan = size(lfp.data,2);
 ntime = size(lfp.data,1);
-wavespec.data = nan(ntime,freqs,nchan);
+wavespec.data = nan(ntime,nfreqs,nchan);
 for cidx = 1:nchan
     for f_i = 1:nfreqs
         if showprogress
             bz_Counter(f_i,nfreqs,'Frequency')
         end
         wavelet = MorletWavelet(freqs(f_i),ncyc,si);
-        wavespec.data(:,f_i,cc) = FConv(wavelet',lfp.data(:,cidx));
+        wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
     end
 end
 
