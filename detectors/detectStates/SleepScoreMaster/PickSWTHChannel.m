@@ -281,6 +281,12 @@ params = v2struct(SWfreqlist,SWweights,SWWeightsName,Notch60Hz,...
     
 SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,params);
 
+try
+    bz_tagChannel(basePath,SWchanID,'NREMDetectionChan');
+    bz_tagChannel(basePath,THchanID,'ThetaChan');
+catch
+    display('Unable to save channel tags in sessionInfo')
+end
 
 if saveFiles
     %Need to update to Save in buzcode format for lfp.mat

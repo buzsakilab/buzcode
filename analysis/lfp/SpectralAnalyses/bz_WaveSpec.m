@@ -28,6 +28,9 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %       'samplingRate' (only if input is not a buzcode structure)
 %       'intervals'  restrict your spectrogram to timestamps in specific
 %                   intervals
+%       'chanID'    if lfp structure has multiple channels, which one would
+%                   you like to calcaulte the wavelet transform of?
+%                   (note: requires field lfp.channels)
 %       'showprogress' true/false (default:false)
 %       'saveMat '   put the basePath to save an LFP file
 %       'MatNameExtraText'   text(X) to add to name as in: 'basename.wavespec(text).lfp.mat'
@@ -75,6 +78,7 @@ addParameter(parms,'saveMatPath',[]);
 addParameter(parms,'MatNameExtraText',[]);
 addParameter(parms,'fvector',[]);
 addParameter(parms,'intervals',[-Inf Inf])
+addParameter(parms,'chanID',[])
 
 parse(parms,varargin{:})
 frange = parms.Results.frange;
@@ -88,7 +92,15 @@ saveMatPath = parms.Results.saveMatPath;
 MatNameExtraText = parms.Results.MatNameExtraText;
 fvector = parms.Results.fvector;
 intervals = parms.Results.intervals;
+chanID = parms.Results.chanID;
 
+
+%Channel restrict
+if ~isempty(chanID)
+    usechannel = ismember(lfp.channels,chanID);
+    lfp.data = lfp.data(:,usechannel);
+    lfp.channels = lfp.channels(usechannel);
+end
 
 %lfp input
 if isstruct(lfp)
@@ -149,9 +161,7 @@ for cidx = 1:size(data,2)
     tspec = zeros(length(timestamps),nfreqs);
     for f_i = 1:nfreqs
         if showprogress
-            if mod(f_i,10) == 1
-                display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
-            end  
+            bz_Counter(f_i,nfreqs,'Frequency')
         end
         wavelet = MorletWavelet(freqs(f_i),ncyc,si);
         tspec(:,f_i) = FConv(wavelet',data(:,cidx));
