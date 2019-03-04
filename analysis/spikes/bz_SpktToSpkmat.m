@@ -15,6 +15,11 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %       'dt'  add (use instead of binsize/overlap)
 %
 %OUTPUT
+%   spikemat
+%       .data
+%       .timestamps
+%       .dt
+%       .binsize
 %
 %Return:
 %Spike Matrix

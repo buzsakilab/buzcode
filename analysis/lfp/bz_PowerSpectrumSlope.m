@@ -93,6 +93,7 @@ if length(lfp.channels)>1
         
 	end
     specslope.channels = lfp.channels;
+    %spec = [];
     return
 end
 %%
