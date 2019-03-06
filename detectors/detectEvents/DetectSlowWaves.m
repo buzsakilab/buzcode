@@ -87,6 +87,10 @@ addParameter(p,'CTXChans','all');
 addParameter(p,'sensitivity',0.6,ratevalidation);
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'filterparms',filterparms,filterparmsvalidate);
+addParameter(p,'minwindur',0.04);
+addParameter(p,'joinwindur',0.01);
+
+
 parse(p,varargin{:})
 
 FORCEREDETECT = p.Results.forceReload;
@@ -102,14 +106,14 @@ filterparms = p.Results.filterparms;
 lfp = p.Results.lfp;
 spikes = p.Results.spikes;
 MUAspikes = p.Results.MUAspikes;
+minwindur = p.Results.minwindur;
+joinwindur = p.Results.joinwindur;
 
 %Defaults
 if ~exist('basePath','var')
     basePath = pwd;
 end
-%Put this as optional input...
-minwindur = 0.04;
-joinwindur = 0.01;
+
 %% File Management
 baseName = bz_BasenameFromBasepath(basePath);
 figfolder = fullfile(basePath,'DetectionFigures');
@@ -590,6 +594,7 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes,f
     display(['Selected Channel: ',num2str(usechan)])
     
     %% Figure
+   
     figure('name',[baseName,' Slow Wave Channel Selection'])
     subplot(2,2,1)
         hist(gammaLFPcorr)
@@ -615,6 +620,7 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes,f
     end
         
     NiceSave('SlowWaveChannelSelect',figfolder,baseName)
+    
 end
 
 
@@ -631,7 +637,7 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
     DELTAPeakheight = peakheights(keepPeaks);
     [~,DELTApeakIDX] = ismember(DELTApeaks,deltaLFP.timestamps);
 
-    [peakheights,GAMMAdips] = findpeaks(-gammaLFP.normamp,gammaLFP.timestamps,'MinPeakHeight',0.3,'MinPeakDistance',minwindur);
+    [peakheights,GAMMAdips] = findpeaks(-gammaLFP.normamp,gammaLFP.timestamps,'MinPeakHeight',0.2,'MinPeakDistance',minwindur);
     [GAMMAdips,keepPeaks] = RestrictInts(GAMMAdips,NREMInts);
     GAMMAdipdepth = peakheights(keepPeaks);
     [~,GAMMAdipIDX] = ismember(GAMMAdips,gammaLFP.timestamps);
@@ -753,7 +759,7 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
     %the average around DELTA
     ratemat_byDELTAmag = imgaussfilt(ratemat_byDELTAmag,2);
     ratemat_byGAMMAmag = imgaussfilt(ratemat_byGAMMAmag,2);
-    meanratearoundDELTA = mean(ratemat_byDELTAmag(:));
+    meanratearoundDELTA = nanmean(ratemat_byDELTAmag(:));
     minrateatDELTApeak = min(ratemat_byDELTAmag(round(end/2),:));
     DELTAraterange = meanratearoundDELTA-minrateatDELTApeak;
     
@@ -762,7 +768,7 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
     DELTAbox=bwmorph(ratemat_byDELTAmag<ratethresh_Hz,'close');
     DELTAbox=bwmorph(DELTAbox,'open');
     if sum(DELTAbox(:))== 0
-        display('No DOWN around gamma dip.... perhaps adjust rate threshold or pick another channel?')
+        display('No DOWN around delta peak.... perhaps adjust rate threshold or pick another channel?')
         DELTApeakthresh = 2.2;
         DELTAwinthresh = 1;
         DELTAbox = [1 1];
@@ -779,8 +785,8 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
     GAMMAbox=bwmorph(ratemat_byGAMMAmag<ratethresh_Hz,'close');
     GAMMAbox=bwmorph(GAMMAbox,'open');
     if sum(GAMMAbox(:))== 0   %will have issue here with no dip recordings... bad channel.
-        display({'No DOWN around gamma dip.... perhaps adjust rate threshold or pick another channel?',...
-            'This may also indicate nan bug in delta rate threshold... DL '})
+        display('No DOWN around gamma dip.... perhaps adjust rate threshold or pick another channel?')
+        display('This may also indicate nan bug in delta rate threshold... DL ')
         GAMMAdipthresh = 1.2;
         GAMMAwinthresh = 1;
         GAMMAbox = [1 1];
@@ -802,6 +808,8 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
     thresholds.ratethresh_Hz = ratethresh_Hz;
 
     %%
+    %if SHOWFIG
+        
     %rate normalization for plots
     normrate_DELTA = (ratemat_byDELTAmag-minrateatDELTApeak)./DELTAraterange;
     normrate_GAMMA = (ratemat_byGAMMAmag-minrateatDELTApeak)./DELTAraterange;
@@ -850,7 +858,7 @@ function [thresholds,threshfigs] = DetermineThresholds(deltaLFP,gammaLFP,spikes,
         xlabel('t (relative to GA Dip)');ylabel({'GA Dip Amplitude', '(modZ)'})
         colorbar
         xlim([-0.7 0.7])
-
+    %end
 %% Figure for lab meeting - illustrating threshold procedure
 % xwin = [-0.5 0.5];
 % exampledelta = [7,13,20];
