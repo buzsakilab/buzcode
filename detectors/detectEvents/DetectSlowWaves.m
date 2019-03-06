@@ -466,7 +466,7 @@ SlowWaves.detectorinfo.detectionintervals = NREMInts;
 SlowWaves.detectorinfo.detectionchannel = SWChan;
 
 try
-    bz_tagChannel(basePath,SWChan,'SWChan');
+    bz_tagChannel(basePath,SWChan,'SWChan','noPrompts',noPrompts);
 catch
     display('Unable to save channel tag in sessionInfo')
 end
@@ -533,10 +533,11 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes,f
         dt = 0.005; %dt = 5ms
         overlap = 8; %Overlap = 8 dt
         winsize = dt*overlap; %meaning windows are 40ms big (previously 30)
-        [spikemat,t_spkmat,spindices] = SpktToSpkmat(spikes.times, [], dt,overlap);
-        synchmat = sum(spikemat>0,2);
-        ratemat = sum(spikemat,2);
-        [t_spkmat,inNREMidx] = RestrictInts(t_spkmat,NREMInts); %Replace with InInterval
+        %[spikemat,t_spkmat,spindices] = bz_SpktToSpkmat(spikes.times, [], dt,overlap);
+        spikemat = bz_SpktToSpkmat(spikes, 'binsize', winsize,'overlap',overlap);
+        synchmat = sum(spikemat.data>0,2);
+        ratemat = sum(spikemat.data,2);
+        [t_spkmat,inNREMidx] = RestrictInts(spikemat.timestamps,NREMInts); %Replace with InInterval
         synchmat = synchmat(inNREMidx);
     end
     
