@@ -1,13 +1,19 @@
-function [ sessionInfo,success ] = bz_tagChannel( basePath,channums,tag )
+function [ sessionInfo,success ] = bz_tagChannel( basePath,channums,tag,varargin )
 %bz_tagChannel( basePath,channums,tag ) tag the channels in channums with
 %the tag (string).
 %Will be saved in the sessionInfo as sessionInfo.channelTags.tag
 %
 %DLevenstein 2019
 %%
+p = inputParser;
+addParameter(p,'noPrompts',false,@islogical);
 
+parse(p,varargin{:})
+noPrompts = p.Results.noPrompts;
+
+%%
 %Load the sessionInfo
-[sessionInfo] = bz_getSessionInfo(basePath);
+[sessionInfo] = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 
 %Tag the channels
 if ~isfield(sessionInfo,'channelTags') || ~isfield(sessionInfo.channelTags,tag)
