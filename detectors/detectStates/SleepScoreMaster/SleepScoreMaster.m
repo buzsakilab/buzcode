@@ -145,7 +145,7 @@ addParameter(p,'NotchTheta',defaultNotchTheta)
 addParameter(p,'SWChannels',defaultSWChannels)
 addParameter(p,'ThetaChannels',defaultThetaChannels)
 addParameter(p,'rejectChannels',[]);
-addParameter(p,'noPrompts',false);
+addParameter(p,'noPrompts',true);
 addParameter(p,'stickytrigger',false);
 
 parse(p,varargin{:})

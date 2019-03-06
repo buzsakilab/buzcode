@@ -159,7 +159,7 @@ wavespec.timestamps = lfp.timestamps;
 for cidx = 1:nchan
     for f_i = 1:nfreqs
         if showprogress
-            bz_Counter(f_i,nfreqs,'Frequency')
+            bz_Counter(f_i,nfreqs,'Wavelet Frequency')
         end
         wavelet = MorletWavelet(freqs(f_i),ncyc,si);
         wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
