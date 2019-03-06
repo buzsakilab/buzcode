@@ -17,7 +17,9 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %   'lfp'               -A buzcode-style lfp structure... if you would
 %                        rather just input the lfp instead of loading from
 %                        basepath
+%                           Default: load from basePath with bz_GetLFP
 %   'spikes'            -A buzcode-style spike structure 
+%                           Default: load from basePath with bz_GetSpikes
 %   'NREMInts'          -Interval of times for NREM (seconds) 
 %                        (Default: loaded from SleepState.states.mat, 
 %                                   run SleepScoreMaster if not exist)
