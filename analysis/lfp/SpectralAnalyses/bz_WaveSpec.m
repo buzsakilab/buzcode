@@ -165,7 +165,7 @@ for cidx = 1:nchan
         wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
     end
 end
-clear lfp
+%clear lfp
 %% Output in buzcode format
 %Remove the overhang from intervals
 keepIDX = InIntervals(wavespec.timestamps,intervals);
