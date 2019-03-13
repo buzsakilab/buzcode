@@ -7,16 +7,18 @@ function [ sessionInfo,success ] = bz_tagChannel( basePath,channums,tag,varargin
 %%
 p = inputParser;
 addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'overwrite',false,@islogical);
 
 parse(p,varargin{:})
 noPrompts = p.Results.noPrompts;
+overwrite = p.Results.overwrite;
 
 %%
 %Load the sessionInfo
 [sessionInfo] = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 
 %Tag the channels
-if ~isfield(sessionInfo,'channelTags') || ~isfield(sessionInfo.channelTags,tag)
+if ~isfield(sessionInfo,'channelTags') || ~isfield(sessionInfo.channelTags,tag) || overwrite
     sessionInfo.channelTags.(tag) = channums;
 else %If the tag alredy exists, add these channels to that tag
     sessionInfo.channelTags.(tag) = unique([sessionInfo.channelTags.(tag) channums]);

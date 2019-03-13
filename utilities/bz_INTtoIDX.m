@@ -20,7 +20,6 @@ function [ IDX,timestamps ] = bz_INTtoIDX(INT,varargin)
 %                                   IDX.timestamps
 %   timestamps
 %
-%Last Updated: 11/15/15
 %DLevenstein 2015
 %Updated 2018 for buzcode
 %% DEV

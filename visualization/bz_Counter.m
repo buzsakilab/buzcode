@@ -1,6 +1,6 @@
-function [  ] = bz_Counter( current,total,name )
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+function [  ] = bz_Counter(current,total,name)
+%bz_Counter(current,total,name) counts up loop indices, given current index
+%and the total number of indices. Displays a name of what's being counted.
 
 if current==1
     fprintf('%s (of %d): %d',name,total,current)
