@@ -96,8 +96,9 @@ clusterfig = figure('visible','off');
 
         
 %% Figure: Split REM/Arousal  
-IDX = bz_INTtoIDX(states,'length',max(t_clus));
-IDX(1:t_clus(1)-1)=[];
+IDX_struct = bz_INTtoIDX(SleepState.ints);
+IDX = interp1(IDX_struct.timestamps,IDX_struct.states,t_clus);
+%IDX(1:t_clus(1)-1)=[];
 NREMtimes = (broadbandSlowWave >swthresh);
 
 if noprompts
@@ -129,20 +130,31 @@ end
         xlabel('Theta')
         title('Step 3: Theta for REM')
         
+  % [map,C] = hist3([broadbandSlowWave(:,1),EMG],[40 40]);
         
     subplot(2,2,2)
-        plot(broadbandSlowWave(IDX==2,1),EMG(IDX==2),'b.')
+       % imagesc(C{1},C{2},map')
+       % axis xy
+       % hold on
+        plot(broadbandSlowWave(IDX==2,1),EMG(IDX==2),'b.','markersize',0.1)
         hold on
-        plot(broadbandSlowWave(EMG>EMGthresh & IDX==1,1),EMG(EMG>EMGthresh & IDX==1),'k.')
-        plot(broadbandSlowWave(EMG<EMGthresh & IDX==1|IDX==3,1),EMG(EMG<EMGthresh & IDX==1|IDX==3),'.','Color',0.8*[1 1 1])
+        plot(broadbandSlowWave(EMG>EMGthresh & IDX==1,1),EMG(EMG>EMGthresh & IDX==1),'k.','markersize',0.1)
+        plot(broadbandSlowWave(EMG<EMGthresh & IDX==1|IDX==3,1),EMG(EMG<EMGthresh & IDX==1|IDX==3),...
+            '.','Color',0.8*[1 1 1],'markersize',0.1)
         plot(swthresh*[1 1],get(gca,'ylim'),'r','LineWidth',1)
         plot(swthresh*[0 1],EMGthresh*[1 1],'r','LineWidth',1)
         xlabel('Broadband SW');ylabel('EMG')
+        
+%[map,C] = hist3([thratio(NREMtimes==0,1),EMG(NREMtimes==0)],[40 40]);
+        
 	subplot(2,2,4)
+       % imagesc(C{1},C{2},map')
+        %axis xy
+       % hold on
         %scatter(thratio(SWStimes==0,1),EMG(SWStimes==0,1),3,IDX(SWStimes==0),'filled')
-        plot(thratio(NREMtimes==0 & IDX==1,1),EMG(NREMtimes==0 & IDX==1,1),'k.')
+        plot(thratio(NREMtimes==0 & IDX==1,1),EMG(NREMtimes==0 & IDX==1,1),'k.','markersize',0.1)
         hold on
-        plot(thratio(NREMtimes==0 & IDX==3,1),EMG(NREMtimes==0 & IDX==3,1),'r.')
+        plot(thratio(NREMtimes==0 & IDX==3,1),EMG(NREMtimes==0 & IDX==3,1),'r.','markersize',0.1)
         xlabel('Narrowband Theta');ylabel('EMG')
         plot(THthresh*[1 1],EMGthresh*[0 1],'r','LineWidth',1)
         plot([0 1],EMGthresh*[1 1],'r','LineWidth',1)
