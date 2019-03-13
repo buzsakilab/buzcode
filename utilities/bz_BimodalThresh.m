@@ -211,6 +211,7 @@ cross.downints = [downfordown upfordown];
 
 overthresh = bz_INTtoIDX({cross.downints,cross.upints},'length',length(bimodaldata))-1;
 overthresh(overthresh==-1) = nan;
+overthresh = logical(overthresh);
 
 end
 

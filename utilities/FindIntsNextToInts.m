@@ -41,15 +41,15 @@ if strcmp(ints2,'all')
 end
     
 
-ints1idx = [];
-ints2idx = [];
+ints1idx = false(size(ints1,1),1);
+ints2idx = false(size(ints2,1),1);
 numints1 = length(ints1(:,1));
 for ii = 1:numints1
     interintdist = ints2(:,1)-ints1(ii,2);
     closeints = find(interintdist<=tol & interintdist>=0,1,'first');
     if ~isempty(closeints)
-        ints1idx = [ints1idx ; ii];
-        ints2idx = [ints2idx ; closeints];
+        ints1idx(ii) = true;
+        ints2idx(closeints) = true;
     end
 end
 
