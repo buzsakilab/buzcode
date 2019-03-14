@@ -65,7 +65,9 @@ if isempty(overlap)
     overlap = binsize./dt;
 end
 
-
+if mod(overlap,1)~=0
+    error('binsize must be a multiple of dt')
+end
 %% Deal With Input Type Variability
 
 %If spiketimes is in a buzcode structure
