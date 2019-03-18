@@ -145,8 +145,8 @@ end
 t = [0:size(spkmat,1)-1]'*dt+0.5*dt+t_start; %time vector (midpoint)
 
 % Moving sum to combine spikes into bins of size binsize
-spkmat = movsum(spkmat,overlap);
-t = movmean(t,overlap); %timepoint in the resulting bin is the mean of 
+spkmat = movsum(spkmat,overlap,'endpoints','discard');
+t = movmean(t,overlap,'endpoints','discard'); %timepoint in the resulting bin is the mean of 
                         %timepoints from all bins added
 
 spikemat.data = spkmat;
