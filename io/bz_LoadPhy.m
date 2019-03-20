@@ -20,6 +20,7 @@ function [spikes] = bz_LoadPhy(varargin)
 %                   32). Total number of channels.
 % forceReload    -logical (default=false) to force loading from
 %                   res/clu/spk files
+% verbose        -logical (default=false)
 
 %
 % OUTPUTS
@@ -54,6 +55,8 @@ addParameter(p,'fs',30000,@isnumeric);
 addParameter(p,'nChannels',32,@isnumeric);
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'verbose',false,@islogical);
+
 
 parse(p,varargin{:});
 
@@ -66,6 +69,7 @@ fs = p.Results.fs; % it will be overwritten if bz_getSessionInfo
 nChannels = p.Results.nChannels; % it will be overwritten if bz_getSessionInfo
 forceReload = p.Results.forceReload;
 noPrompts = p.Results.noPrompts;
+verbose = p.Results.verbose;
 
 try [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
     fs = sessionInfo.rates.wideband;
@@ -112,7 +116,6 @@ else
     wfWin = 0.008; % Larger size of waveform windows for filterning
     filtFreq = 500;
     hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
-    
     if getWave
     f = waitbar(0,'Getting waveforms...');
     wfWin = round((wfWin * fs)/2);
@@ -124,6 +127,9 @@ else
             end
             wf = [];
             for jj = 1 : length(spkTmp)
+                if verbose
+                    fprintf(' ** %3.i/%3.i for cluster %3.i/%3.i  \n',jj, length(spkTmp), ii, size(spikes.times,2));
+                end
                 wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spikes.ts{ii}(jj) - (wfWin),...
                     'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
             end
