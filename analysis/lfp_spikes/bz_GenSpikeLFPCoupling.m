@@ -9,8 +9,7 @@ function [SpikeLFPCoupling] = bz_GenSpikeLFPCoupling(spikes,LFP,varargin)
 %   LFP                 structure with fields (from bz_GetLFP)
 %                           lfp.data
 %                           lfp.timestamps
-%                           lfp.samplingRate
-%                       -or- [t x nchannels] vector 
+%                           lfp.samplingRate 
 %   (optional)
 %       'sf_LFP'
 %       'frange'
@@ -129,10 +128,6 @@ if isa(int,'intervalSet')
     int = [Start(int,'s'), End(int,'s')];
 end
 
-%LFP Input
-if ~isstruct(LFP)
-    t_LFP = (1:length(LFP))'/sf_LFP;
-end
 
 if ~isempty(usechannel)
     usechannel = ismember(LFP.channels,usechannel);
@@ -202,41 +197,37 @@ for cc = 1:length(LFP.channels)
     switch nfreqs  
         case 1
             %Single frequency band - filter/hilbert
-            filtered = bz_Filter(LFP,'passband',frange,'order',ncyc,'filter','fir1');
-            LFP_filt = filtered.hilbert; 
-            t_LFP = filtered.timestamps;
+            LFP_filt = bz_Filter(LFP,'passband',frange,'order',ncyc,'filter','fir1');
+            LFP_filt.data = LFP_filt.hilbert; 
             freqs = [];
             clear filtered
 
-            inint = InIntervals(t_LFP,int);
-            LFP_filt = LFP_filt(inint,:);
-            t_LFP = t_LFP(inint);
+            inint = InIntervals(LFP_filt.timestamps,int);
+            LFP_filt.data = LFP_filt.data(inint,:);
+            LFP_filt.timestamps = LFP_filt.timestamps(inint);
 
             %Normalize Power to Mean Power
-            LFP_filt = LFP_filt./mean(abs(LFP_filt));
+            LFP_filt.data = LFP_filt.data./mean(abs(LFP_filt.data));
 
         otherwise
             %Multiple frequencies: Wavelet Transform
-            wavespec = bz_WaveSpec(LFP,'intervals',int,'showprogress',true,'ncyc',ncyc,...
-                'nfreqs',nfreqs,'frange',frange,'chanID',chanID);
-            LFP_filt = wavespec.data;  
-            t_LFP = wavespec.timestamps;
-            freqs = wavespec.freqs;
-            clear wavespec
+            LFP_filt = bz_WaveSpec(LFP,'intervals',int,'showprogress',true,'ncyc',ncyc,...
+                'nfreqs',nfreqs,'frange',frange,'chanID',chanID); 
+            freqs = LFP_filt.freqs;
 
             %Normalize power to mean power for each frequency
-            LFP_filt = bsxfun(@(X,Y) X./Y,LFP_filt,nanmean(abs(LFP_filt),1));
+            LFP_filt.data = bsxfun(@(X,Y) X./Y,LFP_filt.data,nanmean(abs(LFP_filt.data),1));
     end
 
     %Get Power/Phase at each spike matrix time point and each spike time
-    spikemat.filtLFP = interp1(t_LFP,LFP_filt,spikemat.timestamps,'nearest');
+    spikemat.filtLFP = interp1(LFP_filt.timestamps,LFP_filt.data,spikemat.timestamps,'nearest');
     %Get complex-valued filtered LFP at each spike time
     if spikes.numcells>50
         disp('Interpolating LFP at each spike... If this is prohibitive (time or RAM), try using ''spikeLim''')
     end
     for nn = 1:spikes.numcells
         bz_Counter(nn,spikes.numcells,'Cell')
-        spikes.filtLFP{nn} = interp1(t_LFP,LFP_filt,spikes.times{nn},'nearest');
+        spikes.filtLFP{nn} = interp1(LFP_filt.timestamps,LFP_filt.data,spikes.times{nn},'nearest');
     end
 
     %% Population Synchrony: Phase Coupling and Rate Modulation
@@ -290,7 +281,7 @@ for cc = 1:length(LFP.channels)
                 display(['Jitter ',num2str(jj),' of ',num2str(numjitt)])
             end
             jitterspikes = JitterSpiketimes(spikes.times,jitterwin);
-            jitterLFP = cellfun(@(X) interp1(t_LFP,LFP_filt,X,'nearest'),...
+            jitterLFP = cellfun(@(X) interp1(LFP_filt.timestamps,LFP_filt.data,X,'nearest'),...
                 jitterspikes,'UniformOutput',false);
     
             phmagjitt = cellfun(@(X) spkphase(X),jitterLFP,'UniformOutput',false);
