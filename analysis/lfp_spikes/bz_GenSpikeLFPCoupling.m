@@ -11,7 +11,6 @@ function [SpikeLFPCoupling] = bz_GenSpikeLFPCoupling(spikes,LFP,varargin)
 %                           lfp.timestamps
 %                           lfp.samplingRate 
 %   (optional)
-%       'sf_LFP'
 %       'frange'
 %       'tbin'
 %       'waveparms'...
@@ -59,36 +58,21 @@ function [SpikeLFPCoupling] = bz_GenSpikeLFPCoupling(spikes,LFP,varargin)
 %% inputParse for Optional Inputs and Defaults
 p = inputParser;
 
-defaultSf = 1250;
 
-defaultInt = [0 Inf];
 checkInt = @(x) size(x,2)==2 && isnumeric(x) || isa(x,'intervalSet');
-
-defaultNfreqs = 100;
-defaultNcyc = 5;
-defaultFrange = [1 128];
-%validFranges = {'delta','theta','spindles','gamma','ripples'};
-%checkFrange = @(x) any(validatestring(x,validFranges)) || size(x) == [1,2];
 checkFrange = @(x) isnumeric(x) && length(x(1,:)) == 2 && length(x(:,1)) == 1;
 
-defaultSynchdt = 0.005;
-defaultSynchwin = 0.02;
-
-defaultSorttype = 'rate';
 validSorttypes = {'pca','none','sortf','sortorder','celltype','rate'};
-checkSorttype = @(x) any(validatestring(x,validFranges)) || size(x) == [1,2];
+checkSorttype = @(x) any(validatestring(x,validSorttypes)) || size(x) == [1,2];
 
-defaultDOWN = false;
-
-addParameter(p,'sf_LFP',defaultSf,@isnumeric)
-addParameter(p,'int',defaultInt,checkInt)
-addParameter(p,'frange',defaultFrange,checkFrange)
-addParameter(p,'nfreqs',defaultNfreqs,@isnumeric)
-addParameter(p,'ncyc',defaultNcyc,@isnumeric)
-addParameter(p,'synchdt',defaultSynchdt,@isnumeric)
-addParameter(p,'synchwin',defaultSynchwin,@isnumeric)
-addParameter(p,'sorttype',defaultSorttype,checkSorttype)
-addParameter(p,'DOWNSAMPLE',defaultDOWN,@isnumeric)
+addParameter(p,'int',[0 Inf],checkInt)
+addParameter(p,'frange',[1 128],checkFrange)
+addParameter(p,'nfreqs',100,@isnumeric)
+addParameter(p,'ncyc',5,@isnumeric)
+addParameter(p,'synchdt',0.005,@isnumeric)
+addParameter(p,'synchwin',0.02,@isnumeric)
+addParameter(p,'sorttype','rate',checkSorttype)
+addParameter(p,'DOWNSAMPLE',false,@isnumeric)
 addParameter(p,'subpop',0)
 addParameter(p,'channel',[])
 addParameter(p,'jittersig',false)
@@ -100,7 +84,6 @@ addParameter(p,'spikeLim',Inf)
 
 parse(p,varargin{:})
 %Clean up this junk...
-sf_LFP = p.Results.sf_LFP;
 int = p.Results.int;
 nfreqs = p.Results.nfreqs;
 frange = p.Results.frange;
@@ -156,8 +139,7 @@ cellpopidx = zeros(1,spikes.numcells);
 
 
 %% Calculate spike matrix
-overlap = p.Results.synchwin/synchdt;
-spikemat = bz_SpktToSpkmat(spikes,'binsize',p.Results.synchwin,'overlap',overlap);
+spikemat = bz_SpktToSpkmat(spikes,'binsize',p.Results.synchwin,'dt',synchdt);
 
 inint = InIntervals(spikemat.timestamps,int);
 spikemat.data = spikemat.data(inint,:);
