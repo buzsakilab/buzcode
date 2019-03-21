@@ -29,6 +29,8 @@ function filtered = bz_Filter(samples,varargin)
 %     'channels'    if input is a buzcode lfp structure with field
 %                   samples.channels, will only filter the selected
 %                   channels
+%     'justFilt'    true = only filt; false = also hilbert (default)
+%
 %    =========================================================================
 %
 %OUTPUT
@@ -63,6 +65,7 @@ FMAlegacy = false;
 BUZCODE = false;
 fast = false;
 channels = [];
+justfilt = false;
 
 % Check number of parameters
 if nargin < 1 | mod(length(varargin),2) ~= 0,
@@ -122,7 +125,7 @@ for i = 1:2:length(varargin),
         case 'fast'
             fast = varargin{i+1};
             if ~islogical(fast)
-                error('Incorrect value for property ''FMALegacy''');
+                error('Incorrect value for property ''fast''');
             end    
         case 'fmalegacy'
             FMAlegacy = varargin{i+1};
@@ -132,7 +135,10 @@ for i = 1:2:length(varargin),
             
         case 'channels'
             channels = varargin{i+1};
-
+            
+        case 'justfilt'
+            justfilt = varargin{i+1};
+            
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help Filter">Filter</a>'' for details).']);
 
@@ -229,10 +235,12 @@ elseif BUZCODE %BUZCODE has samples as a data structure
         else
            filtered.data(:,i) = FiltFiltM(b,a,double(samples.data(:,i))); 
         end
-	hilb = hilbert(filtered.data(:,i));
-        filtered.hilb(:,i) = hilb;
-        filtered.amp(:,i) = abs(hilb);
-        filtered.phase(:,i) = angle(hilb);
+    if justfilt  == 0
+        hilb = hilbert(filtered.data(:,i));
+            filtered.hilb(:,i) = hilb;
+            filtered.amp(:,i) = abs(hilb);
+            filtered.phase(:,i) = angle(hilb);
+        end
     end
     filtered.filterparms.passband = passband;
     filtered.filterparms.stopband = stopband;
