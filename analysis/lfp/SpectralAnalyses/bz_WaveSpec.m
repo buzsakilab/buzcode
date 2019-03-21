@@ -165,7 +165,7 @@ for cidx = 1:nchan
         wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
     end
 end
-clear lfp
+
 %% Output in buzcode format
 %Remove the overhang from intervals
 keepIDX = InIntervals(wavespec.timestamps,intervals);
@@ -182,6 +182,8 @@ wavespec.filterparms.ncyc = ncyc;
 wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
 wavespec.filterparms.space = space;
+
+clear lfp
 
 if saveMatPath
     baseName = bz_BasenameFromBasepath(saveMatPath);
