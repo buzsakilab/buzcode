@@ -229,7 +229,7 @@ numpeaks = 1;
 numbins = 12;
 while numpeaks ~=2 && numbins <=25
     %[THhist,THhistbins]= hist(thratio(SWStimes==0 & MOVtimes==0),numbins);
-    [THhist,THhistbins]= hist(thratio(MOVtimes==0),numbins);
+    [THhist,THhistbins]= hist(thratio(  ==0),numbins);
 
     [PKS,LOCS] = findpeaks_SleepScore(THhist,'NPeaks',2,'SortStr','descend');
     LOCS = sort(LOCS);
