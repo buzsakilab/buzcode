@@ -122,7 +122,7 @@ si = 1./samplingRate;
 overhang = (ncyc)./frange(1);
 overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
 keepIDX = InIntervals(lfp.timestamps,overint);
-lfp.data = lfp.data(keepIDX);
+lfp.data = lfp.data(keepIDX,:);
 lfp.timestamps = lfp.timestamps(keepIDX);
 
 %%
@@ -165,7 +165,7 @@ for cidx = 1:nchan
         wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
     end
 end
-clear lfp
+
 %% Output in buzcode format
 %Remove the overhang from intervals
 keepIDX = InIntervals(wavespec.timestamps,intervals);
@@ -182,6 +182,8 @@ wavespec.filterparms.ncyc = ncyc;
 wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
 wavespec.filterparms.space = space;
+
+clear lfp
 
 if saveMatPath
     baseName = bz_BasenameFromBasepath(saveMatPath);

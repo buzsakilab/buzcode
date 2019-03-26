@@ -11,7 +11,6 @@ function [SpikeLFPCoupling] = bz_GenSpikeLFPCoupling(spikes,LFP,varargin)
 %                           lfp.timestamps
 %                           lfp.samplingRate 
 %   (optional)
-%       'sf_LFP'
 %       'frange'
 %       'tbin'
 %       'waveparms'...
@@ -24,7 +23,7 @@ function [SpikeLFPCoupling] = bz_GenSpikeLFPCoupling(spikes,LFP,varargin)
 %       'cellsort'        'pca','none','sortf','sortorder','celltype','rate'
 %       'controls'        'thinspikes','jitterspikes','shufflespikes'
 %       'downsample'
-%       'subpop'        %DL: update this... to buzcode
+%       'cellclass'     cell array with string label for class of each cell
 %       'jittersig'     true/false for jittered spikes significance
 %       'showFig'       true/false
 %       'spikeLim'      limit number of spikes to look at for each cell 
@@ -36,11 +35,11 @@ function [SpikeLFPCoupling] = bz_GenSpikeLFPCoupling(spikes,LFP,varargin)
 %           .pop
 %               .popcellind
 %               .cellpopidx
-%           .cell
-%               .ratepowercorr
-%               .ratepowersig
-%               .spikephasemag
-%               .spikephaseangle
+%           .cell                all results are [cells x freqs x channels]
+%               .ratepowercorr      
+%               .ratepowersig       
+%               .spikephasemag      
+%               .spikephaseangle    
 %               .spikephasesig
 % 
 %           .detectorinfo
@@ -59,37 +58,22 @@ function [SpikeLFPCoupling] = bz_GenSpikeLFPCoupling(spikes,LFP,varargin)
 %% inputParse for Optional Inputs and Defaults
 p = inputParser;
 
-defaultSf = 1250;
 
-defaultInt = [0 Inf];
 checkInt = @(x) size(x,2)==2 && isnumeric(x) || isa(x,'intervalSet');
-
-defaultNfreqs = 100;
-defaultNcyc = 5;
-defaultFrange = [1 128];
-%validFranges = {'delta','theta','spindles','gamma','ripples'};
-%checkFrange = @(x) any(validatestring(x,validFranges)) || size(x) == [1,2];
 checkFrange = @(x) isnumeric(x) && length(x(1,:)) == 2 && length(x(:,1)) == 1;
 
-defaultSynchdt = 0.005;
-defaultSynchwin = 0.02;
-
-defaultSorttype = 'rate';
 validSorttypes = {'pca','none','sortf','sortorder','celltype','rate'};
-checkSorttype = @(x) any(validatestring(x,validFranges)) || size(x) == [1,2];
+checkSorttype = @(x) any(validatestring(x,validSorttypes)) || size(x) == [1,2];
 
-defaultDOWN = false;
-
-addParameter(p,'sf_LFP',defaultSf,@isnumeric)
-addParameter(p,'int',defaultInt,checkInt)
-addParameter(p,'frange',defaultFrange,checkFrange)
-addParameter(p,'nfreqs',defaultNfreqs,@isnumeric)
-addParameter(p,'ncyc',defaultNcyc,@isnumeric)
-addParameter(p,'synchdt',defaultSynchdt,@isnumeric)
-addParameter(p,'synchwin',defaultSynchwin,@isnumeric)
-addParameter(p,'sorttype',defaultSorttype,checkSorttype)
-addParameter(p,'DOWNSAMPLE',defaultDOWN,@isnumeric)
-addParameter(p,'subpop',0)
+addParameter(p,'int',[0 Inf],checkInt)
+addParameter(p,'frange',[1 128],checkFrange)
+addParameter(p,'nfreqs',100,@isnumeric)
+addParameter(p,'ncyc',5,@isnumeric)
+addParameter(p,'synchdt',0.005,@isnumeric)
+addParameter(p,'synchwin',0.02,@isnumeric)
+addParameter(p,'sorttype','rate',checkSorttype)
+addParameter(p,'DOWNSAMPLE',false,@isnumeric)
+addParameter(p,'cellclass',0)
 addParameter(p,'channel',[])
 addParameter(p,'jittersig',false)
 addParameter(p,'showFig',true)
@@ -100,13 +84,11 @@ addParameter(p,'spikeLim',Inf)
 
 parse(p,varargin{:})
 %Clean up this junk...
-sf_LFP = p.Results.sf_LFP;
 int = p.Results.int;
 nfreqs = p.Results.nfreqs;
 frange = p.Results.frange;
 ncyc = p.Results.ncyc;
 synchdt = p.Results.synchdt;
-subpop = p.Results.subpop;
 jittersig = p.Results.jittersig;
 SHOWFIG = p.Results.showFig;
 SAVEMAT = p.Results.saveMat;
@@ -114,6 +96,7 @@ figfolder = p.Results.saveFig;
 usechannel = p.Results.channel; 
 ISIpower = p.Results.ISIpower; 
 spikeLim = p.Results.spikeLim;
+subpop = p.Results.cellclass;
 
 %% Deal with input types
 
@@ -148,7 +131,7 @@ else
         pops = unique(subpop);
         numpop = length(pops);
         for pp = 1:numpop
-            popcellind{pp} = find(subpop == pops(pp));
+            popcellind{pp} = find(ismember(subpop,pops{pp}));
         end
 end
 
@@ -156,8 +139,7 @@ cellpopidx = zeros(1,spikes.numcells);
 
 
 %% Calculate spike matrix
-overlap = p.Results.synchwin/synchdt;
-spikemat = bz_SpktToSpkmat(spikes,'binsize',p.Results.synchwin,'overlap',overlap);
+spikemat = bz_SpktToSpkmat(spikes,'binsize',p.Results.synchwin,'dt',synchdt);
 
 inint = InIntervals(spikemat.timestamps,int);
 spikemat.data = spikemat.data(inint,:);
@@ -197,22 +179,19 @@ for cc = 1:length(LFP.channels)
     switch nfreqs  
         case 1
             %Single frequency band - filter/hilbert
-            LFP_filt = bz_Filter(LFP,'passband',frange,'order',ncyc,'filter','fir1');
-            LFP_filt.data = LFP_filt.hilbert; 
+            LFP_filt = bz_Filter(LFP,'passband',frange,'order',ncyc,...
+                'intervals',int,'filter','fir1','channels',chanID,'fast',false);
+            LFP_filt.data = LFP_filt.hilb; 
             freqs = [];
             clear filtered
-
-            inint = InIntervals(LFP_filt.timestamps,int);
-            LFP_filt.data = LFP_filt.data(inint,:);
-            LFP_filt.timestamps = LFP_filt.timestamps(inint);
 
             %Normalize Power to Mean Power
             LFP_filt.data = LFP_filt.data./mean(abs(LFP_filt.data));
 
         otherwise
             %Multiple frequencies: Wavelet Transform
-            LFP_filt = bz_WaveSpec(LFP,'intervals',int,'showprogress',true,'ncyc',ncyc,...
-                'nfreqs',nfreqs,'frange',frange,'chanID',chanID); 
+            LFP_filt = bz_WaveSpec(LFP,'intervals',int,'showprogress',true,...
+                'ncyc',ncyc,'nfreqs',nfreqs,'frange',frange,'chanID',chanID); 
             freqs = LFP_filt.freqs;
 
             %Normalize power to mean power for each frequency
@@ -226,16 +205,16 @@ for cc = 1:length(LFP.channels)
         disp('Interpolating LFP at each spike... If this is prohibitive (time or RAM), try using ''spikeLim''')
     end
     for nn = 1:spikes.numcells
-        bz_Counter(nn,spikes.numcells,'Cell')
+        bz_Counter(nn,spikes.numcells,'Interpolating Cell')
         spikes.filtLFP{nn} = interp1(LFP_filt.timestamps,LFP_filt.data,spikes.times{nn},'nearest');
     end
 
     %% Population Synchrony: Phase Coupling and Rate Modulation
     for pp = 1:numpop
         if length(popcellind{pp}) == 0
-            synchcoupling(pp).powercorr = [];
-            synchcoupling(pp).phasemag = [];
-            synchcoupling(pp).phaseangle = [];
+            popcoupling.(pops{pp}).powercorr = [];
+            popcoupling.(pops{pp}).phasemag = [];
+            popcoupling.(pops{pp}).phaseangle = [];
             numpop = numpop-1;
             continue
         end
@@ -245,13 +224,13 @@ for cc = 1:length(LFP.channels)
         popsynch = popsynch./mean(popsynch);
 
         %Calculate Synchrony-Power Coupling as correlation between synchrony and power
-        [synchcoupling(pp).powercorr(:,cc)] = corr(popsynch,abs(spikemat.filtLFP),'type','spearman','rows','complete');
+        [popcoupling.(pops{pp}).powercorr(:,cc)] = corr(popsynch,abs(spikemat.filtLFP),'type','spearman','rows','complete');
 
         %Synchrony-Phase Coupling (magnitude/angle of power-weighted mean resultant vector)
         resultvect = nanmean(abs(spikemat.filtLFP).*bsxfun(@(popmag,ang) popmag.*exp(1i.*ang),...
             popsynch,angle(spikemat.filtLFP)),1);
-        synchcoupling(pp).phasemag(:,cc) = abs(resultvect);
-        synchcoupling(pp).phaseangle(:,cc) = angle(resultvect);
+        popcoupling.(pops{pp}).phasemag(:,cc) = abs(resultvect);
+        popcoupling.(pops{pp}).phaseangle(:,cc) = angle(resultvect);
    
     end
 
@@ -314,15 +293,15 @@ for cc = 1:length(LFP.channels)
     end
     
     %%
-    randsample(spikes.numcells,1);
-    figure
-    subplot(2,2,1)
-        imagesc(log2(freqs),[1 10],squeeze(mean(totmutXPow,1))')
-        LogScale('x',2)
-    subplot(2,2,2)
-        imagesc(log2(freqs),[1 10],squeeze(totmutXPow(randsample(spikes.numcells,1),:,:))')
-    %caxis([0 0.2])
-    LogScale('x',2)
+%     randsample(spikes.numcells,1);
+%     figure
+%     subplot(2,2,1)
+%         imagesc(log2(freqs),[1 10],squeeze(mean(totmutXPow,1))')
+%         LogScale('x',2)
+%     subplot(2,2,2)
+%         imagesc(log2(freqs),[1 10],squeeze(totmutXPow(randsample(spikes.numcells,1),:,:))')
+%     %caxis([0 0.2])
+%     LogScale('x',2)
 end
 
 clear LFP_filt
@@ -330,7 +309,7 @@ clear LFP_filt
 %% Output
 
 SpikeLFPCoupling.freqs = freqs;
-SpikeLFPCoupling.pop = synchcoupling;
+SpikeLFPCoupling.pop = popcoupling;
 %SpikeLFPCoupling.pop.popcellind = popcellind; %update to match buzcode cell class input
 %SpikeLFPCoupling.pop.cellpopidx = cellpopidx;
 SpikeLFPCoupling.cell.ratepowercorr = ratepowercorr;
@@ -353,7 +332,7 @@ if SAVEMAT
     save(savefile,'SpikeLFPCoupling')
 end
 
-%% Figure
+%% Figures
 if SHOWFIG
     
     %Sorting (and other plot-related things)
@@ -382,7 +361,8 @@ if SHOWFIG
     end
     
     
-    
+    if length(LFP.channels)==1
+        
     switch nfreqs  
         case 1
     %% Figure: 1 Freq Band
@@ -391,7 +371,7 @@ if SHOWFIG
             hold on
             hist(ratepowercorr)
             for pp = 1:numpop
-                plot([synchcoupling(pp).powercorr,synchcoupling(pp).powercorr],...
+                plot([popcoupling.(pops{pp}).powercorr,popcoupling.(pops{pp}).powercorr],...
                     get(gca,'ylim'))
             end
             xlabel('Rate-Power Correlation')
@@ -401,7 +381,7 @@ if SHOWFIG
             for pp = 1:numpop
                 polar(spikephaseangle(popcellind{pp}),(spikephasemag(popcellind{pp})),'o')
                 hold on
-                polar([0 synchcoupling(pp).phaseangle],[0 synchcoupling(pp).phasemag])
+                polar([0 popcoupling.(pops{pp}).phaseangle],[0 popcoupling.(pops{pp}).phasemag])
 
             end
             title('Spike-Phase Coupling')
@@ -409,7 +389,7 @@ if SHOWFIG
             for pp = 1:numpop
                 hold on
                 plot(ratepowercorr(popcellind{pp}),(spikephasemag(popcellind{pp})),'o')
-                plot(synchcoupling(pp).powercorr,synchcoupling(pp).phasemag,'*')
+                plot(popcoupling.(pops{pp}).powercorr,popcoupling.(pops{pp}).phasemag,'*')
             end
             %LogScale('y',10)
             xlabel('Rate-Power Correlation')
@@ -418,6 +398,7 @@ if SHOWFIG
         if figfolder
            NiceSave('SpikeLFPCoupling',figfolder,[]) 
         end
+
         otherwise
     %% Figure: Spectrum
     posnegcolor = makeColorMap([0 0 0.8],[1 1 1],[0.8 0 0]);
@@ -426,7 +407,7 @@ if SHOWFIG
         subplot(3,2,1)
             hold on
             for pp = 1:numpop
-                plot(log2(freqs),synchcoupling(pp).powercorr)
+                plot(log2(freqs),popcoupling.(pops{pp}).powercorr)
             end
             plot(log2(freqs([1 end])),[0 0],'k--')
             axis tight
@@ -452,7 +433,7 @@ if SHOWFIG
         subplot(3,2,3)
             hold on
             for pp = 1:numpop
-                plot(log2(freqs),synchcoupling(pp).phasemag)
+                plot(log2(freqs),popcoupling.(pops{pp}).phasemag)
             end
             axis tight
             box off
@@ -463,8 +444,8 @@ if SHOWFIG
         subplot(3,2,5)
             hold on
             for pp = 1:numpop
-                plot(log2(freqs),synchcoupling(pp).phaseangle,'o')
-                plot(log2(freqs),synchcoupling(pp).phaseangle+2*pi,'o')
+                plot(log2(freqs),popcoupling.(pops{pp}).phaseangle,'o')
+                plot(log2(freqs),popcoupling.(pops{pp}).phaseangle+2*pi,'o')
             end
             LogScale('x',2)
             title('Pop. Synchrony - Phase Coupling')
@@ -494,6 +475,149 @@ if SHOWFIG
            NiceSave('SpikeLFPCoupling',figfolder,[]) 
         end
 
+    end
+    
+    else   %MULTI-CHANNEL FIGURE
+        numchans = length(LFP.channels);
+        [ratepowerdist,powerbins] = hist(squeeze(ratepowercorr),40);
+        
+        phasebins = linspace(-pi,pi,40);phasebins = phasebins(1:end-1)+0.5.*diff(phasebins([1 2]));
+        [phasehisthist] = hist(squeeze(spikephaseangle),phasebins);
+        [phasemaghist,phasemagbins] = hist(squeeze(spikephasemag),40);
+        %%
+        
+    switch nfreqs  
+        case 1
+    %% Figure: 1 Freq Band
+    figure
+        subplot(3,2,1)
+            %hold on
+            imagesc(powerbins,1:numchans,ratepowerdist')
+            %axis xy
+            hold on
+            for pp = 1:numpop
+                plot(popcoupling.(pops{pp}).powercorr,1:numchans)
+            end
+            axis tight
+            xlabel('Rate-Power Correlation')
+            title('Rate-Power Coupling')
+            ylabel('# Cells')
+        subplot(3,2,2)
+            imagesc(phasebins,1:numchans,phasehisthist')
+            hold on
+            imagesc(phasebins+2*pi,1:numchans,phasehisthist')
+            xlim([-pi 3*pi])
+            for pp = 1:numpop
+                plot(popcoupling.(pops{pp}).phaseangle,1:numchans,'.')
+                plot(popcoupling.(pops{pp}).phaseangle+2*pi,1:numchans,'.')
+
+            end
+            title('Spike-Phase Coupling')
+        subplot(3,2,4)
+            %hold on
+            imagesc(phasemagbins,1:numchans,phasemaghist')
+            %axis xy
+            hold on
+            for pp = 1:numpop
+                plot(popcoupling.(pops{pp}).powercorr,1:numchans)
+            end
+            axis tight
+            xlabel('Rate-Power Correlation')
+            title('Rate-Power Coupling')
+            ylabel('# Cells')
+            
+%         subplot(3,2,3)
+%             for pp = 1:numpop
+%                 hold on
+%                 plot(ratepowercorr(popcellind{pp}),(spikephasemag(popcellind{pp})),'o')
+%                 plot(popcoupling.(pops{pp}).powercorr,popcoupling.(pops{pp}).phasemag,'*')
+%             end
+%             %LogScale('y',10)
+%             xlabel('Rate-Power Correlation')
+%             ylabel('Spike-Phase Coupling Magnitude')
+        
+        if figfolder
+           NiceSave('SpikeLFPCoupling',figfolder,[]) 
+        end
+
+        otherwise
+    %% Figure: Spectrum
+    posnegcolor = makeColorMap([0 0 0.8],[1 1 1],[0.8 0 0]);
+
+    figure
+        subplot(3,2,1)
+            hold on
+            for pp = 1:numpop
+                plot(log2(freqs),popcoupling.(pops{pp}).powercorr)
+            end
+            plot(log2(freqs([1 end])),[0 0],'k--')
+            axis tight
+            box off
+            LogScale('x',2)
+            title('Pop. Synchrony - Power Correlation')
+            xlabel('f (Hz)');ylabel('rho')
+
+    %     subplot(3,2,3)
+    %         hold on
+    %             [hAx,hLine1,hLine2] = plotyy(log2(freqs),cat(1,synchcoupling.phasemag),...
+    %                 log2(freqs),mod(cat(1,synchcoupling.phaseangle),2*pi))
+    %         LogScale('x',2)
+    %         hLine1.LineStyle = 'none';
+    %         hLine2.LineStyle = 'none';
+    %         hLine1.Marker = 'o';
+    %         hLine2.Marker = '.';
+    %         title('Pop. Synchrony - Phase Coupling')
+    %         xlabel('f (Hz)');
+    %         ylabel(hAx(1),'Phase Coupling Magnitude')
+    %         ylabel(hAx(2),'Phase Coupling Angle')
+
+        subplot(3,2,3)
+            hold on
+            for pp = 1:numpop
+                plot(log2(freqs),popcoupling.(pops{pp}).phasemag)
+            end
+            axis tight
+            box off
+            LogScale('x',2)
+            title('Pop. Synchrony - Phase Coupling')
+            xlabel('f (Hz)');
+            ylabel('Phase Coupling Magnitude')
+        subplot(3,2,5)
+            hold on
+            for pp = 1:numpop
+                plot(log2(freqs),popcoupling.(pops{pp}).phaseangle,'o')
+                plot(log2(freqs),popcoupling.(pops{pp}).phaseangle+2*pi,'o')
+            end
+            LogScale('x',2)
+            title('Pop. Synchrony - Phase Coupling')
+            xlabel('f (Hz)');
+            axis tight
+            box off
+            ylim([-pi 3*pi])
+            ylabel('Phase Coupling Angle')
+
+
+        subplot(2,2,2)
+            imagesc(log2(freqs),1:spikes.numcells,ratepowercorr(spikepowersort,:))
+            xlabel('f (Hz)');ylabel(['Cell - Sorted by ',sortname])
+            LogScale('x',2)
+            title('Rate - Power Correlation')
+            colormap(gca,posnegcolor)
+            ColorbarWithAxis([-0.2 0.2],'rho')
+        subplot(2,2,4)
+            imagesc(log2(freqs),1:spikes.numcells,spikephasemag(spikephasesort,:))
+            xlabel('f (Hz)');ylabel(['Cell - Sorted by ',sortname])
+            title('Spike - Phase Coupling')
+            LogScale('x',2)
+            caxis([0 0.2])
+            colorbar
+
+        if figfolder
+           NiceSave('SpikeLFPCoupling',figfolder,[]) 
+        end
+
+    end
+        
     end
 end
 
