@@ -1,8 +1,11 @@
 function [ sessionInfo,success ] = bz_tagChannel( basePath,channums,tag,varargin )
-%bz_tagChannel( basePath,channums,tag ) tag the channels in channums with
+%[ sessionInfo,success ] = bz_tagChannel( basePath,channums,tag ) tag the channels in channums with
 %the tag (string).
 %Will be saved in the sessionInfo as sessionInfo.channelTags.tag
 %
+%(options)
+%   'noPrompts'
+%   'overwrite'     (default: false), adds channel to tag instead of overwriting
 %DLevenstein 2019
 %%
 p = inputParser;

@@ -122,7 +122,7 @@ si = 1./samplingRate;
 overhang = (ncyc)./frange(1);
 overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
 keepIDX = InIntervals(lfp.timestamps,overint);
-lfp.data = lfp.data(keepIDX);
+lfp.data = lfp.data(keepIDX,:);
 lfp.timestamps = lfp.timestamps(keepIDX);
 
 %%
