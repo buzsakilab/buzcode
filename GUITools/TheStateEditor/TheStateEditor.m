@@ -343,7 +343,7 @@ if FileExistsIn([baseName,'.eegstates.mat'])
 
 else
     StateInfo = [];
-    info1 = LoadParIn([baseName, '.xml']);
+    info1 = bz_getSessionInfo(FO.basePath,'noPrompts',true);
     eegFS = info1.lfpSampleRate;
 
     if ~exist('nCh', 'var')
@@ -439,19 +439,19 @@ else
         fspec = {};
         
         disp(['Loading eeg channels: ', int2str(Chs)]);
-%         try %first try bz_getLFP
-%             eeg1 = bz_GetLFP(Chs,'basepath',FO.basePath,'noPrompts',true);
-%             eeg1 = single(eeg1.data);
-%         catch
-        try
-            %First try Anton's LoadBinary
-            eeg1 = LoadBinary([baseName, suffix], Chs+1, nCh, [], 'int16', 'single');
+        try %first try bz_getLFP
+            eeg1 = bz_GetLFP(Chs,'basepath',FO.basePath,'noPrompts',true);
+            eeg1 = single(eeg1.data)';
         catch
-            %Otherwise try to use Micheal Zugaro
-            eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs+1, 'nChannels', nCh)';
-            eeg1 = single(eeg1);
+            try
+                % try Anton's LoadBinary
+                eeg1 = LoadBinary([baseName, suffix], Chs+1, nCh, [], 'int16', 'single');
+            catch
+                %Otherwise try to use Micheal Zugaro
+                eeg1 = LoadBinaryIn([baseName, suffix], 'channels', Chs+1, 'nChannels', nCh)';
+                eeg1 = single(eeg1);
+            end
         end
-%         end
         disp('Done.');
         for i = 1:length(Chs)
             
@@ -2517,16 +2517,7 @@ idx.timestamps = FO.to;
 %loading. to fix.
 
 %Make a buzcode-style ints structure (should wrap this into IDXtoINT.mat)
-sints = IDXtoINT(idx.states(2:end),5); %2:end to deal with 0-indexing
-for ss = 1:5
-    if isempty(sints{ss});continue;end
-    if isempty(idx.statenames{ss}) %Are there states that are not named?
-        usernamedstate = inputdlg(['What is the name of state ',num2str(ss),'?']);
-        idx.statenames{ss} = usernamedstate{1};
-    end
-    newname = strcat(idx.statenames{ss},'state');
-    ints.(newname) = sints{ss};
-end
+ints = bz_IDXtoINT(idx,'nameStates',true); %2:end to deal with 0-indexing
 
 
 switch STATESFILETYPE
@@ -3189,6 +3180,7 @@ switch get(FO.overlayDisp, 'Value')
         else
             broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
             thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
+            over_timestamps = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.t_clus;
             chans = FO.Chs;
 
             overlaychoicefig = figure('closerequestfcn',@OverlaySleepStateSelectCallback);
@@ -3217,7 +3209,7 @@ switch get(FO.overlayDisp, 'Value')
                     end
 
             end            
-            closebutt = uicontrol('style','pushbutton','units','normalized',... %lol butt. - Good Dan
+            closebutt = uicontrol('style','pushbutton','units','normalized',... %lol butt. - Good Dan  - :D 
                 'position',[.91 .05 .08 .1],'String','Finish',...
                 'callback',@OverlaySleepStateSelectCallback);
             localguidata = v2struct(overlaychoicefig,bg,r1,r2,closebutt);
@@ -3232,11 +3224,7 @@ switch get(FO.overlayDisp, 'Value')
                     case 2
                         t = thratio;
                 end
-                if length(t) > length(FO.to)
-                    t = t(1:length(FO.to));
-                elseif length(t) < length(FO.to)
-                    t = cat(1,t,zeros(length(FO.to) - length(t),1));
-                end
+
                 t = t';
                 t = t - prctile(t, 1);
                 t = t./prctile(t, 99);
@@ -3247,7 +3235,7 @@ switch get(FO.overlayDisp, 'Value')
 
                 axes(FO.sax{cidx});
                 hold on;
-                FO.overlayLines{cidx} = plot(FO.to, t, '-w', 'LineWidth', 2.5);
+                FO.overlayLines{cidx} = plot(over_timestamps, t, '-w', 'LineWidth', 2.5);
             end
         end                        
   
@@ -6695,23 +6683,16 @@ function states = bz_LoadStates_StateEditorWrapper_In(basePath,timevector)
 % Brendon Watson 4/2018
 baseName=bz_BasenameFromBasepath(basePath);
 
-numsecsinrecording = length(timevector);
-timestartsecond = timevector(1);
-
 SleepState = bz_LoadStates(basePath,'SleepState');
 if isfield(SleepState,'idx')
-    states = SleepState.idx.states(:)';
-    %Pad the beginning and end to match fspec{1}.to
-    states = cat(2,zeros(1,SleepState.idx.timestamps(1)-timestartsecond),states);
-    states = cat(2,states,zeros(1,numsecsinrecording-length(states)));
+    %Interpolate to the StateEditor timestamps
+    states = interp1(SleepState.idx.timestamps,SleepState.idx.states,timevector,'nearest');
 elseif isfield(SleepState,'ints')
-    %If no idx... get from  .ints
+    %If no idx saved... get from  .ints and save with idx
     SleepState.idx = bz_INTtoIDX(SleepState.ints,'statenames',{'WAKE','','NREM','','REM'});
     save(fullfile(basePath,[baseName '.SleepState.states.mat']),'SleepState') %Save with new idx
-    states = SleepState.idx.states';
-    %Pad the beginning and end to match fspec{1}.to
-    states = cat(2,zeros(1,SleepState.idx.timestamps(1)-(timestartsecond)),states);
-    states = cat(2,states,zeros(1,numsecsinrecording-length(states)));
+    %Interpolate to the StateEditor timestamps
+    states = interp1(SleepState.idx.timestamps,SleepState.idx.states,timevector,'nearest');
 elseif isempty(SleepState)
     states = zeros(1,length(timevector));
 else

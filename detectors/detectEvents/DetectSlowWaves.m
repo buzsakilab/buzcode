@@ -17,7 +17,9 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %   'lfp'               -A buzcode-style lfp structure... if you would
 %                        rather just input the lfp instead of loading from
 %                        basepath
+%                           Default: load from basePath with bz_GetLFP
 %   'spikes'            -A buzcode-style spike structure 
+%                           Default: load from basePath with bz_GetSpikes
 %   'NREMInts'          -Interval of times for NREM (seconds) 
 %                        (Default: loaded from SleepState.states.mat, 
 %                                   run SleepScoreMaster if not exist)
@@ -247,7 +249,7 @@ DELTApeakheight = DELTApeakheight(keepPeaks);  DELTAwins = DELTAwins(keepPeaks,:
 GAMMAdipdepth = GAMMAdipdepth(keepPeaks);  GAMMAwins = GAMMAwins(keepPeaks,:);
 
 %% Merge gamma/delta windows to get Slow Waves, UP/DOWN states
-[ DOWNints,mergedidx ] = MergeSeparatedInts( [DELTAwins;GAMMAwins]);
+[ DOWNints,mergedidx ] = MergeSeparatedInts([DELTAwins;GAMMAwins]);
 
 %Keep only those windows in which DELTA/GAMMA were merged togehter (note
 %this only works if joining happened previously... otherwise could keep
@@ -464,7 +466,7 @@ SlowWaves.detectorinfo.detectionintervals = NREMInts;
 SlowWaves.detectorinfo.detectionchannel = SWChan;
 
 try
-    bz_tagChannel(basePath,SWChan,'SWChan');
+    bz_tagChannel(basePath,SWChan,'SWChan','noPrompts',noPrompts);
 catch
     display('Unable to save channel tag in sessionInfo')
 end
@@ -531,17 +533,18 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes,f
         dt = 0.005; %dt = 5ms
         overlap = 8; %Overlap = 8 dt
         winsize = dt*overlap; %meaning windows are 40ms big (previously 30)
-        [spikemat,t_spkmat,spindices] = SpktToSpkmat(spikes.times, [], dt,overlap);
-        synchmat = sum(spikemat>0,2);
-        ratemat = sum(spikemat,2);
-        [t_spkmat,inNREMidx] = RestrictInts(t_spkmat,NREMInts); %Replace with InInterval
+        %[spikemat,t_spkmat,spindices] = bz_SpktToSpkmat(spikes.times, [], dt,overlap);
+        spikemat = bz_SpktToSpkmat(spikes, 'binsize', winsize,'overlap',overlap);
+        synchmat = sum(spikemat.data>0,2);
+        ratemat = sum(spikemat.data,2);
+        [t_spkmat,inNREMidx] = RestrictInts(spikemat.timestamps,NREMInts); %Replace with InInterval
         synchmat = synchmat(inNREMidx);
     end
     
   %%  
     for cc = 1:length(trychans)
         display(['Trying Channel ',num2str(cc),' of ',num2str(length(trychans))])
-        chanlfp = bz_GetLFP(trychans(cc),'basepath',basePath,'noPrompts',noPrompts);
+        chanlfp = bz_GetLFP(trychans(cc),'basepath',basePath,'noPrompts',true);
         %Filter in gamma
         gammafilter = filterparms.gammafilter; %Note: this doesn't work as well with new filtered LFP.... need better MUA
         trygammaLFP = bz_Filter(chanlfp,'passband',gammafilter,'order',4);

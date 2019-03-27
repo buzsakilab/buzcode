@@ -89,7 +89,6 @@ addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'minDuration',20,@isnumeric)
 addParameter(p,'plotType',2,@isnumeric)
 
-
 if isstr(varargin{1})  % if first arg is basepath
     addRequired(p,'basepath',@isstr)
     addRequired(p,'channel',@isnumeric)    
@@ -264,7 +263,7 @@ if EMGThresh
     if exist(EMGfilename)
         load(EMGfilename)   %should use a bz_load script here
     else
-        [EMGFromLFP] = bz_EMGFromLFP(basepath,'samplingFrequency',10,'savemat',false);
+        [EMGFromLFP] = bz_EMGFromLFP(basepath,'samplingFrequency',10,'savemat',false,'noPrompts',true);
     end
     excluded = logical(zeros(size(ripples,1),1));
     for i = 1:size(ripples,1)
