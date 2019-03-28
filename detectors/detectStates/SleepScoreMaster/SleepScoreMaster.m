@@ -1,5 +1,5 @@
 function SleepState = SleepScoreMaster(basePath,varargin)
-%SleepScoreMaster(datasetfolder,recordingname)
+%SleepScoreMaster(basePath,<options>)
 %This is the master function for sleep state scoring.
 %
 %INPUT 
@@ -15,14 +15,16 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'savedir'       Default: datasetfolder
 %   'overwrite'     Default: false, overwrite all processing steps
 %   'savebool'      Default: true
-%   'scoretime'     Default: [0 Inf] NOTE: must be continous interval until
-%                   someone updates this...
+%   'scoretime'     Window of time to score. Default: [0 Inf] 
+%                   NOTE: must be continous interval
+%   'ignoretime'    time intervals winthin score time to ignore 
+%                   (for example, opto stimulation or behavior with artifacts)               
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
 %                   be used for SWS detection.  Default is to use Power Spectrum Slope ('PSS'),
 %                   but can also try 'SWweights.mat'
 %                     - For hippocampus-only recordings, enter
-%                     'SWweightsHPC.mat' for this
+%                     'SWweightsHPC.mat' for this if default doesn't work
 %   'Notch60Hz'     Boolean 0 or 1.  Value of 1 will notch out the 57.5-62.5 Hz
 %                   band, default is 0, no notch.  This can be necessary if
 %                   electrical noise.
@@ -49,6 +51,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'ThetaChannels' A vector list of channels that may be chosen for Theta
 %                   signal
 %   'rejectChannels' A vector of channels to exclude from the analysis
+%   'saveLFP'       (default:true) to save SleepScoreLFP.lfp.mat file
 %   'noPrompts'     (default:false) an option to not prompt user of things
 %
 %OUTPUT 
@@ -89,14 +92,8 @@ if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file') &
     ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
     display(['no .lfp file in basePath, pick a selection of session folders',...
              'containing .lfp files'])
-        %foldercontents = dir(basePath);
-        %possiblerecordingnames = {foldercontents([foldercontents.isdir]==1).name};
-        [basePaths,recordingname] = bz_FindBasePaths(basePath,'select',true); %Find all basePaths within the topPath
-%         [s,v] = listdlg('PromptString','Which recording(s) would you like to state score?',...
-%                         'ListString',baseNames);
-%         recordingname = baseNames(s);
-%         basePaths = basePaths(s);
-        
+         %Find all basePaths within the topPath
+        [basePaths,recordingname] = bz_FindBasePaths(basePath,'select',true);    
 end
 
 %If multiple recordings, loop calling SleepScoreMaster with each
@@ -118,41 +115,29 @@ display(['Scoring Recording: ',recordingname]);
 %% inputParse for Optional Inputs and Defaults
 p = inputParser;
 
-defaultOverwrite = false;    %Pick new and Overwrite existing ThLFP, SWLFP?
-defaultSavebool = true;    %Save Stuff (EMG, LFP)
-
-defaultSavedir = datasetfolder;
-
-defaultScoretime = [0 Inf];
-%defaultSWWeightsName = 'SWweights.mat';
-defaultSWWeightsName = 'PSS';
-defaultNotch60Hz = 0;
-defaultNotchUnder3Hz = 0;
-defaultNotchHVS = 0;
-defaultNotchTheta = 0;
-defaultSWChannels = 0;
-defaultThetaChannels = 0;
-
-addParameter(p,'overwrite',defaultOverwrite)
-addParameter(p,'savebool',defaultSavebool,@islogical)
-addParameter(p,'savedir',defaultSavedir)
-addParameter(p,'scoretime',defaultScoretime)
-addParameter(p,'SWWeightsName',defaultSWWeightsName)
-addParameter(p,'Notch60Hz',defaultNotch60Hz)
-addParameter(p,'NotchUnder3Hz',defaultNotchUnder3Hz)
-addParameter(p,'NotchHVS',defaultNotchHVS)
-addParameter(p,'NotchTheta',defaultNotchTheta)
-addParameter(p,'SWChannels',defaultSWChannels)
-addParameter(p,'ThetaChannels',defaultThetaChannels)
+addParameter(p,'overwrite',false)
+addParameter(p,'savebool',true,@islogical)
+addParameter(p,'savedir',datasetfolder)
+addParameter(p,'scoretime',[0 Inf])
+addParameter(p,'ignoretime',[])
+addParameter(p,'SWWeightsName','PSS')
+addParameter(p,'Notch60Hz',0)
+addParameter(p,'NotchUnder3Hz',0)
+addParameter(p,'NotchHVS',0)
+addParameter(p,'NotchTheta',0)
+addParameter(p,'SWChannels',0)
+addParameter(p,'ThetaChannels',0)
 addParameter(p,'rejectChannels',[]);
-addParameter(p,'noPrompts',false);
+addParameter(p,'noPrompts',true);
 addParameter(p,'stickytrigger',false);
+addParameter(p,'saveLFP',true);
 
 parse(p,varargin{:})
 %Clean up this junk...
 overwrite = p.Results.overwrite; 
 savedir = p.Results.savedir;
 scoretime = p.Results.scoretime;
+ignoretime = p.Results.ignoretime;
 SWWeightsName = p.Results.SWWeightsName;
 Notch60Hz = p.Results.Notch60Hz;
 NotchUnder3Hz = p.Results.NotchUnder3Hz;
@@ -163,15 +148,8 @@ ThetaChannels = p.Results.ThetaChannels;
 rejectChannels = p.Results.rejectChannels;
 noPrompts = p.Results.noPrompts;
 stickytrigger = p.Results.stickytrigger;
+saveLFP = p.Results.saveLFP;
 
-%% Parameter setting
-% Min Win Parameters (s): basic detection paramaters (seconds)
-MinTimeWindowParms.minSWSsecs = 6;
-MinTimeWindowParms.minWnexttoREMsecs = 6;
-MinTimeWindowParms.minWinREMsecs = 6;       
-MinTimeWindowParms.minREMinWsecs = 6;
-MinTimeWindowParms.minREMsecs = 6;
-MinTimeWindowParms.minWAKEsecs = 6;
 %% Database File Management 
 savefolder = fullfile(savedir,recordingname);
 if ~exist(savefolder,'dir')
@@ -182,8 +160,6 @@ end
 sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
 %Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
-
-
 
 %% Get channels not to use
 sessionInfo = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
@@ -199,6 +175,7 @@ if length(ThetaChannels) > 1
     end   
 end
 
+%Is this still needed?/Depreciated?
 if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
     load(sessionmetadatapath)
     rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];
@@ -223,20 +200,20 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
                             scoretime,SWWeightsName,...
                             Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
                             SWChannels,ThetaChannels,rejectChannels,...
-                            overwrite,'noPrompts',noPrompts);
+                            overwrite,'ignoretime',ignoretime,...
+                            'noPrompts',noPrompts,'saveFiles',saveLFP);
 
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG
 
-%Calculate the scoring metrics: broadbandLFP, theta, EMG in 
+%Calculate the scoring metrics: broadbandLFP, theta, EMG
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
                                            basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
-                                           'onSticky',stickytrigger);
+                                           'onSticky',stickytrigger,'ignoretime',ignoretime);
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
-[ints,idx,MinTimeWindowParms] = ClusterStates_DetermineStates(...
-                                           SleepScoreMetrics,MinTimeWindowParms);
+[ints,idx,MinTimeWindowParms] = ClusterStates_DetermineStates(SleepScoreMetrics);
 
 
                                 

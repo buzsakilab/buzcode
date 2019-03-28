@@ -154,7 +154,7 @@ if ~isempty(cutoffs),
 	M = cutoffs(2);
 else
 	m = min(min(data));
-	M = max(max(data));
+	M = max(prctile(data,90));
 end
 if m == M, M = m+1; end
 if isnan(m), m = 0; M = 1; end
@@ -167,10 +167,11 @@ if strcmp(newfig,'on')
   f = figure;
 end
 
-imagesc(x,y,data,[m M]);
-set(gca,'color',[0 0 0]);
+p = imagesc(x,y,data,[m M]);
+set(gca,'color',[1 1 1]);
+
 if any(dimm~=1),
-% 	alpha(p,1./(1+threshold./(dimm+eps)));
+ 	alpha(p,1./(1+threshold./(dimm+eps)));
 end
 set(gca,'ydir',ydir,'tickdir','out','box','off');
 if ~isempty(x) && length(x) ~= 1,

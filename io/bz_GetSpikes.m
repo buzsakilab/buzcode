@@ -107,6 +107,17 @@ if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') 
                 'does not fit buzcode standards. Sad.'])
     end
     
+    %If regions have been added since creation... add them
+    if ~isfield(spikes,'region') & isfield(sessionInfo,'region')
+        for cc = 1:spikes.numcells
+            spikes.region{cc} = sessionInfo.region{spikes.maxWaveformCh(cc)==sessionInfo.channels};
+        end
+        
+        if saveMat
+            save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
+        end
+    end
+    
 else % do the below then filter by inputs... (Load from clu/res/fet)
     
     if ~noPrompts & saveMat == 0 %Inform the user that they should save a file for later
@@ -119,10 +130,11 @@ else % do the below then filter by inputs... (Load from clu/res/fet)
 disp('loading spikes from clu/res/spk files..')
 % find res/clu/fet/spk files here
 cluFiles = dir([basepath filesep '*.clu*']);  
-resFiles = dir([basepath filesep '*.res*']);
+resFiles = dir([basepath filesep '*.res.*']);
 if any(getWaveforms)
     spkFiles = dir([basepath filesep '*.spk*']);
 end
+
 
 % remove *temp*, *autosave*, and *.clu.str files/directories
 tempFiles = zeros(length(cluFiles),1);

@@ -1,4 +1,4 @@
-function [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
+function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %[specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt) calculates the
 %slope of the power spectrum, a metric of cortical state and E/I balance
 %see Gao, Peterson, Voytek 2016;  Waston, Ding, Buzsaki 2017
@@ -25,7 +25,7 @@ function [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       .data
 %       .timestamps
 %       .intercept
-%   spec
+%   specgram
 %       .data       complex-valued spectrogram
 %       .timestamps
 %       .amp        log10-transformed amplitude of the spectrogram
@@ -93,10 +93,10 @@ if length(lfp.channels)>1
         
 	end
     specslope.channels = lfp.channels;
+    %spec = [];
     return
 end
-%%
-%Calcluate spectrogram
+%% Calcluate spectrogram
 noverlap = winsize-dt;
 spec.freqs = logspace(log10(frange(1)),log10(frange(2)),200);
 winsize_sf = round(winsize .*lfp.samplingRate);
@@ -104,6 +104,12 @@ noverlap_sf = round(noverlap.*lfp.samplingRate);
 [spec.data,~,spec.timestamps] = spectrogram(single(lfp.data),winsize_sf,noverlap_sf,spec.freqs,lfp.samplingRate);
 
 spec.amp = log10(abs(spec.data));
+
+%% Interpolate the time stamps to match the LFP timestamps
+%Spectrogram assumes continuous time, interpolate to LFP timestamps if
+%jumps/offsets... (note, jumps will induce transients)
+assumedLFPtimestamps = [0:length(lfp.data)-1]./lfp.samplingRate;
+spec.timestamps = interp1(assumedLFPtimestamps,lfp.timestamps,spec.timestamps,'nearest');
 
 %% Fit the slope of the power spectrogram
 rsq = zeros(size(spec.timestamps));
@@ -121,6 +127,7 @@ for tt = 1:length(spec.timestamps)
     SStotal = (length(y)-1) * var(y);
     rsq(tt) = 1 - SSresid/SStotal;
 end
+
 
 %% Output Structure
 specslope.data = s(:,1);

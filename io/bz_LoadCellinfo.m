@@ -17,6 +17,7 @@ function [ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName,varargin)
 %                   the user to select basepaths in the folder to load the
 %                   cellinfo file from
 %                   future update: 'select', 'all'
+%       'baseNames' list of basepaths to load from, only used if 'dataset', true
 %       'catall'    logical (default: false) if loading multiple cellinfo
 %                   files from a dataset, will try to concatenate all units
 %                   into a single cellinfo structure. Removes fields that
@@ -30,16 +31,31 @@ function [ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName,varargin)
 %%
 p = inputParser;
 addParameter(p,'dataset',false)
+addParameter(p,'baseNames',[])
 addParameter(p,'catall',false)
 parse(p,varargin{:})
 dataset = p.Results.dataset;
 catall = p.Results.catall;
+baseNames_keep = p.Results.baseNames;
+
 
 %% For loading all cellinfo files of same name from dataset
 
 if dataset
     %Figure out which basePaths to look at
-    [basePaths,baseNames] = bz_FindBasePaths(basePath,'select',true);
+    if isempty(baseNames_keep)
+        select = true;
+    else
+        select = false;
+    end
+    [basePaths,baseNames] = bz_FindBasePaths(basePath,'select',select);
+    
+    %Only Keep baseNames passed in 
+    if ~isempty(baseNames_keep)
+        keepbaseNames = ismember(baseNames,baseNames_keep);
+        baseNames = baseNames(keepbaseNames);
+        basePaths = basePaths(keepbaseNames);
+    end
     
     %Go through each and load the cell info
     FIELDMISMATCH=false;

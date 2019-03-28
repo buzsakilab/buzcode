@@ -20,6 +20,7 @@ function [spikes] = bz_LoadPhy(varargin)
 %                   32). Total number of channels.
 % forceReload    -logical (default=false) to force loading from
 %                   res/clu/spk files
+% verbose        -logical (default=false)
 
 %
 % OUTPUTS
@@ -53,6 +54,9 @@ addParameter(p,'UID',[],@isvector);
 addParameter(p,'fs',30000,@isnumeric);
 addParameter(p,'nChannels',32,@isnumeric);
 addParameter(p,'forceReload',false,@islogical);
+addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'verbose',false,@islogical);
+
 
 parse(p,varargin{:});
 
@@ -64,8 +68,10 @@ UID = p.Results.UID;
 fs = p.Results.fs; % it will be overwritten if bz_getSessionInfo
 nChannels = p.Results.nChannels; % it will be overwritten if bz_getSessionInfo
 forceReload = p.Results.forceReload;
+noPrompts = p.Results.noPrompts;
+verbose = p.Results.verbose;
 
-try [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', false);
+try [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
     fs = sessionInfo.rates.wideband;
     nChannels = sessionInfo.nChannels;
 catch
@@ -82,13 +88,18 @@ else
     % spike_amplitudes = readNPY(fullfile(kilosort_path, 'amplitudes.npy'));
     % spike_clusters = unique(spike_cluster_index);
     cluster_group = tdfread(fullfile(kilosort_path,'cluster_group.tsv'));
-    shanks = readNPY(fullfile(kilosort_path, 'shanks.npy')); % done
+    try
+        shanks = readNPY(fullfile(kilosort_path, 'shanks.npy')); % done
+    catch
+        shanks = ones(size(cluster_group.cluster_id));
+        warning('No shanks.npy file, assuming single shank!');
+    end
 
     spikes = [];
     spikes.sessionName = sessionInfo.FileName;
     jj = 1;
     for ii = 1:length(cluster_group.group)
-        if strcmp(cluster_group.group(ii,:),'good ')
+        if strcmpi(strtrim(cluster_group.group(ii,:)),'good')
             ids = find(spike_cluster_index == cluster_group.cluster_id(ii)); % cluster id
             spikes.UID(jj) = cluster_group.cluster_id(ii);
             spikes.times{jj} = double(spike_times(ids))/fs; % cluster time
@@ -105,10 +116,9 @@ else
     wfWin = 0.008; % Larger size of waveform windows for filterning
     filtFreq = 500;
     hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
-
+    if getWave
     f = waitbar(0,'Getting waveforms...');
     wfWin = round((wfWin * fs)/2);
-    if getWave
         for ii = 1 : size(spikes.times,2)
             spkTmp = spikes.times{ii};
             if length(spkTmp) > nPull
@@ -117,6 +127,9 @@ else
             end
             wf = [];
             for jj = 1 : length(spkTmp)
+                if verbose
+                    fprintf(' ** %3.i/%3.i for cluster %3.i/%3.i  \n',jj, length(spkTmp), ii, size(spikes.times,2));
+                end
                 wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spikes.ts{ii}(jj) - (wfWin),...
                     'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
             end

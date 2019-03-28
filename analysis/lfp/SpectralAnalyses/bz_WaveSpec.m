@@ -26,7 +26,11 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %       'fvector'   predefined vector of frequencies 
 %       'space'     'log' or 'lin'  spacing of f's      (default: 'log')
 %       'samplingRate' (only if input is not a buzcode structure)
-%       'intervals'  ADD THIS - ability to spec intervals
+%       'intervals'  restrict your spectrogram to timestamps in specific
+%                   intervals
+%       'chanID'    if lfp structure has multiple channels, which one would
+%                   you like to calcaulte the wavelet transform of?
+%                   (note: requires field lfp.channels)
 %       'showprogress' true/false (default:false)
 %       'saveMat '   put the basePath to save an LFP file
 %       'MatNameExtraText'   text(X) to add to name as in: 'basename.wavespec(text).lfp.mat'
@@ -73,6 +77,8 @@ addParameter(parms,'roundfreqs',false,@islogical);
 addParameter(parms,'saveMatPath',[]);
 addParameter(parms,'MatNameExtraText',[]);
 addParameter(parms,'fvector',[]);
+addParameter(parms,'intervals',[-Inf Inf])
+addParameter(parms,'chanID',[])
 
 parse(parms,varargin{:})
 frange = parms.Results.frange;
@@ -85,36 +91,48 @@ roundfreqs = parms.Results.roundfreqs;
 saveMatPath = parms.Results.saveMatPath;
 MatNameExtraText = parms.Results.MatNameExtraText;
 fvector = parms.Results.fvector;
+intervals = parms.Results.intervals;
+chanID = parms.Results.chanID;
 
+
+%Channel restrict
+if ~isempty(chanID)
+    usechannel = ismember(lfp.channels,chanID);
+    lfp.data = lfp.data(:,usechannel);
+    lfp.channels = lfp.channels(usechannel);
+end
 
 %lfp input
 if isstruct(lfp)
-    data = lfp.data;
-    timestamps = lfp.timestamps;
     samplingRate = lfp.samplingRate;
 elseif isempty(lfp)
     wavespec = lfp;
     return
-elseif iscell(lfp) %for multiple trials
-    celllengths = cellfun(@length,lfp);
-    data = vertcat(lfp{:});
 elseif isnumeric(lfp)
-    data = lfp;
-    timestamps = [1:length(lfp)]'./samplingRate;
+    data_temp = lfp;
+    clear lfp
+    lfp.data = data_temp;
+    lfp.timestamps = [1:length(lfp)]'./samplingRate;
 end
 
 si = 1./samplingRate;
 
+%Restrict to intervals, with overhang to remove edge effects at transitions
+%(then remove later)
+overhang = (ncyc)./frange(1);
+overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
+keepIDX = InIntervals(lfp.timestamps,overint);
+lfp.data = lfp.data(keepIDX,:);
+lfp.timestamps = lfp.timestamps(keepIDX);
 
 %%
-if ~isa(data,'single') || ~isa(data,'double')
-    data = single(data);
+if ~isa(lfp.data,'single') || ~isa(lfp.data,'double')
+    lfp.data = single(lfp.data);
 end
 
 %Frequencies
 if ~isempty(fvector)
     freqs = fvector;
-    nfreqs = length(fvector);
 else
     fmin = frange(1);
     fmax = frange(2);
@@ -131,33 +149,29 @@ end
 if roundfreqs
     freqs = unique(round(freqs));
 end
-nfreqs = size(freqs,2);
 
 %Filter with wavelets
-spec = [];
-for cidx = 1:size(data,2)
-    tspec = zeros(length(timestamps),nfreqs);
+nfreqs = size(freqs,2);
+nchan = size(lfp.data,2);
+ntime = size(lfp.data,1);
+wavespec.data = nan(ntime,nfreqs,nchan);
+wavespec.timestamps = lfp.timestamps;
+for cidx = 1:nchan
     for f_i = 1:nfreqs
         if showprogress
-            if mod(f_i,10) == 1
-                display(['freq ',num2str(f_i),' of ',num2str(nfreqs)]);
-            end  
+            bz_Counter(f_i,nfreqs,'Wavelet Frequency')
         end
         wavelet = MorletWavelet(freqs(f_i),ncyc,si);
-        tspec(:,f_i) = FConv(wavelet',data(:,cidx));
+        wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
     end
-
-    if exist('celllengths','var')
-        tspec = mat2cell(tspec,nfreqs,celllengths);
-    end
-    
-    spec = cat(3,spec,tspec);
-    clear tspec
 end
 
 %% Output in buzcode format
-wavespec.data = spec;
-wavespec.timestamps = timestamps;
+%Remove the overhang from intervals
+keepIDX = InIntervals(wavespec.timestamps,intervals);
+wavespec.data = wavespec.data(keepIDX,:);
+wavespec.timestamps = wavespec.timestamps(keepIDX);
+
 wavespec.freqs = freqs;
 wavespec.nfreqs = nfreqs;
 wavespec.samplingRate = samplingRate;
@@ -169,6 +183,8 @@ wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
 wavespec.filterparms.space = space;
 
+clear lfp
+
 if saveMatPath
     baseName = bz_BasenameFromBasepath(saveMatPath);
     if ~isempty(MatNameExtraText)
@@ -179,9 +195,9 @@ if saveMatPath
     
     s = whos('wavespec');
     if s.bytes>=1073741824%if greater than 2GB
+        disp('wavespec variable greater than 2GB, saving as v7.3 .mat file')
         save(lfpfilename,'wavespec','-v7.3')
     else
-        disp('wavespec variable greater than 2GB, saving as v7.3 .mat file')
         save(lfpfilename,'wavespec')
     end
 end
