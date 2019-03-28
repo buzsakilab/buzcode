@@ -202,9 +202,10 @@ parfor idx = 1:numSWChannels;
     broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
     
     %Remove ignoretimes (after smoothing), before normalizoing
-    ignoretimeIDX = InIntervals(t_FFT,ignoretime);
-    broadbandSlowWave(ignoretimeIDX) = [];
-    
+    if ~isempty(ignoretime)
+        ignoretimeIDX = InIntervals(t_FFT,ignoretime);
+        broadbandSlowWave(ignoretimeIDX) = [];  %% this introduces gaps in a continuous signal... maybe nan fill?
+    end
     broadbandSlowWave = bz_NormToRange(broadbandSlowWave,[0 1]);
 
     %% Histogram and diptest of Slow Wave Power
