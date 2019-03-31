@@ -81,19 +81,18 @@ saveMat = p.Results.saveMat;
 
 %% Collect pieces
 sessionInfo = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
-if exist([sessionInfo.session.path filesep sessionInfo.FileName '.UDStates.events.mat'],'file') && ~forceDetect
+if exist([sessionInfo.FileName '.UDStates.events.mat'],'file') && ~forceDetect
     disp('Up and down states already detected! Loading file.');
-    load([sessionInfo.session.path filesep sessionInfo.FileName '.UDStates.events.mat']);
+    load([sessionInfo.FileName '.UDStates.events.mat']);
     return
 end
 
 [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
-
 tlfp = bz_GetLFP(0,'basepath',basepath,'noPrompts',noPrompts);
 if ischar(NREMInts) && strcmpi(NREMInts,'all')
     NREMInts = [0 tlfp.duration];                                          % Consider all file as NREMInts
 elseif isempty(NREMInts)                                                   % if empty, try to generate
-    [SleepState] = bz_LoadStates(sessionInfo.session.path,'SleepState');
+    [SleepState] = bz_LoadStates(basepath,'SleepState');    
     if ~isempty(SleepState)
         NREMInts = SleepState.ints.NREMstate;
     else
@@ -222,7 +221,7 @@ UDStates.timestamps.DOWN = downValley;
 UDStates.timestamps.UP = upPeaks;
 UDStates.timestamps.deltaWave = deltaPeak(~isnan(deltaPeak))';
 
-save([sessionInfo.session.path filesep sessionInfo.FileName '.UDStates.events.mat'],'UDStates');
+save([sessionInfo.FileName '.UDStates.events.mat'],'UDStates');
 
 % %% check parameters
 %t_in = [28*60+44.183 28*60+49.183];

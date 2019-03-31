@@ -118,10 +118,11 @@ end
 broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
 
 %Remove ignoretimes (after smoothing), before normalizoing
-ignoretimeIDX = InIntervals(t_clus,ignoretime);
-broadbandSlowWave(ignoretimeIDX) = [];
-t_clus(ignoretimeIDX) = [];
-
+if ~isempty(ignoretime)
+    ignoretimeIDX = InIntervals(t_clus,ignoretime);
+    broadbandSlowWave(ignoretimeIDX) = [];
+    t_clus(ignoretimeIDX) = [];
+end
 broadbandSlowWave = bz_NormToRange(broadbandSlowWave,[0 1]);
  
 %% Calculate theta
@@ -146,10 +147,11 @@ thratio = thpower./allpower;    %Narrowband Theta
 thratio = smooth(thratio,thsmoothfact./specdt);
 
 %Remove ignoretimes (after smoothing), before normalizoing
-ignoretimeIDX = InIntervals(t_thclu,ignoretime);
-thratio(ignoretimeIDX) = [];
-t_thclu(ignoretimeIDX) = [];
-
+if ~isempty(ignoretime)
+    ignoretimeIDX = InIntervals(t_thclu,ignoretime);
+    thratio(ignoretimeIDX) = [];
+    t_thclu(ignoretimeIDX) = [];
+end
 thratio = bz_NormToRange(thratio,[0 1]);
  
 %% EMG

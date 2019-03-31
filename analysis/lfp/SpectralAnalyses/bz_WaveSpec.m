@@ -112,7 +112,7 @@ elseif isnumeric(lfp)
     data_temp = lfp;
     clear lfp
     lfp.data = data_temp;
-    lfp.timestamps = [1:length(lfp)]'./samplingRate;
+    lfp.timestamps = [1:length(lfp.data)]'./samplingRate;
 end
 
 si = 1./samplingRate;
