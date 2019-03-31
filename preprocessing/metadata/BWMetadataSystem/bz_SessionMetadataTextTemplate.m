@@ -32,26 +32,50 @@ end
 basename = bz_BasenameFromBasepath(basepath);
 
 
-%% HUMAN INPUT BELOW
+%% HUMAN INPUT THIS SECTION
 % Preprocessing specifiers
-SessionMetadata.Preprocess.AnimalMetadataSource = {'AnimalFolderAbove'};
+SessionMetadata.Preprocess.AnimalMetadataSource = {'AnimalFolderAbove','Basepath'};%!blank will lead to user being asked to find file
 
 % Surgery and Animal metadata
 SessionMetadata.Animal.WeightGrams = [];
 
 % Extracell Ephys metadata
 SessionMetadata.ExtracellEphys.NumberOfTurnsSinceSurgery = [0];%vector, one entry per probe
-SessionMetadata.ExtracellEphys.Probes.PluggingOrder = [];%vector, one entry per probe. blank defaults to animal plugging order
-SessionMetadata.ExtracellEphys.BadShanks = [];% vector for this recording. base 1
+SessionMetadata.ExtracellEphys.Probes.PluggingOrder = ['FromAnimalMetadata'];%vector, one entry per probe. blank defaults to animal plugging order
+
+SessionMetadata.ExtracellEphys.BadShanks = [];% vector for this recording. base 1.  NOT REALLY USED YET
      % These bad shanks will be used to populate bad channels
 SessionMetadata.ExtracellEphys.BadChannels = [];% vector for this recording. base 0
 SessionMetadata.ExtracellEphys.ChannelNotes = {''};
-SessionMetadata.ExtracellEphys.SpikeGroups = {'FromAnimalMetaData','FromXML'}; %Pick one, delete the other.
 
-SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate = 1250;%assumed default
-SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform = 32;%default
-SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform = 16;%default
-SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave = 4;%default
+
+%if these values are "FromAnimalMetadata", they'll be auto-populated w
+%numbers later below. Otherwise a number entered here will be used
+% SessionMetadata.ExtracellEphys.NumberOfChannels = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.SpikeGroups = {'FromAnimalMetaData','FromXML','FromSessionInfo'}; %Pick one, delete the other.
+
+%For setting up to record extra channels for opto, frames etc.  
+% NumExtraChansPerExtraGroup field will be a vector of number of channels per
+% extra group.   The number of groups is set by the number of entries... 
+% the number within each group is signified by the number in each
+% entry.  (ie [3 5] signifies 2 post-probe groups, first with 3 channels, the 
+% second with 5 channels.
+SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.ExtraChannels.GroupNames = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.ExtraChannels.ChannelNames = 'FromAnimalMetadata';%... or number
+
+%Basic Ephys params
+SessionMetadata.ExtracellEphys.Parameters.SampleRate = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.Parameters.Amplification = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.Parameters.BitsPerSample = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.Parameters.VoltageRange = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform = 'FromAnimalMetadata';%... or number
+SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave = 'FromAnimalMetadata';%... or number
+
+
 
 % Optogenetics metadata
 % FiberNum = 1;%copy more of these blocks - one per probe
@@ -102,9 +126,12 @@ supradir = fileparts(basepath);
 finalamdpath = fullfile(basepath,[basename,'.AnimalMetadata.mat']);
 % if we know the AnimalMetadata is one folder above basepath (ie in Animal
 % folder as usual)
-if strcmp(SessionMetadata.Preprocess.AnimalMetadataSource{1},'AnimalFolderAbove')
+if strcmp(lower(SessionMetadata.Preprocess.AnimalMetadataSource{1}),'animalfolderabove')
     d2 = dir(fullfile(supradir,'*.AnimalMetadata.mat'));
     inputamdpath = fullfile(supradir,d2(1).name);
+elseif strcmp(lower(SessionMetadata.Preprocess.AnimalMetadataSource{1}),'basepath')
+    d2 = dir(fullfile(basepath,'*.AnimalMetadata.mat'));
+    inputamdpath = fullfile(basepath,d2(1).name);
 end
 
 % in other cases search for it and ask user
@@ -140,25 +167,60 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
     SessionMetadata.ExtracellEphys.Probes.ProbeDepths = SessionMetadata.ExtracellEphys.NumberOfTurnsSinceSurgery .* SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.UmPerScrewTurn;
     SessionMetadata.ExtracellEphys.Probes.ProbeCenterCoordinates = [];%someone should do this
     SessionMetadata.ExtracellEphys.Probes.ChannelCenterCoordinates = [];%someone should do this
-
-    if isempty(SessionMetadata.ExtracellEphys.Probes.PluggingOrder)
-        SessionMetadata.ExtracellEphys.Probes.PluggingOrder = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.PluggingOrder;
-    end
     
     % Read recording system-based metadata from either .rhd or .meta (Intan or Amplirec)
     % Check for compatibility with AnimalMetadata, overwrite using this and
     % warn the user of the conflict.
-    SessionMetadata.ExtracelEphys = DatInfoMake(basepath);
+    SessionMetadata.ExtracellEphys.DatTimingInfo = DatInfoMake(basepath);
 
     %now things regardless of input system
 
+    %take from animal metadata if user said so (default for now 3/2019)
+    if strcmp(SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup = SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup;
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.ExtraChannels.GroupNames,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.ExtraChannels.GroupNames = SessionMetadata.ExtracellEphys.ExtraChannels.GroupNames;
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.ExtraChannels.ChannelNames,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.ExtraChannels.ChannelNames = SessionMetadata.ExtracellEphys.ExtraChannels.ChannelNames;
+    end
+    
+    if strcmp(SessionMetadata.ExtracellEphys.Parameters.SampleRate,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.Parameters.SampleRate = AnimalMetadata.ExtracellEphys.Parameters.SampleRate;%
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.Parameters.Amplification,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.Parameters.Amplification = AnimalMetadata.ExtracellEphys.Parameters.Amplification;%
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit = AnimalMetadata.ExtracellEphys.Parameters.VoltsPerUnit;%
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.Parameters.BitsPerSample,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.Parameters.BitsPerSample = AnimalMetadata.ExtracellEphys.Parameters.BitsPerSample;%
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.Parameters.VoltageRange,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.Parameters.VoltageRange = AnimalMetadata.ExtracellEphys.Parameters.VoltageRange;%
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate = AnimalMetadata.ExtracellEphys.Parameters.LfpSampleRate;%
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform = AnimalMetadata.ExtracellEphys.Parameters.PointsPerWaveform;%
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform = AnimalMetadata.ExtracellEphys.Parameters.PeakPointInWaveform;%
+    end
+    if strcmp(SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave,'FromAnimalMetadata')
+        SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave = AnimalMetadata.ExtracellEphys.Parameters.FeaturesPerWave;%
+    end
+    
     %Check for conflicts between original animal-based ephys params and
     %those based on files in this particular recording.
     aparams = SessionMetadata.AnimalMetadata.ExtracellEphys.Parameters;
     sparams = SessionMetadata.ExtracellEphys.Parameters;
     fn = fieldnames(aparams);
     divergentfields = {};
-    for fidx = 1:length(fn);
+    for fidx = 1:length(fn)
         if getfield(aparams,fn{fidx}) ~= getfield(sparams,fn{fidx})
             divergentfields{end+1} = fn{fidx};
         end
@@ -186,7 +248,7 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
 %     end 
     
     %Get Spikegroups
-    if strcmp(SessionMetadata.ExtracellEphys.SpikeGroups,'FromXML'); 
+    if strcmp(SessionMetadata.ExtracellEphys.SpikeGroups,'FromXML')
         display('Getting spikegroups from the .xml...')
         %Load the XML for spike groups
         xmlname = fullfile(basepath,[basename,'.xml']);
@@ -196,6 +258,16 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
         end
         xmlparms = LoadParameters(xmlname);
         SessionMetadata.ExtracellEphys.SpikeGroups = xmlparms.SpkGrps;
+    elseif strcmp(SessionMetadata.ExtracellEphys.SpikeGroups,'FromSessionInfo')
+        if exist(fullfile(basepath,[basename '.SessionInfo.mat']))
+            si = bz_getSessionInfo(basepath);
+            SessionMetadata.ExtracellEphys.SpikeGroups = si.spikeGroups;
+        else
+            disp('No SessionInfo found in folder.  Taking spike groups from AnimalMetadata')
+            SessionMetadata.ExtracellEphys.SpikeGroups = AnimalMetadata.ExtracellEphys.SpikeGroups;
+        end
+    elseif strcmp(SessionMetadata.ExtracellEphys.SpikeGroups,'FromAnimalMetaData')
+        SessionMetadata.ExtracellEphys.SpikeGroups = AnimalMetadata.ExtracellEphys.SpikeGroups;
     end
 end
 
@@ -204,6 +276,59 @@ end
 
 %% Save all metadata
 save(fullfile(basepath,[basename '.SessionMetadata.mat']),'SessionMetadata')
+
+
+%% Handle and save sessionInfo (3/2019)
+%should change this to use bz_editSessionInfo and use these as inputs to
+%that
+%maybe even abstract wrapper so field name and field value go into
+%bz_editSession info as name-value pairs?
+
+str = input('Write/Overwrite sessionInfo.mat file from SessionMetadata? (y/n): ','s');
+if strcmp(str(1),'y')
+    sessionInfo.session.name = basename;
+    sessionInfo.session.path = basepath;
+    sessionInfo.spikeGroups = SessionMetadata.ExtracellEphys.SpikeGroups;
+    sessionInfo.nChannels = SessionMetadata.ExtracellEphys.NumberOfChannels;
+    sessionInfo.channels = [1:SessionMetadata.ExtracellEphys.NumberOfChannels];
+    sessionInfo.nBits = SessionMetadata.ExtracellEphys.Parameters.BitsPerSample;
+    sessionInfo.rates.lfp = SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate;
+    sessionInfo.rates.wideband = SessionMetadata.ExtracellEphys.Parameters.SampleRate;
+    sessionInfo.rates.video = 0;%default
+    sessionInfo.FileName = basename;
+    sessionInfo.SampleTime = 1/SessionMetadata.ExtracellEphys.Parameters.SampleRate* 1e+6;%us apparently
+    sessionInfo.nElecGps = [];
+    for gidx = 1:(sessionInfo.spikeGroups.nGroups)%making elecgp... this is dumb
+        tchans = sessionInfo.spikeGroups.groups{gidx};
+        for cidx = 1:length(tchans)
+            sessionInfo.ElecGp{gidx}.channel{cidx} = num2str(tchans(cidx));
+        end
+    end
+    sessionInfo.HiPassFreq = [];
+    sessionInfo.lfpSampleRate = SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate;
+    sessionInfo.VoltageRange = SessionMetadata.ExtracellEphys.Parameters.VoltageRange;
+    sessionInfo.Amplification = SessionMetadata.ExtracellEphys.Parameters.Amplification;
+    sessionInfo.Offset = nan;
+    d = AnimalMetadata.Surgery.Date;
+    sessionInfo.Date = strcat(d(1:4),'-',d(5:6),'-',d(7:8));
+    for gidx = 1:(sessionInfo.spikeGroups.nGroups)%making AnatGrps
+        sessionInfo.AnatGrps(gidx).Channels = sessionInfo.spikeGroups.groups{gidx};
+    end
+    for gidx = 1:(sessionInfo.spikeGroups.nGroups)%making SpkGrps
+        sessionInfo.SpkGrps(gidx).Channels = sessionInfo.spikeGroups.groups{gidx};
+        sessionInfo.SpkGrps(gidx).nSamples = SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform;
+        sessionInfo.SpkGrps(gidx).peakSample = SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform;
+        sessionInfo.SpkGrps(gidx).nFeatures = SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave;
+    end
+    %sessionInfo.Units = 
+    sessionInfo.region = AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable.Table';
+    sessionInfo.badchannels = SessionMetadata.ExtracellEphys.BadChannels;
+    sessionInfo.badshanks = SessionMetadata.ExtracellEphys.BadShanks;%not used now
+
+    filename = fullfile(basepath,[basename,'.sessionInfo.mat']);
+    save(filename,'sessionInfo'); 
+    disp('sessionInfo successfully saved')
+end
 
 1;
 
