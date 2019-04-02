@@ -17,7 +17,9 @@ function [ SlowWaves,VerboseOut ] = DetectSlowWaves( basePath,varargin)
 %   'lfp'               -A buzcode-style lfp structure... if you would
 %                        rather just input the lfp instead of loading from
 %                        basepath
+%                           Default: load from basePath with bz_GetLFP
 %   'spikes'            -A buzcode-style spike structure 
+%                           Default: load from basePath with bz_GetSpikes
 %   'NREMInts'          -Interval of times for NREM (seconds) 
 %                        (Default: loaded from SleepState.states.mat, 
 %                                   run SleepScoreMaster if not exist)
@@ -247,7 +249,7 @@ DELTApeakheight = DELTApeakheight(keepPeaks);  DELTAwins = DELTAwins(keepPeaks,:
 GAMMAdipdepth = GAMMAdipdepth(keepPeaks);  GAMMAwins = GAMMAwins(keepPeaks,:);
 
 %% Merge gamma/delta windows to get Slow Waves, UP/DOWN states
-[ DOWNints,mergedidx ] = MergeSeparatedInts( [DELTAwins;GAMMAwins]);
+[ DOWNints,mergedidx ] = MergeSeparatedInts([DELTAwins;GAMMAwins]);
 
 %Keep only those windows in which DELTA/GAMMA were merged togehter (note
 %this only works if joining happened previously... otherwise could keep
@@ -542,7 +544,7 @@ function [usechan,trychans] = AutoChanSelect(trychans,basePath,NREMInts,spikes,f
   %%  
     for cc = 1:length(trychans)
         display(['Trying Channel ',num2str(cc),' of ',num2str(length(trychans))])
-        chanlfp = bz_GetLFP(trychans(cc),'basepath',basePath,'noPrompts',noPrompts);
+        chanlfp = bz_GetLFP(trychans(cc),'basepath',basePath,'noPrompts',true);
         %Filter in gamma
         gammafilter = filterparms.gammafilter; %Note: this doesn't work as well with new filtered LFP.... need better MUA
         trygammaLFP = bz_Filter(chanlfp,'passband',gammafilter,'order',4);

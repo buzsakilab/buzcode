@@ -112,7 +112,7 @@ elseif isnumeric(lfp)
     data_temp = lfp;
     clear lfp
     lfp.data = data_temp;
-    lfp.timestamps = [1:length(lfp)]'./samplingRate;
+    lfp.timestamps = [1:length(lfp.data)]'./samplingRate;
 end
 
 si = 1./samplingRate;
@@ -122,7 +122,7 @@ si = 1./samplingRate;
 overhang = (ncyc)./frange(1);
 overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
 keepIDX = InIntervals(lfp.timestamps,overint);
-lfp.data = lfp.data(keepIDX);
+lfp.data = lfp.data(keepIDX,:);
 lfp.timestamps = lfp.timestamps(keepIDX);
 
 %%
@@ -159,13 +159,13 @@ wavespec.timestamps = lfp.timestamps;
 for cidx = 1:nchan
     for f_i = 1:nfreqs
         if showprogress
-            bz_Counter(f_i,nfreqs,'Frequency')
+            bz_Counter(f_i,nfreqs,'Wavelet Frequency')
         end
         wavelet = MorletWavelet(freqs(f_i),ncyc,si);
         wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
     end
 end
-%clear lfp
+
 %% Output in buzcode format
 %Remove the overhang from intervals
 keepIDX = InIntervals(wavespec.timestamps,intervals);
@@ -182,6 +182,8 @@ wavespec.filterparms.ncyc = ncyc;
 wavespec.filterparms.nfreqs = nfreqs;
 wavespec.filterparms.frange = frange;
 wavespec.filterparms.space = space;
+
+clear lfp
 
 if saveMatPath
     baseName = bz_BasenameFromBasepath(saveMatPath);
