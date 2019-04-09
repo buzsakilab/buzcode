@@ -220,7 +220,7 @@ end
 %% Get info to allow to pick Theta channel
 %parfor_progress(numSWChannels);
 %tstart = tic;
-for idx = 1:numThetaChannels;
+parfor idx = 1:numThetaChannels;
 %channum = 1;
     %Progress Counter
 %     timespent=toc(tstart);

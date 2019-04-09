@@ -33,8 +33,8 @@ basename = bz_BasenameFromBasepath(basepath);
 %% HUMAN INPUT SECTION %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Name and path info
-AnimalMetadata.AnimalName = 'Ket1';
-AnimalMetadata.AnimalBasepath = '/balrog_zpool/Ket1';%this can be changed for each computer and can then act as a handle for all subsequent analyses
+AnimalMetadata.AnimalName = 'Jasper';
+AnimalMetadata.AnimalBasepath = 'F:\Jasper';%this can be changed for each computer and can then act as a handle for all subsequent analyses
 
 % Determine which modules to use for this animal... 1 for use, 0 for not use 
 AnimalMetadata.Modules.AnimalAndSurgery = true;
@@ -50,19 +50,30 @@ if AnimalMetadata.Modules.AnimalAndSurgery
     AnimalMetadata.Animal.Strain = 'SpragueDawley';
     AnimalMetadata.Animal.GeneticLine = 'WildType';
     AnimalMetadata.Animal.Sex = 'Male';
-    AnimalMetadata.Animal.DateOfBirth = '20161221';%YYYYMMDD format
-    AnimalMetadata.Animal.WeightGramsAtSurgery = 405;%grams
+    AnimalMetadata.Animal.DateOfBirth = '20181112';%YYYYMMDD format
+    AnimalMetadata.Animal.WeightGramsAtSurgery = 350;%grams
 
-    AnimalMetadata.Surgery.Date = '20170317';
+    AnimalMetadata.Surgery.Date = '20190221';%YYYYMMDD format
     AnimalMetadata.Surgery.Anesthesia.Name = 'Isoflurane';
-    AnimalMetadata.Surgery.Anesthesia.ConcentrationPercent = '1';
-    AnimalMetadata.Surgery.Analgesic.Name = 'Buprenex';
-    AnimalMetadata.Surgery.Analgesic.Milligrams = 0.06;%usually given at 0.15mg/ml
-    AnimalMetadata.Surgery.Antibiotics.Topical = 'Neopredef';
-    AnimalMetadata.Surgery.Antibiotics.Intraperitoneal = '';
-    AnimalMetadata.Surgery.Complications = '';
+    AnimalMetadata.Surgery.Anesthesia.ConcentrationPercent = '';
+    
+    AnimalMetadata.Surgery.Analgesic.Name = 'Carprofen';
+    AnimalMetadata.Surgery.Analgesic.DoseMgPerKg = [5];
+    AnimalMetadata.Surgery.Analgesic.Milligrams = AnimalMetadata.Surgery.Analgesic.DoseMgPerKg/1000*AnimalMetadata.Animal.WeightGramsAtSurgery;%usually given at 0.15mg/ml
+    AnimalMetadata.Surgery.Steroids.Name = 'Methylprednisolone';
+    AnimalMetadata.Surgery.Steroids.DoseMgPerKg = [30];
+    AnimalMetadata.Surgery.Steroids.Name = AnimalMetadata.Surgery.Steroids.DoseMgPerKg /1000 * AnimalMetadata.Animal.WeightGramsAtSurgery;
+    AnimalMetadata.Surgery.Antibiotics.Intraperitoneal.Name = '';
+    AnimalMetadata.Surgery.Antibiotics.Intraperitoneal.DoseMgPerKg = [];
+    AnimalMetadata.Surgery.Antibiotics.Intraperitoneal.Milligrams = AnimalMetadata.Surgery.Antibiotics.Intraperitoneal.DoseMgPerKg /1000 * AnimalMetadata.Animal.WeightGramsAtSurgery;;
+    AnimalMetadata.Surgery.Antibiotics.Subcutaneous.Name = 'Cefazolin';
+    AnimalMetadata.Surgery.Antibiotics.Subcutaneous.DoseMgPerKg = [60];
+    AnimalMetadata.Surgery.Antibiotics.Subcutaneous.Milligrams = AnimalMetadata.Surgery.Antibiotics.Subcutaneous.DoseMgPerKg /1000 * AnimalMetadata.Animal.WeightGramsAtSurgery;;
+    AnimalMetadata.Surgery.Antibiotics.SkinTopical.Name = '';
+    
     AnimalMetadata.Surgery.DamageSites = '';
-    AnimalMetadata.Surgery.Notes = 'Good';
+    AnimalMetadata.Surgery.Complications = '';
+    AnimalMetadata.Surgery.Notes = '';
 end
 
 % Extracell Ephys metadata
@@ -70,31 +81,40 @@ if AnimalMetadata.Modules.ExtracellEphys
     %On probe subfields below: if multiple probes, put in one entry in each field
     %per probe, make sure they align with each other properly and all
     %subsequent assumptions will work.
-    AnimalMetadata.ExtracellEphys.Probes.UmPerScrewTurn = [288 288];
     AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes = 2;
-    AnimalMetadata.ExtracellEphys.Probes.TargetRegions = {'dCA1','mPFC'};
-    AnimalMetadata.ExtracellEphys.Probes.TargetHemisphere = {'left','right'};
-    AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.Anteroposterior = [-3.5,2.7];%one for each probe
-    AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.Mediolateral = [2.5,0.3];
+    AnimalMetadata.ExtracellEphys.Probes.TargetRegions = {'mPFC','dCA1'};
+    AnimalMetadata.ExtracellEphys.Probes.TargetHemisphere = {'right','right'};
+    AnimalMetadata.ExtracellEphys.Probes.UmPerScrewTurn = [205 205];
+    AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.Anteroposterior = [3.5,-3.8];%one for each probe
     AnimalMetadata.ExtracellEphys.Probes.ImplantAngle.Anteroposterior = [0,0];%degrees of top anterior as sitting behind animal
-    AnimalMetadata.ExtracellEphys.Probes.ImplantAngle.Mediolateral = [0,10];%degrees clockwise as sitting behind animal
-    AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.DepthFromSurface = [1.5,2];
-    AnimalMetadata.ExtracellEphys.Probes.OrientationOfProbe.FirstGroupRelativeToLastGroupClockwiseDegreesAnteriorIsZero = [90,135];%assumes linear arrays
+    AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.Mediolateral = [-0.6,-3,5];
+    AnimalMetadata.ExtracellEphys.Probes.ImplantAngle.Mediolateral = [0,0];%degrees clockwise as sitting behind animal
+    AnimalMetadata.ExtracellEphys.Probes.ImplantCoordinates.DepthFromSurface = [-2.5,-1.8];
+    AnimalMetadata.ExtracellEphys.Probes.OrientationOfProbe.FirstGroupRelativeToLastGroupClockwiseDegreesAnteriorIsZero = [270,270];%assumes linear arrays
     AnimalMetadata.ExtracellEphys.Probes.OrientationOfProbe.GroupOffsetsFromCenter_ApMlDv = [];%for non-linear arrangements: group x 3 coordinates for change from center
     AnimalMetadata.ExtracellEphys.Probes.PluggingOrder = [1,2];% order will be represented in .xml, ie if intan splitter dicates
-    AnimalMetadata.ExtracellEphys.Probes.SiteSizesInUmSq = [160];%In square microns
-    AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames = {'NRX_Buzsaki64_5X12';'NRX_Buzsaki64_8X8'};%filenames in /buzcode/GeneralComputation/geometries
-    AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames = {};%Filenames in basepath folder, or leave as {} if none
-
+    AnimalMetadata.ExtracellEphys.Probes.SiteSizesInUmSq = [177,177];%In square microns
+    AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames = {'NRX_Buzsaki64_8X8';'NRX_Buzsaki64_5X12'};%filenames in /buzcode/GeneralComputation/geometries
     %ONLY ENTER THIS MANUALLY IF YOU WOULD LIKE TO USE THE EXISTING .xml 
     %SPIKE GROUPS INSTEAD OF CALCULATING FROM A PROBE GEOMETRY FILE
     %Enter a list of spike group numbers (from neuroscope) for each probe
-    AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups = {['spkgrps on probe1'],['spkgrps on probe 2']};
+    AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups = {[],[]};
+
+%     AnimalMetadata.ExtracellEphys.Probes.BadShanks = [];%not used now
+    AnimalMetadata.ExtracellEphys.Channels.BadChannels = [];
+
+    AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilepaths = {};%Filenames in basepath folder, or leave as {} if none
     
-    
-%     AnimalMetadata.ExtracellEphys.CurrentBadChannels = [];
-%     AnimalMetadata.ExtracellEphys.CurrentBadShanks = [];%not used now
-    
+    %For setting up to record extra channels for opto, frames etc.  
+    % NumExtraChansPerExtraGroup field will be a vector of number of channels per
+    % extra group.   The number of groups is set by the number of entries... 
+    % the number within each group is signified by the number in each
+    % entry.  (ie [3 5] signifies 2 post-probe groups, first with 3 channels, the 
+    % second with 5 channels.
+    AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup = [0];
+    AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames = {};%one per group
+    AnimalMetadata.ExtracellEphys.ExtraChannels.ChannelNames = {};%one per channel
+
     % Default ephys parameters for this anaimal.  These will be checked
     % against what was used on a per-session basis and warnings will be
     % issued if differences found.
@@ -106,7 +126,7 @@ if AnimalMetadata.Modules.ExtracellEphys
     AnimalMetadata.ExtracellEphys.Parameters.LfpSampleRate = 1250;%Usual desired default
     AnimalMetadata.ExtracellEphys.Parameters.PointsPerWaveform = 32;%default
     AnimalMetadata.ExtracellEphys.Parameters.PeakPointInWaveform = 16;%default
-    AnimalMetadata.ExtracellEphys.Parameters.FeaturesPerWave = 4;%default
+    AnimalMetadata.ExtracellEphys.Parameters.FeaturesPerWave = 3;%for PCA - default
 
     % SessionMetadata.ExtracellEphys.Parameters.NumberOfChannels = 64;
     % This is actually set later in bz_SetSessionMetadata, based on ProbeLayoutFilenames
@@ -168,7 +188,11 @@ AnimalMetadata.Other = {''};
 AnimalMetadata.ExtracellEphys.Probes.WithinProbeXYLocations = [];%declaring default since may not be declared below
 if AnimalMetadata.Modules.ExtracellEphys
     %If you want to use .xml for spikegroups
-    if isnumeric(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{1})
+    GroupsFromXml = false;
+    GroupsFromXml = ~isempty(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups) && ...
+        ~isempty(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{1}) && ...
+        isnumeric(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{1});
+    if GroupsFromXml
         display('Getting spikegroups from the .xml...')
         %Load the XML for spike groups
         xmlname = fullfile(basepath,[basename,'.xml']);
@@ -188,18 +212,57 @@ if AnimalMetadata.Modules.ExtracellEphys
             NumChansPerProbe(pp) = length(cat(2,PerGroupSuperficialToDeep{pp,:}));
         end
 
-    %If you want to build the spikegroups from the geometry
-    elseif strcmp(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups{1},'spkgrps on probe1')
+    else     %If you want to build the spikegroups from the geometry files
         display('Reading probe layout info from the probe map file...')
-        [PerGroupSuperficialToDeep,SpatialXY,NumChansPerProbe,GroupsPerChannel] = bz_ReadProbeMapFiles(AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames);
+        [PerGroupSuperficialToDeep,SpatialXY,NumChansPerProbe,GroupsPerChannel] = bz_ReadProbeGeometryFiles...
+            (AnimalMetadata.ExtracellEphys.Probes.ProbeLayoutFilenames,AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup);
         AnimalMetadata.ExtracellEphys.Probes.WithinProbeXYLocations = SpatialXY;
-    else display('Spikegroup error')
     end
+
+    %handling group names - for case of extra channels - esp if not named
+    %by user
+    for gnidx = 1:length(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup)
+        addsubstitutename = false;
+        if length(AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames) >= gnidx
+            if isempty(AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames)
+                addsubstitutename = true;
+            else
+            end
+        else 
+            addsubstitutename = true;
+        end
+        if addsubstitutename
+            AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames{gnidx} = ['ExtraChannelGroup' num2str(gnidx)];
+        end
+    end
+    AnimalMetadata.ExtracellEphys.Probes.TargetRegions = cat(2,...
+        AnimalMetadata.ExtracellEphys.Probes.TargetRegions,...
+        AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames);
+
+
     
     AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe = sum(~cellfun(@isempty,PerGroupSuperficialToDeep),2);
     AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe = NumChansPerProbe;%to do
     AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep = PerGroupSuperficialToDeep;
     AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal = sum(NumChansPerProbe);
+    
+    % sessionInfo Style Groups
+    SpikeGroups.nGroups = sum(AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe);
+    SpikeGroups.nSamples = AnimalMetadata.ExtracellEphys.Parameters.PointsPerWaveform * ones(1,SpikeGroups.nGroups);
+    SpikeGroups.groups = {};
+    for pidx = 1:size(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep,1)       
+        for gidx = 1:size(AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep,2)
+            tgroup = AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep{pidx,gidx};
+            if ~isempty(tgroup)
+                if prod(size(tgroup))>0
+                    SpikeGroups.groups = cat(2,SpikeGroups.groups,tgroup);
+                    SpikeGroups.groups{end} = SpikeGroups.groups{end}';
+                end
+            end
+        end
+    end
+    AnimalMetadata.ExtracellEphys.SpikeGroups = SpikeGroups;
+    
     %make lookup tables for probe number and anatomy for each channel
     po = AnimalMetadata.ExtracellEphys.Probes.PluggingOrder;
     lut = [];
@@ -211,12 +274,25 @@ if AnimalMetadata.Modules.ExtracellEphys
     for pidx = 1:AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes
         lut = cat(1,lut,pidx*ones(AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe(pidx),1));
         lut_ap = cat(1,lut_ap,po(pidx)*ones(AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe(po(pidx)),1));
-        glut = cat(1,glut,GroupsPerChannel{pidx}+length(pglut));
+        glut = cat(1,glut,GroupsPerChannel{pidx});
         glut_ap = cat(1,glut_ap,GroupsPerChannel{po(pidx)});
         pglut = cat(1,pglut,[1:AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe(pidx)]'+length(pglut));
         pglut_p = cat(1,pglut_p,pidx*ones(AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe(pidx),1));
     end
-
+    numrealprobes = AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes;
+    numspikegroups = AnimalMetadata.ExtracellEphys.SpikeGroups.nGroups;
+    if ~isempty(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup);
+       for eidx = 1:length(AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes);
+          lut = cat(1,lut,(eidx+numrealprobes)*ones(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup(eidx),1));
+          lut_ap = cat(1,lut_ap,(eidx+numrealprobes)*ones(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup(eidx),1));
+          glut = cat(1,glut,(eidx+max(glut))*ones(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup(eidx),1));
+          glut_ap = cat(1,glut_ap,(eidx+max(glut_ap))*ones(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup(eidx),1));
+          
+          pglut = cat(1,pglut,1+length(pglut));%one "probe" for each set of extra channels
+          pglut_p = cat(1,pglut_p,(eidx+numrealprobes));
+       end
+    end
+    
     AnimalMetadata.ExtracellEphys.Probes.ProbeToGroupLookupTable.Labels = {'ProbeNumber';'GroupNumber'};
     AnimalMetadata.ExtracellEphys.Probes.ProbeToGroupLookupTable.Table = [pglut_p pglut];
     AnimalMetadata.ExtracellEphys.Channels.ChannelToProbeLookupTable.Labels = {'ChannelNumber';'ProbeNumber'};
@@ -233,10 +309,10 @@ if AnimalMetadata.Modules.ExtracellEphys
     AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable_AsPlugged.Table = AnimalMetadata.ExtracellEphys.Probes.TargetRegions(lut_ap)';
 
     %Get impedances per channel based on intan impedance files
-    if ~isempty(AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames)
+    if ~isempty(AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilepaths)
         AnimalMetadata.ExtracellEphys.Channels.ImpedanceByChannel = cell(AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes);
-        for pidx = 1:length(AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames)
-            tf = fullfile(basepath,AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilenames{pidx});
+        for pidx = 1:length(AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilepaths)
+            tf = fullfile(basepath,AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilepaths{pidx});
             txt = read_mixed_csv(tf);
             numchans = size(txt,1)-1;
         %     channums = 1:numchans;
@@ -251,13 +327,59 @@ if AnimalMetadata.Modules.ExtracellEphys
         end
     end
 
-    % someone should combine XY with probe orientation angle and implant
-   %coordinates to map each site at day of implant
-
-    % fix defaults
-    AnimalMetadata.EphysDefaults.NumberOfChannels = AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal;
-
+   % someone should combine XY with probe orientation angle and implant...
+   % to get full stereotaxic coordinates for each site... wouldn't that be
+   % nice
+   
+    AnimalMetadata.ExtracellEphys.NumberOfChannels = AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal;
 end
+
+
+%% Make session info for ease (3/2019)
+%should change this to use bz_editSessionInfo and use these as inputs to
+%that
+%maybe even abstract wrapper so field name and field value go into
+%bz_editSession info as name-value pairs?
+sessionInfo.session.name = basename;
+sessionInfo.session.path = basepath;
+sessionInfo.spikeGroups = AnimalMetadata.ExtracellEphys.SpikeGroups;
+sessionInfo.nChannels = AnimalMetadata.ExtracellEphys.NumberOfChannels;
+sessionInfo.channels = [1:AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal];
+sessionInfo.nBits = AnimalMetadata.ExtracellEphys.Parameters.BitsPerSample;
+sessionInfo.rates.lfp = AnimalMetadata.ExtracellEphys.Parameters.LfpSampleRate;
+sessionInfo.rates.wideband = AnimalMetadata.ExtracellEphys.Parameters.SampleRate;
+sessionInfo.rates.video = 0;%default
+sessionInfo.FileName = basename;
+sessionInfo.SampleTime = 1/AnimalMetadata.ExtracellEphys.Parameters.SampleRate* 1e+6;%us apparently
+sessionInfo.nElecGps = [];
+for gidx = 1:(sessionInfo.spikeGroups.nGroups)%making elecgp... this is dumb
+    tchans = sessionInfo.spikeGroups.groups{gidx};
+    for cidx = 1:length(tchans)
+        sessionInfo.ElecGp{gidx}.channel{cidx} = num2str(tchans(cidx));
+    end
+end
+sessionInfo.HiPassFreq = [];
+sessionInfo.lfpSampleRate = AnimalMetadata.ExtracellEphys.Parameters.LfpSampleRate;
+sessionInfo.VoltageRange = AnimalMetadata.ExtracellEphys.Parameters.VoltageRange;
+sessionInfo.Amplification = AnimalMetadata.ExtracellEphys.Parameters.Amplification;
+sessionInfo.Offset = nan;
+d = AnimalMetadata.Surgery.Date;
+sessionInfo.Date = strcat(d(1:4),'-',d(5:6),'-',d(7:8));
+for gidx = 1:(sessionInfo.spikeGroups.nGroups)%making AnatGrps
+    sessionInfo.AnatGrps(gidx).Channels = sessionInfo.spikeGroups.groups{gidx};
+end
+for gidx = 1:(sessionInfo.spikeGroups.nGroups)%making SpkGrps
+    sessionInfo.SpkGrps(gidx).Channels = sessionInfo.spikeGroups.groups{gidx};
+    sessionInfo.SpkGrps(gidx).nSamples = AnimalMetadata.ExtracellEphys.Parameters.PointsPerWaveform;
+    sessionInfo.SpkGrps(gidx).peakSample = AnimalMetadata.ExtracellEphys.Parameters.PeakPointInWaveform;
+    sessionInfo.SpkGrps(gidx).nFeatures = AnimalMetadata.ExtracellEphys.Parameters.FeaturesPerWave;
+end
+%sessionInfo.Units = 
+sessionInfo.region = AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable.Table';
+sessionInfo.badchannels = AnimalMetadata.ExtracellEphys.CurrentBadChannels;
+sessionInfo.badshanks = AnimalMetadata.ExtracellEphys.CurrentBadShanks;%not used now
+
+AnimalMetadata.sessionInfo = sessionInfo;
 
 %% Save
 save(fullfile(basepath,[basename '.AnimalMetadata.mat']),'AnimalMetadata')
