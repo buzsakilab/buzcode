@@ -202,9 +202,10 @@ parfor idx = 1:numSWChannels;
     broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
     
     %Remove ignoretimes (after smoothing), before normalizoing
-    ignoretimeIDX = InIntervals(t_FFT,ignoretime);
-    broadbandSlowWave(ignoretimeIDX) = [];
-    
+    if ~isempty(ignoretime)
+        ignoretimeIDX = InIntervals(t_FFT,ignoretime);
+        broadbandSlowWave(ignoretimeIDX) = [];  %% this introduces gaps in a continuous signal... maybe nan fill?
+    end
     broadbandSlowWave = bz_NormToRange(broadbandSlowWave,[0 1]);
 
     %% Histogram and diptest of Slow Wave Power
@@ -251,9 +252,10 @@ parfor idx = 1:numThetaChannels;
     thratio = smooth(thratio,thsmoothfact./specdt);
     
     %Remove ignoretimes (after smoothing), before normalizoing
-    ignoretimeIDX = InIntervals(t_FFT,ignoretime);
-    thratio(ignoretimeIDX) = [];
-    
+    if ~isempty(ignoretime)
+        ignoretimeIDX = InIntervals(t_FFT,ignoretime);
+        thratio(ignoretimeIDX) = [];
+    end
     thratio = bz_NormToRange(thratio,[0 1]);
 
     %% Histogram and diptest of Theta
@@ -391,10 +393,11 @@ normTHspec = bz_NormToRange(THmeanspec,[0 numusedchannels.*0.6]);
  
     broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
     %Remove ignoretimes (after smoothing), before normalizoing
-    ignoretimeIDX = InIntervals(t_FFT,ignoretime);
-    broadbandSlowWave(ignoretimeIDX) = [];
-    t_FFT(ignoretimeIDX) = [];
-     
+    if ~isempty(ignoretime)
+        ignoretimeIDX = InIntervals(t_FFT,ignoretime);
+        broadbandSlowWave(ignoretimeIDX) = [];
+        t_FFT(ignoretimeIDX) = [];
+    end
      
 	subplot(5,1,1:2)
         imagesc(t_spec,log2(swFFTfreqs),(FFTspec))
@@ -425,10 +428,11 @@ normTHspec = bz_NormToRange(THmeanspec,[0 numusedchannels.*0.6]);
     thratio = smooth(thratio,thsmoothfact./specdt);
     
     %Remove ignoretimes (after smoothing), before normalizoing
-    ignoretimeIDX = InIntervals(t_FFT,ignoretime);
-    thratio(ignoretimeIDX) = [];
-    t_FFT(ignoretimeIDX) = [];
-
+    if ~isempty(ignoretime)
+        ignoretimeIDX = InIntervals(t_FFT,ignoretime);
+        thratio(ignoretimeIDX) = [];
+        t_FFT(ignoretimeIDX) = [];
+    end
     
 subplot(5,1,3)
  %   plot(allLFP(:,1),allLFP(:,goodSWidx),'k')
