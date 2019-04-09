@@ -36,6 +36,10 @@ end
 [amplifier_channels, notes, aux_input_channels, spike_triggers,...         
 board_dig_in_channels, supply_voltage_channels, frequency_parameters ] = read_Intan_RHD2000_file(pwd,'info.rhd');
 
+% amplifier_channels = 1:1:64;
+% aux_input_channels = 3;
+% supply_voltage_channels = 1;
+% frequency_parameters.amplifier_sample_rate = 30000;
 
 %% amplifier.dat
 disp('Writing amplifier file')
