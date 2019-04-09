@@ -3,13 +3,13 @@ dbstop if error
 scatter(pos(:,8),pos(:,10),'.')
 % axis([-1 1 -1 1])
 [x y]=ginput();
-x =  x(end-1:end);
+cx =  x(end-1:end);
 y = y(end-1:end);
 dist(:,1)=fastrms(abs(pos(:,8)-x(1))+abs(pos(:,10)-y(1)),120);
 dist(:,2)=fastrms(abs(pos(:,8)-x(2))+abs(pos(:,10)-y(2)),120);
 
-plot(dist)
-axis([0 length(dist) 0 3])
+plot(dist,'.')
+% axis([0 length(dist) 0 3])
 [xx yy] = ginput();
 
 [pks_one locs_one]=findpeaks(-dist(:,1),'MINPEAKHEIGHT',-yy);
