@@ -176,10 +176,11 @@ if length(ThetaChannels) > 1
 end
 
 %Is this still needed?/Depreciated?
-if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
-    load(sessionmetadatapath)
-    rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];
-elseif isfield(sessionInfo,'badchannels')
+% if exist(sessionmetadatapath,'file')%bad channels is an ascii/text file where all lines below the last blank line are assumed to each have a single entry of a number of a bad channel (base 0)
+%     load(sessionmetadatapath)
+%     rejectChannels = [rejectChannels SessionMetadata.ExtracellEphys.BadChannels];
+% elseif isfield(sessionInfo,'badchannels')
+if isfield(sessionInfo,'badchannels')
     rejectChannels = [rejectChannels sessionInfo.badchannels]; %get badchannels from the .xml
 else
     display('No baseName.SessionMetadata.mat, no badchannels in your xml - so no rejected channels')
