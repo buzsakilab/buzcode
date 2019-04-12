@@ -204,7 +204,7 @@ for l=1:length(locsmat)
                     bb(isnan(bb))=[];
                 pp=polyfit([a],...
                         [bb],1);    
-                trials{b,c,heaviside(pp(1))+1}{end+1}=pos(locsmat(l,1):locsmat(l+next,1),:);
+              trials{b,c,heaviside(pp(1))+1}{end+1}=pos(locsmat(l,1):locsmat(l+next,1),:);
                 lastStart = startPos(1); 
                 lastStop = stopPos(1);
                 end

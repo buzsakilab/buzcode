@@ -21,7 +21,7 @@ end
 
 % normalize template
 for i = 1:size(template,1)
-    template(i,:) = (template(i,:)')';
+    template(i,:) = (template(i,:));
 end
             
 
@@ -71,7 +71,7 @@ for event = 1:size(ripples.timestamps,1)
                         [ts(i)]=mean(find(data(:,i)>0));
                     end
                     [a b ord_avg] = sort_cells(ts(idx)'); clear ts
-                    [rankOrder(event) pvals(event)] = corr(ord_template,ord_avg,'rows','complete');
+                    [rankOrder(event) pvals(event)] = corr(ord_template,ord_firstSpk,'rows','complete');
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
                     if sum(sum(spkmat.data(start:stop,:)))> 5 * overlap & sum(~isnan(sum(Pr')))>5
