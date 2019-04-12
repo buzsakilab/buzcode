@@ -112,11 +112,11 @@ else
     end
 
     % get waveforms
+    if getWave
     nPull = 1000; % number of spikes to pull out
     wfWin = 0.008; % Larger size of waveform windows for filterning
     filtFreq = 500;
     hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
-    if getWave
     f = waitbar(0,'Getting waveforms...');
     wfWin = round((wfWin * fs)/2);
         for ii = 1 : size(spikes.times,2)
