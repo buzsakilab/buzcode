@@ -1,8 +1,10 @@
 function [] = bz_compareReplay(spikes,ripples,template,include)
 
 
-% spikes  - buzcode cellinfo file
-% ripples - buzcode ripples events file
+% spikes  - buzcode cellinfo file (only requires spikes.times, an Nx1 cell
+%           array of timestamps in seconds for each neuron)
+% ripples - buzcode ripples events file (only requires ripples.timestamps,
+%           an Nx2 matrix of start/stop times for each event)
 % template - NxD matrix of N cells and D positions, average firing rates
 % include - indices (1:N) of cells (place cells) to keep
 
@@ -10,29 +12,29 @@ binSize = .01;
 overlap = 1;
 spkmat = bz_SpktToSpkmat(spikes.times,'overlap',overlap,'binSize',binSize * overlap);
 
-% keep = intersect(find(pf),idx_hpc)-length(idx_ls); % are you a place cell, in HPC?
+
 if ~isempty(include)
     keep = intersect(include,find(sum(template')>0)); % uncomment to keep all HPC cells that fired
 else
-    keep = find(sum(template')>0); 
+    keep = find(sum(template')>0); % just remove cells w/ zeros spikes in template
 end
-% keep(sum(rates')==0) = [];
-
 
 % normalize template
 for i = 1:size(template,1)
-    template(i,:) = mean_norm(template(i,:)')';
+    template(i,:) = (template(i,:)')';
 end
             
 
-for event = 1:length(ripples.peaks)
+for event = 1:size(ripples.timestamps,1)
                 % start bigger than the event itself
                 start = round((round(ripples.timestamps(event,1) * 1000)-50) ./ (spkmat.dt*1000));
                 stop = round((round(ripples.timestamps(event,2) * 1000)+50) ./ (spkmat.dt*1000));
-
+%                 start = round((round(ripples.peaks(event) * 1000)-75) ./ (spkmat.dt*1000));
+%                 stop = round((round(ripples.peaks(event) * 1000)+75) ./ (spkmat.dt*1000));
+                
                 if stop < size(spkmat.data,1) & stop-start > 4
                     for spk = 1:size(spkmat.data,2)
-                            data(:,spk) = mean_norm(spkmat.data(start:stop,spk)')';  
+                            data(:,spk) = (spkmat.data(start:stop,spk)')';  
                             counts(:,spk) = (spkmat.data(start:stop,spk)')';  
                     end
 
@@ -45,40 +47,23 @@ for event = 1:length(ripples.peaks)
                        data = data(1:end-1,:);
                        counts = counts(1:end-1,:);
                     end
-                    
-                    %% get max rate bin
-%                     [a b] = max(sum(data,2));
-%     %                 or search from middle...
-%     %                 b = round(size(data,1)/2);
-%                      % find clipping point at beginning
-%                      sta = 0;
-%                     while sum(counts(b-sta,keep),2) > 0 & b-sta > 1 % max length is +/-50
-%                        sta = sta + 1;
-%                     end
-%     %                  % find clipping point at beginning
-%                      sto = 0;
-%                     while sum(counts(b+sto,keep),2) > 0 & sto +b < size(data,1)-1  % max length 500 ms
-%                        sto = sto + 1;
-%                     end
-% 
-%                     % redefine start/stop by pop burst..
-%                     data = data(b-sta:b+sto,:);
-    
-    
+                        
 
                 if stop < size(spkmat.data,1) & size(data,1) > 4 & sum(sum(counts(:,keep))>0) > 4
                     
+                    % calc the posterior matrix
                     [Pr, prMax] = placeBayes(data(:,keep), template(keep,:), spkmat.dt);
                     
                     % now calc correlations w/ the data...
                     [bayesRankOrder(event) ]= corr([1:length(prMax)]',prMax,'rows','complete');
-                    
+                    % linear weighted correlation
                     [linearWeighted(event) outID] = makeBayesWeightedCorr1(Pr,ones(size(Pr,1),1));
                     
+                    % extra info to capture about event
                     nCells(event) = sum(sum(counts(:,keep))>0);
                     nSpks(event) = sum(sum(counts(:,keep)));
 
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% rank order calculation
                     idx = intersect(find(nanmean(data)~=0),keep); % only take cells that spiked...               
                     [a b ord_template] = sort_cells(template(idx,:));
                     [a b ord_firstSpk] = sort_cells(data(:,idx)');
@@ -86,7 +71,7 @@ for event = 1:length(ripples.peaks)
                         [ts(i)]=mean(find(data(:,i)>0));
                     end
                     [a b ord_avg] = sort_cells(ts(idx)'); clear ts
-                    [rankOrder(event) pvals(event)] = corr(ord_template,ord_firstSpk,'rows','complete');
+                    [rankOrder(event) pvals(event)] = corr(ord_template,ord_avg,'rows','complete');
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
                     if sum(sum(spkmat.data(start:stop,:)))> 5 * overlap & sum(~isnan(sum(Pr')))>5

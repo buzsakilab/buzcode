@@ -110,6 +110,7 @@ if ~isempty(d)
         outname = 'digitalin_fragment.dat';
     end
     disp('Writing digitalin file')
+    NumCh = length(board_dig_in_channels);
     m = memmapfile(inname,'Format','uint16');
     h3 = fopen(outname,'W');
     for i = timeperiod(1)+1:timeperiod(2)
