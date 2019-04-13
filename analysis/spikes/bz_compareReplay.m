@@ -8,6 +8,7 @@ function [] = bz_compareReplay(spikes,ripples,template,include)
 % template - NxD matrix of N cells and D positions, average firing rates
 % include - indices (1:N) of cells (place cells) to keep
 
+warning off
 binSize = .01;
 overlap = 1;
 spkmat = bz_SpktToSpkmat(spikes.times,'overlap',overlap,'binSize',binSize * overlap);
