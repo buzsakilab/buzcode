@@ -22,20 +22,20 @@ end
 
 % normalize template
 for i = 1:size(template,1)
-    template(i,:) = (template(i,:));
+    template(i,:) = mean_norm(template(i,:));
 end
             
 
 for event = 1:size(ripples.timestamps,1)
                 % start bigger than the event itself
-                start = round((round(ripples.timestamps(event,1) * 1000)-50) ./ (spkmat.dt*1000));
-                stop = round((round(ripples.timestamps(event,2) * 1000)+50) ./ (spkmat.dt*1000));
+                start = round((round(ripples.timestamps(event,1) * 1000)) ./ (spkmat.dt*1000));
+                stop = round((round(ripples.timestamps(event,2) * 1000)) ./ (spkmat.dt*1000));
 %                 start = round((round(ripples.peaks(event) * 1000)-75) ./ (spkmat.dt*1000));
 %                 stop = round((round(ripples.peaks(event) * 1000)+75) ./ (spkmat.dt*1000));
                 
-                if stop < size(spkmat.data,1) & stop-start > 4
+               
                     for spk = 1:size(spkmat.data,2)
-                            data(:,spk) = (spkmat.data(start:stop,spk)')';  
+                            data(:,spk) = mean_norm(spkmat.data(start:stop,spk)')';  
                             counts(:,spk) = (spkmat.data(start:stop,spk)')';  
                     end
 
@@ -65,16 +65,31 @@ for event = 1:size(ripples.timestamps,1)
                     nSpks(event) = sum(sum(counts(:,keep)));
 
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% rank order calculation
-                    idx = intersect(find(nanmean(data)~=0),keep); % only take cells that spiked...               
-                    [a b ord_template] = sort_cells(template(idx,:));
-                    [a b ord_firstSpk] = sort_cells(data(:,idx)');
-                    for i =1:size(data,2)
-                        [ts(i)]=mean(find(data(:,i)>0));
+                    % get all spks from event
+%                   spks = find(InIntervals(spikes.spindices(:,1),[ripples.timestamps(event,1) ripples.timestamps(event,2)]));
+                    spks = find(InIntervals(spikes.spindices(:,1),[start/100 stop/100]));
+                    
+                    % for each cell get first and avg spk times
+                    for cell=1:size(data,2)
+                        ts(cell) = nanmean(spikes.spindices(spikes.spindices(spks,2)==cell,1));
+                        temp = spikes.spindices(spikes.spindices(spks,2)==cell,1);
+                        if ~isempty(temp)
+                            ts_first(cell) = temp(1);
+                        else
+                            ts_first(cell) = nan;
+                        end
                     end
-                    [a b ord_avg] = sort_cells(ts(idx)'); clear ts
-                    [rankOrder(event) pvals(event)] = corr(ord_template,ord_firstSpk,'rows','complete');
+
+                    idx = intersect(find(~isnan(ts)),keep); % only take cells that spiked...               
+                    [a b ord_template] = sort_cells(template(idx,:));
+                    [a ord_avg] = sortrows(ts(idx)');
+                    [a ord_firstSpk] = sortrows(ts_first(idx)');
+                    clear ts 
+                    [rankOrder(event) pvals(event)] = corr(ord_template,ord_avg,'rows','complete');
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+                    
+                  
                     if sum(sum(spkmat.data(start:stop,:)))> 5 * overlap & sum(~isnan(sum(Pr')))>5
                         [slope_hpc(event) integral_hpc(event)] = Pr2Radon(Pr');
                     else 
@@ -104,10 +119,8 @@ for event = 1:size(ripples.timestamps,1)
                 nCells(event) = length(keep);
                 spkCount(event) = sum(sum(data(:,keep)))./overlap;
                 eventDuration(event) = (stop-start)*spkmat.dt;
-                end
-                pause(.01)
-                clear data counts;
-                event
+           
+                
 
 
 subplot(4,2,1)
@@ -133,7 +146,19 @@ subplot(4,2,6)
 scatter(linearWeighted,slope_hpc,'.k')
 title('linear weighted VS radon slope')
 
+subplot(4,2,7)
+imagesc(data')
+title(rankOrder(end))
 
-end
+subplot(4,2,8)
+imagesc(Pr')
+title(linearWeighted(end))
+
+pause(.01)
+clear data counts;
+event
+
+
+
 
 end

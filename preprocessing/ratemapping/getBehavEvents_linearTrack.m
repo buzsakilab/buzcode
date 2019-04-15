@@ -91,7 +91,7 @@ end
 
 %% merge trials to the same length
 trials_unsorted = trials;
-for i=1:bzlength(trials_unsorted)
+for i=1:length(trials_unsorted)
        d = pdist(trials_unsorted{i}(:,[8 9 10]),'euclidean');
        dd = squareform(d);
        dd(dd==0)=nan;

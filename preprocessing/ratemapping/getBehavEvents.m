@@ -75,7 +75,7 @@ if size(pos,2)>6
 
     vel = nansum(abs(diff(p)'))';
     vel(vel>100) = 0;
-    vel = fastrms(fastrms(vel,40),100);
+    vel = fastrms(fastrms(vel,4),30);
     subplot(2,1,1)
     hist(vel(~isnan(p(2:end,1))),1000);
     axis([ 0 mean(vel)+8*std(vel) 0 max(hist(vel(~isnan(p(2:end,1))),1000))])
@@ -129,7 +129,7 @@ cc=1;
 
 for l=1:length(locsmat)
     next=1;
-    while l+next+120 < length(locsmat) & locsmat(l,1) ~= locsmat(l+next,1)
+    while l+next+12 < length(locsmat) & locsmat(l,1) ~= locsmat(l+next,1)
         % check that the velocity doesn't drop below threshold
         if any(vel(locsmat(l,1):locsmat(l+next,1))<velThresh)
             break
