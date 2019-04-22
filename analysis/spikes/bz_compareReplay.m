@@ -1,8 +1,8 @@
 function [] = bz_compareReplay(spikes,ripples,template,include)
 
 
-% spikes  - buzcode cellinfo file (only requires spikes.times, an Nx1 cell
-%           array of timestamps in seconds for each neuron)
+% spikes  - buzcode cellinfo file (requires spikes.times, an Nx1 cell
+%           array of timestamps in seconds for each neuron; spikes.UID and spikes.spindices)
 % ripples - buzcode ripples events file (only requires ripples.timestamps,
 %           an Nx2 matrix of start/stop times for each event)
 % template - NxD matrix of N cells and D positions, average firing rates
@@ -21,21 +21,21 @@ else
 end
 
 % normalize template
-for i = 1:size(template,1)
-    template(i,:) = mean_norm(template(i,:));
-end
+% for i = 1:size(template,1)
+%     template(i,:) = mean_norm(template(i,:));
+% end
             
 
 for event = 1:size(ripples.timestamps,1)
                 % start bigger than the event itself
-                start = round((round(ripples.timestamps(event,1) * 1000)) ./ (spkmat.dt*1000));
-                stop = round((round(ripples.timestamps(event,2) * 1000)) ./ (spkmat.dt*1000));
-%                 start = round((round(ripples.peaks(event) * 1000)-75) ./ (spkmat.dt*1000));
-%                 stop = round((round(ripples.peaks(event) * 1000)+75) ./ (spkmat.dt*1000));
+%                 start = round((round(ripples.timestamps(event,1) * 1000)) ./ (spkmat.dt*1000));
+%                 stop = round((round(ripples.timestamps(event,2) * 1000)) ./ (spkmat.dt*1000));
+                start = round((round(ripples.peaks(event) * 1000)-50) ./ (spkmat.dt*1000));
+                stop = round((round(ripples.peaks(event) * 1000)+50) ./ (spkmat.dt*1000));
                 
                
                     for spk = 1:size(spkmat.data,2)
-                            data(:,spk) = mean_norm(spkmat.data(start:stop,spk)')';  
+                            data(:,spk) = (spkmat.data(start:stop,spk)')';  
                             counts(:,spk) = (spkmat.data(start:stop,spk)')';  
                     end
 
@@ -43,15 +43,18 @@ for event = 1:size(ripples.timestamps,1)
                     while sum(counts(1,keep)) < 0 & size(counts,1) > 1
                        data = data(2:end,:);
                        counts = counts(2:end,:);
+                       start = start + 1;
                     end
                     while sum(counts(end,keep)) < 0 & size(counts,1) > 1
                        data = data(1:end-1,:);
                        counts = counts(1:end-1,:);
+                       stop = stop-1;
                     end
                         
 
                 if stop < size(spkmat.data,1) & size(data,1) > 4 & sum(sum(counts(:,keep))>0) > 4
-                    
+                    % norm data matrix
+                    data = data ./ binSize;
                     % calc the posterior matrix
                     [Pr, prMax] = placeBayes(data(:,keep), template(keep,:), spkmat.dt);
                     
@@ -67,25 +70,29 @@ for event = 1:size(ripples.timestamps,1)
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% rank order calculation
                     % get all spks from event
 %                   spks = find(InIntervals(spikes.spindices(:,1),[ripples.timestamps(event,1) ripples.timestamps(event,2)]));
-                    spks = find(InIntervals(spikes.spindices(:,1),[start/100 stop/100]));
-                    
-                    % for each cell get first and avg spk times
-                    for cell=1:size(data,2)
-                        ts(cell) = nanmean(spikes.spindices(spikes.spindices(spks,2)==cell,1));
-                        temp = spikes.spindices(spikes.spindices(spks,2)==cell,1);
-                        if ~isempty(temp)
-                            ts_first(cell) = temp(1);
-                        else
-                            ts_first(cell) = nan;
-                        end
-                    end
-
-                    idx = intersect(find(~isnan(ts)),keep); % only take cells that spiked...               
+%                     spks = find(InIntervals(spikes.spindices(:,1),[spkmat.timestamps(start) spkmat.timestamps(stop)]));
+%                     
+%                     % for each cell get first and avg spk times
+%                     UIDs = spikes.UID;
+%                     for cell=1:size(data,2)
+%                         ts((cell)) = nanmean(spikes.spindices(spikes.spindices(spks,2)==UIDs(cell),1));
+%                         temp = spikes.spindices(spikes.spindices(spks,2)==UIDs(cell),1);
+%                         if ~isempty(temp)
+%                             ts_first((cell)) = temp(1);
+%                         else
+%                             ts_first((cell)) = nan;
+%                         end
+%                     end
+% 
+%                     idx = intersect(find(~isnan(ts)),keep); % only take cells that spiked...               
+%                     [a b ord_template] = sort_cells(template(idx,:));
+%                     [a ord_avg] = sortrows(ts(idx)','descend');
+%                     [a ord_firstSpk] = sortrows(ts_first(idx)','descend');
+%                     clear ts 
+                    idx = intersect(find(sum(data)>0),keep);
                     [a b ord_template] = sort_cells(template(idx,:));
-                    [a ord_avg] = sortrows(ts(idx)');
-                    [a ord_firstSpk] = sortrows(ts_first(idx)');
-                    clear ts 
-                    [rankOrder(event) pvals(event)] = corr(ord_template,ord_avg,'rows','complete');
+                    [a ord_firstSpk] = sortrows(data(:,idx)','descend');
+                    [rankOrder(event) pvals(event)] = corr(ord_template,ord_firstSpk,'rows','complete');
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
                     
@@ -154,11 +161,14 @@ subplot(4,2,8)
 imagesc(Pr')
 title(linearWeighted(end))
 
+
+
 pause(.01)
 clear data counts;
 event
 
 
-
-
 end
+
+
+data.linearWeighted = linearWeighted;
