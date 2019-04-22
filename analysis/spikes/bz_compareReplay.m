@@ -69,29 +69,29 @@ for event = 1:size(ripples.timestamps,1)
 
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% rank order calculation
                     % get all spks from event
-%                   spks = find(InIntervals(spikes.spindices(:,1),[ripples.timestamps(event,1) ripples.timestamps(event,2)]));
-%                     spks = find(InIntervals(spikes.spindices(:,1),[spkmat.timestamps(start) spkmat.timestamps(stop)]));
-%                     
-%                     % for each cell get first and avg spk times
-%                     UIDs = spikes.UID;
-%                     for cell=1:size(data,2)
-%                         ts((cell)) = nanmean(spikes.spindices(spikes.spindices(spks,2)==UIDs(cell),1));
-%                         temp = spikes.spindices(spikes.spindices(spks,2)==UIDs(cell),1);
-%                         if ~isempty(temp)
-%                             ts_first((cell)) = temp(1);
-%                         else
-%                             ts_first((cell)) = nan;
-%                         end
-%                     end
-% 
-%                     idx = intersect(find(~isnan(ts)),keep); % only take cells that spiked...               
-%                     [a b ord_template] = sort_cells(template(idx,:));
-%                     [a ord_avg] = sortrows(ts(idx)','descend');
-%                     [a ord_firstSpk] = sortrows(ts_first(idx)','descend');
-%                     clear ts 
-                    idx = intersect(find(sum(data)>0),keep);
+                  spks = find(InIntervals(spikes.spindices(:,1),[ripples.timestamps(event,1) ripples.timestamps(event,2)]));
+                    spks = find(InIntervals(spikes.spindices(:,1),[spkmat.timestamps(start) spkmat.timestamps(stop)]));
+                    
+                    % for each cell get first and avg spk times
+                    UIDs = spikes.UID;
+                    for cell=1:size(data,2)
+                        ts((cell)) = nanmean(spikes.spindices(spikes.spindices(spks,2)==UIDs(cell),1));
+                        temp = spikes.spindices(spikes.spindices(spks,2)==UIDs(cell),1);
+                        if ~isempty(temp)
+                            ts_first((cell)) = temp(1);
+                        else
+                            ts_first((cell)) = nan;
+                        end
+                    end
+
+                    idx = intersect(find(~isnan(ts)),keep); % only take cells that spiked...               
                     [a b ord_template] = sort_cells(template(idx,:));
-                    [a ord_firstSpk] = sortrows(data(:,idx)','descend');
+                    [a ord_avg] = sortrows(ts(idx)','descend');
+                    [a ord_firstSpk] = sortrows(ts_first(idx)','descend');
+                    clear ts 
+%                     idx = intersect(find(sum(data)>0),keep);
+%                     [a b ord_template] = sort_cells(template(idx,:));
+%                     [a ord_firstSpk] = sortrows(data(:,idx)','descend');
                     [rankOrder(event) pvals(event)] = corr(ord_template,ord_firstSpk,'rows','complete');
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
