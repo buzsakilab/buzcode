@@ -125,7 +125,7 @@ end
 %Make a Spike Matrix
 spkmat = zeros(numts,numcells,'single');
 %Spike Indices - time
-spikes_ind_t = ceil(([cells.spiketimes]-t_start)/dt); 
+spikes_ind_t = round(([cells.spiketimes]-t_start)/dt); 
 spikes_ind_t(find(spikes_ind_t==0)) = 1;
 %Spike Indices - cell
 spikes_ind_c = [cells.index4spikes];

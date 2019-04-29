@@ -1,4 +1,5 @@
-function [positionTracking] = pos2behav(pos,trackingType,varargin)
+function [positionTracking] = pos2behav(pos,varargin)
+% [positionTracking] = pos2behav(pos,trackingType,varargin)
 %pos2behav - convert old .pos files/variables to buzcode 'behavior' struct.
 %
 %  USAGE

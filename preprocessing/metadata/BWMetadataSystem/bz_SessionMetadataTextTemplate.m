@@ -43,9 +43,9 @@ SessionMetadata.Animal.WeightGrams = [];
 SessionMetadata.ExtracellEphys.NumberOfTurnsSinceSurgery = [0];%vector, one entry per probe
 SessionMetadata.ExtracellEphys.Probes.PluggingOrder = ['FromAnimalMetadata'];%vector, one entry per probe. blank defaults to animal plugging order
 
-SessionMetadata.ExtracellEphys.BadShanks = [];% vector for this recording. base 1.  NOT REALLY USED YET
+% SessionMetadata.ExtracellEphys.BadShanks = [];% vector for this recording. base 1.  NOT REALLY USED YET
      % These bad shanks will be used to populate bad channels
-SessionMetadata.ExtracellEphys.BadChannels = [];% vector for this recording. base 0
+SessionMetadata.ExtracellEphys.BadChannels = 'FromAnimalMetadata';%... or number base 0
 SessionMetadata.ExtracellEphys.ChannelNotes = {''};
 
 
@@ -176,41 +176,45 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
     %now things regardless of input system
 
     %take from animal metadata if user said so (default for now 3/2019)
-    if strcmp(SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup,'FromAnimalMetadata')
-        SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup = SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup;
-    end
-    if strcmp(SessionMetadata.ExtracellEphys.ExtraChannels.GroupNames,'FromAnimalMetadata')
-        SessionMetadata.ExtracellEphys.ExtraChannels.GroupNames = SessionMetadata.ExtracellEphys.ExtraChannels.GroupNames;
-    end
-    if strcmp(SessionMetadata.ExtracellEphys.ExtraChannels.ChannelNames,'FromAnimalMetadata')
-        SessionMetadata.ExtracellEphys.ExtraChannels.ChannelNames = SessionMetadata.ExtracellEphys.ExtraChannels.ChannelNames;
+    if strcmp(lower(SessionMetadata.ExtracellEphys.BadChannels),'fromanimalmetadata')
+        SessionMetadata.ExtracellEphys.BadChannels = AnimalMetadata.ExtracellEphys.CurrentBadChannels;
     end
     
-    if strcmp(SessionMetadata.ExtracellEphys.Parameters.SampleRate,'FromAnimalMetadata')
+    if strcmp(lower(SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup),'fromanimalmetadata')
+        SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup = AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup;
+    end
+    if strcmp(lower(SessionMetadata.ExtracellEphys.ExtraChannels.GroupNames),'fromanimalmetadata')
+        SessionMetadata.ExtracellEphys.ExtraChannels.GroupNames = AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames;
+    end
+    if strcmp(lower(SessionMetadata.ExtracellEphys.ExtraChannels.ChannelNames),'fromanimalmetadata')
+        SessionMetadata.ExtracellEphys.ExtraChannels.ChannelNames = AnimalMetadata.ExtracellEphys.ExtraChannels.ChannelNames;
+    end
+    
+    if strcmp(lower(SessionMetadata.ExtracellEphys.Parameters.SampleRate),'fromanimalmetadata')
         SessionMetadata.ExtracellEphys.Parameters.SampleRate = AnimalMetadata.ExtracellEphys.Parameters.SampleRate;%
     end
-    if strcmp(SessionMetadata.ExtracellEphys.Parameters.Amplification,'FromAnimalMetadata')
+    if strcmp(lower(SessionMetadata.ExtracellEphys.Parameters.Amplification),'fromanimalmetadata')
         SessionMetadata.ExtracellEphys.Parameters.Amplification = AnimalMetadata.ExtracellEphys.Parameters.Amplification;%
     end
-    if strcmp(SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit,'FromAnimalMetadata')
+    if strcmp(lower(SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit),'fromanimalmetadata')
         SessionMetadata.ExtracellEphys.Parameters.VoltsPerUnit = AnimalMetadata.ExtracellEphys.Parameters.VoltsPerUnit;%
     end
-    if strcmp(SessionMetadata.ExtracellEphys.Parameters.BitsPerSample,'FromAnimalMetadata')
+    if strcmp(lower(SessionMetadata.ExtracellEphys.Parameters.BitsPerSample),'fromanimalmetadata')
         SessionMetadata.ExtracellEphys.Parameters.BitsPerSample = AnimalMetadata.ExtracellEphys.Parameters.BitsPerSample;%
     end
-    if strcmp(SessionMetadata.ExtracellEphys.Parameters.VoltageRange,'FromAnimalMetadata')
+    if strcmp(lower(SessionMetadata.ExtracellEphys.Parameters.VoltageRange),'fromanimalmetadata')
         SessionMetadata.ExtracellEphys.Parameters.VoltageRange = AnimalMetadata.ExtracellEphys.Parameters.VoltageRange;%
     end
-    if strcmp(SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate,'FromAnimalMetadata')
+    if strcmp(lower(SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate),'fromanimalmetadata')
         SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate = AnimalMetadata.ExtracellEphys.Parameters.LfpSampleRate;%
     end
-    if strcmp(SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform,'FromAnimalMetadata')
+    if strcmp(lower(SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform),'fromanimalmetadata')
         SessionMetadata.ExtracellEphys.Parameters.PointsPerWaveform = AnimalMetadata.ExtracellEphys.Parameters.PointsPerWaveform;%
     end
-    if strcmp(SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform,'FromAnimalMetadata')
+    if strcmp(lower(SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform),'fromanimalmetadata')
         SessionMetadata.ExtracellEphys.Parameters.PeakPointInWaveform = AnimalMetadata.ExtracellEphys.Parameters.PeakPointInWaveform;%
     end
-    if strcmp(SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave,'FromAnimalMetadata')
+    if strcmp(lower(SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave),'fromanimalmetadata')
         SessionMetadata.ExtracellEphys.Parameters.FeaturesPerWave = AnimalMetadata.ExtracellEphys.Parameters.FeaturesPerWave;%
     end
     
@@ -232,20 +236,22 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
     end
     SessionMetadata.ExtracellEphys.ParametersDivergentFromAnimalMetadata = divergentfields;
     
-    %Get badchannels from badshanks... ie all channels on bad shanks are
-    %bad
-    % Add bad channels to channels derived from bad channels
-%     if isempty(SessionMetadata.ExtracellEphys.BadChannels)
-        if ~isempty(SessionMetadata.ExtracellEphys.BadShanks)
-            chanpergp = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep;
-            badchans = [];
-            for sidx = 1:length(SessionMetadata.ExtracellEphys.BadShanks)
-                tshank = SessionMetadata.ExtracellEphys.BadShanks;
-                badchans = cat(1,badchans,chanpergp{tshank});
-            end
-            SessionMetadata.ExtracellEphys.BadChannels = cat(1,SessionMetadata.ExtracellEphys.BadChannels(:),badchans(:));
-        end
-%     end 
+    
+    
+%     %Get badchannels from badshanks... ie all channels on bad shanks are
+%     %bad
+%     % Add bad channels to channels derived from bad channels
+% %     if isempty(SessionMetadata.ExtracellEphys.BadChannels)
+%         if ~isempty(SessionMetadata.ExtracellEphys.BadShanks)
+%             chanpergp = SessionMetadata.AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep;
+%             badchans = [];
+%             for sidx = 1:length(SessionMetadata.ExtracellEphys.BadShanks)
+%                 tshank = SessionMetadata.ExtracellEphys.BadShanks;
+%                 badchans = cat(1,badchans,chanpergp{tshank});
+%             end
+%             SessionMetadata.ExtracellEphys.BadChannels = cat(1,SessionMetadata.ExtracellEphys.BadChannels(:),badchans(:));
+%         end
+% %     end 
     
     %Get Spikegroups
     if strcmp(SessionMetadata.ExtracellEphys.SpikeGroups,'FromXML')
@@ -270,6 +276,15 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
         SessionMetadata.ExtracellEphys.SpikeGroups = AnimalMetadata.ExtracellEphys.SpikeGroups;
     end
 end
+
+%Getting channel count - in a manner regardless of how user got spike
+%groups... ie afterwards
+channelcount = 0;
+for gidx = 1:length(SessionMetadata.ExtracellEphys.SpikeGroups.groups)
+    channelcount = channelcount+length(SessionMetadata.ExtracellEphys.SpikeGroups.groups{gidx});
+end
+SessionMetadata.ExtracellEphys.NumberOfChannels = channelcount;
+
 
 %% Other modules like Virus, opto processing can happen here
 
@@ -323,7 +338,7 @@ if strcmp(str(1),'y')
     %sessionInfo.Units = 
     sessionInfo.region = AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable.Table';
     sessionInfo.badchannels = SessionMetadata.ExtracellEphys.BadChannels;
-    sessionInfo.badshanks = SessionMetadata.ExtracellEphys.BadShanks;%not used now
+%     sessionInfo.badshanks = SessionMetadata.ExtracellEphys.BadShanks;%not used now
 
     filename = fullfile(basepath,[basename,'.sessionInfo.mat']);
     save(filename,'sessionInfo'); 
