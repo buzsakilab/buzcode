@@ -82,6 +82,7 @@ events = round(events*samplingRate);
 
 %% Conpute event-triggered LFP average
 
+events = events((events + twin(2) <= size(data,1)) & (events - twin(1) > 0));
 lfp_temp = nan(twin(1)+twin(2)+1,length(channels),length(events));
 
 for e = 1:length(events)
