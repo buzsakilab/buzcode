@@ -3,58 +3,58 @@ dbstop if error
 scatter(pos(:,8),pos(:,10),'.')
 % axis([-1 1 -1 1])
 [x y]=ginput();
-x =  x(end-1:end);
+cx =  x(end-1:end);
 y = y(end-1:end);
 dist(:,1)=fastrms(abs(pos(:,8)-x(1))+abs(pos(:,10)-y(1)),120);
 dist(:,2)=fastrms(abs(pos(:,8)-x(2))+abs(pos(:,10)-y(2)),120);
 
-plot(dist)
-axis([0 length(dist) 0 3])
+plot(dist,'.')
+% axis([0 length(dist) 0 3])
 [xx yy] = ginput();
 
 [pks_one locs_one]=findpeaks(-dist(:,1),'MINPEAKHEIGHT',-yy);
 [pks_two locs_two]=findpeaks(-dist(:,2),'MINPEAKHEIGHT',-yy);
 c=1;
 lastTrial = 0;
-% for i=1:length(locs_one)
-%     f = locs_one(i)-locs_two;
-%     ff = find(f>0);
-%     [a b]=min(locs_one(i)-locs_two(ff));
-%     if a < 2400 & a > 60  
-%        trials{c} = pos(locs_two(ff(b)):locs_one(i),:); 
-%        c=1+c;
-%        lastTrial = locs_two(ff(b));
-%     end
-%     f = locs_two-locs_one(i);
-%     ff = find(f>0);
-%     [a b]=min(locs_two(ff)-locs_one(i));
-%     if a < 2400 & a > 60
-%        trials{c} = pos(locs_one(i):locs_two(ff(b)),:); 
-%        c=1+c;
-%        lastTrial = locs_one(i);
-%     end
-% end
-
 for i=1:length(locs_one)
-    two = locs_two(locs_two-locs_one(i)>0);
-    if ~isempty(two)
-    [a b]=min(abs(two-locs_one(i)));  
-    if two(b)-locs_one(i) < 24000 && two(b)-locs_one(i) > 120 && locs_one(i) > lastTrial-60
-        trials{c} = pos(locs_one(i):two(b),:);
-        c=1+c;
-        lastTrial = two(b);
+    f = locs_one(i)-locs_two;
+    ff = find(f>0);
+    [a b]=min(locs_one(i)-locs_two(ff));
+    if a < 500 & a > 60 & locs_two(ff(b)) > lastTrial + 60
+       trials{c} = pos(locs_two(ff(b)):locs_one(i),:); 
+       c=1+c;
+       lastTrial = locs_two(ff(b));
     end
-    end
-    two = locs_two(locs_one(i)-locs_two>0);
-    if ~isempty(two)
-    [a b]=min(abs(two-locs_one(i)));  
-    if locs_one(i)-two(b) < 24000 && locs_one(i)-two(b) > 120 && two(b) > lastTrial-60
-        trials{c} = pos(two(b):locs_one(i),:);
-        c=1+c;
-        lastTrial = locs_one(i);
-    end
+    f = locs_two-locs_one(i);
+    ff = find(f>0);
+    [a b]=min(locs_two(ff)-locs_one(i));
+    if a < 500 & a > 60 & locs_one(i) > lastTrial + 60
+       trials{c} = pos(locs_one(i):locs_two(ff(b)),:); 
+       c=1+c;
+       lastTrial = locs_one(i);
     end
 end
+
+% for i=1:length(locs_one)
+%     two = locs_two(locs_two-locs_one(i)>0);
+%     if ~isempty(two)
+%     [a b]=min(abs(two-locs_one(i)));  
+%     if two(b)-locs_one(i) < 24000 && two(b)-locs_one(i) > 120 && locs_one(i) > lastTrial-60
+%         trials{c} = pos(locs_one(i):two(b),:);
+%         c=1+c;
+%         lastTrial = two(b);
+%     end
+%     end
+%     two = locs_two(locs_one(i)-locs_two>0);
+%     if ~isempty(two)
+%     [a b]=min(abs(two-locs_one(i)));  
+%     if locs_one(i)-two(b) < 24000 && locs_one(i)-two(b) > 120 && two(b) > lastTrial-60
+%         trials{c} = pos(two(b):locs_one(i),:);
+%         c=1+c;
+%         lastTrial = locs_one(i);
+%     end
+%     end
+% end
 
 %% fine tune trials here
 % for i=1:length(trials)
@@ -120,13 +120,14 @@ for i=1:length(trials_unsorted)
            dd(row,col)=nan;
        end
     end
+    i
 end
 
 % cluster similarity
 for i=1:length(trials_unsorted)
     for j =1:length(trials_unsorted)
         for ax = 8:10
-        temp(ax-7,:)=crosscorr(trials_unsorted{i}(:,[ax]),trials_unsorted{j}(:,[ax]),120);
+        temp(ax-7,:)=crosscorr(trials_unsorted{i}(:,[ax]),trials_unsorted{j}(:,[ax]),bins-1);
         end
         if sum(~isreal(temp(:)))>0
             disp([i j]);

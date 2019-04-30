@@ -98,7 +98,7 @@ if strcmp(SWweights,'PSS')
 else
     freqlist = logspace(0,2,100);
     [swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
-    t_clus = t_clus+t_LFP(1); %Offset for scoretime start
+    t_clus = t_clus'+t_LFP(1); %Offset for scoretime start
     swFFTspec = abs(swFFTspec);
     specdt = mode(diff(t_clus));
     [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
@@ -118,10 +118,11 @@ end
 broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
 
 %Remove ignoretimes (after smoothing), before normalizoing
-ignoretimeIDX = InIntervals(t_clus,ignoretime);
-broadbandSlowWave(ignoretimeIDX) = [];
-t_clus(ignoretimeIDX) = [];
-
+if ~isempty(ignoretime)
+    ignoretimeIDX = InIntervals(t_clus,ignoretime);
+    broadbandSlowWave(ignoretimeIDX) = [];
+    t_clus(ignoretimeIDX) = [];
+end
 broadbandSlowWave = bz_NormToRange(broadbandSlowWave,[0 1]);
  
 %% Calculate theta
@@ -146,10 +147,11 @@ thratio = thpower./allpower;    %Narrowband Theta
 thratio = smooth(thratio,thsmoothfact./specdt);
 
 %Remove ignoretimes (after smoothing), before normalizoing
-ignoretimeIDX = InIntervals(t_thclu,ignoretime);
-thratio(ignoretimeIDX) = [];
-t_thclu(ignoretimeIDX) = [];
-
+if ~isempty(ignoretime)
+    ignoretimeIDX = InIntervals(t_thclu,ignoretime);
+    thratio(ignoretimeIDX) = [];
+    t_thclu(ignoretimeIDX) = [];
+end
 thratio = bz_NormToRange(thratio,[0 1]);
  
 %% EMG
