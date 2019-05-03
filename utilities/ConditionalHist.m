@@ -17,6 +17,7 @@ function [ CONDXY ] = ConditionalHist( X,Y,varargin)
 %   CONDXY
 %       .pYX    a [numXbins x numYbins] matrix in which the [x,y]th element is P(y|x) 
 %       .XYhist joint histogram of X and Y
+%       .XYprop joint probability of X and Y
 %       .Xhist  histogram of X
 %       .Xbins  X bins
 %       .Ybins  Y bins
@@ -98,6 +99,7 @@ end
 
 CONDXY.pYX = pYX;
 CONDXY.XYhist = XYhist;
+CONDXY.XYprob = XYhist./nansum(XYhist(:));
 CONDXY.meanYX = meanYX;
 CONDXY.Xhist = Xhist;
 CONDXY.Xbins = Xbins;
