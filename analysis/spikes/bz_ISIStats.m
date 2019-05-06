@@ -18,6 +18,8 @@ function [ ISIstats ] = bz_ISIStats( spikes,varargin )
 %       'showfig'       logical (default: false) show the figure?
 %       'forceRedetect' logical (default: false) to re-compute even if saved
 %       'shuffleCV2'    logical (devault: false)
+%       'numISIbins'    number of bins for ISI distribution (default: 60)
+%       'numCV2bins'    number pf bins for CV2 distribution (default: 60)
 %
 %   OUTPUTS
 %       ISIstats        cellinfo structure with ISI statistics
@@ -41,6 +43,8 @@ addParameter(p,'showfig',false,@islogical);
 addParameter(p,'cellclass',[]);
 addParameter(p,'forceRedetect',false,@islogical);
 addParameter(p,'shuffleCV2',false,@islogical);
+addParameter(p,'numISIbins',false,@islogical);
+addParameter(p,'numCV2bins',false,@islogical);
 
 
 parse(p,varargin{:})
@@ -52,6 +56,8 @@ figfolder = p.Results.figfolder;
 SHOWFIG = p.Results.showfig;
 forceRedetect = p.Results.forceRedetect;
 SHUFFLECV2 = p.Results.shuffleCV2;
+numISIbins = p.Results.numISIbins;
+numCV2bins = p.Results.numCV2bins;
 
 
 %% Load the stuff
@@ -125,14 +131,14 @@ if SHUFFLECV2
 end
 %%
 %Set up all the bins and matrices
-numbins = 60;
-ISIhist.linbins = linspace(0,10,numbins);
-ISIhist.logbins = linspace(log10(0.001),log10(200),numbins);
-ISIhist.(statenames{ss}).lin = zeros(numcells,numbins);
-ISIhist.(statenames{ss}).log = zeros(numcells,numbins);
-normcv2hist = zeros(numcells,numbins);
+ISIhist.linbins = linspace(0,10,numISIbins);
+ISIhist.logbins = linspace(log10(0.001),log10(200),numISIbins);
+ISIhist.(statenames{ss}).lin = zeros(numcells,numISIbins);
+ISIhist.(statenames{ss}).log = zeros(numcells,numISIbins);
+ISIhist.(statenames{ss}).return = zeros(numISIbins,numISIbins,numcells);
 
-ISIhist.(statenames{ss}).return = zeros(numbins,numbins,numcells);
+CV2hist.bins = linspace(0,2,numCV2bins);
+ISIhist.(statenames{ss}) = zeros(numcells,numCV2bins);
 
 %Calculate all the histograms: ISI, log(ISI), 1/ISI, log(1/ISI)
 for cc = 1:numcells
