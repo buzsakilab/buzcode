@@ -43,8 +43,8 @@ addParameter(p,'showfig',false,@islogical);
 addParameter(p,'cellclass',[]);
 addParameter(p,'forceRedetect',false,@islogical);
 addParameter(p,'shuffleCV2',false,@islogical);
-addParameter(p,'numISIbins',false,@islogical);
-addParameter(p,'numCV2bins',false,@islogical);
+addParameter(p,'numISIbins',60,@islogical);
+addParameter(p,'numCV2bins',60,@islogical);
 
 
 parse(p,varargin{:})
@@ -137,8 +137,9 @@ ISIhist.(statenames{ss}).lin = zeros(numcells,numISIbins);
 ISIhist.(statenames{ss}).log = zeros(numcells,numISIbins);
 ISIhist.(statenames{ss}).return = zeros(numISIbins,numISIbins,numcells);
 
-CV2hist.bins = linspace(0,2,numCV2bins);
-ISIhist.(statenames{ss}) = zeros(numcells,numCV2bins);
+CV2hist.bins = linspace(0,2,numCV2bins+1);
+CV2hist.bins = CV2hist.bins(1:end-1)+0.5.*diff(CV2hist.bins([1 2]));
+CV2hist.(statenames{ss}) = zeros(numcells,numCV2bins);
 
 %Calculate all the histograms: ISI, log(ISI), 1/ISI, log(1/ISI)
 for cc = 1:numcells
@@ -149,11 +150,18 @@ for cc = 1:numcells
     ISIhist.(statenames{ss}).log(cc,:) = hist(log10(ISIs{cc}),ISIhist.logbins);
     ISIhist.(statenames{ss}).loginv(cc,:) = hist(log10(1./ISIs{cc}),ISIhist.logbins);
     
+    CV2hist.(statenames{ss})(cc,:) = hist(CV2{cc},CV2hist.bins);
+    Jointhist.(statenames{ss})(cc,:,:) = hist3([log10(ISIs{cc}),CV2{cc}],...
+        {ISIhist.logbins,CV2hist.bins});
+    
     %Normalize histograms to number of spikes
     ISIhist.(statenames{ss}).lin(cc,:) = ISIhist.(statenames{ss}).lin(cc,:)./numspks(cc);
     ISIhist.(statenames{ss}).log(cc,:) = ISIhist.(statenames{ss}).log(cc,:)./numspks(cc);
     ISIhist.(statenames{ss}).loginv(cc,:) = ISIhist.(statenames{ss}).loginv(cc,:)./numspks(cc);
     
+    CV2hist.(statenames{ss})(cc,:) = CV2hist.(statenames{ss})(cc,:)./numspks(cc);
+    
+    Jointhist.(statenames{ss})(cc,:,:) = Jointhist.(statenames{ss})(cc,:,:)./numspks(cc);
     %Calculate Return maps
     if numspks(cc)>1
     ISIhist.(statenames{ss}).return(:,:,cc) = hist3(log10([ISIs{cc}(1:end-1) ISIs{cc}(2:end)]),{ISIhist.logbins,ISIhist.logbins});
@@ -167,7 +175,7 @@ end
 [~,sorts.(statenames{ss}).ISICV]=sort(summstats.(statenames{ss}).ISICV);
 [~,sorts.(statenames{ss}).CV2]=sort(summstats.(statenames{ss}).meanCV2);
 
-%Make the cell-type specific sortings
+%Make the cell-type specific sortings and average distributions
 if ~isempty(cellclass)
     %Check for empty cell class entries
     noclass = cellfun(@isempty,cellclass);
@@ -177,6 +185,13 @@ if ~isempty(cellclass)
     numclasses = length(classnames);
     for cl = 1:numclasses
         inclasscells{cl} = strcmp(classnames{cl},cellclass);
+        
+        %Mean distributions
+        meandists.(statenames{ss}).(classnames{cl}).ISIdist = squeeze(nanmean(ISIhist.(statenames{ss}).log(inclasscells{cl},:),1));
+        meandists.(statenames{ss}).(classnames{cl}).CV2dist = squeeze(nanmean(CV2hist.(statenames{ss})(inclasscells{cl},:),1));
+        meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss})(inclasscells{cl},:,:),1));
+        
+        %Sorts
         sorttypes = {'rate','ISICV','CV2'};
         for tt = 1:length(sorttypes)
         sorts.(statenames{ss}).([sorttypes{tt},classnames{cl}]) = ...
@@ -266,37 +281,67 @@ figure
         caxis([0 0.1])
         title('ISI Distribution (Log Scale)')
         
-    subplot(2,3,5)
-        imagesc((ISIhist.logbins),[1 numclassycells],...
-            ISIhist.(statenames{ss}).log(sorts.(statenames{ss}).ISICVbyclass,:))
-        hold on
-        plot(log10(1./(summstats.(statenames{ss}).meanrate(sorts.(statenames{ss}).ISICVbyclass))),[1:numclassycells],'k.','LineWidth',2)
-        plot(ISIhist.logbins([1 end]),sum(inclasscells{1}).*[1 1]+0.5,'r')
-        LogScale('x',10)
-        xlabel('ISI (s)')
-        xlim(ISIhist.logbins([1 end]))
-        %colorbar
-      %  legend('1/Mean Firing Rate (s)','location','southeast')
-        ylabel('Cell (Sorted by CV, Type)')
-        %legend('1/Mean Firing Rate (s)','location','southeast')
-        caxis([0 0.1])
-        title('ISI Distribution (Log Scale)')
         
-    subplot(2,3,6)
-        imagesc((ISIhist.logbins),[1 numclassycells],...
-            ISIhist.(statenames{ss}).log(sorts.(statenames{ss}).CV2byclass,:))
+    subplot(2,3,5)
+        imagesc((CV2hist.bins),[1 numclassycells],...
+            CV2hist.(statenames{ss})(sorts.(statenames{ss}).ratebyclass,:))
         hold on
-        plot(log10(1./(summstats.(statenames{ss}).meanrate(sorts.(statenames{ss}).CV2byclass))),[1:numclassycells],'k.','LineWidth',2)
-        plot(ISIhist.logbins([1 end]),sum(inclasscells{1}).*[1 1]+0.5,'r')
-        LogScale('x',10)
-        xlabel('ISI (s)')
-        xlim(ISIhist.logbins([1 end]))
+        plot((summstats.(statenames{ss}).meanCV2(sorts.(statenames{ss}).ratebyclass)),[1:numclassycells],'k.','LineWidth',2)
+        plot(CV2hist.bins([1 end]),sum(inclasscells{1}).*[1 1]+0.5,'r')
+        %LogScale('x',10)
+        xlabel('CV2')
+        xlim(CV2hist.bins([1 end]))
         %colorbar
+        xlim([0 2])
       %  legend('1/Mean Firing Rate (s)','location','southeast')
-        ylabel('Cell (Sorted by CV2, Type)')
+        ylabel('Cell (Sorted by FR, Type)')
         %legend('1/Mean Firing Rate (s)','location','southeast')
-        caxis([0 0.1])
-        title('ISI Distribution (Log Scale)')
+        %caxis([0 0.1])
+        title('CV2 Distribution')
+        
+	for cl = 1:numclasses
+        subplot((numclasses.*2),3,cl.*3+(numclasses.*2)+2)
+            imagesc(ISIhist.logbins,CV2hist.bins,meandists.(statenames{ss}).(classnames{cl}).Jointdist')
+            hold on
+            plot(ISIhist.logbins,meandists.(statenames{ss}).(classnames{cl}).ISIdist.*20,'k')
+            plot(meandists.(statenames{ss}).(classnames{cl}).CV2dist.*20-3,CV2hist.bins,'k')
+            axis xy
+            LogScale('x',10)
+            ylabel({(classnames{cl}),'CV2'});
+            xlabel('ISI (s)');
+	end
+        
+%     subplot(2,3,5)
+%         imagesc((ISIhist.logbins),[1 numclassycells],...
+%             ISIhist.(statenames{ss}).log(sorts.(statenames{ss}).ISICVbyclass,:))
+%         hold on
+%         plot(log10(1./(summstats.(statenames{ss}).meanrate(sorts.(statenames{ss}).ISICVbyclass))),[1:numclassycells],'k.','LineWidth',2)
+%         plot(ISIhist.logbins([1 end]),sum(inclasscells{1}).*[1 1]+0.5,'r')
+%         LogScale('x',10)
+%         xlabel('ISI (s)')
+%         xlim(ISIhist.logbins([1 end]))
+%         %colorbar
+%       %  legend('1/Mean Firing Rate (s)','location','southeast')
+%         ylabel('Cell (Sorted by CV, Type)')
+%         %legend('1/Mean Firing Rate (s)','location','southeast')
+%         caxis([0 0.1])
+%         title('ISI Distribution (Log Scale)')
+%         
+%     subplot(2,3,6)
+%         imagesc((ISIhist.logbins),[1 numclassycells],...
+%             ISIhist.(statenames{ss}).log(sorts.(statenames{ss}).CV2byclass,:))
+%         hold on
+%         plot(log10(1./(summstats.(statenames{ss}).meanrate(sorts.(statenames{ss}).CV2byclass))),[1:numclassycells],'k.','LineWidth',2)
+%         plot(ISIhist.logbins([1 end]),sum(inclasscells{1}).*[1 1]+0.5,'r')
+%         LogScale('x',10)
+%         xlabel('ISI (s)')
+%         xlim(ISIhist.logbins([1 end]))
+%         %colorbar
+%       %  legend('1/Mean Firing Rate (s)','location','southeast')
+%         ylabel('Cell (Sorted by CV2, Type)')
+%         %legend('1/Mean Firing Rate (s)','location','southeast')
+%         caxis([0 0.1])
+%         title('ISI Distribution (Log Scale)')
         
 %     subplot(2,2,3)
 %         plot(log2(summstats.(statenames{ss}).meanrate(CellClass.pE)),...
@@ -331,6 +376,8 @@ end
 
 ISIstats.summstats = summstats;
 ISIstats.ISIhist = ISIhist;
+ISIstats.CV2hist = CV2hist;
+ISIstats.Jointhist = Jointhist;
 ISIstats.sorts = sorts;
 ISIstats.UID = spikes.UID;
 ISIstats.allspikes = allspikes;
