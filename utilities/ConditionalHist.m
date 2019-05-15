@@ -6,11 +6,11 @@ function [ CONDXY ] = ConditionalHist( X,Y,varargin)
 %   X
 %   Y
 % (options)
-%   'numXbins'
-%   'numYbins'
+%   'numXbins'  (default: 50)
+%   'numYbins'  (default: 50)
 %   'Xbounds'
 %   'Ybounds'
-%   'minX'
+%   'minX'      (default: 25)
 %   
 %
 %OUTPUT
