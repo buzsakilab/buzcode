@@ -44,8 +44,8 @@ switch BPin
         baseName = possiblebaseNames(s);
         basePath = possiblebasePaths(s); 
     case true
-        basePath = datasetfolder;
-        baseName = bz_BasenameFromBasepath(basePath);
+        basePath{1} = datasetfolder;
+        baseName{1} = bz_BasenameFromBasepath(basePath);
 end
 
 
