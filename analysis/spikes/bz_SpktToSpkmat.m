@@ -1,5 +1,5 @@
 function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
-%spikemat = SpktToSpkmat(spiketimes,<options>) takes a 
+%spikemat = bz_SpktToSpkmat(spiketimes,<options>) takes a 
 % 1 x N_neurons cell array of spiketimes  and converts into a t/dt x N spike
 % matrix.
 %
@@ -13,13 +13,13 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %       'binsize'   size of your time bins, in seconds (default: =dt)
 %                   NOTE: must be a multiple of dt.
 %       'win'       [start stop] time interval of the recording in which 
-%                   to get spike matrix
+%                   to get spike matrix (default: [0 Inf])
 %                   
 %
 %OUTPUT
 %   spikemat
-%       .data
-%       .timestamps
+%       .data          [time x cells] (spike count in each bin)
+%       .timestamps    [time x 1] (time at midpoint of bin)
 %       .dt
 %       .binsize
 %
@@ -35,8 +35,6 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %
 %
 %DLevenstein 2015. Updated 2018 for buzcode
-%NOTE: in progres...
-%TODO: update to use movmean/movsum
 %% Options
 p = inputParser;
 addParameter(p,'win',[]);
@@ -125,7 +123,7 @@ end
 %Make a Spike Matrix
 spkmat = zeros(numts,numcells,'single');
 %Spike Indices - time
-spikes_ind_t = ceil(([cells.spiketimes]-t_start)/dt); 
+spikes_ind_t = round(([cells.spiketimes]-t_start)/dt); 
 spikes_ind_t(find(spikes_ind_t==0)) = 1;
 %Spike Indices - cell
 spikes_ind_c = [cells.index4spikes];
