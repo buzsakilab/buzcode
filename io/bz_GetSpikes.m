@@ -33,6 +33,7 @@ function spikes = bz_GetSpikes(varargin)
 %          .maxWaveformCh  -channel # with largest amplitude spike for each neuron
 %          .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
 %          .cluID          -cluster ID, NOT UNIQUE ACROSS SHANKS
+%          .numcells       -number of cells/UIDs
 %           
 % NOTES
 %
