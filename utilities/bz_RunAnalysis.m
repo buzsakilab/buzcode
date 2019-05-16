@@ -12,7 +12,7 @@ function [  ] = bz_RunAnalysis(analysisfunction,datasetfolder,varargin)
 %                       all basePaths in the directory.
 %
 %   (optional)
-%       'savein'    'basePath' or 'functionPath'
+%       'savein'    'basePath' or 'functionPath' (default)
 %       'cluster'   true/false, use true if running on the cluster to
 %                   submit each recording as a batch job  NOT YET DONE
 %       'basePath'  true if datasetfolder is a basePath, not a dataset folder
