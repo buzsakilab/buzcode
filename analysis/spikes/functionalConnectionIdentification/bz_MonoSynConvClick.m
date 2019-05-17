@@ -76,7 +76,7 @@ end
 
 %set defaults
 binSize = .0004; %.4ms
-duration = .2; %200ms
+duration = .12; %200ms
 epoch = [0 inf]; %whole session
 cells = unique(spikeIDs(:,1:2),'rows');
 nCel = size(cells,1);

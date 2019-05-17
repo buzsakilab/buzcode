@@ -72,13 +72,15 @@ addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
-addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'noPrompts',true,@islogical);
+addParameter(p,'lfpExtension','.lfp',@isstr);
 
 parse(p,varargin{:})
 basename = p.Results.basename;
 channels = p.Results.channels;
 basepath = p.Results.basepath;
 noPrompts = p.Results.noPrompts;
+lfpExtension = p.Results.lfpExtension;
 
 % doing this so you can use either 'intervals' or 'restrict' as parameters to do the same thing
 intervals = p.Results.intervals;
@@ -114,7 +116,7 @@ if isempty(basename)
    end
    
 else
-   lfp.Filename = [basename '.lfp'];
+   lfp.Filename = [basename lfpExtension];
 end
 
 %% things we can parse from sessionInfo or xml file

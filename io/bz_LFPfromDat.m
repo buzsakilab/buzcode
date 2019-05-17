@@ -40,6 +40,7 @@ function bz_LFPfromDat(basepath,varargin)
 %Dependency: iosr tool box https://github.com/IoSR-Surrey/MatlabToolbox
 %
 %SMckenzie, BWatson, DLevenstein 2018
+
 %% Input handling
 if ~exist('basepath','var')
     basepath = pwd;
@@ -70,7 +71,7 @@ fxml = fullfile(basepath, [basename '.xml']);
 fsessioninfo = fullfile(basepath,[basename,'.sessionInfo.mat']);
 fdat = fullfile(basepath,[basename,'.dat']);
 flfp = fullfile(basepath,[basename,'.lfp']);
-
+delete(flfp)
 
 %If there's already a .lfp file, make sure the user wants to overwrite it
 if exist(flfp,'file')
