@@ -376,7 +376,7 @@ for gidx = 1:(sessionInfo.spikeGroups.nGroups)%making SpkGrps
 end
 %sessionInfo.Units = 
 sessionInfo.region = AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable.Table';
-sessionInfo.badchannels = AnimalMetadata.ExtracellEphys.CurrentBadChannels;
+sessionInfo.badchannels = AnimalMetadata.ExtracellEphys.Channels.BadChannels;
 sessionInfo.badshanks = AnimalMetadata.ExtracellEphys.CurrentBadShanks;%not used now
 
 AnimalMetadata.sessionInfo = sessionInfo;

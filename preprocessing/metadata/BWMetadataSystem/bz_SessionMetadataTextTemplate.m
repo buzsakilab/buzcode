@@ -177,7 +177,7 @@ if SessionMetadata.AnimalMetadata.Modules.ExtracellEphys
 
     %take from animal metadata if user said so (default for now 3/2019)
     if strcmp(lower(SessionMetadata.ExtracellEphys.BadChannels),'fromanimalmetadata')
-        SessionMetadata.ExtracellEphys.BadChannels = AnimalMetadata.ExtracellEphys.CurrentBadChannels;
+        SessionMetadata.ExtracellEphys.BadChannels = AnimalMetadata.ExtracellEphys.Channels.BadChannels;
     end
     
     if strcmp(lower(SessionMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup),'fromanimalmetadata')
