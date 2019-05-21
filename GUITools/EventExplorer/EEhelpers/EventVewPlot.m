@@ -24,9 +24,12 @@ thiseventwin = timepoint+FO.winsize.*[-0.5 0.5];
 %viewwin = subplot(3,1,2,'ButtonDownFcn',@MouseClick);
 %set(gca,'ButtonDownFcn', @MouseClick)
 hold(FO.viewwin,'off')
-bz_MultiLFPPlot(FO.data.lfp,'timewin',thiseventwin,'spikes',FO.data.spikes,...
+%Plot The LFP
+ywinrange = bz_MultiLFPPlot(FO.data.lfp,'timewin',thiseventwin,'spikes',FO.data.spikes,...
     'axhandle',FO.viewwin,'scaleLFP',FO.scaleLFP)
 hold on
+
+%Plot the events
 if size(FO.EventTimes,2) == 1 %Single timepoint events
     inwinevents = FO.EventTimes>=thiseventwin(1) & FO.EventTimes<=thiseventwin(2);
     inwineventtimes = FO.EventTimes(inwinevents);
@@ -48,6 +51,16 @@ elseif size(FO.EventTimes,2) == 2 %Events with start/stops
     
 else
     error('EventTimes error, call in the big guns!')
+end
+
+%Plot the behavior
+if isfield(FO,'behavior')
+    numbeh = length(FO.behavior);
+    for bb = 1:numbeh
+        inwinbehavior = InIntervals(FO.behavior{bb}.timestamps,thiseventwin);
+        behnorm = bz_NormToRange(FO.behavior{bb}.data,ywinrange);
+        plot(FO.behavior{bb}.timestamps(inwinbehavior),behnorm(inwinbehavior))
+    end
 end
 
 %Passthrough info from the plot

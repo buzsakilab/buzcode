@@ -98,7 +98,7 @@ if strcmp(SWweights,'PSS')
 else
     freqlist = logspace(0,2,100);
     [swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
-    t_clus = t_clus+t_LFP(1); %Offset for scoretime start
+    t_clus = t_clus'+t_LFP(1); %Offset for scoretime start
     swFFTspec = abs(swFFTspec);
     specdt = mode(diff(t_clus));
     [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');

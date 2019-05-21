@@ -210,6 +210,9 @@ FO.SignalPanel = uipanel('FontSize',12,...
     winsizetext = uicontrol('Parent',FO.SignalPanel,...
         'Position',[150 70 80 18],'style','text',...
         'string','LFP Channel:','HorizontalAlignment','left'); 
+    loadbehavior = uicontrol('Parent',FO.SignalPanel,...
+        'Position',[230 90 50 25],'String','Load Behavior',...
+         'Callback',@LoadBeh);
 
 
 %Set up the navigation panel
@@ -536,6 +539,26 @@ function ChangeLFPChan(obj,event)
     FO = guidata(obj);
     FO.lookatchannel=str2num(obj.String);
     FO.data.lfp = bz_GetLFP(FO.lookatchannel,'basepath',FO.basePath);
+    guidata(FO.fig, FO);
+    EventVewPlot;
+end
+
+function LoadBeh(obj,event)
+    FO = guidata(obj);
+    FO.lookatchannel=str2num(obj.String);
+    if isfield(FO,'behavior')
+        numbeh = length(FO.behavior);
+        FO.behavior{numbeh+1} = bz_LoadBehavior(FO.basePath);
+    else
+        numbeh = 0;
+        FO.behavior{1} = bz_LoadBehavior(FO.basePath);
+    end
+    if ~isfield(FO.behavior{numbeh+1},'data')
+        hasfields = fieldnames(FO.behavior{numbeh+1});
+        [s,v] = listdlg('PromptString','Which field is your data?',...
+                     'ListString',hasfields,'SelectionMode','single');
+        FO.behavior{numbeh+1}.data = FO.behavior{numbeh+1}.(hasfields{s});
+    end
     guidata(FO.fig, FO);
     EventVewPlot;
 end

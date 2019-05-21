@@ -1,4 +1,4 @@
-function [  ] = bz_MultiLFPPlot( lfp,varargin )
+function [ ywinrange ] = bz_MultiLFPPlot( lfp,varargin )
 %bz_MultiLFPPlot(lfp). This function plots multiple lfp channels from a 
 %buzcode lfp structure with the channels appropriately spaced. 
 %

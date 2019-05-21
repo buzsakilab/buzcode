@@ -1,4 +1,3 @@
-
 function [spikes] = bz_LoadPhy(varargin)
 % Load kilosort/phy clusters
 %
@@ -36,6 +35,8 @@ function [spikes] = bz_LoadPhy(varargin)
 %   .maxWaveformCh  -channel # with largest amplitude spike for each neuron
 %   .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
 %   .filtWaveform   -average filtered waveform on maxWaveformCh
+%   .region         -region ID for each neuron (especially important large scale, high density probes)
+%   .numcells       -number of cells/UIDs
 %
 %  HISTORY:
 %  9/2018  Manu Valero
@@ -112,11 +113,11 @@ else
     end
 
     % get waveforms
+    if getWave
     nPull = 1000; % number of spikes to pull out
     wfWin = 0.008; % Larger size of waveform windows for filterning
     filtFreq = 500;
     hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
-    if getWave
     f = waitbar(0,'Getting waveforms...');
     wfWin = round((wfWin * fs)/2);
         for ii = 1 : size(spikes.times,2)
@@ -156,6 +157,14 @@ else
 %        % call to cell metric functions
 %        
 %     end
+end
+
+% To match bz_GetSpikes
+spikes.numcells = length(spikes.UID);
+if ~isfield(spikes,'region') && isfield(spikes,'maxWaveformCh') && isfield(sessionInfo,'region')
+    for cc = 1:spikes.numcells
+        spikes.region{cc} = sessionInfo.region{spikes.maxWaveformCh(cc)==sessionInfo.channels};
+    end
 end
 
 % saveMat (only saving if no exclusions)
