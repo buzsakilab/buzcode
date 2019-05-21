@@ -21,7 +21,7 @@ function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 %2017 DLevenstein and DTingley
 %% inputs and defaults
 p = inputParser;
-addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'noPrompts',true,@islogical);
 addParameter(p,'editGUI',false,@islogical);
 parse(p,varargin{:})
 noPrompts = p.Results.noPrompts;
