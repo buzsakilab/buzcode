@@ -25,15 +25,19 @@ function sessionInfo = get_SessionInfoFromNWB(nwb2)
 try
     all_raw_keys = keys(nwb2.acquisition);
 
-    for iKey = 1:length(all_raw_keys)
-        if ismember(all_raw_keys{iKey}, {'ECoG','bla bla bla'})   %%%%%%%% ADD MORE HERE, DON'T KNOW WHAT THE STANDARD FORMATS ARE
-            iRawDataKey = iKey;
-            RawDataPresent = 1;
-        else
-            RawDataPresent = 0;
+    if ~isempty(all_raw_keys)
+        for iKey = 1:length(all_raw_keys)
+            if ismember(all_raw_keys{iKey}, {'ECoG','bla bla bla'})   %%%%%%%% ADD MORE HERE, DON'T KNOW WHAT THE STANDARD FORMATS ARE
+                iRawDataKey = iKey;
+                RawDataPresent = 1;
+            else
+                RawDataPresent = 0;
+            end
         end
+        % nwb2.processing.get('ecephys').nwbdatainterface.get('LFP').electricalseries.get('all_lfp').data
+    else
+        RawDataPresent = 0;
     end
-    % nwb2.processing.get('ecephys').nwbdatainterface.get('LFP').electricalseries.get('all_lfp').data
 catch
     RawDataPresent = 0;
 end
@@ -45,14 +49,18 @@ try
     % Check if the data is in LFP format
     all_lfp_keys = keys(nwb2.processing.get('ecephys').nwbdatainterface.get('LFP').electricalseries);
 
-    for iKey = 1:length(all_lfp_keys)
-        if ismember(all_lfp_keys{iKey}, {'lfp','bla bla bla'})   %%%%%%%% ADD MORE HERE, DON'T KNOW WHAT THE STANDARD FORMATS ARE
-            iLFPDataKey = iKey;
-            LFPDataPresent = 1;
-            break % Once you find the data don't look for other keys/trouble
-        else
-            LFPDataPresent = 0;
+    if ~isempty(all_lfp_keys)
+        for iKey = 1:length(all_lfp_keys)
+            if ismember(all_lfp_keys{iKey}, {'lfp','bla bla bla'})   %%%%%%%% ADD MORE HERE, DON'T KNOW WHAT THE STANDARD FORMATS ARE
+                iLFPDataKey = iKey;
+                LFPDataPresent = 1;
+                break % Once you find the data don't look for other keys/trouble
+            else
+                LFPDataPresent = 0;
+            end
         end
+    else
+        LFPDataPresent = 0;
     end
 catch
     LFPDataPresent = 0;
@@ -71,7 +79,7 @@ sessionInfo = struct;
 if RawDataPresent
     sessionInfo.nChannels      = nwb2.acquisition.get(all_raw_keys{iRawDataKey}).data.dims(2);
     sessionInfo.samples_NWB    = nwb2.acquisition.get(all_raw_keys{iRawDataKey}).data.dims(1);
-    sessionInfo.rates.wideband = nwb2.acquisition.get(all_raw_keys{iRawDataKey}).starting_time_rate;
+    sessionInfo.rates.wideband = nwb2.acquisition.get(all_raw_keys{iRawDataKey}).starting_time_rate; % THIS SHOULD BE 20,000 HZ FOR THE TUTORIAL
     sessionInfo.rates.lfp      = 1250;    %1250 -  DEFAULT - CHECK THIS
     sessionInfo.lfpSampleRate  = 1250;    %1250 -  DEFAULT - CHECK THIS % tH lfpSampleRate bypasses 
 
@@ -82,9 +90,8 @@ elseif LFPDataPresent
     sessionInfo.rates.lfp      = nwb2.processing.get('ecephys').nwbdatainterface.get('LFP').electricalseries.get(all_lfp_keys{iLFPDataKey}).starting_time_rate;    %I assign the LFP sampling rate that was already used. Not sure yet if a different value than 1250 Hz will cause problems
     sessionInfo.lfpSampleRate  = nwb2.processing.get('ecephys').nwbdatainterface.get('LFP').electricalseries.get(all_lfp_keys{iLFPDataKey}).starting_time_rate;    %I assign the LFP sampling rate that was already used. Not sure yet if a different value than 1250 Hz will cause problems
     
-    if sessionInfo.rates.wideband <1250
-        warning 'Something weird will happen. Not thoroughly tested yet'
-    end
+    sessionInfo.LFPDataPresent = LFPDataPresent;            % This is added for easy retrieval from bz_GetLFP
+    sessionInfo.LFPDataKey     = all_lfp_keys{iLFPDataKey}; % This is added for easy retrieval from bz_GetLFP
 end
 
 
@@ -97,7 +104,7 @@ end
 % group = nwb2.general_extracellular_ephys_electrodes.vectordata.get('group').data;
 % group_name = nwb2.general_extracellular_ephys_electrodes.vectordata.get('group_name').data;
 % imp = nwb2.general_extracellular_ephys_electrodes.vectordata.get('imp').data.load;
-location = nwb2.general_extracellular_ephys_electrodes.vectordata.get('location').data;
+location = nwb2.general_extracellular_ephys_electrodes.vectordata.get('location').data.load;
 % shank = nwb2.general_extracellular_ephys_electrodes.vectordata.get('shank').data.load;
 % x = nwb2.general_extracellular_ephys_electrodes.vectordata.get('x').data.load;
 % y = nwb2.general_extracellular_ephys_electrodes.vectordata.get('y').data.load;
@@ -105,12 +112,10 @@ location = nwb2.general_extracellular_ephys_electrodes.vectordata.get('location'
 
 
 
-
-
 % nGroups = sum(unique(shank)>0); % -1 doesn't belong to a Shank Group
-nGroups = length(unique(nwb2.general_extracellular_ephys_electrodes.vectordata.get('group_name').data));
-uniqueGroupNames = unique(nwb2.general_extracellular_ephys_electrodes.vectordata.get('group_name').data);
-groupNames = nwb2.general_extracellular_ephys_electrodes.vectordata.get('group_name').data;
+nGroups          = length(unique(nwb2.general_extracellular_ephys_electrodes.vectordata.get('group_name').data.load));
+uniqueGroupNames = unique(nwb2.general_extracellular_ephys_electrodes.vectordata.get('group_name').data.load);
+groupNames       = nwb2.general_extracellular_ephys_electrodes.vectordata.get('group_name').data.load;
 
 
 sessionInfo.spikeGroups.nGroups  = nGroups;
@@ -140,15 +145,17 @@ end
 
 
 % Add Region Info
-for iChannel = 1:sessionInfo.nChannels
+% If the recording has additional channels (behavioral channels - they wouldn't have a location field - 
+% I assume here that the numbering of the channels starts with the electrophysiological, and the behavioral are concatenated after)
+% Thats why I use length(groupNames) here and not sessionInfo.nChannels
+
+for iChannel = 1:length(groupNames) 
     sessionInfo.region{iChannel} = location{iChannel};
 end
 
 
-
-
 % Get the rest of the Info
-sessionInfo.nBits          = 16; % ASSUMING THAT NWB GIVES INT16 PRECISION
+sessionInfo.nBits          = 16; % ASSUMING THAT NWB HAS SAVED DATA IN INT16 PRECISION
 sessionInfo.rates.video    = 0;
 sessionInfo.FileName       = nwb2.identifier;%%%%%%%%%%%%%%%% no extension - I DON'T USE THE FILENAME OF THE NWB HERE JUST IN CASE SOMEONE CHANGED IT. 
 % sessionInfo.SampleTime     = 50; % 50 no idea
