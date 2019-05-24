@@ -101,14 +101,15 @@ switch lower(method)
         [wave,f,t,coh,wphases,raw,coi,scale,priod,scalef]=getWavelet(double(lfp.data(:,1)),samplingRate,passband(1),passband(2),8,0);
         [~,mIdx]=max(wave);%get index max power for each timepiont
         pIdx=mIdx'+[0;size(f,2).*cumsum(ones(size(t,1)-1,1))];%converting to indices that will pick off single maxamp index from each of the freq-based phases at eacht timepoint
-        lfpphases=wphases(pIdx);%get phase of max amplitude wave at each timepoint
-        lfpphases = mod(lfpphases,2*pi);%covert to 0-2pi rather than -pi:pi
+        lfpphase=wphases(pIdx);%get phase of max amplitude wave at each timepoint
+        lfpphase = mod(lfpphase,2*pi);%covert to 0-2pi rather than -pi:pi
 % %     case ('peaks')
         % not yet coded
         % filter, smooth, diff = 0, diffdiff = negative
 end
 
 %% update intervals to remove sub-threshold power periods
+if (lower(method) == 'hilbert')
 disp('finding intervals below power threshold...')
 thresh = mean(power) + std(power)*powerThresh;
 minWidth = (samplingRate./passband(2)) * 2; % set the minimum width to two cycles
@@ -132,7 +133,8 @@ end
 
 % now merge interval sets from input and power threshold
 intervals = SubtractIntervals(intervals,below_thresh);  % subtract out low power intervals
-
+end
+minWidth = (samplingRate./passband(2)) * 2;
 intervals = intervals(diff(intervals')>minWidth./samplingRate,:); % only keep min width epochs
 
 
