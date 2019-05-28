@@ -142,13 +142,13 @@ if isempty(ch) % if no channel declared, pick channel with higher gamma std duri
         stdGamma(ii) = std(gamm);
         gdCorr(ii) = corr(gamm',delt','Type','Spearman');
     end 
+    gdCorr(gdCorr==0) = 1;
     sdScore = zscore(stdGamma./gdCorr);                                     % down score increase with std gamma and gamma delta anticorr
     sdScore(sdScore>4) = 0; % remove outlier
     [~,ch] = max(sdScore(sdScore<4));
     fprintf(' Best channel: %3.i!! \n',ch);
 end
 clear gamm delt avGamma stdGamma gdCorr dscore
-
 %% find states
 lfp = bz_GetLFP(ch,'basepath',basepath,'noPrompts',noPrompts);
 gammaLFP = bz_Filter(lfp,'passband',filterparams.gamma,'filter','fir1','order',4);

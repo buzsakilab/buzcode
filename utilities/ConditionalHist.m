@@ -6,11 +6,12 @@ function [ CONDXY ] = ConditionalHist( X,Y,varargin)
 %   X
 %   Y
 % (options)
-%   'numXbins'
-%   'numYbins'
+%   'numXbins'  (default: 50)
+%   'numYbins'  (default: 50)
 %   'Xbounds'
 %   'Ybounds'
-%   'minX'
+%   'Xbinoverlap' (default: 1)
+%   'minX'      (default: 25)
 %   
 %
 %OUTPUT
@@ -30,12 +31,14 @@ addParameter(p,'numYbins',50)
 addParameter(p,'Xbounds',[])
 addParameter(p,'Ybounds',[])
 addParameter(p,'minX',25)
+addParameter(p,'Xbinoverlap',1)
 parse(p,varargin{:})
 numXbins = p.Results.numXbins;
 numYbins = p.Results.numYbins;
 Xbounds = p.Results.Xbounds;
 Ybounds = p.Results.Ybounds;
 minX = p.Results.minX;
+Xbinoverlap = p.Results.Xbinoverlap;
 
 
 %% For cell input
@@ -79,7 +82,7 @@ Yedges(1) = -inf;Yedges(end) = inf;
 
 %First calculate the marginal probability of X
 [Xhist,~,XbinID] = histcounts(X,Xedges);
-Xhist4norm = Xhist;Xhist4norm(Xhist4norm<=minX) = nan;
+Xhist4norm = Xhist;
 
 %Then calculate the joint probabilty of X and Y
 if length(Ybins) ==1
@@ -89,6 +92,7 @@ else
 end
 
 % Conditional probability of Y given X
+Xhist4norm(Xhist4norm<=minX) = nan; %Remove bins that don't have enough sampling
 pYX = bsxfun(@(x,y) x./y,XYhist,Xhist4norm');
 
 %Mean Y given X

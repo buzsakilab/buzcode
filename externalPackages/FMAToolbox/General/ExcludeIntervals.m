@@ -66,7 +66,8 @@ for i = 1:2:length(varargin),
 end
 
 intervals = [];
-indices = [];
+%indices = [];
+indices = false(size(intervals1,1),1);
 if strcmp(strict,'on'),
 	for i = 1:size(intervals1,1),
 		% List all intervals (to exclude) that overlap with the current interval
@@ -76,7 +77,8 @@ if strcmp(strict,'on'),
 		% Include current interval?
 		if sum(intersect) == 0,
 			intervals = [intervals;intervals1(i,:)];
-			indices = [indices;i];
+			%indices = [indices;i];
+            indices(i) = true;
 		end
 	end
 else
@@ -88,7 +90,8 @@ else
 		% Include current interval?
 		if sum(intersect) == 0,
 			intervals = [intervals;intervals1(i,:)];
-			indices = [indices;i];
+			%indices = [indices;i];
+            indices(i) = true;
 		end
 	end
 end

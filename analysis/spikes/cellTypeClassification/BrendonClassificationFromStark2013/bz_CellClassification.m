@@ -77,7 +77,7 @@ if ~exist(spikesfile,'file')
         'saving one to insure cell UIDs are consistent across cellinfo files.'])
 end
 spikes = bz_GetSpikes('basepath',basePath,'saveMat',true);
-MaxWaves = cat(1,spikes.rawWaveform{:})';
+MaxWaves = cat(2,spikes.rawWaveform{:});
 
 
 %% get trough-peak delay times
