@@ -237,7 +237,9 @@ subplot(2,1,1)
     LogScale('y',2)
     switch specparms.specnorm
         case 'log'
-            SpecColorRange(spec);
+            try
+                SpecColorRange(spec);
+            end
         case 'mean'
             ColorbarWithAxis([0 4],'Power (mean^-^1)');
         case 'logmean'
