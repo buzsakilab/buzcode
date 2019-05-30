@@ -106,6 +106,7 @@ CONDXY.XYhist = XYhist;
 CONDXY.XYprob = XYhist./nansum(XYhist(:));
 CONDXY.meanYX = meanYX;
 CONDXY.Xhist = Xhist;
+CONDXY.pX = Xhist./nansum(Xhist);
 CONDXY.Xbins = Xbins;
 CONDXY.Ybins = Ybins;
 

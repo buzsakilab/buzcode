@@ -44,7 +44,7 @@ addParameter(p,'cellclass',[]);
 addParameter(p,'forceRedetect',false,@islogical);
 addParameter(p,'shuffleCV2',false,@islogical);
 addParameter(p,'numISIbins',60,@islogical);
-addParameter(p,'numCV2bins',60,@islogical);
+addParameter(p,'numCV2bins',50,@islogical);
 
 
 parse(p,varargin{:})
@@ -105,12 +105,16 @@ statespikes = cellfun(@(X) InIntervals(X,ints.(statenames{ss})),...
     allspikes.times,'UniformOutput',false);
 CV2 = cellfun(@(X,Y) X(Y(2:end-1)),allspikes.CV2,statespikes,'Uniformoutput',false);
 ISIs = cellfun(@(X,Y) X(Y(2:end-1)),allspikes.ISIs,statespikes,'Uniformoutput',false);
+normISIs = cellfun(@(X) X./mean(X),ISIs,'Uniformoutput',false);
+
 
 %Summary Statistics
 summstats.(statenames{ss}).meanISI = cellfun(@(X) mean(X),ISIs);
 summstats.(statenames{ss}).meanrate = 1./summstats.(statenames{ss}).meanISI;
 summstats.(statenames{ss}).ISICV = cellfun(@(X) std(X)./mean(X),ISIs);
 summstats.(statenames{ss}).meanCV2 = cellfun(@(X) mean(X),CV2);
+
+
 
 %Account for no spikes
 summstats.(statenames{ss}).meanrate(isnan(summstats.(statenames{ss}).meanrate))=0;
@@ -136,10 +140,13 @@ ISIhist.logbins = linspace(log10(0.001),log10(200),numISIbins);
 ISIhist.(statenames{ss}).lin = zeros(numcells,numISIbins);
 ISIhist.(statenames{ss}).log = zeros(numcells,numISIbins);
 ISIhist.(statenames{ss}).return = zeros(numISIbins,numISIbins,numcells);
+ISIhist.(statenames{ss}).meannorm = zeros(numcells,numISIbins);
 
 CV2hist.bins = linspace(0,2,numCV2bins+1);
 CV2hist.bins = CV2hist.bins(1:end-1)+0.5.*diff(CV2hist.bins([1 2]));
 CV2hist.(statenames{ss}) = zeros(numcells,numCV2bins);
+
+
 
 %Calculate all the histograms: ISI, log(ISI), 1/ISI, log(1/ISI)
 for cc = 1:numcells
@@ -149,19 +156,26 @@ for cc = 1:numcells
     ISIhist.(statenames{ss}).lin(cc,:) = hist(ISIs{cc},ISIhist.linbins);
     ISIhist.(statenames{ss}).log(cc,:) = hist(log10(ISIs{cc}),ISIhist.logbins);
     ISIhist.(statenames{ss}).loginv(cc,:) = hist(log10(1./ISIs{cc}),ISIhist.logbins);
+    ISIhist.(statenames{ss}).meannorm(cc,:) = hist(log10(normISIs{cc}),ISIhist.logbins);
     
     CV2hist.(statenames{ss})(cc,:) = hist(CV2{cc},CV2hist.bins);
-    Jointhist.(statenames{ss})(cc,:,:) = hist3([log10(ISIs{cc}),CV2{cc}],...
+    Jointhist.(statenames{ss}).log(cc,:,:) = hist3([log10(ISIs{cc}),CV2{cc}],...
         {ISIhist.logbins,CV2hist.bins});
+    Jointhist.(statenames{ss}).norm(cc,:,:) = hist3([log10(normISIs{cc}),CV2{cc}],...
+        {ISIhist.logbins,CV2hist.bins});
+    
     
     %Normalize histograms to number of spikes
     ISIhist.(statenames{ss}).lin(cc,:) = ISIhist.(statenames{ss}).lin(cc,:)./numspks(cc);
     ISIhist.(statenames{ss}).log(cc,:) = ISIhist.(statenames{ss}).log(cc,:)./numspks(cc);
     ISIhist.(statenames{ss}).loginv(cc,:) = ISIhist.(statenames{ss}).loginv(cc,:)./numspks(cc);
+    ISIhist.(statenames{ss}).meannorm(cc,:) = ISIhist.(statenames{ss}).meannorm(cc,:)./numspks(cc);
     
     CV2hist.(statenames{ss})(cc,:) = CV2hist.(statenames{ss})(cc,:)./numspks(cc);
     
-    Jointhist.(statenames{ss})(cc,:,:) = Jointhist.(statenames{ss})(cc,:,:)./numspks(cc);
+    Jointhist.(statenames{ss}).log(cc,:,:) = Jointhist.(statenames{ss}).log(cc,:,:)./numspks(cc);
+    Jointhist.(statenames{ss}).norm(cc,:,:) = Jointhist.(statenames{ss}).norm(cc,:,:)./numspks(cc);
+
     %Calculate Return maps
     if numspks(cc)>1
     ISIhist.(statenames{ss}).return(:,:,cc) = hist3(log10([ISIs{cc}(1:end-1) ISIs{cc}(2:end)]),{ISIhist.logbins,ISIhist.logbins});
@@ -189,7 +203,7 @@ if ~isempty(cellclass)
         %Mean distributions
         meandists.(statenames{ss}).(classnames{cl}).ISIdist = squeeze(nanmean(ISIhist.(statenames{ss}).log(inclasscells{cl},:),1));
         meandists.(statenames{ss}).(classnames{cl}).CV2dist = squeeze(nanmean(CV2hist.(statenames{ss})(inclasscells{cl},:),1));
-        meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss})(inclasscells{cl},:,:),1));
+        meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss}).log(inclasscells{cl},:,:),1));
         
         %Sorts
         sorttypes = {'rate','ISICV','CV2'};
@@ -300,7 +314,7 @@ figure
         title('CV2 Distribution')
         
 	for cl = 1:numclasses
-        subplot((numclasses.*2),3,cl.*3+(numclasses.*2)+2)
+        subplot((numclasses.*2),3,cl.*3+(numclasses.*3))
             imagesc(ISIhist.logbins,CV2hist.bins,meandists.(statenames{ss}).(classnames{cl}).Jointdist')
             hold on
             plot(ISIhist.logbins,meandists.(statenames{ss}).(classnames{cl}).ISIdist.*20,'k')
