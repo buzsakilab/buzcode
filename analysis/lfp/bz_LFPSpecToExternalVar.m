@@ -47,6 +47,7 @@ function [ specvarcorr,specbyvar ] = bz_LFPSpecToExternalVar( LFP,extvar,varargi
 %       .std        [nfreqs x nbins] std spectrogram in each behavior bin
 %       .freqs      frequencies (Hz)
 %       .varbins    behvior bin centers
+%       .vardist    portion of time in each variable bin
 %
 %DLevenstein 2017 (beta, feel free to improve...)
 %TO DO IDEAS
@@ -208,6 +209,8 @@ for bb = 1:numvarbins
     specbyvar.std(:,bb) = std(inbinspec,[],1)';
 end
 
+specbyvar.vardist = hist(vardata(~isnan(vardata)),specbyvar.varbins);
+specbyvar.vardist = specbyvar.vardist./sum(specbyvar.vardist);
 %% power-signal correlation for each frequency
 sigthresh = 0.05; %Significance threshold (pvalue)
 % [specvarcorr.corr,specvarcorr.pval] = ...
