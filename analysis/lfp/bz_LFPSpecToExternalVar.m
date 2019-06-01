@@ -221,7 +221,7 @@ sigthresh = 0.05; %Significance threshold (pvalue)
 corrsig = specvarcorr.pval<=sigthresh;
 
 %% Figure
-if ~isempty('figparms')  %This whole figure thing can be better.
+if ~isempty(figparms)  %This whole figure thing can be better.
 varcolormap=makeColorMap([0 0 0],[0.8 0 0],numvarbins);
 
 var4plot = (extvar.data-varlim(1))./(varlim(2)-varlim(1));
