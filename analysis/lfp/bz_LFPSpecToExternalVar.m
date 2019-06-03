@@ -36,6 +36,7 @@ function [ specvarcorr,specbyvar ] = bz_LFPSpecToExternalVar( LFP,extvar,varargi
 %   'varnorm'         normalization for the variable,
 %                   options: 'percentile', 'none' (default: 'none')
 %   'ints'          intervals to restrict analysis to
+%   'minX'          minimum number of timepoints needed to calculate mean (default: 25)
 %
 %OUTPUT
 %   specvarcorr     correlation between power in each frequency and the var
@@ -69,6 +70,7 @@ addParameter(p,'numvarbins',10);
 addParameter(p,'varlim',[]);
 addParameter(p,'varnorm','none');
 addParameter(p,'ints',[0 Inf]);
+addParameter(p,'minX',25);
 
 parse(p,varargin{:})
 specparms = p.Results.specparms;
@@ -77,6 +79,7 @@ numvarbins = p.Results.numvarbins;
 varnorm = p.Results.varnorm;
 varlim = p.Results.varlim;
 ints = p.Results.ints;
+minX = p.Results.minX;
 
 
 %% Calculate the spectrogram - FFT or WVLT
@@ -204,6 +207,11 @@ specbyvar.mean = zeros(specparms.nfreqs,numvarbins);
 specbyvar.std = zeros(specparms.nfreqs,numvarbins);
 for bb = 1:numvarbins
     inbinidx = vardata>=binedges(bb) & vardata<=binedges(bb+1);
+    if sum(inbinidx)<minX
+        specbyvar.mean(:,bb) = nan;
+        specbyvar.std(:,bb) = nan;
+        continue
+    end
     inbinspec = interpspec(inbinidx,:);
     specbyvar.mean(:,bb) = mean(inbinspec,1)';
     specbyvar.std(:,bb) = std(inbinspec,[],1)';
