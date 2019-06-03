@@ -21,6 +21,10 @@ function [ ywinrange ] = bz_MultiLFPPlot( lfp,varargin )
 %   'scaleLFP'  multiplicative factor to scale the y range of LFP
 %   'scalespikes' size of spike points (default:5)
 %   'spikeside' 'top' (default) or 'bottom'
+%   'LFPlabels' text labels for each LFP channel (default: channel number)
+%   'LFPmidpoints' (default: evenly spaced)
+%   'lfpcolor'
+%   'lfpwidth'
 %
 %
 %DLevenstein 2017
@@ -41,6 +45,10 @@ addParameter(p,'scaleLFP',1,@isnumeric)
 addParameter(p,'scalespikes',5,@isnumeric)
 addParameter(p,'plotcells',nan,@isnumeric)
 addParameter(p,'spikeside','top')
+addParameter(p,'LFPlabels',[])
+addParameter(p,'LFPmidpoints',[])
+addParameter(p,'lfpcolor','k')
+addParameter(p,'lfpwidth',0.5)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
@@ -52,6 +60,10 @@ ax = p.Results.axhandle;
 scaleLFP = p.Results.scaleLFP;
 scalespikes = p.Results.scalespikes;
 spikeside = p.Results.spikeside;
+LFPlabels = p.Results.LFPlabels;
+lfpmidpoints = p.Results.LFPmidpoints;
+lfpcolor = p.Results.lfpcolor;
+lfpwidth = p.Results.lfpwidth;
 
 if isempty(spikes)
     spikes = spikedefault;
@@ -114,7 +126,9 @@ winspikes = spikes.spindices(:,1)>=timewin(1) & spikes.spindices(:,1)<=timewin(2
 %Space based on median absolute deviation over entire recording - robust to outliers.
 randtimes = randsample(size(lfp.data,1),1000);
 channelrange = 12.*mad(single(lfp.data(randtimes,chindex)),1);
-lfpmidpoints = -cumsum(channelrange);
+if isempty(lfpmidpoints)
+    lfpmidpoints = -cumsum(channelrange);
+end
 lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfpmidpoints));
 
 switch spikeside
@@ -138,13 +152,18 @@ if ~isnan(spikes.spindices)
     
 end
 
-plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
+plot(ax,lfp.timestamps(windex),lfp.plotdata,'color',lfpcolor,'linewidth',lfpwidth)
 hold on
 plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.','markersize',scalespikes)
 xlabel('t (s)')
 ylabel('LFP Channel')
 set(ax,'Ytick',fliplr(lfpmidpoints))
-set(ax,'yticklabels',fliplr(channels))
+
+if isempty(LFPlabels)
+    set(ax,'yticklabels',fliplr(channels))
+else
+    set(ax,'yticklabels',fliplr(LFPlabels))
+end
 ylim(ywinrange)
 xlim(timewin)
 box off
