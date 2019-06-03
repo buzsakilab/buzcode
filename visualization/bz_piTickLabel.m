@@ -15,7 +15,7 @@ end
 whichtick = [axis,'tick'];
 whichticklabel = [axis,'ticklabel'];
 
-ticks = limits(1):discretization:limits(2);
+ticks = round(limits(1):discretization:limits(2),1);
 for ll = 1:length(ticks)
     labels{ll} = [num2str(ticks(ll)),'\pi'];
 end
