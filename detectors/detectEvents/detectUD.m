@@ -39,6 +39,13 @@ function [UDStates] = detectUD(varargin)
 %                       detection, default false)
 %   saveMat        - true or false save a buzcode event file with results
 %                       (default true)
+% OUTPUT
+%   UDStates structure with the following fields:
+%   ints.DOWN               - Down state intervals
+%   ints.UP                 - UP state intervals
+%   timestamps.DOWN         - Down state peaks.
+%   timestamps.UP           - Up state peaks.
+%   timestamps.deltaWave
 %
 %   MV-BuzsakiLab 2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -143,7 +150,8 @@ if isempty(ch) % if no channel declared, pick channel with higher gamma std duri
         gdCorr(ii) = corr(gamm',delt','Type','Spearman');
     end 
     gdCorr(gdCorr==0) = 1;
-    sdScore = zscore(stdGamma./gdCorr);                                     % down score increase with std gamma and gamma delta anticorr
+    sdScore = stdGamma./gdCorr;
+    sdScore(~isnan(sdScore)) = zscore(sdScore(~isnan(sdScore)));                                     % down score increase with std gamma and gamma delta anticorr
     sdScore(sdScore>4) = 0; % remove outlier
     [~,ch] = max(sdScore(sdScore<4));
     fprintf(' Best channel: %3.i!! \n',ch);
