@@ -178,7 +178,7 @@ dtEMG = 1/EMG.samplingFrequency;
 EMG.smoothed = smooth(EMG.data,smoothfact/dtEMG,'moving');
 
 %remove any t_clus before/after t_emg
-prEMGtime = t_clus<EMG.timestamps(1);
+prEMGtime = t_clus<EMG.timestamps(1) | t_clus>EMG.timestamps(end);
 broadbandSlowWave(prEMGtime) = []; thratio(prEMGtime) = []; t_clus(prEMGtime) = [];
 
 %interpolate to FFT time points;
