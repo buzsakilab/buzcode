@@ -177,7 +177,7 @@ parfor idx = 1:numSWChannels;
         [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
             'channels',SWChannels(idx),'frange',[4 90]);
         broadbandSlowWave = specslope.data;
-        SWfreqlist = specslope.freqs;
+        SWfreqlist(idx,:) = specslope.freqs;
         specdt = 1./specslope.samplingRate;
         t_FFT = specslope.timestamps;
 
@@ -215,6 +215,7 @@ parfor idx = 1:numSWChannels;
     swhists(:,idx) = swhist;
     dipSW(idx) = hartigansdiptest_ss(sort(broadbandSlowWave));
 end
+SWfreqlist = SWfreqlist(1,:);
 %parfor_progress(0);
 
 %% Get info to allow to pick Theta channel

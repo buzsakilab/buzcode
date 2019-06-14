@@ -13,18 +13,18 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %                          
 %   OPTIONS
 %   'savedir'       Default: datasetfolder
-%   'overwrite'     Default: false, overwrite all processing steps
+%   'overwrite'     Overwrite all processing steps (Default: false)
 %   'savebool'      Default: true
 %   'scoretime'     Window of time to score. Default: [0 Inf] 
 %                   NOTE: must be continous interval
-%   'ignoretime'    time intervals winthin score time to ignore 
+%   'ignoretime'    Time intervals winthin scoretime to ignore 
 %                   (for example, opto stimulation or behavior with artifacts)               
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
-%                   be used for SWS detection.  Default is to use Power Spectrum Slope ('PSS'),
-%                   but can also try 'SWweights.mat'
-%                     - For hippocampus-only recordings, enter
-%                     'SWweightsHPC.mat' for this if default doesn't work
+%                   be used for SWS detection.  
+%                   Default is to use Power Spectrum Slope ('PSS'),
+%                   If this doesn't work, try 'SWweights.mat' 
+%                   or 'SWweightsHPC.mat' for HPC recording.
 %   'Notch60Hz'     Boolean 0 or 1.  Value of 1 will notch out the 57.5-62.5 Hz
 %                   band, default is 0, no notch.  This can be necessary if
 %                   electrical noise.
@@ -210,7 +210,9 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
                                            basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
-                                           'onSticky',stickytrigger,'ignoretime',ignoretime);
+                                           'onSticky',stickytrigger,'ignoretime',ignoretime);%,...
+                                           %'window',2,'smoothfact',15);
+                                           %%good parms! test on more and add as defaults
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
