@@ -50,13 +50,14 @@ if exist(matfilename) & exist(plotmaterialsfilename) & overwrite == false
 end
 
 
-%Get the SW weights from SleepScoreLFP - if it's not there, load the
-%weights
+%Get the SW weights from SleepScoreLFP - if it's not there, use PSS
 try
     SWweights = SleepScoreLFP.params.SWweights;
     SWfreqlist = SleepScoreLFP.params.SWfreqlist;
 catch
-    load('SWweights.mat')
+    %Used to default to loading...  
+    %load('SWweights.mat')
+    SWweights = 'PSS';
 end
 %% Downsample and filter the LFP from PickSWTHChannel
 %Make Downsample to niquest frequency
