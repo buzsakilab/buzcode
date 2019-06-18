@@ -68,7 +68,10 @@ for rr = 1:numrecs
     display(['Recording: ',num2str(rr),' of ',num2str(numrecs),' - ',baseName{rr}])
     
     [inputNames, outputNames] = get_arg_names(fullfile(functionpath,[analysisfunction,'.m']));
-    outputNames = outputNames{1}; inputNames = inputNames{1};
+    inputNames = inputNames{1};
+    if numresults>0
+        outputNames = outputNames{1}; 
+    end
     
     [results{1:numresults}] = feval(analysisfunction,basePath{rr},figfolder);
         
