@@ -192,7 +192,7 @@ EMG = bz_NormToRange(EMG,[0 1]);
 %  CLUSTERSTATES_DetermineStates and visualization in TheStateEditor %%\
 
 %% Divide PC1 for SWS
-%Note: can replace all of this with calls to bz_BimodalThresh
+%DL Note: should replace all of this with calls to bz_BimodalThresh
 numpeaks = 1;
 numbins = 12;
 %numbins = 12; %for Poster...
