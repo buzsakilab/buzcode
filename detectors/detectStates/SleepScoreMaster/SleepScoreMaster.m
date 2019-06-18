@@ -2,6 +2,11 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %SleepScoreMaster(basePath,<options>)
 %This is the master function for sleep state scoring.
 %
+%It's strongly recommended that you indicate bad (noisy) channels using
+%bz_getSessionInfo(basePath,'editGUI',true) before running SleepScoreMaster,
+%and then check the scoring quality using TheStateEditor.
+%Use the 'A' key in TheStateEditory to further refine thresholds as needed.
+%
 %INPUT 
 %   basePath        folder containing .xml and .lfp files.
 %                   basePath and files should be of the form:
