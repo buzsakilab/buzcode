@@ -1,4 +1,3 @@
-
 function [spikes] = bz_LoadPhy(varargin)
 % Load kilosort/phy clusters
 %
@@ -36,6 +35,8 @@ function [spikes] = bz_LoadPhy(varargin)
 %   .maxWaveformCh  -channel # with largest amplitude spike for each neuron
 %   .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
 %   .filtWaveform   -average filtered waveform on maxWaveformCh
+%   .region         -region ID for each neuron (especially important large scale, high density probes)
+%   .numcells       -number of cells/UIDs
 %
 %  HISTORY:
 %  9/2018  Manu Valero
@@ -148,6 +149,14 @@ else
             waitbar(ii/size(spikes.times,2),f,'Pulling out waveforms...');
         end
         close(f)
+    end
+end
+
+% To match bz_GetSpikes
+spikes.numcells = length(spikes.UID);
+if ~isfield(spikes,'region') && isfield(spikes,'maxWaveformCh') && isfield(sessionInfo,'region')
+    for cc = 1:spikes.numcells
+        spikes.region{cc} = sessionInfo.region{spikes.maxWaveformCh(cc)==sessionInfo.channels};
     end
 end
 
