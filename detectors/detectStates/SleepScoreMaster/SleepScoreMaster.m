@@ -17,13 +17,15 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %                   lfp-containing subfolders
 %                          
 %   OPTIONS
-%   'savedir'       Default: datasetfolder
+%   'savedir'       Default: basePath
 %   'overwrite'     Overwrite all processing steps (Default: false)
 %   'savebool'      Default: true
 %   'scoretime'     Window of time to score. Default: [0 Inf] 
 %                   NOTE: must be continous interval
 %   'ignoretime'    Time intervals winthin scoretime to ignore 
-%                   (for example, opto stimulation or behavior with artifacts)               
+%                   (for example, opto stimulation or behavior with artifacts)   
+%   'winparms'      [FFT window , smooth window] (Default: [2 15])
+%                   (Note: updated from [10 10] based on bimodaility optimization, 6/17/19)
 %   'SWWeightsName' Name of file in path (in Dependencies folder) 
 %                   containing the weights for the various frequencies to
 %                   be used for SWS detection.  
@@ -136,6 +138,7 @@ addParameter(p,'rejectChannels',[]);
 addParameter(p,'noPrompts',true);
 addParameter(p,'stickytrigger',false);
 addParameter(p,'saveLFP',true);
+addParameter(p,'winparms',[2 15]);
 
 parse(p,varargin{:})
 %Clean up this junk...
@@ -154,6 +157,7 @@ rejectChannels = p.Results.rejectChannels;
 noPrompts = p.Results.noPrompts;
 stickytrigger = p.Results.stickytrigger;
 saveLFP = p.Results.saveLFP;
+winparms = p.Results.winparms;
 
 %% Database File Management 
 savefolder = fullfile(savedir,recordingname);
@@ -207,7 +211,8 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
                             Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
                             SWChannels,ThetaChannels,rejectChannels,...
                             overwrite,'ignoretime',ignoretime,...
-                            'noPrompts',noPrompts,'saveFiles',saveLFP);
+                            'noPrompts',noPrompts,'saveFiles',saveLFP,...
+                            'window',winparms(1),'smoothfact',winparms(2),'IRASA',true);
 
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG
 
@@ -215,8 +220,8 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
                                            basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
-                                           'onSticky',stickytrigger,'ignoretime',ignoretime);%,...
-                                           %'window',2,'smoothfact',15);
+                                           'onSticky',stickytrigger,'ignoretime',ignoretime,...
+                                           'window',winparms(1),'smoothfact',winparms(2),'IRASA',true);
                                            %%good parms! test on more and add as defaults
                                        
 %Use the calculated scoring metrics to divide time into states

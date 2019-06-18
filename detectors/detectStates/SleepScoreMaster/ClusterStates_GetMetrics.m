@@ -23,7 +23,7 @@ addParameter(p,'onSticky',false)
 addParameter(p,'ignoretime',[])
 addParameter(p,'window',2)
 addParameter(p,'smoothfact',15)
-addParameter(p,'IRASA',false)
+addParameter(p,'IRASA',true)
 parse(p,varargin{:})
 onSticky = p.Results.onSticky; 
 ignoretime = p.Results.ignoretime; 

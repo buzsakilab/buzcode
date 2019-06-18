@@ -22,6 +22,7 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       'IRASA'     (default: false) use IRASA method to median-smooth power
 %                   spectrum before fitting (under development)
 %                   (Muthukumaraswamy and Liley, NeuroImage 2018)
+%       'nfreqs'    number of frequency values used to fitting (default: 200)
 %
 %OUTPUTS
 %   specslope
@@ -44,6 +45,7 @@ addParameter(p,'channels',[])
 addParameter(p,'frange',[4 100])
 addParameter(p,'Redetect',false)
 addParameter(p,'IRASA',false)
+addParameter(p,'nfreqs',200)
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
@@ -51,7 +53,7 @@ channels = p.Results.channels;
 frange = p.Results.frange;
 REDETECT = p.Results.Redetect;
 IRASA = p.Results.IRASA;
-
+nfreqs = p.Results.nfreqs;
 
 %%
 if saveMat
@@ -103,7 +105,6 @@ if length(lfp.channels)>1
 end
 %% Calcluate spectrogram
 noverlap = winsize-dt;
-nfreqs = 200;
 
 if IRASA
     maxRescaleFactor = 2.9; %as per Muthukumaraswamy and Liley, NeuroImage 2018
@@ -123,11 +124,6 @@ spec.amp = log10(abs(spec.data'));
 spec.data = spec.data';
 spec.timestamps = spec.timestamps';
 
-
-%%
-figure
-imagesc(spec.amp')
-axis xy
 %% Interpolate the time stamps to match the LFP timestamps
 %Spectrogram assumes continuous time, interpolate to LFP timestamps if
 %jumps/offsets... (note, jumps will induce transients)
@@ -197,16 +193,6 @@ specslope.channels = lfp.channels;
 if saveMat
     save(savename,'specslope','spec');
 end
-
-%%
-figure
-imagesc(spec.timestamps,log2(spec.freqs),specslope.resid')
-hold on
-plot(specslope.timestamps,bz_NormToRange(specslope.data,log2(spec.freqs([1 end]))),'w','linewidth',1)
-axis xy
-LogScale('y',2)
-colorbar
-clim([-1 1])
 
 %% Figure
 if SHOWFIG
