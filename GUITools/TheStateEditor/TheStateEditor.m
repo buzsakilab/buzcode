@@ -4563,7 +4563,8 @@ if length(nOverlap)==1
     % calculate number of FFTChunks per channel
     %remChunk = rem(nSamples-Window)
     nFFTChunks = max(1,round(((nSamples-WinLength)/winstep))); %+1  - is it ? but then get some error in the chunking in mtcsd... let's figure it later
-    t = winstep*(0:(nFFTChunks-1))'/Fs;
+    %t = winstep*(0:(nFFTChunks-1))'/Fs;
+    t = winstep*(1:(nFFTChunks))'/Fs; %DL time bug fix
 else
     winstep = 0;
     nOverlap = nOverlap(nOverlap>WinLength/2 & nOverlap<nSamples-WinLength/2);
@@ -6699,6 +6700,7 @@ else
    error('Your SleepState is broken.')
 end
 
+%states(isnan(states)) = 0; %Bug fix DL
 
 %% END for TheStateEditor
 end

@@ -143,7 +143,7 @@ broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
 
 %Remove ignoretimes (after smoothing), before normalizoing
 if ~isempty(ignoretime)
-    ignoretimeIDX = InIntervals(t_clus,ignoretime);
+    ignoretimeIDX = InIntervals(t_clus,ignoretime) || isnan(broadbandSlowWave);
     broadbandSlowWave(ignoretimeIDX) = [];
     t_clus(ignoretimeIDX) = [];
 end
@@ -178,7 +178,7 @@ thratio = smooth(thratio,smoothfact./specdt);
 
 %Remove ignoretimes (after smoothing), before normalizoing
 if ~isempty(ignoretime)
-    ignoretimeIDX = InIntervals(t_thclu,ignoretime);
+    ignoretimeIDX = InIntervals(t_thclu,ignoretime) || isnan(thratio);
     thratio(ignoretimeIDX) = [];
     t_thclu(ignoretimeIDX) = [];
 end
