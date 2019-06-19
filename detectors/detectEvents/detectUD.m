@@ -115,11 +115,7 @@ if isempty(pulPeriods)
     if ~isempty(dir('*Pulses.events.mat'))
         f = dir('*Pulses.events.mat');
         load(f.name);
-        pulPeriods_c = pulses.intsPeriods;
-        pulPeriods = [];
-        for ii = 1:numel(pulPeriods,2)                                     % concatenate different channels pulses
-            pulPeriods = [pulPeriods; pulPeriods_c{ii}];
-        end
+        pulPeriods = pulses.intsPeriods;
     end
 end
 
