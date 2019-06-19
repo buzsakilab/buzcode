@@ -113,20 +113,22 @@ if strcmp(SWweights,'PSS')
     swFFTfreqs = specslope.freqs;
     specdt = 1./specslope.samplingRate;
     swFFTspec = 10.^spec.amp'; %To reverse log10 in bz_PowerSpectrumSlope
-    badtimes = false;
-    %ADD HERE: Bad times detection using swFFTspec similar to below. make bad times nan
-   % SWfreqlist = specslope.freqs;
+
+    
+    % Remove transients before calculating SW histogram
+    zFFTspec = NormToInt(log10(swFFTspec)','modZ');
+    totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
+    badtimes = find(totz>3.5);
 else
     freqlist = logspace(0,2,100);
     [swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
     t_clus = t_clus'+t_LFP(1); %Offset for scoretime start
     swFFTspec = abs(swFFTspec);
     specdt = mode(diff(t_clus));
-    [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
+    zFFTspec = zscore(log10(swFFTspec)');
     % Remove transients before calculating SW histogram
     totz = zscore(abs(sum(zFFTspec')));
     badtimes = find(totz>5);
-    zFFTspec(badtimes,:) = 0;
 
     %Calculate per-bin weights onto SlowWave
     assert(isequal(freqlist,SWfreqlist),...
@@ -136,6 +138,7 @@ else
 end
 
 %Smooth and 0-1 normalize
+broadbandSlowWave(badtimes) = nan;
 broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
 
 %Remove ignoretimes (after smoothing), before normalizoing
@@ -159,11 +162,18 @@ t_thclu = t_thclu+t_LFP(1); %Offset for scoretime start
 specdt = mode(diff(t_thclu));
 thFFTspec = (abs(thFFTspec));
 
+% Find transients for calculating TH
+zFFTspec = NormToInt(log10(thFFTspec)','modZ');
+totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
+badtimes_TH = find(totz>3.5);
+
+
 thfreqs = (thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
 thpower = sum((thFFTspec(thfreqs,:)),1);
 allpower = sum((thFFTspec),1);
 
 thratio = thpower./allpower;    %Narrowband Theta
+thratio(badtimes_TH) = nan;     %Remove transients
 thratio = smooth(thratio,smoothfact./specdt);
 
 %Remove ignoretimes (after smoothing), before normalizoing
@@ -212,9 +222,7 @@ betweenpeaks = swhistbins(LOCS(1):LOCS(2));
 
 swthresh = betweenpeaks(diploc);
 
-%Set transients to wake state
-broadbandSlowWave(badtimes,1)=swhistbins(LOCS(1));
- 
+
  
 %SWS time points
 NREMtimes = (broadbandSlowWave >swthresh);
@@ -228,8 +236,8 @@ if sum(isnan(EMG))>0
 end
 
 while numpeaks ~=2
-    [EMGhist,EMGhistbins]= hist(EMG(NREMtimes==0),numbins);
-    %[EMGhist,EMGhistbins]= hist(EMG,numbins);
+    %[EMGhist,EMGhistbins]= hist(EMG(NREMtimes==0),numbins); 
+    [EMGhist,EMGhistbins]= hist(EMG,numbins); %changed back 6/18/19
 
     [PKS,LOCS] = findpeaks_SleepScore([0 EMGhist],'NPeaks',2);
     LOCS = sort(LOCS)-1;
@@ -297,7 +305,7 @@ WindowParams.smoothwin = smoothfact;
 THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
 SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,...
-    t_clus,badtimes,histsandthreshs,LFPparams,WindowParams,THchanID,SWchanID,...
+    t_clus,badtimes,badtimes_TH,histsandthreshs,LFPparams,WindowParams,THchanID,SWchanID,...
     recordingname);
 %save(matfilename,'SleepScoreMetrics');
 

@@ -2,10 +2,13 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %SleepScoreMaster(basePath,<options>)
 %This is the master function for sleep state scoring.
 %
-%It's strongly recommended that you indicate bad (noisy) channels using
-%bz_getSessionInfo(basePath,'editGUI',true) before running SleepScoreMaster,
-%and then check the scoring quality using TheStateEditor.
-%Use the 'A' key in TheStateEditory to further refine thresholds as needed.
+%It's strongly recommended that you 
+%   1) indicate bad (noisy) channels using bz_getSessionInfo(basePath,'editGUI',true)
+%      before running SleepScoreMaster.
+%   3) use the 'ignoretime' input to exclude time windows with 
+%   2) check the scoring quality using TheStateEditor after running SleepScoreMaster.
+%      Use the 'A' key in TheStateEditory to further refine thresholds as
+%      needed, and implement sticky thresholds.
 %
 %INPUT 
 %   basePath        folder containing .xml and .lfp files.
@@ -19,7 +22,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   OPTIONS
 %   'savedir'       Default: basePath
 %   'overwrite'     Overwrite all processing steps (Default: false)
-%   'savebool'      Default: true
+%   'savebool'      Default: true. Save anything.
 %   'scoretime'     Window of time to score. Default: [0 Inf] 
 %                   NOTE: must be continous interval
 %   'ignoretime'    Time intervals winthin scoretime to ignore 
@@ -144,6 +147,7 @@ parse(p,varargin{:})
 %Clean up this junk...
 overwrite = p.Results.overwrite; 
 savedir = p.Results.savedir;
+savebool = p.Results.savebool;
 scoretime = p.Results.scoretime;
 ignoretime = p.Results.ignoretime;
 SWWeightsName = p.Results.SWWeightsName;
@@ -201,7 +205,8 @@ end
 % (high frequency correlation signal = high EMG).  
 % Schomburg E.W. Neuron 84, 470?485. 2014)
 EMGFromLFP = bz_EMGFromLFP(basePath,'overwrite',overwrite,...
-                                     'rejectChannels',rejectChannels,'noPrompts',noPrompts);
+                                     'rejectChannels',rejectChannels,'noPrompts',noPrompts,...
+                                     'saveMat',savebool);
 
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
 %Determine the best channels for Slow Wave and Theta separation.
@@ -211,7 +216,7 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
                             Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,...
                             SWChannels,ThetaChannels,rejectChannels,...
                             overwrite,'ignoretime',ignoretime,...
-                            'noPrompts',noPrompts,'saveFiles',saveLFP,...
+                            'noPrompts',noPrompts,'saveFiles',saveLFP&savebool,...
                             'window',winparms(1),'smoothfact',winparms(2),'IRASA',true);
 
 %% CLUSTER STATES BASED ON SLOW WAVE, THETA, EMG

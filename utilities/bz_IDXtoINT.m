@@ -92,7 +92,7 @@ for ss = 1:numstates
     stateints = [find(diff(statetimes)==1) find(diff(statetimes)==-1)-1];
     stateints = [timestamps(stateints(:,1)) timestamps(stateints(:,2))]; %Get timestamps of state on/offsets
     
-    if isempty(stateints);continue;end 
+    if isempty(stateints) && isempty(statenames{ss});continue;end 
     
     %Get the name
     if ~isempty(statenames{ss})
