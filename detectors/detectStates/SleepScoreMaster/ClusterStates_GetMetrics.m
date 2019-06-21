@@ -140,48 +140,90 @@ end
 %Smooth and 0-1 normalize
 broadbandSlowWave(badtimes) = nan;
 broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
-
-%Remove ignoretimes (after smoothing), before normalizoing
-if ~isempty(ignoretime)
-    ignoretimeIDX = InIntervals(t_clus,ignoretime) || isnan(broadbandSlowWave);
-    broadbandSlowWave(ignoretimeIDX) = [];
-    t_clus(ignoretimeIDX) = [];
-end
-broadbandSlowWave = bz_NormToRange(broadbandSlowWave,[0 1]);
  
+%%
+% range = [7000 9000];
+% figure
+% subplot(2,1,1)
+% imagesc(spec.timestamps,log2(spec.freqs),spec.amp')
+% hold on
+% 
+% axis xy
+% xlim(range)
+% LogScale('y',2)
+% colorbar
+% %caxis([-1 1])
+% subplot(2,1,2)
+% imagesc(specslope.timestamps,log2(specslope.freqs),specslope.resid')
+% hold on
+% plot(specslope.timestamps,bz_NormToRange(thratio),'w')
+% axis xy
+% LogScale('y',2)
+% colorbar
+% xlim(range)
+% caxis([0 1])
 %% Calculate theta
 %display('FFT Spectrum for Theta')
 
 % %NarrowbandTheta
 f_all = [2 20];
 f_theta = [5 10];
-freqlist = logspace(log10(f_all(1)),log10(f_all(2)),100);
 
-[thFFTspec,thFFTfreqs,t_thclu] = spectrogram(single(thLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
-t_thclu = t_thclu+t_LFP(1); %Offset for scoretime start
-specdt = mode(diff(t_thclu));
-thFFTspec = (abs(thFFTspec));
+if IRASA
+    %Put the LFP in the right structure format
+    lfp.data = thLFP;
+    lfp.timestamps = t_LFP;
+    lfp.samplingRate = sf_LFP;
+    %Calculate PSS
+    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,'nfreqs',200,'frange',f_all,'IRASA',IRASA);
+    t_thclu = specslope.timestamps;
+    specdt = 1./specslope.samplingRate;
+    thFFTspec = specslope.resid';
+    thFFTspec(thFFTspec<0)=0;
+    
+    % Remove transients before calculating SW histogram
+    zFFTspec = NormToInt(spec.amp,'modZ');
+    totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
+    badtimes_TH = find(totz>3.5);
+    
+    thFFTfreqs = specslope.freqs;
+    thfreqs = (thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
+    thratio = max((thFFTspec(thfreqs,:)),[],1);
+    
+else
 
-% Find transients for calculating TH
-zFFTspec = NormToInt(log10(thFFTspec)','modZ');
-totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
-badtimes_TH = find(totz>3.5);
+    freqlist = logspace(log10(f_all(1)),log10(f_all(2)),100);
 
+    [thFFTspec,thFFTfreqs,t_thclu] = spectrogram(single(thLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
+    t_thclu = t_thclu+t_LFP(1); %Offset for scoretime start
+    specdt = mode(diff(t_thclu));
+    thFFTspec = (abs(thFFTspec));
 
-thfreqs = (thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
-thpower = sum((thFFTspec(thfreqs,:)),1);
-allpower = sum((thFFTspec),1);
+    % Find transients for calculating TH
+    zFFTspec = NormToInt(log10(thFFTspec)','modZ');
+    totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
+    badtimes_TH = find(totz>3.5);
 
-thratio = thpower./allpower;    %Narrowband Theta
+    thfreqs = (thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
+    thpower = sum((thFFTspec(thfreqs,:)),1);
+    allpower = sum((thFFTspec),1);
+
+    thratio = thpower./allpower;    %Narrowband Theta
+end
+
 thratio(badtimes_TH) = nan;     %Remove transients
 thratio = smooth(thratio,smoothfact./specdt);
 
-%Remove ignoretimes (after smoothing), before normalizoing
+
+%% Remove ignoretimes (after smoothing), before normalizoing
 if ~isempty(ignoretime)
-    ignoretimeIDX = InIntervals(t_thclu,ignoretime) || isnan(thratio);
+	ignoretimeIDX = InIntervals(t_clus,ignoretime) || isnan(broadbandSlowWave) || isnan(thratio);
+    broadbandSlowWave(ignoretimeIDX) = [];
     thratio(ignoretimeIDX) = [];
+    t_clus(ignoretimeIDX) = [];
     t_thclu(ignoretimeIDX) = [];
 end
+broadbandSlowWave = bz_NormToRange(broadbandSlowWave,[0 1]);
 thratio = bz_NormToRange(thratio,[0 1]);
  
 %% EMG
@@ -258,7 +300,7 @@ EMGthresh = betweenpeaks(diploc);
 MOVtimes = (broadbandSlowWave(:)<swthresh & EMG(:)>EMGthresh);
 
 
-%% Then Divide Theta
+%% Then Divide Theta (During NonMoving)
 numpeaks = 1;
 numbins = 12;
 while numpeaks ~=2 && numbins <=25
