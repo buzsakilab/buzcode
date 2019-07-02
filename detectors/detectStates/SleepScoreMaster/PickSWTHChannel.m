@@ -305,7 +305,7 @@ PickChannelStats = v2struct(dipSW,peakTH,SWChannels,ThetaChannels,...
     swhists,THmeanspec);
 
 params = v2struct(SWfreqlist,SWweights,SWWeightsName,Notch60Hz,...
-    NotchUnder3Hz,NotchHVS,NotchTheta);
+    NotchUnder3Hz,NotchHVS,NotchTheta,ignoretime,window,smoothfact,IRASA);
     
 SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,params);
 
