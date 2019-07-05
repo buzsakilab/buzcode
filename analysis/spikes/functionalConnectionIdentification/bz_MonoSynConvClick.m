@@ -63,14 +63,13 @@ else
     sl = regexp(fil,'/');
 end
 fil = fil(1:sl(end));
-  foundMat = false;
 if exist([fil 'ProbSynMat.mat'],'file')==2
     v = load([fil 'ProbSynMat.mat']);
     foundMat = true;
 else
-    warning('You do not have the ProbSynMat matrix describing the likelihood of experimentally validated connectivty given excess syncrony')
+    foundMat = false;
+    warning('bz_MonoSynConvClick: You do not have the ProbSynMat matrix describing the likelihood of experimentally validated connectivty given excess syncrony')
 end
-
 
 %parse inputs
 
@@ -91,48 +90,48 @@ end
 
 
 % Parse options
-for i = 1:2:length(varargin),
-    if ~isa(varargin{i},'char'),
+for i = 1:2:length(varargin)
+    if ~isa(varargin{i},'char')
         error(['Parameter ' num2str(i+3) ' is not a property ']);
     end
-    switch(lower(varargin{i})),
-        case 'duration',
+    switch(lower(varargin{i}))
+        case 'duration'
             duration = varargin{i+1};
             if ~isa(duration,'numeric') | length(duration) ~= 1 | duration < 0,
                 error('Incorrect value for property ''duration''');
             end
-        case 'binsize',
+        case 'binsize'
             binSize = varargin{i+1};
             if ~isa(binSize,'numeric') | length(binSize) ~= 1 | binSize <= 0,
                 error('Incorrect value for property ''binsize'' ');
             end
-        case 'epoch',
+        case 'epoch'
             epoch = varargin{i+1};
             if ~isa(epoch,'numeric') | size(epoch,2) ~= 2,
                 error('Incorrect value for property ''epoch'' ');
             end
             
-        case 'cells',
+        case 'cells'
             cells = varargin{i+1};
           
-        case 'conv_w',
+        case 'conv_w'
             conv_w = varargin{i+1};
            
-        case 'alpha',
+        case 'alpha'
             alpha = varargin{i+1};
             if ~isa(alpha,'numeric'),
                 error('Incorrect value for property ''alpha''');
             end
             
-        case 'plot',
+        case 'plot'
             plotit = varargin{i+1};
-            if ~islogical(plotit),
+            if ~islogical(plotit)
                 error('Incorrect value for property ''plot''');
             end
             
         case 'sorted'
             sorted = varargin{i+1};
-        otherwise,
+        otherwise
             error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help LoadBinary'' for details).']);
     end
 end
@@ -291,10 +290,6 @@ for refcellID=1:max(IDindex)
     
 end
 
-%plot
-if plotit
-    sig_con = bz_PlotMonoSyn(ccgR,sig_con,Pred,Bounds,completeIndex,binSize,duration);
-end
 nCel = size(completeIndex,1);
 n = histc(spikeIDs(:,3),1:length(allID));
 [nn1,nn2] = meshgrid(n);
@@ -302,7 +297,10 @@ n = histc(spikeIDs(:,3),1:length(allID));
 temp = ccgR - Pred;
 prob = temp./permute(repmat(nn2,1,1,size(ccgR,1)),[3 1 2]);
 
-
+%plot
+if plotit
+    sig_con = bz_PlotMonoSyn(ccgR,sig_con,Pred,Bounds,completeIndex,binSize,duration);
+end
 
 %save outputs
 mono_res.ccgR = ccgR;
@@ -328,5 +326,7 @@ mono_res.FalsePositive = FalsePositive;
 mono_res.TruePositive = TruePositive;
 
 end
+
+
 
 end

@@ -2,6 +2,8 @@ function keep_con = bz_PlotMonoSyn(ccgR,sig_con,Pred,Bounds,completeIndex,binSiz
 % Manual sorting
 % click to deselect the ccg (turns pink)
 
+% Edited by Peter Petersen
+
 keep_con = sig_con;
 window  =false(size(ccgR,1),1);
 window(ceil(length(window)/2) - round(.004/binSize): ceil(length(window)/2) + round(.004/binSize)) = true;
@@ -15,12 +17,15 @@ allcel = unique(sig_con(:));
 h = figure('KeyReleaseFcn', {@keyPress},'Name','MonoSynCon inspector','NumberTitle','off','renderer','opengl');
 
 for i=1:length(allcel)
+    if ~ishandle(h)
+        return
+    end
     cla, clf
     
     prs = sig_con(any(sig_con==allcel(i),2),:);
     ha = tight_subplot(ceil(sqrt(1+size(prs,1))),ceil(sqrt(1+size(prs,1))),[.02 .01]);
     for j=1:length(ha)
-           axes(ha(j))
+        axes(ha(j))
         if j<=size(prs,1)
             prs1 = prs(j,:);
             if prs1(1)~=allcel(i)
@@ -32,8 +37,8 @@ for i=1:length(allcel)
             
             inh=ccgR(:,prs1(1),prs1(2));
             inh(inh>Bounds(:,prs1(1),prs1(2),2)|~window)=0;
-            
-            bar(t,ccgR(:,prs1(1),prs1(2)),1,'FaceColor','b','EdgeColor','b');
+            bar_from_patch(t,ccgR(:,prs1(1),prs1(2)),'b')
+            % bar(t,ccgR(:,prs1(1),prs1(2)),1,'FaceColor','b','EdgeColor','b');
             hold on;
             
             % Plot predicted values
@@ -44,10 +49,12 @@ for i=1:length(allcel)
             plot(t,Bounds(:,prs1(1),prs1(2),2),'r--');
             
             % Plot signif increased bins in red
-            bar(t,exc,1,'FaceColor','r','EdgeColor','r');
-
+            bar_from_patch(t,exc,'r')
+            % bar(t,exc,1,'FaceColor','r','EdgeColor','r');
+            
             % Plot signif lower bins in blue
-            bar(t,inh,1,'FaceColor','c','EdgeColor','c');
+            bar_from_patch(t,inh,'c')
+            % bar(t,inh,1,'FaceColor','c','EdgeColor','c');
             
             upL = get(gca,'ylim');
             plot([0 0],[0 upL(2)],'k')
@@ -71,26 +78,29 @@ for i=1:length(allcel)
             
             % Plot an inset with the ACG
             thisacg = ccgR(:,tcel,tcel);
-
+            
             axh = AxesInsetBars(gca,.2,[.5 .5 .5],t,thisacg);
             axhpos = get(axh,'Position');
             set(axh,'Position',[axhpos(1) axhpos(2)-axhpos(4)*.2 axhpos(3) axhpos(4)],'XTickLabel',[]);
-
+            
         elseif j<length(ha)
             axis off
         else
-            bar(t,ccgR(:,allcel(i),allcel(i)),1,'FaceColor','k','EdgeColor','k');
+            bar_from_patch(t,ccgR(:,allcel(i),allcel(i)),'k')
+            % bar(t,ccgR(:,allcel(i),allcel(i)),1,'FaceColor','k','EdgeColor','k');
             xlim([min(t) max(t)]);
             xlabel('Reference Cell ACG');
             targ=completeIndex(completeIndex(:,3) == allcel(i),1:2);
-            mtit(['Reference Cell sh: ' num2str(targ(1)) ' cell '  num2str(targ(2))])
+            mtit(['Reference Cell sh: ' num2str(targ(1)) ' cell '  num2str(targ(2)),' (', num2str(i),'/' num2str(length(allcel)),')'])
             
             uiwait(h);
         end
     end
     
 end
-close(h)
+if ishandle(h)
+    close(h)
+end
 
     function subplotclick(obj,ev) %when an axes is clicked
         figobj = get(obj,'Parent');
@@ -101,7 +111,7 @@ close(h)
             keep_con(ismember(keep_con,prs(axdata,:),'rows'),:)=[];
         elseif sum(clr2 == [1 .75 .75])==3%if pink, set to white, set to good
             set(obj,'Color',[1 1 1])
-           keep_con = [keep_con;prs(axdata,:)];
+            keep_con = [keep_con;prs(axdata,:)];
         end
     end
 
@@ -135,6 +145,18 @@ figpos = get(h,'Position');
 newpos = [figpos(1)+(1-ratio)*figpos(3) figpos(2)+(1-ratio)*figpos(4) ratio*figpos(3) ratio*figpos(4)];
 axh = axes('Position',newpos);
 
-bar(xdata,ydata,1,'FaceColor',color,'EdgeColor',color)
+bar_from_patch(xdata,ydata,color)
+% bar(xdata,ydata,1,'FaceColor',color,'EdgeColor',color)
 axis tight
+end
+
+function bar_from_patch(x_data, y_data,col)
+% Creates a bar graph using the patch plot mode, which is substantial
+% faster than using the regular bar plot. 
+% By Peter Petersen
+
+x_step = x_data(2)-x_data(1);
+x_data = [x_data(1),reshape([x_data,x_data+x_step]',1,[]),x_data(end)];
+y_data = [0,reshape([y_data,y_data]',1,[]),0];
+patch(x_data, y_data,col,'EdgeColor',col)
 end

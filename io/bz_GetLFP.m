@@ -138,7 +138,7 @@ if strcmp(channels,'all')
 end
 
 %% get the data
-disp('loading LFP file...')
+% disp('loading LFP file...')
 nIntervals = size(intervals,1);
 % returns lfp/bz format
 for i = 1:nIntervals

@@ -1,4 +1,4 @@
-function [ EventDetectionReview ] = EventExplorer(basePath,events )
+function [ EventDetectionReview ] = EventExplorer(basePath,events,varargin )
 %EventExplorer is a GUI tool for exploring buzcode events and states files.
 %
 %INPUT
@@ -14,6 +14,10 @@ function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %                   
 %   basePath    basePath that holds baseName.lfp (default: pwd)
 %
+%(options)
+%   'useSpikes' true,false,'MUA'
+%   'noPrompts' default: true
+%
 %OUTPUT
 %   EventDetectionReview    results of DetectionReview - if called with an
 %                           output, automatically runs detection review
@@ -22,6 +26,17 @@ function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %% (For development)
 % events = 'SlowWaves';
 % basePath = '/Users/dlevenstein/Dropbox/Research/Datasets/20140526_277um';
+%%
+p = inputParser;
+addParameter(p,'useSpikes',false);
+addParameter(p,'noPrompts',true,@islogical);
+
+parse(p,varargin{:})
+noPrompts = p.Results.noPrompts;
+useSpikes = p.Results.useSpikes;
+
+
+
 %%
 if ~exist('basePath','var')
     basePath = pwd;
@@ -80,36 +95,44 @@ switch eventstype
         FO.viewmode = 'timepoint';
 end
 
-%For events with start/stops, use the mean of the two as a marker. In the
-%future replace with with start/stop markers
-if size(exploreint,2)==2 %For events with start/stops, use the 
-    exploreint = mean(exploreint,2);
-end
 %% 
 FO.baseName = baseName;
-FO.EventTimes = exploreint;
 FO.EventName = eventsname;
 FO.basePath = basePath;
 
-%Load EventExplorer data from events file 
+%NOTE: F0.EventTimes should either be Nevents x 1 or Nevents x 2 (starts/stops).
+%If (starts/stops), flags/etc will be associated with the start time
+FO.EventTimes = exploreint;
+
+%Load any EventExplorer data from events file (events FaC)
 REVIEWDONE = false;
 if isfield(events,'EventExplorer')
     if isfield(events.EventExplorer,'FlagsAndComments')
         FO.FlagsAndComments.events = events.EventExplorer.FlagsAndComments;
+    else
+        FO.FlagsAndComments.events.flags = [];
+        FO.FlagsAndComments.events.comments = {};
     end
     if isfield(events.EventExplorer,'DetectionReview')
         REVIEWDONE=true;
         FO.DetectionReview = events.EventExplorer.DetectionReview;
     end
+else
+	FO.FlagsAndComments.events.flags = [];
+	FO.FlagsAndComments.events.comments = {};
 end
 
-%Load EventExplorer metadata if it exists
+%Load EventExplorer metadata if it exists (timestamps FaC)
 FO.EEbuzcodefilename = fullfile(basePath,[baseName,'.EventExplorer.SessionMetadata.mat']);
 if exist(FO.EEbuzcodefilename,'file')
     load(FO.EEbuzcodefilename)
     FO.FlagsAndComments.timepoint = EventExplorer.FlagsAndComments; 
+else
+	FO.FlagsAndComments.timepoint.flags = [];
+	FO.FlagsAndComments.timepoint.comments = {};
 end
 
+%Align any preexisting FaC (timestamps and events)
 FO.FlagsAndComments = MergeFlagsComments(FO.FlagsAndComments,FO.EventTimes);
 %% Load The Data, eh?
 %could put to function: EE_Initiate
@@ -126,12 +149,23 @@ try
 catch
     FO.lookatchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
         'Which LFP channel would you like to look at?']);
+    if isempty(FO.lookatchannel)
+        return
+    end
     FO.lookatchannel = str2num(FO.lookatchannel{1});
 end
    
 %Load the LFP and spikes
-FO.data.lfp = bz_GetLFP(FO.lookatchannel,'basepath',FO.basePath);
-FO.data.spikes = bz_GetSpikes('basepath',FO.basePath);
+FO.data.lfp = bz_GetLFP(FO.lookatchannel,'basepath',FO.basePath,'noPrompts',true);
+switch useSpikes
+    case true
+        FO.data.spikes = bz_GetSpikes('basepath',FO.basePath);
+    case false
+        FO.data.spikes = [];
+    case 'MUA'
+        MUA = MUAfromDat(basePath,'saveMat',true);
+        FO.data.spikes = MUA.peaks;
+end
 %% Set up the EventExplorer Window
 %Position for the main interface
 posvar = get(0,'Screensize');
@@ -160,7 +194,7 @@ FO.viewwin = subplot(3,1,2,'ButtonDownFcn',@MouseClick);
 %Event Selection panel
 
 FO.scaleLFP = 1;
-FO.winsize = 8;
+FO.winsize = 8; %8second window
 FO.currevent = 1;
 
 
@@ -215,7 +249,7 @@ FO.eventtypeselection = uibuttongroup('Position',[0.65,0.05,0.25,0.15],'Visible'
                       'String','FAs','Visible','off',...
                       'Position',[10 10 75 30]);
     FO.eventcounttxt = uicontrol(FO.eventtypeselection,'Style','text',...
-        'String',['(',num2str(length(FO.EventTimes)),' Total)'],...
+        'String',['(',num2str(size(FO.EventTimes,1)),' Total)'],...
         'Position',[75 70 80 22]);
     
     FO.missperctxt = uicontrol(FO.eventtypeselection,'Style','text',...
@@ -290,18 +324,21 @@ function NextEvent(obj,eventdata)
     FO = guidata(obj); 
     switch FO.showflagged
         case true
+            %For Browsing flagged events only
             flaggedevents = FO.FlagsAndComments.(FO.viewmode).flags;
-            %find the closest previous flagged event
-            eventidx = interp1([0 flaggedevents],0:length(flaggedevents),...
-                FO.currevent,'previous'); %set the current event to the closest previous flagged event
-            FO.currevent = flaggedevents(eventidx+1); %next flagged event
+            if ~isempty(flaggedevents)
+                %find the closest previous flagged event
+                eventidx = interp1([0 flaggedevents],0:length(flaggedevents),...
+                    FO.currevent,'previous'); %set the current event to the closest previous flagged event
+                FO.currevent = flaggedevents(min(eventidx+1,length(flaggedevents))); %next flagged event
+            end
         otherwise
             switch FO.viewmode
                 case 'timepoint'
                     %For timepoint mode: jump 75% of windowsize
                     FO.currevent=FO.currevent+0.75.*FO.winsize;
                 otherwise
-                    FO.currevent=FO.currevent+1;
+                    FO.currevent=min(FO.currevent+1,size(FO.EventTimes,1));
             end
     end
     guidata(FO.fig, FO);
@@ -312,12 +349,15 @@ function PrevEvent(obj,eventdata)
     FO = guidata(obj); 
     switch FO.showflagged
         case true
+            %For Browsing flagged events only
             flaggedevents = FO.FlagsAndComments.(FO.viewmode).flags;
-            %find the closest previous flagged event
-            eventidx = interp1([flaggedevents max([flaggedevents(end) FO.currevent])+1],...
-                1:length(flaggedevents)+1,...
-                FO.currevent,'next'); %set the current event to the closest next flagged event
-            FO.currevent = flaggedevents(eventidx-1); %previous flagged event
+            if ~isempty(flaggedevents)
+                %find the closest previous flagged event
+                eventidx = interp1([flaggedevents max([flaggedevents(end) FO.currevent])+1],...
+                    1:length(flaggedevents)+1,...
+                    FO.currevent,'next'); %set the current event to the closest next flagged event
+                FO.currevent = flaggedevents(max(eventidx-1,1)); %previous flagged event
+            end
         otherwise
             switch FO.viewmode
                 case 'timepoint'
@@ -334,7 +374,7 @@ function RandEvent(obj,eventdata)
     FO = guidata(obj);
     switch FO.viewmode
         case 'events'
-            FO.currevent=randi(length(FO.EventTimes));
+            FO.currevent=randi(size(FO.EventTimes,1));
         case 'timepoint'
             FO.currevent=randsample(FO.data.lfp.timestamps);
         otherwise
@@ -380,21 +420,9 @@ function FlagEvent(obj,event)
         usercomment = [];
     end
     
-    %First flag for the recording
-    if ~isfield(FO,'FlagsAndComments')
-        isflagged = 'first';
-    else
-        [isflagged,flagidx] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
-    end
-
     %Has it already been flagged?
+    [isflagged,flagidx] = ismember(FO.currevent,FO.FlagsAndComments.(FO.viewmode).flags);
     switch isflagged
-        case 'first'
-            %First flag for the recording
-            %initiate the flag at the event and at the timestamp (with no comment)
-            FO.FlagsAndComments.(FO.viewmode).flags = FO.currevent;
-            FO.FlagsAndComments.(FO.viewmode).comments{1} = usercomment;
-            set(FO.flageventbutton,'String','Unflag')
         case false
             %Flag it! (and the time point)
             FO.FlagsAndComments.(FO.viewmode).flags(end+1) = FO.currevent;
@@ -422,7 +450,7 @@ function AddUserComment(obj,event)
         
         %Find the timepoint
         if ~strcmp(FO.viewmode,'timepoint')
-            [~,flagtimeidx] = ismember(FO.EventTimes(FO.currevent),FO.FlagsAndComments.timepoint.flags);
+            [~,flagtimeidx] = ismember(FO.EventTimes(FO.currevent,1),FO.FlagsAndComments.timepoint.flags);
             FO.FlagsAndComments.timepoint.comments{flagtimeidx} = usercomment;
         end
 
@@ -438,26 +466,26 @@ function FlagsAndComments = MergeFlagsComments(FlagsAndComments,EventTimes)
     %any flagged events are flagged.
     %NOTE: this could be done more efficiently with uniquetol or
     %ismembertol
-    timetol = 0.01; %within 10ms
+    timetol = 0.02; %within 20ms
     
     %Make sure FlagsAndComments has both events and timepoints
     
     
     %Bring the flagged timepoints to the flagged events
     flaggedtimepoints = FlagsAndComments.timepoint.flags;
-    flaggedeventtimes = EventTimes(FlagsAndComments.events.flags);
+    flaggedeventtimes = EventTimes(FlagsAndComments.events.flags,1);
     for tp = 1:length(flaggedtimepoints)
-        durtoflag = abs(flaggedtimepoints(tp)-EventTimes);
+        durtoflag = abs(flaggedtimepoints(tp)-EventTimes(:,1));
 
         %If there's an event within tolerance of the time point 
         if any(durtoflag<timetol)
             %move the time point to the close event    
-            FlagsAndComments.timepoint.flags(tp) = EventTimes(durtoflag<timetol);
+            FlagsAndComments.timepoint.flags(tp) = EventTimes(durtoflag<timetol,1);
             %Is its not already in the list of flagged events?
             if ~ismember(FlagsAndComments.timepoint.flags(tp),flaggedeventtimes)
                 %Which event is it? Add it!
                 FlagsAndComments.events.flags(end+1)=...
-                    find(ismember(EventTimes,FlagsAndComments.timepoint.flags(tp)));
+                    find(ismember(EventTimes(:,1),FlagsAndComments.timepoint.flags(tp)));
                 FlagsAndComments.events.comments{end+1}=...
                     FlagsAndComments.timepoint.comments{tp};
             end
@@ -466,7 +494,7 @@ function FlagsAndComments = MergeFlagsComments(FlagsAndComments,EventTimes)
     end
     
     %Bring the flagged events to the flagged timepoints
-    flaggedeventtimes = EventTimes(FlagsAndComments.events.flags);
+    flaggedeventtimes = EventTimes(FlagsAndComments.events.flags,1);
     for et = 1:length(flaggedeventtimes)
         durtoflag = abs(flaggedeventtimes(et)-FlagsAndComments.timepoint.flags);
         
@@ -536,7 +564,11 @@ FO = guidata(obj);
         %Save the General EventExplorer metadata file
         if isfield(FO,'FlagsAndComments')
             EventExplorer.FlagsAndComments = FO.FlagsAndComments.timepoint;
-            save(FO.EEbuzcodefilename,'EventExplorer')
+            try
+                save(FO.EEbuzcodefilename,'EventExplorer')
+            catch
+                disp('unable to save Flags and Comments')
+            end
         end
     end
 delete(FO.fig)

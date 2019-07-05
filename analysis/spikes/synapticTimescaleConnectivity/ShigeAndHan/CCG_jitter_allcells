@@ -1,0 +1,112 @@
+function =CGG_jitter_allcells
+
+% for a=1:53
+%     for b = 1:53
+%         if a ~= b
+%             [ccgjitteroutput(a,b).ccgR, ccgjitteroutput(a,b).tR,...
+%                 ccgjitteroutput(a,b).GSPExc, ccgjitteroutput(a,b).GSPInh,...
+%                 ccgjitteroutput(a,b).ccgjMtx, ccgjitteroutput(a,b).ccgjptMax...
+%                 ] = CCG_jitter(spiket,spikeind,a,b,32,20,2,500,0.01,1);
+%                 disp(num2str(a))
+%                 disp(num2str(b))
+%         end
+%     end
+% endc
+
+
+
+for a=1:53
+    for b = (a+1):53
+        if a ~= b
+%             ccgjitteroutput(a,b).ccgR = ccgjitteroutput2{a,b}.ccgR;
+%             ccgjitteroutput(a,b).tR = ccgjitteroutput2{a,b}.tR;
+%             ccgjitteroutput(a,b).GSPExc = ccgjitteroutput2{a,b}.GSPExc;
+%             ccgjitteroutput(a,b).GSPInh = ccgjitteroutput2{a,b}.GSPInh;
+%             ccgjitteroutput(a,b).ccgjMtx = ccgjitteroutput2{a,b}.ccgjMtx;
+%             ccgjitteroutput(a,b).ccgjptMax = ccgjitteroutput2{a,b}.ccgjptMax;
+%             
+            
+% if a==2;
+%     x=7;
+% end
+
+            findE = find(ccgjitteroutput(a,b).GSPExc);
+            findI = find(ccgjitteroutput(a,b).GSPInh);
+            tR = ccgjitteroutput(a,b).tR;
+            
+            timeE = tR(findE);
+            
+            timeE = timeE(abs(timeE)<4 & abs(timeE)>1);%keep only positives greater between 1ms and 4ms
+            findE = findE(abs(timeE)<4 & abs(timeE)>1);%keep only positives greater between 1ms and 4ms
+            
+            timeI = tR(findI);
+            timeI = timeI(abs(timeI)<4 & abs(timeI)>1);
+            findI = findI(abs(timeI)<4 & abs(timeI)>1);
+
+            if length(timeE)+length(timeI)
+                ccgR = ccgjitteroutput(a,b).ccgR;
+                ccgjm = mean(ccgjitteroutput(a,b).ccgjMtx,2);
+                ccgjptMax = ccgjitteroutput(a,b).ccgjptMax;
+%                 ccgjgbMax = ccgjitteroutput{a,b}.ccgjgbMax;
+%                 ccgjptMin = ccgjitteroutput{a,b}.ccgjptMin;
+%                 ccgjgbMin = ccgjitteroutput{a,b}.ccgjgbMin;
+
+
+                %plot(tR,ccgR(:,1,2),'color','k')
+                figure;
+                bar(tR,ccgR(:,1,2),'facecolor','k','edgecolor','k')
+                line(tR,ccgjm,'linestyle','--','color','b')
+                line(tR,ccgjptMax,'linestyle','--','color','r')
+                %               line(tR,ccgjgbMax,'linestyle','--','color','m')
+                %               line(tR,ccgjptMin,'linestyle','--','color','r')
+                %               line(tR,ccgjgbMin,'linestyle','--','color','m')
+                set(gca,'XLim',[min(tR),max(tR)])
+                hold on
+
+                TitleText = ['CCG comparisons for cells ',num2str(a),' and ', num2str(b),'.'];
+
+                binstext = [];
+                if ~isempty(timeE)
+%                   findE = find(ccgjitteroutput(a,b).GSPExc);
+                   for c = 1:length(timeE);
+                      plot(tR(findE(c)),ccgR(findE(c),1,2),'marker','*','color','g')
+                      binstext = [binstext,num2str(tR(findE(c))),', '];
+                   end
+                   binstext = binstext(1:end-2);
+                   TitleText = [TitleText,'  Excitatory connection detected at time bin(s): ',binstext,'ms.'];
+                   ccgjitteroutput(1,1).connectionsE{a,b} = findE;
+                end
+
+                binstext = [];
+                if ~isempty(timeI)
+%                    findI = find(ccgjitteroutput(a,b).GSPInh);
+                   for c = 1:length(findI);
+                      plot(tR(findI(c)),ccgR(findI(c),1,2),'marker','*','color','g')
+                      binstext = [binstext,num2str(tR(findI(c))),', '];
+                   end
+                   binstext = binstext(1:end-2);
+                   TitleText = [TitleText,'  Inhibitory connection detected at time bin(s): ',binstext,'ms.'];
+                   ccgjitteroutput(1,1).connectionsI{a,b} = findI;
+                end
+
+                title(TitleText);
+            end
+        end
+    end
+end
+                  
+%             if 0
+%                % if you want to plot y as 'hz'
+%                [ccgR_hz, tR] = CCG([res1;res2],[ones(size(res1));2*ones(size(res2))], BinSize, HalfBins, 20000,[1,2],'hz');
+%                modif = sum(ccgR_hz(:,1,2))/sum(ccgR(:,1,2));
+%                modif = 1 % 'count'
+%                %
+%                bar(tR,modif*ccgR(:,1,2),'facecolor','k','edgecolor','k')
+%                line(tR,modif*ccgjm,'linestyle','--','color','b')
+%                line(tR,modif*ccgjptMax,'linestyle','--','color','r')
+%                line(tR,modif*ccgjgbMax,'linestyle','--','color','m')
+%                line(tR,modif*ccgjptMin,'linestyle','--','color','r')
+%                line(tR,modif*ccgjgbMin,'linestyle','--','color','m')
+%                set(gca,'XLim',[min(tR),max(tR)])
+% 
+%             end
