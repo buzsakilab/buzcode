@@ -95,11 +95,11 @@ onlyLoad = p.Results.onlyLoad;
 spikes.samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
-
+cellinfofile = [basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'];
 %% if the cellinfo file exist and we don't want to re-load files
-if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') && forceReload == false
+if exist(cellinfofile,'file') && forceReload == false
     disp('loading spikes from cellinfo file..')
-    load([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'])
+    load(cellinfofile)
     %Check that the spikes structure fits cellinfo requirements
     [iscellinfo] = bz_isCellInfo(spikes);
     switch iscellinfo
@@ -115,7 +115,7 @@ if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') 
         end
         
         if saveMat
-            save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
+            save(cellinfofile,'spikes')
         end
     end
     
@@ -293,7 +293,7 @@ end
 
 %% save to buzcode format (before exclusions)
 if saveMat
-    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
+    save(cellinfofile,'spikes')
 end
 
 
@@ -348,7 +348,7 @@ end
 end
 
 
-
+%%
 function spikes = removeCells(toRemove,spikes,getWaveforms)
 %Function to remove cells from the structure. toRemove is the INDEX of
 %the UID in spikes.UID

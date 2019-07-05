@@ -117,6 +117,12 @@ thFFTfreqs = logspace(log10(f_all(1)),log10(f_all(2)),numfreqs);
 %% Pick channels to use
 spkgroupchannels = [SpkGrps.Channels];
 
+try %In case some channels are in AnatGrps but not SpkGrps
+anatgoupchannels = [Par.AnatGrps.Channels];
+spkgroupchannels = union(spkgroupchannels,anatgoupchannels);
+catch
+end
+
 if sum(SWChannels)>0 && sum(ThetaChannels)>0%use all channels unless SWChannels and ThetaChannels are specified... if both specified then we know those are the only good ones
     goodchannels = union(SWChannels,ThetaChannels);
     badchannels = setdiff(spkgroupchannels,goodchannels);
@@ -413,7 +419,7 @@ normTHspec = bz_NormToRange(THmeanspec,[0 numusedchannels.*0.6]);
 	subplot(5,1,1:2)
         imagesc(t_spec,log2(swFFTfreqs),(FFTspec))
         axis xy; hold on
-        plot(t_FFT,bz_NormToRange(broadbandSlowWave,log2(swFFTfreqs([1 end]))),'k','Linewidth',1)
+        plot(t_FFT,bz_NormToRange(broadbandSlowWave,log2(swFFTfreqs([1 end]))),'k','Linewidth',0.1)
         LogScale_ss('y',2)
         caxis([min(mu)-2*max(sig) max(mu)+2*max(sig)])
         ylim([log2(swFFTfreqs(1)) log2(swFFTfreqs(end))+0.2])
@@ -453,7 +459,7 @@ subplot(5,1,3)
         plot(t_spec([1,end]),log2(f_theta([1,1])),'w')
         plot(t_spec([1,end]),log2(f_theta([2,2])),'w')
         axis xy
-        plot(t_FFT,bz_NormToRange(thratio,log2(thFFTfreqs([1 end]))),'k','Linewidth',1)
+        plot(t_FFT,bz_NormToRange(thratio,log2(thFFTfreqs([1 end]))),'k','Linewidth',0.1)
         LogScale_ss('y',2)
         caxis([min(mu)-2.5*max(sig) max(mu)+2.5*max(sig)])
         ylim([log2(thFFTfreqs(1)) log2(thFFTfreqs(end))+0.2])

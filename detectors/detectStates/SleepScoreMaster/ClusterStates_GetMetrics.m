@@ -110,7 +110,7 @@ if strcmp(SWweights,'PSS')
     [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,'frange',[4 90],'IRASA',IRASA);
     broadbandSlowWave = -specslope.data; %So NREM is higher as opposed to lower
     t_clus = specslope.timestamps;
-    swFFTfreqs = specslope.freqs;
+    swFFTfreqs = specslope.freqs';
     specdt = 1./specslope.samplingRate;
     swFFTspec = 10.^spec.amp'; %To reverse log10 in bz_PowerSpectrumSlope
 
@@ -118,7 +118,7 @@ if strcmp(SWweights,'PSS')
     % Remove transients before calculating SW histogram
     zFFTspec = NormToInt(log10(swFFTspec)','modZ');
     totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
-    badtimes = find(totz>3.5);
+    badtimes = find(totz>3);
 else
     freqlist = logspace(0,2,100);
     [swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
@@ -184,9 +184,9 @@ if IRASA
     % Remove transients before calculating SW histogram
     zFFTspec = NormToInt(spec.amp,'modZ');
     totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
-    badtimes_TH = find(totz>3.5);
+    badtimes_TH = find(totz>3);
     
-    thFFTfreqs = specslope.freqs;
+    thFFTfreqs = specslope.freqs';
     thfreqs = (thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
     thratio = max((thFFTspec(thfreqs,:)),[],1);
     
@@ -202,7 +202,7 @@ else
     % Find transients for calculating TH
     zFFTspec = NormToInt(log10(thFFTspec)','modZ');
     totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
-    badtimes_TH = find(totz>3.5);
+    badtimes_TH = find(totz>3);
 
     thfreqs = (thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
     thpower = sum((thFFTspec(thfreqs,:)),1);
@@ -258,7 +258,7 @@ while numpeaks ~=2
     numpeaks = length(LOCS);
 end
 
-
+SWdiptest = bz_hartigansdiptest(broadbandSlowWave);
 betweenpeaks = swhistbins(LOCS(1):LOCS(2));
 [dip,diploc] = findpeaks_SleepScore(-swhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
 
@@ -292,6 +292,7 @@ while numpeaks ~=2
     end
 end
 
+EMGdiptest = bz_hartigansdiptest(EMG);
 betweenpeaks = EMGhistbins(LOCS(1):LOCS(2));
 [dip,diploc] = findpeaks_SleepScore(-EMGhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
 
@@ -313,6 +314,8 @@ while numpeaks ~=2 && numbins <=25
     numpeaks = length(LOCS);
 end
 
+THdiptest = bz_hartigansdiptest(thratio(MOVtimes==0));
+
 numbins = 12;
 %numbins = 15; %for Poster...
 while numpeaks ~=2 && numbins <=25
@@ -322,6 +325,8 @@ while numpeaks ~=2 && numbins <=25
     LOCS = sort(LOCS);
     numbins = numbins+1;
     numpeaks = length(LOCS);
+    
+    THdiptest = bz_hartigansdiptest(thratio(NREMtimes==0 & MOVtimes==0));
 end
 
 if length(PKS)==2
@@ -348,7 +353,7 @@ THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
 SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,...
     t_clus,badtimes,badtimes_TH,histsandthreshs,LFPparams,WindowParams,THchanID,SWchanID,...
-    recordingname);
+    recordingname,THdiptest,EMGdiptest,SWdiptest);
 %save(matfilename,'SleepScoreMetrics');
 
 StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);

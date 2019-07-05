@@ -17,7 +17,11 @@ end
 
 %% Figure
 [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
-[~,mu_th,sig_th] = zscore(log10(thFFTspec)');
+if sum(isinf(log10(thFFTspec(:))))==0
+    [~,mu_th,sig_th] = zscore(log10(thFFTspec)');
+else
+    [~,mu_th,sig_th] = zscore((thFFTspec)');
+end
 
  viewwin  =[t_clus(1) t_clus(end)];
  %viewwin  =[32000 34000];

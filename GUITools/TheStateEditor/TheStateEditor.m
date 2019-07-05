@@ -323,13 +323,19 @@ if FileExistsIn([baseName,'.eegstates.mat'])
                     e = [];
                 end
             catch
-                try
-                    %First try Anton's LoadBinary - this is not in buzcode
-                    eeg = LoadBinary([baseName, suffix], Chs+1, nCh, [], 'int16', 'single');
+                disp('No eeg in your eegstates.mat. Loading from .lfp/.eeg file...');
+                try %first try bz_getLFP
+                    eeg = bz_GetLFP(Chs,'basepath',FO.basePath,'noPrompts',true);
+                    eeg = single(eeg.data)';
                 catch
-                    %Otherwise try to use Micheal Zugaro
-                    eeg = LoadBinaryIn([baseName, suffix], 'channels', Chs+1, 'nChannels', nCh)';
-                    eeg = double(eeg);
+                    try
+                        % try Anton's LoadBinary
+                        eeg = LoadBinary([baseName, suffix], Chs+1, nCh, [], 'int16', 'single');
+                    catch
+                        %Otherwise try to use Micheal Zugaro
+                        eeg = LoadBinaryIn([baseName, suffix], 'channels', Chs+1, 'nChannels', nCh)';
+                        eeg = single(eeg);
+                    end
                 end
                 
             end
