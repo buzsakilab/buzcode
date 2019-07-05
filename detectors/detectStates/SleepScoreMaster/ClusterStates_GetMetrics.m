@@ -216,7 +216,7 @@ thratio = smooth(thratio,smoothfact./specdt);
 
 
 %% Remove ignoretimes (after smoothing), before normalizoing
-if ~isempty(ignoretime)
+if ~isempty(ignoretime) || ~isempty(badtimes_TH) || ~isempty(badtimes)
 	ignoretimeIDX = InIntervals(t_clus,ignoretime) || isnan(broadbandSlowWave) || isnan(thratio);
     broadbandSlowWave(ignoretimeIDX) = [];
     thratio(ignoretimeIDX) = [];
