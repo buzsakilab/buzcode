@@ -316,17 +316,25 @@ end
 
 THdiptest = bz_hartigansdiptest(thratio(MOVtimes==0));
 
-numbins = 12;
-%numbins = 15; %for Poster...
-while numpeaks ~=2 && numbins <=25
-    [THhist,THhistbins]= hist(thratio(NREMtimes==0 & MOVtimes==0),numbins);
+if numpeaks ~= 2
+	display('No bimodal dip found in theta. Trying to exclude NREM...')
 
-    [PKS,LOCS] = findpeaks_SleepScore(THhist,'NPeaks',2,'SortStr','descend');
-    LOCS = sort(LOCS);
-    numbins = numbins+1;
-    numpeaks = length(LOCS);
+    numbins = 12;
+    %numbins = 15; %for Poster...
+    while numpeaks ~=2 && numbins <=25
+        [THhist,THhistbins]= hist(thratio(NREMtimes==0 & MOVtimes==0),numbins);
+
+        [PKS,LOCS] = findpeaks_SleepScore(THhist,'NPeaks',2,'SortStr','descend');
+        LOCS = sort(LOCS);
+        numbins = numbins+1;
+        numpeaks = length(LOCS);
+
+    end
     
-    THdiptest = bz_hartigansdiptest(thratio(NREMtimes==0 & MOVtimes==0));
+	try
+        THdiptest = bz_hartigansdiptest(thratio(NREMtimes==0 & MOVtimes==0));
+    catch
+	end
 end
 
 if length(PKS)==2
@@ -337,6 +345,7 @@ if length(PKS)==2
 
     REMtimes = (broadbandSlowWave<swthresh & EMG<EMGthresh & thratio>THthresh);
 else
+    display('No bimodal dip found in theta. Use TheStateEditor to manually select your threshold (hotkey: A)')
     THthresh = 0;
 %     REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
 end
