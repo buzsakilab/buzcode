@@ -29,7 +29,7 @@
 
 
 function whl = Process_DetectLED(fbasename,thresh,varargin)
-manualROI = 1;
+manualROI = 0;
 
 % Parse options
 for i = 1:2:length(varargin),
@@ -97,6 +97,8 @@ if manualROI
             ok = 1;
         end
     end
+else
+    inArea = ones(size(X));
 end
 
 % Initialize background as a grayscale image of the first frame

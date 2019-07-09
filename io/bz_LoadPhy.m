@@ -121,7 +121,7 @@ else
     f = waitbar(0,'Getting waveforms...');
     wfWin = round((wfWin * fs)/2);
         for ii = 1 : size(spikes.times,2)
-            spkTmp = spikes.times{ii};
+            spkTmp = spikes.ts{ii};
             if length(spkTmp) > nPull
                 spkTmp = spkTmp(randperm(length(spkTmp)));
                 spkTmp = spkTmp(1:nPull);
@@ -131,7 +131,7 @@ else
                 if verbose
                     fprintf(' ** %3.i/%3.i for cluster %3.i/%3.i  \n',jj, length(spkTmp), ii, size(spikes.times,2));
                 end
-                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spikes.ts{ii}(jj) - (wfWin),...
+                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spkTmp(jj) - (wfWin),...
                     'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
             end
             wf = mean(wf,3);
@@ -150,13 +150,6 @@ else
         end
         close(f)
     end
-    
-%     % spike measures
-%     disp('Computing spike features... ');
-%     if getFeat
-%        % call to cell metric functions
-%        
-%     end
 end
 
 % To match bz_GetSpikes
@@ -207,6 +200,9 @@ if ~isempty(spikes.UID)
     [alltimes,sortidx] = sort(alltimes); groups = groups(sortidx); %sort both
     spikes.spindices = [alltimes groups];
 end
+
+
+
 
 % % Compute spike measures
 % if ~isempty(spikes.UID) && getWave
