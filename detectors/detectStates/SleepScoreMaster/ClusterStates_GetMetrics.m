@@ -24,12 +24,14 @@ addParameter(p,'ignoretime',[])
 addParameter(p,'window',2)
 addParameter(p,'smoothfact',15)
 addParameter(p,'IRASA',true)
+addParameter(p,'ThIRASA',false)
 parse(p,varargin{:})
 onSticky = p.Results.onSticky; 
 ignoretime = p.Results.ignoretime; 
 window = p.Results.window; 
 smoothfact = p.Results.smoothfact; 
 IRASA = p.Results.IRASA; 
+ThIRASA = p.Results.ThIRASA; 
 
 %This is the sticky trigger passed through to DetermineStates via histsandthreshs
 if onSticky
@@ -169,7 +171,7 @@ broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
 f_all = [2 20];
 f_theta = [5 10];
 
-if IRASA
+if ThIRASA
     %Put the LFP in the right structure format
     lfp.data = thLFP;
     lfp.timestamps = t_LFP;
