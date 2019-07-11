@@ -2484,7 +2484,7 @@ baseName = FO.baseName;
 basePath = FO.basePath;
 
 %Load baseName.SleepState.states.mat
-SleepState = bz_LoadStates(basePath,'SleepState');
+[SleepState,sleepstatefilename] = bz_LoadStates(basePath,'SleepState');
 
 %Check if the SleepState file is new, manually detected, or auto-detected
 if isempty(SleepState)
@@ -2570,7 +2570,7 @@ SleepState.idx = idx;
 SleepState.detectorinfo.LastManualUpdate = datestr(now,'yyyy-mm-dd');
 
 %Save the results!
-save([baseName '.SleepState.states.mat'],'SleepState')
+save(sleepstatefilename,'SleepState')
 
 
 %Make a new figure

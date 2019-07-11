@@ -101,7 +101,7 @@ clusterfig = figure('visible','off');
         
 %% Figure: Split REM/Arousal  
 IDX_struct = bz_INTtoIDX(SleepState.ints);
-IDX = interp1(IDX_struct.timestamps,IDX_struct.states,t_clus);
+IDX = interp1(IDX_struct.timestamps,IDX_struct.states,t_clus,'nearest');
 %IDX(1:t_clus(1)-1)=[];
 NREMtimes = (broadbandSlowWave >swthresh);
 

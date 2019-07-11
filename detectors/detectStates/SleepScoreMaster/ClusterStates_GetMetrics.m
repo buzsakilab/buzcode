@@ -40,16 +40,17 @@ else
     stickySW = false; stickyTH=false; stickyEMG=false;
 end
 %% Buzcode name of the SleepScoreMetrics.LFP.mat file
-[datasetfolder,recordingname,extension] = fileparts(basePath);
-recordingname = [recordingname,extension]; % fileparts parses '.' into extension
-matfilename = fullfile(basePath,[recordingname,'.SleepScoreMetrics.LFP.mat']);
-plotmaterialsfilename = fullfile(basePath,[recordingname,'.StatePlotMaterials.mat']);
-
-if exist(matfilename) & exist(plotmaterialsfilename) & overwrite == false
-    load(matfilename,'SleepScoreMetrics')
-    load(plotmaterialsfilename,'StatePlotMaterials')
-    return
-end
+%Depreciated
+ [datasetfolder,recordingname,extension] = fileparts(basePath);
+% recordingname = [recordingname,extension]; % fileparts parses '.' into extension
+% matfilename = fullfile(basePath,[recordingname,'.SleepScoreMetrics.LFP.mat']);
+% plotmaterialsfilename = fullfile(basePath,[recordingname,'.StatePlotMaterials.mat']);
+% 
+% if exist(matfilename) & exist(plotmaterialsfilename) & overwrite == false
+%     load(matfilename,'SleepScoreMetrics')
+%     load(plotmaterialsfilename,'StatePlotMaterials')
+%     return
+% end
 
 
 %Get the SW weights from SleepScoreLFP - if it's not there, use PSS
@@ -171,13 +172,13 @@ broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
 f_all = [2 20];
 f_theta = [5 10];
 
-if ThIRASA
+if ThIRASA && strcmp(SWweights,'PSS')
     %Put the LFP in the right structure format
     lfp.data = thLFP;
     lfp.timestamps = t_LFP;
     lfp.samplingRate = sf_LFP;
     %Calculate PSS
-    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,'nfreqs',200,'frange',f_all,'IRASA',IRASA);
+    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,'nfreqs',200,'frange',f_all,'IRASA',ThIRASA);
     t_thclu = specslope.timestamps;
     specdt = 1./specslope.samplingRate;
     thFFTspec = specslope.resid';
