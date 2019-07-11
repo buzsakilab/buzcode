@@ -28,6 +28,8 @@ function [ cellinfo,filename ] = bz_LoadCellinfo(basePath,cellinfoName,varargin)
 %   filename        filename loaded
 %
 %DLevenstein 2018
+
+% Added support for NWB: Konstantinos Nasiotis 2019
 %%
 p = inputParser;
 addParameter(p,'dataset',false)
@@ -104,13 +106,19 @@ baseName = bz_BasenameFromBasepath(basePath);
 
 if ~exist('cellinfoName','var') || isempty(cellinfoName)
     allCellinfoFiles = dir(fullfile(basePath,[baseName,'.','*','.cellinfo.mat']));
-    [s,v] = listdlg('PromptString','Which cellinfo.mat would you like to load?',...
-                 'ListString',{allCellinfoFiles.name},'SelectionMode','single');
-    if isempty(s)
-        cellinfo = []; filename = [];
-        return
+    
+    if ~isempty(allCellinfoFiles)
+        [s,v] = listdlg('PromptString','Which cellinfo.mat would you like to load?',...
+                     'ListString',{allCellinfoFiles.name},'SelectionMode','single');
+        if isempty(s)
+            cellinfo = []; filename = [];
+            return
+        end
+        filename = fullfile(basePath,allCellinfoFiles(s).name);
+    else
+        filename = [];
     end
-    filename = fullfile(basePath,allCellinfoFiles(s).name);
+
 else
     filename = fullfile(basePath,[baseName,'.',cellinfoName,'.cellinfo.mat']);
 end
@@ -118,10 +126,14 @@ end
 
 if exist(filename,'file')
     cellinfostruct = load(filename);
-else
-    warning([filename,' does not exist...'])
-    cellinfo = [];
-    return
+else % Check for NWB file
+    
+    cellinfostruct = loadCellInfoNWB(basePath);
+    
+    if isempty(cellinfostruct)
+        cellinfo = [];
+        return
+    end
 end
 
 varsInFile = fieldnames(cellinfostruct);
@@ -139,6 +151,80 @@ switch isCellinfo
     case false
         warning('Your cellinfo structure does not meet buzcode standards. Sad.')
 end
+
+
+
+
+%% Function that loads NWB fields to a Behavior structure
+function cellinfostruct = loadCellInfoNWB(basePath)
+    
+    % Check for NWB file since no .behavior.mat files were found
+    d = dir(fullfile(basePath, '*.nwb'));
+    if length(d) > 1 % If more than one .nwb files exist in the directory, select which one to load from
+        warning('there is more than one .nwb file in this directory');
+        [iNWBFile, ~] = listdlg('PromptString','Which NWB file would you like to load?',...
+                                 'ListString',{d.name},'SelectionMode','single');
+        d = d(iNWBFile);
+    elseif length(d) == 0
+        d = dir('*nwb');
+        if isempty(d)
+            disp('No .cellinfo.mat or NWB files present in this directory')
+            cellinfostruct = [];
+            return
+        end
+    end
+    
+    % If an NWB file exists, load the info according the Buzcode standard
+    nwb_file = fullfile(d.folder, d.name); 
+
+    nwb2 = nwbRead(nwb_file);
+    
+    if ~isempty(nwb2.units)
+    
+        nNeurons = length(nwb2.units.id.data.load);
+
+        cellinfostruct.spikes.UID           = double(nwb2.units.id.data.load');
+        cellinfostruct.spikes.shankID       = nwb2.units.vectordata.get('shankID').data.load';
+        cellinfostruct.spikes.cluID         = nwb2.units.vectordata.get('cluID').data.load';
+        cellinfostruct.spikes.maxWaveformCh = nwb2.units.vectordata.get('maxWaveformCh').data.load';
+        cellinfostruct.spikes.region        = nwb2.units.vectordata.get('region').data.load';
+        cellinfostruct.spikes.sessionName   = nwb2.identifier;
+
+        for iNeuron = 1:nNeurons
+            cellinfostruct.spikes.rawWaveform{1,iNeuron} = nwb2.units.waveform_mean.data.load([iNeuron, 1], [iNeuron,Inf]);
+
+            if iNeuron == 1 
+                cellinfostruct.spikes.times{1,iNeuron} = nwb2.units.spike_times.data.load(1, double(nwb2.units.spike_times_index.data.load(iNeuron)));
+            else
+                cellinfostruct.spikes.times{1,iNeuron} = nwb2.units.spike_times.data.load(double(nwb2.units.spike_times_index.data.load(iNeuron-1))+1, double(nwb2.units.spike_times_index.data.load(iNeuron)));
+            end
+        end
+
+        %% Optional
+        % reorder for easy comparison with the tutorial example
+        C = {'UID','times','shankID','cluID','rawWaveform','maxWaveformCh','region','sessionName'};
+        cellinfostruct.spikes = orderfields(cellinfostruct.spikes,C);
+    
+    else
+        disp('No units information in the selected NWB file');
+        cellinfostruct = [];
+        return
+    end
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end
 

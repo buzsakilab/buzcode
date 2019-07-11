@@ -53,6 +53,8 @@ function [lfp] = bz_GetLFP(varargin)
 % Copyright (C) 2004-2011 by Michaël Zugaro
 % editied by David Tingley, 2017
 %
+% added support for NWB by Konstantinos Nasiotis, 2019
+
 % NOTES
 % -'select' option has been removed, it allowed switching between 0 and 1
 %   indexing.  This should no longer be necessary with .lfp.mat structs
@@ -102,7 +104,20 @@ if isempty(basename)
    elseif length(d) == 0
        d = dir([basepath filesep '*eeg']);
        if isempty(d)
-           error('could not find an lfp/eeg file..')
+           % If no .lfp file is present, check for a .nwb
+           d = dir([basepath filesep '*.nwb']);
+           if length(d) > 1 % If more than one .nwb files exist in the directory, select which one to load from
+               warning('there is more than one .nwb file in this directory');
+               % Check if a specific behavior was called to be loaded. If not, display a
+               % pop-up list with the available behaviors for selection
+               [iNWBFile, ~] = listdlg('PromptString','Which NWB file would you like to load?',...
+                                         'ListString',{d.name},'SelectionMode','single');
+               d = d(iNWBFile);
+           else
+               if isempty(d)
+                    error('could not find an lfp/eeg/nwb file..')
+               end
+           end
        end
    end
    lfp.Filename = d.name;
@@ -124,15 +139,47 @@ else
    elseif length(d) == 0
        d = dir([basepath filesep basename '.eeg']);
        if isempty(d)
-           error('could not find an lfp/eeg file..')
+           d = dir([basepath filesep basename '.nwb']);
+           if length(d) > 1 % we assume one .nwb file or this should break
+               warning('there is more than one .nwb file in this directory');
+               % Check if a specific behavior was called to be loaded. If not, display a
+               % pop-up list with the available behaviors for selection
+               [iNWBFile, ~] = listdlg('PromptString','Which NWB file would you like to load?',...
+                                         'ListString',{d.name},'SelectionMode','single');
+               d = d(iNWBFile);
+           else
+               if isempty(d)
+                    error('could not find an lfp/eeg/nwb file..')
+               end
+           end
        end
    end
    lfp.Filename = d.name;   
 end
 
+
+%% Add a flag that shows if variables are loaded from a .nwb file
+%  nwb has everything saved in a single file
+
+if ~isempty(strfind(lfp.Filename,'nwb'))
+    nwb_loaded = 1;
+else
+    nwb_loaded = 0;
+end
+
 %% things we can parse from sessionInfo or xml file
 
-sessionInfo = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
+if ~nwb_loaded
+    sessionInfo = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
+else
+    % Load the .nwb info
+    nwb2 = nwbRead(lfp.Filename);
+    sessionInfo = get_SessionInfoFromNWB(nwb2); % The get_SessionInfoFromNWB loads only the needed fields for the functions tested. Maybe improve
+    
+    if ~sessionInfo.LFPDataPresent
+        error('No LFP data detected in this file. Make sure that there is a field within: nwb2.processing.get("ecephys").nwbdatainterface.get("LFP").electricalseries')
+    end
+end
 
 try
     samplingRate = sessionInfo.lfpSampleRate;
@@ -165,11 +212,38 @@ for i = 1:nIntervals
     % Load data and put into struct
     % we assume 0-indexing like neuroscope, but bz_LoadBinary uses 1-indexing to
     % load....
-    lfp(i).data = bz_LoadBinary([basepath filesep lfp.Filename],...
-        'duration',double(lfp(i).duration),...
-                  'frequency',samplingRate,'nchannels',sessionInfo.nChannels,...
-                  'start',double(lfp(i).interval(1)),'channels',channels+1,...
-                  'downsample',downsamplefactor);
+    
+    if ~nwb_loaded
+        lfp(i).data = bz_LoadBinary([basepath filesep lfp.Filename],...
+            'duration',double(lfp(i).duration),...
+                      'frequency',samplingRate,'nchannels',sessionInfo.nChannels,...
+                      'start',double(lfp(i).interval(1)),'channels',channels+1,...
+                      'downsample',downsamplefactor);
+                  
+    else
+        %% NWB
+        % Memory preallocation is used for faster assignment
+        if intervals(i,2) == Inf
+            use_this_bracket = sessionInfo.samples_NWB/sessionInfo.lfpSampleRate;
+            data_temp = zeros(length(channels),ceil((use_this_bracket - intervals(i,1))*samplingRateLFP));
+        else
+            use_this_bracket = intervals(i,2);
+            data_temp = zeros(length(channels),floor((intervals(i,2) - intervals(i,1))*samplingRateLFP));
+        end
+
+        % Differentiate between sequential loading of each channel and
+        % simultaneous loading of neighboring channels
+        if all(diff(channels) == 1)
+        	data_temp = nwb2.processing.get('ecephys').nwbdatainterface.get('LFP').electricalseries.get(sessionInfo.LFPDataKey).data.load([channels(1)+1, intervals(i,1)*samplingRate+1],[1, downsamplefactor],[channels(end)+1, use_this_bracket*samplingRate]);
+        else
+            for iChannel = 1:length(channels)
+                disp(['Now concatenating channel: ' num2str(channels(iChannel))])
+                data_temp(iChannel,:) = nwb2.processing.get('ecephys').nwbdatainterface.get('LFP').electricalseries.get(sessionInfo.LFPDataKey).data.load([channels(iChannel)+1, intervals(i,1)*samplingRate+1],[1, downsamplefactor],[channels(iChannel)+1, use_this_bracket*samplingRate]);
+            end 
+        end
+        lfp(i).data = data_temp'; clear data_temp
+    end
+    
     lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRateLFP):...
                         (lfp(i).interval(1)+(length(lfp(i).data)-1)/...
                         samplingRateLFP)]';
