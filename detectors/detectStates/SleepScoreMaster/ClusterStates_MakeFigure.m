@@ -167,7 +167,9 @@ saveas(gcf,[figloc,recordingname,'_SSCluster2D'],'jpeg')
 %saveas(gcf,['/Users/dlevenstein/Code Library/SleepScoreDevelopment/StateScoreFigures/','ThetaEMGExample'],'jpeg')
 %% Figure: Clustering
 colormat = [[0 0 0];[0 0 1];[1 0 0];[nan nan nan]];
-IDX(IDX==0) = 4;
+if any(IDX==0) || any(isnan(IDX)) %not sure why this was here.... but here we are
+    IDX(IDX==0 | isnan(IDX)) = 4;
+end
 coloridx = colormat(IDX,:);
 
 if noprompts

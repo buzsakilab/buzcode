@@ -1,5 +1,7 @@
 function spikes = bz_GetSpikes(varargin)
 % bz_getSpikes - Get spike timestamps.
+%       if loading from clu/res/fet/spk files - must be formatted as:
+%       baseName.clu.shankNum
 %
 % USAGE
 %
@@ -90,6 +92,7 @@ onlyLoad = p.Results.onlyLoad;
 
 
 [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
+baseName = bz_BasenameFromBasepath(basepath);
 
 
 spikes.samplingRate = sessionInfo.rates.wideband;
@@ -141,14 +144,18 @@ end
 tempFiles = zeros(length(cluFiles),1);
 for i = 1:length(cluFiles) 
     dummy = strsplit(cluFiles(i).name, '.'); % Check whether the component after the last dot is a number or not. If not, exclude the file/dir. 
-    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | isempty(str2num(dummy{length(dummy)})) | find(contains(dummy, 'clu')) ~= length(dummy)-1  
+    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | ...
+            isempty(str2num(dummy{length(dummy)})) | find(contains(dummy, 'clu')) ~= length(dummy)-1  | ...
+            ~strcmp(dummy{1},baseName)
         tempFiles(i) = 1;
     end
 end
 cluFiles(tempFiles==1)=[];
 tempFiles = zeros(length(resFiles),1);
 for i = 1:length(resFiles)
-    if ~isempty(findstr('temp',resFiles(i).name)) | ~isempty(findstr('autosave',resFiles(i).name))
+    dummy = strsplit(resFiles(i).name, '.');
+    if ~isempty(findstr('temp',resFiles(i).name)) | ~isempty(findstr('autosave',resFiles(i).name)) | ...
+            ~strcmp(dummy{1},baseName)
         tempFiles(i) = 1;
     end
 end
@@ -156,7 +163,9 @@ if any(getWaveforms)
     resFiles(tempFiles==1)=[];
     tempFiles = zeros(length(spkFiles),1);
     for i = 1:length(spkFiles)
-        if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name))
+        dummy = strsplit(spkFiles(i).name, '.');
+        if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name)) | ...
+            ~strcmp(dummy{1},baseName)
             tempFiles(i) = 1;
         end
     end

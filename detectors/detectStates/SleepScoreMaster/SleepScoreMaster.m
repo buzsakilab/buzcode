@@ -5,7 +5,8 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %It's strongly recommended that you 
 %   1) indicate bad (noisy) channels using bz_getSessionInfo(basePath,'editGUI',true)
 %      before running SleepScoreMaster.
-%   3) use the 'ignoretime' input to exclude time windows with 
+%   3) use the 'ignoretime' input to exclude time windows with opto
+%       stimulation or behavior with electrical noise
 %   2) check the scoring quality using TheStateEditor after running SleepScoreMaster.
 %      Use the 'A' key in TheStateEditory to further refine thresholds as
 %      needed, and implement sticky thresholds.
@@ -22,6 +23,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   OPTIONS
 %   'savedir'       Default: basePath
 %   'overwrite'     Overwrite all processing steps (Default: false)
+%   'ignoreManual'  Default: false. Overwrite manual scoring from TheStateEditor
 %   'savebool'      Default: true. Save anything.
 %   'scoretime'     Window of time to score. Default: [0 Inf] 
 %                   NOTE: must be continous interval
@@ -142,6 +144,7 @@ addParameter(p,'noPrompts',true);
 addParameter(p,'stickytrigger',false);
 addParameter(p,'saveLFP',true);
 addParameter(p,'winparms',[2 15]);
+addParameter(p,'ignoreManual',false)
 
 parse(p,varargin{:})
 %Clean up this junk...
@@ -162,6 +165,7 @@ noPrompts = p.Results.noPrompts;
 stickytrigger = p.Results.stickytrigger;
 saveLFP = p.Results.saveLFP;
 winparms = p.Results.winparms;
+ignoreManual = p.Results.ignoreManual; 
 
 %% Database File Management 
 savefolder = fullfile(savedir,recordingname);
@@ -173,6 +177,20 @@ end
 sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
 %Buzcode outputs
 bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
+
+%% Check for existing Manual Scoring
+if exist(bz_sleepstatepath,'file') && ~overwrite && ~ignoreManual
+   SleepState_old = load(bz_sleepstatepath);
+   if isfield(SleepState_old.SleepState.detectorinfo,'LastManualUpdate')
+       display(['Manual scoring detected... will update the SleepScoreMetrics and AutoScoreInts, ',...
+        'but keep previous (manual) scoring.']) 
+       display(['To overwrite manual scoring use ''ignoreManual'',true ',...
+           'or ''overwrite'',true to overwrite all metrics.'])
+       ManScore.ints = SleepState_old.SleepState.ints;
+       ManScore.idx = SleepState_old.SleepState.idx;
+       ManScore.LastManualUpdate = SleepState_old.SleepState.detectorinfo.LastManualUpdate;
+   end
+end
 
 %% Get channels not to use
 sessionInfo = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
@@ -227,7 +245,6 @@ display('Quantifying metrics for state scoring')
                                            basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
                                            'onSticky',stickytrigger,'ignoretime',ignoretime,...
                                            'window',winparms(1),'smoothfact',winparms(2),'IRASA',true);
-                                           %%good parms! test on more and add as defaults
                                        
 %Use the calculated scoring metrics to divide time into states
 display('Clustering States Based on EMG, SW, and TH LFP channels')
@@ -249,6 +266,14 @@ SleepState.detectorinfo.detectionparms = detectionparms;
 SleepState.detectorinfo.detectionparms.histsandthreshs_orig = detectionparms.SleepScoreMetrics.histsandthreshs;
 SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
 SleepState.detectorinfo.StatePlotMaterials = StatePlotMaterials;
+
+%Put old manual scoring back in
+if exist('ManScore','var')
+    SleepState.AutoScoreInts = SleepState.ints;
+    SleepState.ints = ManScore.ints;
+    SleepState.idx = ManScore.idx;
+    SleepState.detectorinfo.LastManualUpdate = ManScore.LastManualUpdate;
+end
 
 %Saving SleepStates
 save(bz_sleepstatepath,'SleepState');
