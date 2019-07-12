@@ -305,7 +305,7 @@ if strcmp(str(1),'y')
     sessionInfo.session.path = basepath;
     sessionInfo.spikeGroups = SessionMetadata.ExtracellEphys.SpikeGroups;
     sessionInfo.nChannels = SessionMetadata.ExtracellEphys.NumberOfChannels;
-    sessionInfo.channels = [1:SessionMetadata.ExtracellEphys.NumberOfChannels];
+    sessionInfo.channels = [0:SessionMetadata.ExtracellEphys.NumberOfChannels-1];
     sessionInfo.nBits = SessionMetadata.ExtracellEphys.Parameters.BitsPerSample;
     sessionInfo.rates.lfp = SessionMetadata.ExtracellEphys.Parameters.LfpSampleRate;
     sessionInfo.rates.wideband = SessionMetadata.ExtracellEphys.Parameters.SampleRate;
