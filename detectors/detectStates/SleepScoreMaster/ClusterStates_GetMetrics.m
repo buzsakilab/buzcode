@@ -100,11 +100,12 @@ sf_LFP = SleepScoreLFP.sf/downsamplefactor;
 
 
 %% Calculate broadbandslowwave metric
-%display('FFT Spectrum for Broadband LFP')
+
 %Timing Parameters
 noverlap = window-1; %1s dt
 
 if strcmp(SWweights,'PSS')
+    display('Calculating SW Mertric using Power Spectrum Slope')
     %Put the LFP in the right structure format
     lfp.data = swLFP;
     lfp.timestamps = t_LFP;
@@ -123,6 +124,8 @@ if strcmp(SWweights,'PSS')
     totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
     badtimes = find(totz>3);
 else
+    display(['Calculating SW Mertric using ',SleepScoreLFP.params.SWWeightsName])
+
     freqlist = logspace(0,2,100);
     [swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
     t_clus = t_clus'+t_LFP(1); %Offset for scoretime start
@@ -134,7 +137,7 @@ else
     badtimes = find(totz>5);
 
     %Calculate per-bin weights onto SlowWave
-    assert(isequal(freqlist,SWfreqlist),...
+    assert(isequal(swFFTfreqs,SWfreqlist),...
         'spectrogram freqs.  are not what they should be...')
     broadbandSlowWave = zFFTspec*SWweights';
     
@@ -144,27 +147,6 @@ end
 broadbandSlowWave(badtimes) = nan;
 broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
  
-%%
-% range = [7000 9000];
-% figure
-% subplot(2,1,1)
-% imagesc(spec.timestamps,log2(spec.freqs),spec.amp')
-% hold on
-% 
-% axis xy
-% xlim(range)
-% LogScale('y',2)
-% colorbar
-% %caxis([-1 1])
-% subplot(2,1,2)
-% imagesc(specslope.timestamps,log2(specslope.freqs),specslope.resid')
-% hold on
-% plot(specslope.timestamps,bz_NormToRange(thratio),'w')
-% axis xy
-% LogScale('y',2)
-% colorbar
-% xlim(range)
-% caxis([0 1])
 %% Calculate theta
 %display('FFT Spectrum for Theta')
 
@@ -173,6 +155,7 @@ f_all = [2 20];
 f_theta = [5 10];
 
 if ThIRASA && strcmp(SWweights,'PSS')
+    display('Calculating Theta Metric above PSS')
     %Put the LFP in the right structure format
     lfp.data = thLFP;
     lfp.timestamps = t_LFP;
@@ -194,7 +177,7 @@ if ThIRASA && strcmp(SWweights,'PSS')
     thratio = max((thFFTspec(thfreqs,:)),[],1);
     
 else
-
+    display('Calculating Theta Metric using power ratio')
     freqlist = logspace(log10(f_all(1)),log10(f_all(2)),100);
 
     [thFFTspec,thFFTfreqs,t_thclu] = spectrogram(single(thLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);

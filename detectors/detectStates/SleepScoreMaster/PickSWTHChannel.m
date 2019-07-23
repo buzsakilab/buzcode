@@ -40,44 +40,6 @@ if ~exist(figfolder,'dir') & saveFiles
     mkdir(figfolder)
 end
 
-%% Check if SleepScoreLFP has already been claculated for this recording
-%If the SleepScoreLFP file already exists, load and return with SleepScoreLFP in hand
-if exist(matfilename,'file') && ~OVERWRITE
-    display('SleepScoreLFP already calculated - loading from SleepScoreLFP.LFP.mat')
-    load(matfilename)
-    if ~exist('SleepScoreLFP','var')
-        display([matfilename,' does not contain a variable called SleepScoreLFP'])
-    end
-    return
-end
-display('Picking SW and TH Channels for SleepScoreLFP.LFP.mat')
-
-%%
-
-xmlfilename = [datasetfolder,'/',recordingname,'/',recordingname,'.xml'];
-if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
-elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
-    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.eeg']);
-else 
-    display('No .lfp file')
-end
-
-%% FMA
-Par = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
-nChannels = Par.nChannels;
-
-if isfield(Par,'SpkGrps')
-    SpkGrps = Par.SpkGrps;
-elseif isfield(Par,'AnatGrps')
-    SpkGrps = Par.AnatGrps;
-    display('No SpikeGroups, Using AnatomyGroups')
-else
-    display('No SpikeGroups...')
-end
-
 %% Hist/Freqs Parms
 numhistbins = 21;
 histbins = linspace(0,1,numhistbins);
@@ -112,6 +74,56 @@ end
 f_all = [2 20];
 f_theta = [5 10];
 thFFTfreqs = logspace(log10(f_all(1)),log10(f_all(2)),numfreqs);
+
+%% Check if SleepScoreLFP has already been claculated for this recording
+%If the SleepScoreLFP file already exists, load and return with SleepScoreLFP in hand
+if exist(matfilename,'file') && ~OVERWRITE
+    display('SleepScoreLFP already calculated - loading from SleepScoreLFP.LFP.mat')
+    load(matfilename)
+    if ~exist('SleepScoreLFP','var')
+        display([matfilename,' does not contain a variable called SleepScoreLFP'])
+    end
+    
+    if ~isequal(SleepScoreLFP.params.SWWeightsName,SWWeightsName)
+       display(['SlowWave Method used for Channel selection doesn''t match, updating to ',SWWeightsName])
+       SleepScoreLFP.params.SWfreqlist_selection = SleepScoreLFP.params.SWfreqlist;
+       SleepScoreLFP.params.SWweights_selection = SleepScoreLFP.params.SWweights;
+       SleepScoreLFP.params.SWWeightsName_selection = SleepScoreLFP.params.SWWeightsName;
+       SleepScoreLFP.params.SWfreqlist = SWfreqlist;
+       SleepScoreLFP.params.SWweights = SWweights;
+       SleepScoreLFP.params.SWWeightsName = SWWeightsName;
+    end
+    
+    return
+end
+display('Picking SW and TH Channels for SleepScoreLFP.LFP.mat')
+
+%%
+
+xmlfilename = [datasetfolder,'/',recordingname,'/',recordingname,'.xml'];
+if exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
+    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
+elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file')
+    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.lfp']);
+elseif exist (fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
+    rawlfppath = fullfile(datasetfolder,recordingname,[recordingname,'.eeg']);
+else 
+    display('No .lfp file')
+end
+
+%% FMA
+Par = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
+nChannels = Par.nChannels;
+
+if isfield(Par,'SpkGrps')
+    SpkGrps = Par.SpkGrps;
+elseif isfield(Par,'AnatGrps')
+    SpkGrps = Par.AnatGrps;
+    display('No SpikeGroups, Using AnatomyGroups')
+else
+    display('No SpikeGroups...')
+end
+
 
 
 %% Pick channels to use
