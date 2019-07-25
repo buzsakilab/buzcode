@@ -57,7 +57,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %   'stickytrigger' Implements a "sticky" trigger for SW/EMG threshold 
 %                   crossings: metrics must reach halfway between threshold
 %                   and opposite peak to count as crossing (reduces
-%                   flickering, good for HPC recordings) (default:false)
+%                   flickering) (default:true)
 %   'SWChannels'    A vector list of channels that may be chosen for SW
 %                   signal
 %   'ThetaChannels' A vector list of channels that may be chosen for Theta
@@ -213,10 +213,12 @@ end
 % elseif isfield(sessionInfo,'badchannels')
 if isfield(sessionInfo,'badchannels')
     rejectChannels = [rejectChannels sessionInfo.badchannels]; %get badchannels from the .xml
-else
-    display('No baseName.SessionMetadata.mat, no badchannels in your xml - so no rejected channels')
+    
 end
 
+if isempty(rejectChannels)
+    display('No rejected channels - it''s recommended you identify noisy channels to ignore')
+end
 
 %% CALCULATE EMG FROM HIGH-FREQUENCY COHERENCE
 % Load/Calculate EMG based on cross-shank correlations 

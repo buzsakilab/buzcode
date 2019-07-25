@@ -139,12 +139,18 @@ knownIidx = ismember(spikes.UID,knownI);
 ignoreidx = ismember(spikes.UID,ignorecells);
 
 %% Plot for manual selection of boundary, with display of separatrix as a guide.
-h = figure;
-title({'Discriminate pyr and int (select Pyramidal)','left click to draw boundary', 'center click/ENTER to complete)'});
-fprintf('\nDiscriminate pyr and int (select Pyramidal)');
-xlabel('Trough-To-Peak Time (ms)')
-ylabel('Wave width (via inverse frequency) (ms)')
-[ELike,PyrBoundary] = ClusterPointsBoundaryOutBW([x y],knownEidx,knownIidx,m,b);
+if all(knownEidx | knownIidx | ignoreidx) && keepKnown
+    PyrBoundary = [nan nan];
+    ELike = false(size(spikes.UID));
+else
+    h = figure;
+    title({'Discriminate pyr and int (select Pyramidal)','left click to draw boundary', 'center click/ENTER to complete)'});
+    fprintf('\nDiscriminate pyr and int (select Pyramidal)');
+    xlabel('Trough-To-Peak Time (ms)')
+    ylabel('Wave width (via inverse frequency) (ms)')
+    [ELike,PyrBoundary] = ClusterPointsBoundaryOutBW([x y],knownEidx,knownIidx,m,b);
+    ELike = ELike';
+end
 
 if keepKnown
     ELike(knownEidx) = 1;
@@ -152,8 +158,8 @@ if keepKnown
 end
 %% Mean waveforms output
 CellClass.UID = spikes.UID;
-CellClass.pE = ELike' & ~ignoreidx;
-CellClass.pI = ~ELike'& ~ignoreidx;
+CellClass.pE = ELike & ~ignoreidx;
+CellClass.pI = ~ELike & ~ignoreidx;
 CellClass.label = cell(size(CellClass.UID));
 CellClass.label(CellClass.pE) = {'pE'};
 CellClass.label(CellClass.pI) = {'pI'};
@@ -191,9 +197,13 @@ if SAVEFIG || SHOWFIG
         title([baseName,': Cell Classification'])
         
     subplot(2,2,2)
-        plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pE),'color',[0 0.6 0])
+        if any(CellClass.pE)
+            plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pE),'color',[0 0.6 0])
+        end
         hold on
-        plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pI),'color',[0.6 0 0])
+        if any(CellClass.pI)
+            plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pI),'color',[0.6 0 0])
+        end
         if any(ignoreidx)
             plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,ignoreidx),'color',[0.5 0.5 0.5])
         end

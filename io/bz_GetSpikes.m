@@ -363,25 +363,14 @@ function spikes = removeCells(toRemove,spikes,getWaveforms)
 %the UID in spikes.UID
 
     spikes.UID(toRemove) = [];
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.times{r} = [];
-         spikes.region{r} = [];
-        end
-    end
-    spikes.times = removeEmptyCells(spikes.times);
-    spikes.region = removeEmptyCells(spikes.region);
+    spikes.times(toRemove) = [];
+    spikes.region(toRemove) = [];
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
     
     if any(getWaveforms)
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.rawWaveform{r} = [];
-        end
-    end
-    spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
-    spikes.maxWaveformCh(toRemove) = [];
+        spikes.rawWaveform(toRemove) = [];
+        spikes.maxWaveformCh(toRemove) = [];
     end
     
 end

@@ -85,22 +85,26 @@ if length(lfp.channels)>1
         lfp_temp = lfp; 
         lfp_temp.data = lfp_temp.data(:,cc); 
         lfp_temp.channels = lfp_temp.channels(cc);
-        specslope_temp = bz_PowerSpectrumSlope(lfp_temp,winsize,dt,varargin{:});
+        specslope_temp = bz_PowerSpectrumSlope(lfp_temp,winsize,dt,varargin{:},'saveMat',false);
         
         if ~exist('specslope','var')
             specslope = specslope_temp;
             %Don't save the big stuff for multiple channels.
-            specslope.resid = [];
+            %specslope.resid = [];
         else
             specslope.data(:,cc) = specslope_temp.data;
             specslope.intercept(:,cc) = specslope_temp.intercept;
-            specslope.rsq(:,cc) = specslope_temp.rsq;
+            specslope.resid(:,cc) = specslope_temp.resid;
+            specslope.rsq(:,:,cc) = specslope_temp.rsq;
             specslope.specgram(:,:,cc) = specslope_temp.specgram;
         end
         
 	end
     specslope.channels = lfp.channels;
     %spec = [];
+    if saveMat
+        save(savename,'specslope','spec');
+    end
     return
 end
 %% Calcluate spectrogram

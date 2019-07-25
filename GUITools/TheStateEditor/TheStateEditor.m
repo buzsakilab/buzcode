@@ -363,7 +363,7 @@ else
         
         if exist([baseName '.SleepScoreLFP.LFP.mat'],'file')
             load([baseName '.SleepScoreLFP.LFP.mat'])
-            defaultchans = unique([SleepScoreLFP.SWchanID SleepScoreLFP.THchanID]);
+            defaultchans = ([SleepScoreLFP.SWchanID SleepScoreLFP.THchanID]);
             if length(defaultchans)<2
                 defaultchans = num2str(defaultchans);
             elseif length(defaultchans)>=2
@@ -5414,7 +5414,7 @@ StickyThreshCheck_TH = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units
 broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
 thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
 EMG = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.EMG;
-plotstates = interp1(FO.to,FO.States,SleepState.idx.timestamps,'nearest');
+plotstates = interp1(FO.to,FO.States,SleepState.detectorinfo.detectionparms.SleepScoreMetrics.t_clus,'nearest');
 %right plot
 ax4 = subplot(2,2,1);hold on;
     for ss = 1:5
@@ -5611,19 +5611,20 @@ end
 [stateintervals,stateidx,~] = ClusterStates_DetermineStates(...
                                            dp.SleepScoreMetrics,dp.MinTimeWindowParms,FO.AutoScore.histsandthreshs);
 
+plotstates = interp1(stateidx.timestamps,stateidx.states,dp.SleepScoreMetrics.t_clus,'nearest');
 %Redraw 2d cluster plots
 cla(FO.AutoClusterFig.ax4)
     for ss = 1:5
-        plot(FO.AutoClusterFig.ax4,dp.SleepScoreMetrics.broadbandSlowWave(stateidx.states==ss),...
-            dp.SleepScoreMetrics.EMG(stateidx.states==ss),'.','color',FO.colors.states{ss},'markersize',1)
+        plot(FO.AutoClusterFig.ax4,dp.SleepScoreMetrics.broadbandSlowWave(plotstates==ss),...
+            dp.SleepScoreMetrics.EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
     plot(FO.AutoClusterFig.ax4,swthresh.*[1 1],ylim(FO.AutoClusterFig.ax4),'r','LineWidth',1);
     plot(FO.AutoClusterFig.ax4,[0 swthresh],EMGthresh.*[1 1],'r','LineWidth',1);
     
 cla(FO.AutoClusterFig.ax5)
     for ss = [1 2 4 5]
-        plot(FO.AutoClusterFig.ax5,dp.SleepScoreMetrics.thratio(stateidx.states==ss),...
-            dp.SleepScoreMetrics.EMG(stateidx.states==ss),'.','color',FO.colors.states{ss},'markersize',1)
+        plot(FO.AutoClusterFig.ax5,dp.SleepScoreMetrics.thratio(plotstates==ss),...
+            dp.SleepScoreMetrics.EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
     plot(FO.AutoClusterFig.ax5,THthresh.*[1 1],[0 EMGthresh],'r','LineWidth',1);
     plot(FO.AutoClusterFig.ax5,[0 1],EMGthresh.*[1 1],'r','LineWidth',1); 

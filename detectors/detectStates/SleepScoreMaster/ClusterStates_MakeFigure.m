@@ -19,7 +19,7 @@ end
 [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
 if sum(isinf(log10(thFFTspec(:))))==0
     [~,mu_th,sig_th] = zscore(log10(thFFTspec)');
-else
+else %For Theta over PSS (ThIRASA)
     [~,mu_th,sig_th] = zscore((thFFTspec)');
 end
 
@@ -179,7 +179,7 @@ else
 end
     subplot(1,3,[2,3])
         hold all
-        scatter3(broadbandSlowWave,thratio,EMG,2,coloridx,'filled')
+        scatter3(broadbandSlowWave,thratio,EMG,1,coloridx,'filled')
         %rotate3d
         view(133.7,18.8);
         grid on
