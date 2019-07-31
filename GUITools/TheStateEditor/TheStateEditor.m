@@ -3796,7 +3796,7 @@ end
 function FO = ChangeThisStateAssigmnent_Setup(FO,pointTo)
 states = FO.States;
 ds = logical(abs(diff(states)));%find state switches with 1's
-ds = cat(2,ds,0);%pad
+ds = cat(2,ds(:)',0);%pad
 %find start
 spanstart = find(ds(1:pointTo)>0,1,'last')+1;
 if isempty(spanstart)
@@ -5519,7 +5519,7 @@ if ~histsandthreshsOK
 end
 end
 
-function [states,StateIntervals] = ReClusterStates_In(obj,ev)
+function [states] = ReClusterStates_In
 % Wrapper around functions ClusterStates_DetermineStates and
 % StatesToEpisodes.  Note only the more raw (but not totally raw) 
 % SleepState output from StatesToEpisodes is used... not the Episodes.
