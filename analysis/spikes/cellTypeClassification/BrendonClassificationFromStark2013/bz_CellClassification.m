@@ -77,7 +77,11 @@ if ~exist(spikesfile,'file')
         'saving one to insure cell UIDs are consistent across cellinfo files.'])
 end
 spikes = bz_GetSpikes('basepath',basePath,'saveMat',true);
-MaxWaves = cat(2,spikes.rawWaveform{:});
+
+MaxWaves = [];
+for a = 1:length(spikes.rawWaveform)%in case stored wrong
+    MaxWaves = cat(2,MaxWaves,spikes.rawWaveform{a}(:));
+end
 
 
 %% get trough-peak delay times
@@ -128,11 +132,14 @@ knownEidx = ismember(spikes.UID,knownE);
 knownIidx = ismember(spikes.UID,knownI);
 
 %% Plot for manual selection of boundary, with display of separatrix as a guide.
-h = figure;
-title({'Discriminate pyr and int (select Pyramidal)','left click to draw boundary', 'center click/ENTER to complete)'});
+h = figure('position',[674   456   560   420]);
 fprintf('\nDiscriminate pyr and int (select Pyramidal)');
 xlabel('Trough-To-Peak Time (ms)')
 ylabel('Wave width (via inverse frequency) (ms)')
+figure('position',[674   961   561   109]);
+title({'Discriminate pyr and int (select Pyramidal)','left click to draw boundary', 'center click/ENTER to complete)'});
+figure(h)
+
 [ELike,PyrBoundary] = ClusterPointsBoundaryOutBW([x y],knownEidx,knownIidx,m,b);
 
 if keepKnown
