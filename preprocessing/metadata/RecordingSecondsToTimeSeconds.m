@@ -1,16 +1,13 @@
-function RecordingSecondsToTimeSeconds(basepath,basename)
+function RecordingSecondsToTimeSeconds(basepath)
 % Store correspondences between recoring (ie dat file) second timestamps
 % and clock time.  0.1sec resolution. 
 % Can only be run after bz_DatFileMetadata.m and TimeFromLightCycleStart.m
 % Brendon Watson 2016
 
 if ~exist('basepath','var')
-    [~,basename] = fileparts(cd);
     basepath = cd;
 end
-if ~exist(basepath,'dir')
-    basepath = fullfile(getdropbox,'Data','KetamineDataset',basename);
-end
+basename = bz_BasenameFromBasepath(basepath);
 
 %% Check if already bins made
 if exist(fullfile(basepath,[basename '_RecordingSecondVectors.mat']),'file')
