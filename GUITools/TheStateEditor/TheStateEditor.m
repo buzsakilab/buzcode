@@ -5558,7 +5558,7 @@ if ~histsandthreshsOK
 end
 end
 
-function [states] = ReClusterStates_In
+function [states] = ReClusterStates_In(obj,ev)
 % Wrapper around functions ClusterStates_DetermineStates and
 % StatesToEpisodes.  Note only the more raw (but not totally raw) 
 % SleepState output from StatesToEpisodes is used... not the Episodes.
