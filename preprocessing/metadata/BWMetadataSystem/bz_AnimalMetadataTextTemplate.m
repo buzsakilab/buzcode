@@ -344,7 +344,7 @@ sessionInfo.session.name = basename;
 sessionInfo.session.path = basepath;
 sessionInfo.spikeGroups = AnimalMetadata.ExtracellEphys.SpikeGroups;
 sessionInfo.nChannels = AnimalMetadata.ExtracellEphys.NumberOfChannels;
-sessionInfo.channels = [1:AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal];
+sessionInfo.channels = [0:AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal-1];
 sessionInfo.nBits = AnimalMetadata.ExtracellEphys.Parameters.BitsPerSample;
 sessionInfo.rates.lfp = AnimalMetadata.ExtracellEphys.Parameters.LfpSampleRate;
 sessionInfo.rates.wideband = AnimalMetadata.ExtracellEphys.Parameters.SampleRate;
@@ -376,7 +376,7 @@ for gidx = 1:(sessionInfo.spikeGroups.nGroups)%making SpkGrps
 end
 %sessionInfo.Units = 
 sessionInfo.region = AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable.Table';
-sessionInfo.badchannels = AnimalMetadata.ExtracellEphys.CurrentBadChannels;
+sessionInfo.badchannels = AnimalMetadata.ExtracellEphys.Channels.BadChannels;
 sessionInfo.badshanks = AnimalMetadata.ExtracellEphys.CurrentBadShanks;%not used now
 
 AnimalMetadata.sessionInfo = sessionInfo;

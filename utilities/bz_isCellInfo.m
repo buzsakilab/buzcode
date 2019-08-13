@@ -13,7 +13,6 @@ function [iscellinfo] = bz_isCellInfo(cellinfo)
 %
 % written by david tingley, 2017
 
-
 if isfield(cellinfo,'UID') && isfield(cellinfo,'sessionName') && isfield(cellinfo,'region') % check that fields exist
      if ischar(cellinfo.sessionName) && isvector(cellinfo.UID) && isvector(cellinfo.region)
          iscellinfo = true;

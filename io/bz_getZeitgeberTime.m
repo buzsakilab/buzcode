@@ -45,9 +45,12 @@ fclose(fid);
 
 [a b] = min(t);  %% fixes output for time.dat files that 'wrap' at the int32 limit
 if a < 0
+    t = double(t)./20000;
     for i=b:length(t)
-    t(i) = t(i-1)+downSampleFactor;
+    t(i) = t(i-1)+1;
     end
+else
+    t = single(t)./20000;
 end
 % t = t / 20000;
 
@@ -60,7 +63,7 @@ end
 
 zeitgeberTime = single(wrap(double(zeitgeberTime)/86400*pi*2,2))/ (2*pi) * 86400; % wrap it up
 
-relativeTime = single(t)/20000;  % recording time
+relativeTime = t;  % recording time
 
 % zeitgeberTime = downsample(zeitgeberTime,downSampleFactor);
 % relativeTime = downsample(relativeTime,downSampleFactor

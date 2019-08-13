@@ -14,7 +14,8 @@ function [ ints1,ints2,ints1idx,ints2idx ] = FindIntsNextToInts(ints1,ints2,tol)
 %DLevenstein
 %%
 if isempty(ints1) || isempty(ints2)
-    ints1=[];ints2=[];ints1idx=[];ints2idx=[];
+    ints2idx=false(size(ints2));ints1idx=false(size(ints1));
+    ints1=[];ints2=[];
     return
 end
 
