@@ -151,7 +151,7 @@ end
 if strcmp(channels,'all')
     channels = sessionInfo.channels;
 else
-    display('Loading Channels ',num2str(channels),' (0-indexing, a la Neuroscope)')
+    display(['Loading Channels ',num2str(channels),' (0-indexing, a la Neuroscope)'])
 end
 
 %% get the data
