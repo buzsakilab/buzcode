@@ -82,6 +82,7 @@ events = round(events*samplingRate);
 
 %% Conpute event-triggered LFP average
 
+events = events((events + twin(2) <= size(data,1)) & (events - twin(1) > 0));
 lfp_temp = nan(twin(1)+twin(2)+1,length(channels),length(events));
 
 for e = 1:length(events)
@@ -137,7 +138,6 @@ if plotLFP
     
     taxis = (-(twin(1)/samplingRate):(1/samplingRate):(twin(2)/samplingRate))*1e3;
     cmax = max(max(CSD)); 
-
     figure;
     subplot(1,2,1);
     contourf(taxis,1:size(CSD,2),CSD',40,'LineColor','none');hold on;
@@ -147,8 +147,8 @@ if plotLFP
     
     subplot(1,2,2);
     for ch=1:size(lfp_avg,2)
-        offset = 300*(ch-1);
-        sh_tmp = 25e5*(lfp_avg(:,ch)) + offset;
+        offset = 400*(ch-1);
+        sh_tmp = 1e0*(lfp_avg(:,ch)) + offset;
         plot(taxis,sh_tmp,'k','LineWidth',1.5); hold on;
         clear sh_tmp
     end

@@ -75,10 +75,9 @@ fsessioninfo = fullfile(basepath,[basename,'.sessionInfo.mat']);
 fdat = fullfile(basepath,[basename,'.dat']);
 flfp = fullfile(basepath,[basename,'.lfp']);
 
-
 %If there's already a .lfp file, make sure the user wants to overwrite it
 if exist(flfp,'file')
-    overwrite = input([basename,'.lfp already exists. Overwrite? [Y/N]']);
+    overwrite = input([basename,'.lfp already exists. Overwrite? [Y/N] '],'s');
     switch overwrite
         case {'y','Y'}
             delete(flfp)

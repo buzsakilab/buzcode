@@ -3,7 +3,15 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
-%
+%This function calucates the metrics for state scoring (EMG, Slow Wave
+%Power, Theta). It uses SleepScoreLFP which is collected in
+%PickSWTHChannel. And returns:
+%   SleepScoreMetrics
+%       .broadbandSlowWave
+%       .thratio
+%       .EMG
+%       .t_clus     (time stamps, after ignored times have been removed)
+%... also histograms and thresholds for subsequent scoring
 %
 %Dependencies: IDXtoINT
 %
@@ -12,8 +20,10 @@ function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
 %% Params
 p = inputParser;
 addParameter(p,'onSticky',false)
+addParameter(p,'ignoretime',[])
 parse(p,varargin{:})
 onSticky = p.Results.onSticky; 
+ignoretime = p.Results.ignoretime; 
 
 %This is the sticky trigger passed through to DetermineStates via histsandthreshs
 if onSticky
@@ -54,8 +64,12 @@ elseif SleepScoreLFP.sf == 1000
 else
     display('sf not recognized... if only you made this able to set its own downsample...')
 end
+
+%Instead of taking SleepScoreLFP, this should use bz_getLFP and just needs
+%SW/TH channels... can even get from sessionInfo.channeltags
 swLFP = downsample(SleepScoreLFP.swLFP,downsamplefactor);
 thLFP = downsample(SleepScoreLFP.thLFP,downsamplefactor);
+t_LFP = downsample(SleepScoreLFP.t,downsamplefactor);
 sf_LFP = SleepScoreLFP.sf/downsamplefactor;
 
 
@@ -69,13 +83,14 @@ smoothfact = 10; %units of seconds - smoothing factor
 if strcmp(SWweights,'PSS')
     %Put the LFP in the right structure format
     lfp.data = swLFP;
-    lfp.timestamps = SleepScoreLFP.t;
-    lfp.samplingRate = SleepScoreLFP.sf;
+    lfp.timestamps = t_LFP;
+    lfp.samplingRate = sf_LFP;
     %Calculate PSS
     [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,'frange',[4 90]);
     broadbandSlowWave = -specslope.data; %So NREM is higher as opposed to lower
     t_clus = specslope.timestamps;
     swFFTfreqs = specslope.freqs;
+    specdt = 1./specslope.samplingRate;
     swFFTspec = 10.^spec.amp; %To reverse log10 in bz_PowerSpectrumSlope
     badtimes = false;
     %ADD HERE: Bad times detection using swFFTspec similar to below. make bad times nan
@@ -83,7 +98,9 @@ if strcmp(SWweights,'PSS')
 else
     freqlist = logspace(0,2,100);
     [swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
+    t_clus = t_clus'+t_LFP(1); %Offset for scoretime start
     swFFTspec = abs(swFFTspec);
+    specdt = mode(diff(t_clus));
     [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
     % Remove transients before calculating SW histogram
     totz = zscore(abs(sum(zFFTspec')));
@@ -98,13 +115,16 @@ else
 end
 
 %Smooth and 0-1 normalize
-broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./mean(diff(t_clus)));
-broadbandSlowWave = (broadbandSlowWave-min(broadbandSlowWave))./max(broadbandSlowWave-min(broadbandSlowWave));
+broadbandSlowWave = smooth(broadbandSlowWave,smoothfact./specdt);
 
+%Remove ignoretimes (after smoothing), before normalizoing
+if ~isempty(ignoretime)
+    ignoretimeIDX = InIntervals(t_clus,ignoretime);
+    broadbandSlowWave(ignoretimeIDX) = [];
+    t_clus(ignoretimeIDX) = [];
+end
+broadbandSlowWave = bz_NormToRange(broadbandSlowWave,[0 1]);
  
-%% Smooth and 0-1 normali
-thsmoothfact = 10; %used to be 15
-
 %% Calculate theta
 %display('FFT Spectrum for Theta')
 
@@ -112,33 +132,41 @@ thsmoothfact = 10; %used to be 15
 f_all = [2 20];
 f_theta = [5 10];
 freqlist = logspace(log10(f_all(1)),log10(f_all(2)),100);
-
+thsmoothfact = 10;
 
 [thFFTspec,thFFTfreqs,t_thclu] = spectrogram(single(thLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
+t_thclu = t_thclu+t_LFP(1); %Offset for scoretime start
+specdt = mode(diff(t_thclu));
 thFFTspec = (abs(thFFTspec));
-[~,mu_th,sig_th] = zscore(log10(thFFTspec)');
 
-thfreqs = find(thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
-allpower = sum((thFFTspec),1);
+thfreqs = (thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
 thpower = sum((thFFTspec(thfreqs,:)),1);
+allpower = sum((thFFTspec),1);
 
 thratio = thpower./allpower;    %Narrowband Theta
-thratio = smooth(thratio,thsmoothfact./mean(diff(t_thclu)));
-thratio = (thratio-min(thratio))./max(thratio-min(thratio));
+thratio = smooth(thratio,thsmoothfact./specdt);
+
+%Remove ignoretimes (after smoothing), before normalizoing
+if ~isempty(ignoretime)
+    ignoretimeIDX = InIntervals(t_thclu,ignoretime);
+    thratio(ignoretimeIDX) = [];
+    t_thclu(ignoretimeIDX) = [];
+end
+thratio = bz_NormToRange(thratio,[0 1]);
  
 %% EMG
 dtEMG = 1/EMG.samplingFrequency;
 EMG.smoothed = smooth(EMG.data,smoothfact/dtEMG,'moving');
 
-reclength = round(EMG.timestamps(end)); %What does this get used for?
-
 %interpolate to FFT time points;
-%t_EMG = interp1(EMG.timestamps,EMG.timestamps,t_clus,'nearest');% use t_clus
 EMG = interp1(EMG.timestamps,EMG.smoothed,t_clus,'nearest');
 
 %Min/Max Normalize
-EMG = (EMG-min(EMG))./max(EMG-min(EMG));
+EMG = bz_NormToRange(EMG,[0 1]);
 
+
+%% BELOW IS GETTING HISTOGRAMS AND THRESHOLDS FOR SCORING IN         %%
+%  CLUSTERSTATES_DetermineStates and visualization in TheStateEditor %%\
 
 %% Divide PC1 for SWS
 %Note: can replace all of this with calls to bz_BimodalThresh
@@ -243,7 +271,7 @@ LFPparams = SleepScoreLFP.params;
 THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
 SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,...
-    t_clus,badtimes,reclength,histsandthreshs,LFPparams,THchanID,SWchanID,...
+    t_clus,badtimes,histsandthreshs,LFPparams,THchanID,SWchanID,...
     recordingname);
 %save(matfilename,'SleepScoreMetrics');
 

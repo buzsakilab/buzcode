@@ -29,6 +29,7 @@ function filtered = bz_Filter(samples,varargin)
 %     'channels'    if input is a buzcode lfp structure with field
 %                   samples.channels, will only filter the selected
 %                   channels
+%     'intervals'   only filter in given intervals (only works for buzcode input)
 %    =========================================================================
 %
 %OUTPUT
@@ -63,6 +64,7 @@ FMAlegacy = false;
 BUZCODE = false;
 fast = false;
 channels = [];
+intervals = [-Inf Inf];
 
 % Check number of parameters
 if nargin < 1 | mod(length(varargin),2) ~= 0,
@@ -132,6 +134,9 @@ for i = 1:2:length(varargin),
             
         case 'channels'
             channels = varargin{i+1};
+            
+        case 'intervals'
+            intervals = varargin{i+1};
 
 		otherwise,
 			error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help Filter">Filter</a>'' for details).']);
@@ -153,7 +158,12 @@ if isstruct(samples)
         warning('Your input structure has no .timestamps field, one will be provided for you')
         samples.timestamps = [0:length(samples.data)-1]./samples.samplingRate;
     end
-    nyquist = 0.5.*samples.samplingRate;
+    
+    if length(samples.samplingRate) > 1 
+       nyquist = 0.5.*samples.samplingRate(1); 
+    else
+       nyquist = 0.5.*samples.samplingRate;
+    end
 end
 
 if isempty(passband) && isempty(stopband),
@@ -210,8 +220,17 @@ if FMAlegacy %FMA has (samples given as a list of (t,v1,v2,v3...) tuples)
             filtered(:,i) = FiltFiltM(b,a,double(samples(:,i)));
         end
     end
+    
 elseif BUZCODE %BUZCODE has samples as a data structure
-    filtered.timestamps = samples.timestamps;
+
+    %Restrict to intervals, with overhang to remove edge effects at transitions
+    %(then remove later)
+    overhang = (order)./passband(1);
+    overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
+    keepIDX = InIntervals(samples.timestamps,overint);
+    samples.data = samples.data(keepIDX,:);
+    filtered.timestamps = samples.timestamps(keepIDX);
+    
     
     if ~isempty(channels)
         [~,usechannels] = ismember(channels,samples.channels);
@@ -229,6 +248,15 @@ elseif BUZCODE %BUZCODE has samples as a data structure
         filtered.amp(:,i) = abs(hilb);
         filtered.phase(:,i) = angle(hilb);
     end
+    
+    %Remove the overhang from intervals
+    keepIDX = InIntervals(filtered.timestamps,intervals);
+    filtered.data = filtered.data(keepIDX,:);
+    filtered.hilb = filtered.hilb(keepIDX,:);
+    filtered.amp = filtered.amp(keepIDX,:);
+    filtered.phase = filtered.phase(keepIDX,:);
+    filtered.timestamps = filtered.timestamps(keepIDX);
+    
     filtered.filterparms.passband = passband;
     filtered.filterparms.stopband = stopband;
     filtered.filterparms.order = order;

@@ -1,4 +1,3 @@
-
 function [spikes] = bz_LoadPhy(varargin)
 % Load kilosort/phy clusters
 %
@@ -20,6 +19,7 @@ function [spikes] = bz_LoadPhy(varargin)
 %                   32). Total number of channels.
 % forceReload    -logical (default=false) to force loading from
 %                   res/clu/spk files
+% verbose        -logical (default=false)
 
 %
 % OUTPUTS
@@ -35,6 +35,8 @@ function [spikes] = bz_LoadPhy(varargin)
 %   .maxWaveformCh  -channel # with largest amplitude spike for each neuron
 %   .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
 %   .filtWaveform   -average filtered waveform on maxWaveformCh
+%   .region         -region ID for each neuron (especially important large scale, high density probes)
+%   .numcells       -number of cells/UIDs
 %
 %  HISTORY:
 %  9/2018  Manu Valero
@@ -53,6 +55,9 @@ addParameter(p,'UID',[],@isvector);
 addParameter(p,'fs',30000,@isnumeric);
 addParameter(p,'nChannels',32,@isnumeric);
 addParameter(p,'forceReload',false,@islogical);
+addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'verbose',false,@islogical);
+
 
 parse(p,varargin{:});
 
@@ -64,8 +69,10 @@ UID = p.Results.UID;
 fs = p.Results.fs; % it will be overwritten if bz_getSessionInfo
 nChannels = p.Results.nChannels; % it will be overwritten if bz_getSessionInfo
 forceReload = p.Results.forceReload;
+noPrompts = p.Results.noPrompts;
+verbose = p.Results.verbose;
 
-try [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', false);
+try [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
     fs = sessionInfo.rates.wideband;
     nChannels = sessionInfo.nChannels;
 catch
@@ -82,13 +89,18 @@ else
     % spike_amplitudes = readNPY(fullfile(kilosort_path, 'amplitudes.npy'));
     % spike_clusters = unique(spike_cluster_index);
     cluster_group = tdfread(fullfile(kilosort_path,'cluster_group.tsv'));
-    shanks = readNPY(fullfile(kilosort_path, 'shanks.npy')); % done
+    try
+        shanks = readNPY(fullfile(kilosort_path, 'shanks.npy')); % done
+    catch
+        shanks = ones(size(cluster_group.cluster_id));
+        warning('No shanks.npy file, assuming single shank!');
+    end
 
     spikes = [];
     spikes.sessionName = sessionInfo.FileName;
     jj = 1;
     for ii = 1:length(cluster_group.group)
-        if strcmp(cluster_group.group(ii,:),'good ')
+        if strcmpi(strtrim(cluster_group.group(ii,:)),'good')
             ids = find(spike_cluster_index == cluster_group.cluster_id(ii)); % cluster id
             spikes.UID(jj) = cluster_group.cluster_id(ii);
             spikes.times{jj} = double(spike_times(ids))/fs; % cluster time
@@ -101,23 +113,25 @@ else
     end
 
     % get waveforms
+    if getWave
     nPull = 1000; % number of spikes to pull out
     wfWin = 0.008; % Larger size of waveform windows for filterning
     filtFreq = 500;
     hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
-
     f = waitbar(0,'Getting waveforms...');
     wfWin = round((wfWin * fs)/2);
-    if getWave
         for ii = 1 : size(spikes.times,2)
-            spkTmp = spikes.times{ii};
+            spkTmp = spikes.ts{ii};
             if length(spkTmp) > nPull
                 spkTmp = spkTmp(randperm(length(spkTmp)));
                 spkTmp = spkTmp(1:nPull);
             end
             wf = [];
             for jj = 1 : length(spkTmp)
-                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spikes.ts{ii}(jj) - (wfWin),...
+                if verbose
+                    fprintf(' ** %3.i/%3.i for cluster %3.i/%3.i  \n',jj, length(spkTmp), ii, size(spikes.times,2));
+                end
+                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spkTmp(jj) - (wfWin),...
                     'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
             end
             wf = mean(wf,3);
@@ -136,13 +150,14 @@ else
         end
         close(f)
     end
-    
-%     % spike measures
-%     disp('Computing spike features... ');
-%     if getFeat
-%        % call to cell metric functions
-%        
-%     end
+end
+
+% To match bz_GetSpikes
+spikes.numcells = length(spikes.UID);
+if ~isfield(spikes,'region') && isfield(spikes,'maxWaveformCh') && isfield(sessionInfo,'region')
+    for cc = 1:spikes.numcells
+        spikes.region{cc} = sessionInfo.region{spikes.maxWaveformCh(cc)==sessionInfo.channels};
+    end
 end
 
 % saveMat (only saving if no exclusions)
@@ -185,6 +200,9 @@ if ~isempty(spikes.UID)
     [alltimes,sortidx] = sort(alltimes); groups = groups(sortidx); %sort both
     spikes.spindices = [alltimes groups];
 end
+
+
+
 
 % % Compute spike measures
 % if ~isempty(spikes.UID) && getWave

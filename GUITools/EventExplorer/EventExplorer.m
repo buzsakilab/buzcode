@@ -1,4 +1,4 @@
-function [ EventDetectionReview ] = EventExplorer(basePath,events )
+function [ EventDetectionReview ] = EventExplorer(basePath,events,varargin )
 %EventExplorer is a GUI tool for exploring buzcode events and states files.
 %
 %INPUT
@@ -14,6 +14,10 @@ function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %                   
 %   basePath    basePath that holds baseName.lfp (default: pwd)
 %
+%(options)
+%   'useSpikes' true,false,'MUA'
+%   'noPrompts' default: true
+%
 %OUTPUT
 %   EventDetectionReview    results of DetectionReview - if called with an
 %                           output, automatically runs detection review
@@ -22,6 +26,17 @@ function [ EventDetectionReview ] = EventExplorer(basePath,events )
 %% (For development)
 % events = 'SlowWaves';
 % basePath = '/Users/dlevenstein/Dropbox/Research/Datasets/20140526_277um';
+%%
+p = inputParser;
+addParameter(p,'useSpikes',false);
+addParameter(p,'noPrompts',true,@islogical);
+
+parse(p,varargin{:})
+noPrompts = p.Results.noPrompts;
+useSpikes = p.Results.useSpikes;
+
+
+
 %%
 if ~exist('basePath','var')
     basePath = pwd;
@@ -134,12 +149,23 @@ try
 catch
     FO.lookatchannel = inputdlg(['No events.detectorinfo.detectionchannel found in events.mat...',...
         'Which LFP channel would you like to look at?']);
+    if isempty(FO.lookatchannel)
+        return
+    end
     FO.lookatchannel = str2num(FO.lookatchannel{1});
 end
    
 %Load the LFP and spikes
-FO.data.lfp = bz_GetLFP(FO.lookatchannel,'basepath',FO.basePath);
-FO.data.spikes = bz_GetSpikes('basepath',FO.basePath);
+FO.data.lfp = bz_GetLFP(FO.lookatchannel,'basepath',FO.basePath,'noPrompts',true);
+switch useSpikes
+    case true
+        FO.data.spikes = bz_GetSpikes('basepath',FO.basePath);
+    case false
+        FO.data.spikes = [];
+    case 'MUA'
+        MUA = MUAfromDat(basePath,'saveMat',true);
+        FO.data.spikes = MUA.peaks;
+end
 %% Set up the EventExplorer Window
 %Position for the main interface
 posvar = get(0,'Screensize');
@@ -538,7 +564,11 @@ FO = guidata(obj);
         %Save the General EventExplorer metadata file
         if isfield(FO,'FlagsAndComments')
             EventExplorer.FlagsAndComments = FO.FlagsAndComments.timepoint;
-            save(FO.EEbuzcodefilename,'EventExplorer')
+            try
+                save(FO.EEbuzcodefilename,'EventExplorer')
+            catch
+                disp('unable to save Flags and Comments')
+            end
         end
     end
 delete(FO.fig)

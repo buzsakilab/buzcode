@@ -42,6 +42,6 @@ filename = [path '/' basename '.spk.' electrodeGroupStr];
 if ~exist(filename),
 	error(['File ''' filename ''' not found.']);
 end
-amp = LoadBinary(filename,'offset',peak-1,'skip',nSamples-1,'nChannels',nChannels);
+amp = bz_LoadBinary(filename,'offset',peak-1,'skip',nSamples-1,'nChannels',nChannels);
 
 amplitudes = [times amp];

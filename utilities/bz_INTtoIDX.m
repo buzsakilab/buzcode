@@ -20,7 +20,6 @@ function [ IDX,timestamps ] = bz_INTtoIDX(INT,varargin)
 %                                   IDX.timestamps
 %   timestamps
 %
-%Last Updated: 11/15/15
 %DLevenstein 2015
 %Updated 2018 for buzcode
 %% DEV
@@ -58,7 +57,12 @@ if isstruct(INT)
     
     %Convert to the cell array format needed for this function 
     for ss = 1:length(statenames)
-        if isempty(statenames{ss}); continue; end
+        if isempty(statenames{ss})
+            continue; 
+        elseif  ~ismember(statenames{ss},fieldstates) 
+            INTtemp{ss} = [];
+            continue; 
+        end
         INTtemp{ss} = INT.([statenames{ss},'state']);
     end
     INT = INTtemp;
