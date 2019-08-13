@@ -74,6 +74,11 @@ for i = 1:2:length(varargin)
       if ~isa(posSampFq,'numeric')
         error('Incorrect value for property ''posSampFq'' .');
       end
+    case 'columnorder'
+      columnOrder = varargin{i+1};
+      if ~isa(columnOrder,'numeric')
+        error('Incorrect value for property ''syncNbCh'' .');
+      end      
     otherwise
       error(['Unknown property ''' num2str(varargin{i}) ''' .']);
   end
