@@ -159,6 +159,7 @@ for a = 1:length(spikes.times)
 
 %         cum_spkphases = vertcat(cum_spkphases, spkphases{a});
 
+
     %% Gather binned counts and stats (incl Rayleigh Test)
         [phasedistros(:,a),phasebins,ps]=CircularDistribution(spkphases{a},'nBins',numBins);
         phasestats.m(a) = mod(ps.m,2*pi);

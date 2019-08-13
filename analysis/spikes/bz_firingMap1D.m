@@ -127,6 +127,4 @@ if saveMat
    save([firingMaps.sessionName '.firingMaps.cellinfo.mat'],'firingMaps'); 
 end
 
-
-
 end

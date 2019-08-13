@@ -33,6 +33,7 @@ function spikes = bz_GetSpikes(varargin)
 %          .maxWaveformCh  -channel # with largest amplitude spike for each neuron
 %          .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
 %          .cluID          -cluster ID, NOT UNIQUE ACROSS SHANKS
+%          .numcells       -number of cells/UIDs
 %           
 % NOTES
 %
@@ -109,6 +110,9 @@ if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') 
     
     %If regions have been added since creation... add them
     if ~isfield(spikes,'region') & isfield(sessionInfo,'region')
+        if ~isfield(spikes,'numcells')
+            spikes.numcells = length(spikes.UID);
+        end
         for cc = 1:spikes.numcells
             spikes.region{cc} = sessionInfo.region{spikes.maxWaveformCh(cc)==sessionInfo.channels};
         end
