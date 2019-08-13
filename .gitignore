@@ -17,6 +17,7 @@ $RECYCLE.BIN/
 *.mexw32
 *.mexglx
 *.mexaci
+*.mexw64.manifest
 
 # Windows Installer files
 *.cab
