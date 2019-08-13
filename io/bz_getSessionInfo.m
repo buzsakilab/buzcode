@@ -21,7 +21,7 @@ function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 %2017 DLevenstein and DTingley
 %% inputs and defaults
 p = inputParser;
-addParameter(p,'noPrompts',true,@islogical);
+addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'editGUI',false,@islogical);
 parse(p,varargin{:})
 noPrompts = p.Results.noPrompts;
@@ -60,16 +60,16 @@ bz_isSessionInfo(sessionInfo);
 if editGUI
     [ sessionInfo ] = bz_sessionInfoGUI(sessionInfo);
     SIexist = false;
-elseif ~isfield(sessionInfo,'region') && ~noPrompts
-    regionadd = questdlg(['Your sessionInfo is missing regions, ',...
-        'would you like to add them?'],'Add Regions?','Yes');
-    switch regionadd
-        case 'Yes'
-            [sessionInfo] = bz_sessionInfoGUI(sessionInfo,'Regions');
-            SIexist = false; 
-        case 'Cancel'
-            return
-    end
+% elseif ~isfield(sessionInfo,'region') && ~noPrompts
+%     regionadd = questdlg(['Your sessionInfo is missing regions, ',...
+%         'would you like to add them?'],'Add Regions?','Yes');
+%     switch regionadd
+%         case 'Yes'
+%             [sessionInfo] = bz_sessionInfoGUI(sessionInfo,'Regions');
+%             SIexist = false; 
+%         case 'Cancel'
+%             return
+%     end
 end
 
 %Should check that sessionInfo.session.name and sesioninfo.session.path
