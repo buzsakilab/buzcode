@@ -100,7 +100,7 @@ for i = 1:nIntervals,
 	duration = (intervals(i,2)-intervals(i,1));
 	start = intervals(i,1);
 	% Load data
-	d = LoadBinary(filename,'duration',duration,'frequency',DATA.rates.wideband,'nchannels',nChannels,'start',start,'channels',channels);
+	d = bz_LoadBinary(filename,'duration',duration,'frequency',DATA.rates.wideband,'nchannels',nChannels,'start',start,'channels',channels);
 	% The following two lines compensate for annoying numerical precision errors in Matlab, whereby the number of samples
 	% read with LoadBinary is not always exactly that expected, depending on how accurately 'duration' is coded internally
 	n = size(d,1);

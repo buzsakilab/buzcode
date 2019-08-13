@@ -46,7 +46,7 @@ function [lfp,indices] = GetLFP(channels,varargin)
 % (at your option) any later version.
 
 
-warning('This function is now deprecated from /buzcode, try using bz_GetLFP.m')
+error('This function is now deprecated from /buzcode, try using bz_GetLFP.m')
 
 global DATA;
 if isempty(DATA),
