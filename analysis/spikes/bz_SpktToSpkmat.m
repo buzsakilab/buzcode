@@ -14,6 +14,8 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %                   NOTE: must be a multiple of dt.
 %       'win'       [start stop] time interval of the recording in which 
 %                   to get spike matrix (default: [0 Inf])
+%       'bintype'  'boxcar' (default), 'gaussian'
+%       'units'     'counts' (default), 'rate'
 %                   
 %
 %OUTPUT
@@ -41,6 +43,8 @@ addParameter(p,'win',[]);
 addParameter(p,'binsize',[]);
 addParameter(p,'overlap',[]);
 addParameter(p,'dt',0.1);
+addParameter(p,'bintype','boxcar');
+addParameter(p,'units','counts');
 
 
 parse(p,varargin{:})
@@ -49,6 +53,8 @@ win = p.Results.win;
 binsize = p.Results.binsize;
 overlap = p.Results.overlap;
 dt = p.Results.dt;
+bintype = p.Results.bintype;
+units = p.Results.units;
 
 %For legacy use of 'binsize','overlap' input
 if ~isempty(binsize) && ~isempty(overlap)
@@ -118,6 +124,10 @@ for cell_ind = 1:numcells
     cells(cell_ind).spiketimes = cells(cell_ind).spiketimes';
     %Which Cell? column index for each spike
     cells(cell_ind).index4spikes = cell_ind*ones(size(cells(cell_ind).spiketimes));
+    
+    if isstruct(spikes)
+       spikemat.UID(cell_ind) = spikes.UID(cell_ind); 
+    end
 end
 
 %Make a Spike Matrix
@@ -142,10 +152,28 @@ end
 
 t = [0:size(spkmat,1)-1]'*dt+0.5*dt+t_start; %time vector (midpoint)
 
-% Moving sum to combine spikes into bins of size binsize
-spkmat = movsum(spkmat,overlap,'endpoints','discard');
-t = movmean(t,overlap,'endpoints','discard'); %timepoint in the resulting bin is the mean of 
-                        %timepoints from all bins added
+switch bintype
+    case 'boxcar'
+        % Moving sum to combine spikes into bins of size binsize
+        spkmat = movsum(spkmat,overlap,'endpoints','discard');
+        t = movmean(t,overlap,'endpoints','discard');  
+        %timepoint in the resulting bin is the mean of timepoints from all bins added
+    case 'gaussian'
+        kernelx = [-3.5*binsize:dt:3.5*binsize];
+        kernel = Gauss(kernelx,0,binsize);
+        kernel = kernel./kernel(kernelx==0); %normalize for counts at peak
+        for cc = 1:numcells
+            spkmat(:,cc) = FConv(kernel,spkmat(:,cc)')';
+        end
+end
+
+switch units
+    case 'counts'
+        %Leave normalization as spike counts in bin
+    case 'rate'
+        %normalize by bin duration for counts/s
+        spkmat = spkmat./binsize;
+end
 
 spikemat.data = spkmat;
 spikemat.timestamps = t;
