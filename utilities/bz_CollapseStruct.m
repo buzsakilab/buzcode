@@ -80,7 +80,9 @@ for ff = 1:length(fields)
 	end
 
     
-    
+        if ~isfield(structout,currentfield)
+            continue
+        end
     switch combine
         case 'mean'
             structout.(currentfield) = nanmean(structout.(currentfield),catdim);

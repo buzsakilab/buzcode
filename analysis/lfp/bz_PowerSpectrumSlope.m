@@ -19,6 +19,10 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %                   baseName.PowerSpectrumSlope.lfp.mat  (default: false)
 %       'Redetect'  (default: false) to force redetection even if saved
 %                   file exists
+%       'IRASA'     (default: false) use IRASA method to median-smooth power
+%                   spectrum before fitting (under development)
+%                   (Muthukumaraswamy and Liley, NeuroImage 2018)
+%       'nfreqs'    number of frequency values used to fitting (default: 200)
 %
 %OUTPUTS
 %   specslope
@@ -32,6 +36,7 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %
 %
 %DLevenstein 2018
+%with IRASA code modified from R. Hardstone & W. Munoz - 2019
 %%
 p = inputParser;
 addParameter(p,'showfig',false,@islogical)
@@ -39,13 +44,16 @@ addParameter(p,'saveMat',false)
 addParameter(p,'channels',[])
 addParameter(p,'frange',[4 100])
 addParameter(p,'Redetect',false)
+addParameter(p,'IRASA',false)
+addParameter(p,'nfreqs',200)
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
 channels = p.Results.channels;
 frange = p.Results.frange;
 REDETECT = p.Results.Redetect;
-
+IRASA = p.Results.IRASA;
+nfreqs = p.Results.nfreqs;
 
 %%
 if saveMat
@@ -72,38 +80,53 @@ if length(lfp.channels)>1
   %loop each channel and put the stuff in the right place
 	for cc = 1:length(lfp.channels)
         if mod(cc,4)==1
-            display([num2str(cc),' of ',...
-                num2str(length(lfp.channels)),' complete!'])
+            bz_Counter(cc,length(lfp.channels),'Channels');
         end
         lfp_temp = lfp; 
         lfp_temp.data = lfp_temp.data(:,cc); 
         lfp_temp.channels = lfp_temp.channels(cc);
-        specslope_temp = bz_PowerSpectrumSlope(lfp_temp,winsize,dt,varargin{:});
+        specslope_temp = bz_PowerSpectrumSlope(lfp_temp,winsize,dt,varargin{:},'saveMat',false);
         
         if ~exist('specslope','var')
             specslope = specslope_temp;
             %Don't save the big stuff for multiple channels.
-            specslope.resid = [];
+            %specslope.resid = [];
         else
             specslope.data(:,cc) = specslope_temp.data;
             specslope.intercept(:,cc) = specslope_temp.intercept;
-            specslope.rsq(:,cc) = specslope_temp.rsq;
+            specslope.resid(:,cc) = specslope_temp.resid;
+            specslope.rsq(:,:,cc) = specslope_temp.rsq;
             specslope.specgram(:,:,cc) = specslope_temp.specgram;
         end
         
 	end
     specslope.channels = lfp.channels;
     %spec = [];
+    if saveMat
+        save(savename,'specslope','spec');
+    end
     return
 end
 %% Calcluate spectrogram
 noverlap = winsize-dt;
-spec.freqs = logspace(log10(frange(1)),log10(frange(2)),200);
+
+if IRASA
+    maxRescaleFactor = 2.9; %as per Muthukumaraswamy and Liley, NeuroImage 2018
+    %Add the padding for edge effects of frequency smoothings (IRASA)
+    padding = floor((nfreqs./2).*log10(maxRescaleFactor^2)./log10(frange(2)./frange(1)));
+    actualRescaleFactor = 10.^((log10(frange(2)./frange(1)).*padding)./(nfreqs-1)); %Account for rounding
+    nfreqs = nfreqs+2*padding;
+    frange = frange .* [1/actualRescaleFactor actualRescaleFactor];
+end
+
+spec.freqs = logspace(log10(frange(1)),log10(frange(2)),nfreqs);
 winsize_sf = round(winsize .*lfp.samplingRate);
 noverlap_sf = round(noverlap.*lfp.samplingRate);
 [spec.data,~,spec.timestamps] = spectrogram(single(lfp.data),winsize_sf,noverlap_sf,spec.freqs,lfp.samplingRate);
 
-spec.amp = log10(abs(spec.data));
+spec.amp = log10(abs(spec.data'));
+spec.data = spec.data';
+spec.timestamps = spec.timestamps';
 
 %% Interpolate the time stamps to match the LFP timestamps
 %Spectrogram assumes continuous time, interpolate to LFP timestamps if
@@ -111,17 +134,43 @@ spec.amp = log10(abs(spec.data));
 assumedLFPtimestamps = [0:length(lfp.data)-1]./lfp.samplingRate;
 spec.timestamps = interp1(assumedLFPtimestamps,lfp.timestamps,spec.timestamps,'nearest');
 
+
+%% IRASA before fitting
+if IRASA
+    %Frequencies inside padding 
+    validFreqInds = padding+1 : nfreqs-padding;
+    
+    %Median smooth the spectrum
+    for i_freq = validFreqInds
+        inds = [i_freq-padding:i_freq-1 i_freq+1:i_freq+padding];
+        resampledData(:,i_freq) = nanmedian(spec.amp(:,inds),2);
+    end
+    
+    %Calculate the residual from the smoothed spectrum
+    %spec.osci = (spec.amp(:,validFreqInds))-(resampledData(:,validFreqInds));
+    power4fit = resampledData(:,validFreqInds);
+    
+    %Return the specgram to requested frequencies
+    spec.freqs = spec.freqs(validFreqInds);
+    spec.amp = spec.amp(:,validFreqInds);
+    spec.data = spec.data(:,validFreqInds);
+    
+    clear resampledData
+else
+   power4fit = spec.amp;
+end
+
 %% Fit the slope of the power spectrogram
 rsq = zeros(size(spec.timestamps));
 s = zeros(length(spec.timestamps),2);
 yresid = zeros(length(spec.timestamps),length(spec.freqs));
 for tt = 1:length(spec.timestamps)
     %Fit the line
-    x = log10(spec.freqs);  y=spec.amp(:,tt)';
+    x = log10(spec.freqs);  y=power4fit(tt,:);
     s(tt,:) = polyfit(x,y,1);
-    %Calculate the residuals
+    %Calculate the residuals (from the full PS)
     yfit =  s(tt,1) * x + s(tt,2);
-    yresid(tt,:) = y - yfit;
+    yresid(tt,:) = spec.amp(tt,:) - yfit; %residual between "raw" PS, not IRASA-smoothed
     %Calculate the rsquared value
     SSresid = sum(yresid(tt,:).^2);
     SStotal = (length(y)-1) * var(y);
@@ -132,7 +181,7 @@ end
 %% Output Structure
 specslope.data = s(:,1);
 specslope.intercept = s(:,2);
-specslope.timestamps = spec.timestamps';
+specslope.timestamps = spec.timestamps;
 specslope.specgram = spec.amp;
 specslope.samplingRate = 1./dt;
 
@@ -155,16 +204,18 @@ if SHOWFIG
     bigsamplewin = bz_RandomWindowInIntervals(spec.timestamps([1 end]),30);
 
    %hist(specslope.data,10)
-   specmean.all = mean(spec.amp,2);
+   specmean.all = mean(spec.amp,1);
    slopebinIDs = discretize(specslope.data,linspace(min(specslope.data),max(specslope.data),6));
    for bb = 1:length(unique(slopebinIDs))
-        specmean.bins(bb,:) = mean(spec.amp(:,slopebinIDs==bb),2);
+        specmean.bins(bb,:) = mean(spec.amp(slopebinIDs==bb,:),1);
         
         exwin(bb,:) = spec.timestamps(randsample(find(slopebinIDs==bb),1))+(winsize.*[-0.5 0.5]);
    end
 figure
     subplot(4,1,1)
-        imagesc(spec.timestamps,log2(spec.freqs),spec.amp)
+        imagesc(spec.timestamps,log2(spec.freqs),spec.amp')
+        hold on
+        plot(specslope.timestamps,bz_NormToRange(specslope.data,log2(spec.freqs([1 end]))),'w','linewidth',2)
         LogScale('y',2)
         ylabel('f (Hz)')
         axis xy
@@ -178,12 +229,6 @@ figure
         lfprange = get(gca,'ylim');
         set(gca,'XTickLabel',[])
         ylabel('LFP')
-    subplot(8,1,4)
-        plot(specslope.timestamps,specslope.data,'k')
-        axis tight
-        box off
-        xlim(bigsamplewin)
-        set(gca,'XTickLabel',[])
          
     subplot(6,2,7)
         hist(specslope.data,10)
