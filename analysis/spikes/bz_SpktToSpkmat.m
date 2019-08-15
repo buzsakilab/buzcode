@@ -12,6 +12,7 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %       'dt'        time step (default: 0.1s)
 %       'binsize'   size of your time bins, in seconds (default: =dt)
 %                   NOTE: must be a multiple of dt.
+%                   If using gaussian bins, binsize is width at half max
 %       'win'       [start stop] time interval of the recording in which 
 %                   to get spike matrix (default: [0 Inf])
 %       'bintype'  'boxcar' (default), 'gaussian'
@@ -159,9 +160,10 @@ switch bintype
         t = movmean(t,overlap,'endpoints','discard');  
         %timepoint in the resulting bin is the mean of timepoints from all bins added
     case 'gaussian'
-        kernelx = [-3.5*binsize:dt:3.5*binsize];
-        kernel = Gauss(kernelx,0,binsize);
-        kernel = kernel./kernel(kernelx==0); %normalize for counts at peak
+        stddev = binsize./(2.*sqrt(2*log(2))); %convert to FWHM (width at half max)
+        kernelx = [-fliplr(dt:dt:3.5*stddev) 0 dt:dt:3.5*stddev];
+        kernel = Gauss(kernelx,0,stddev);
+        kernel = kernel./Gauss(0,0,stddev); %normalize for counts at peak
         for cc = 1:numcells
             spkmat(:,cc) = FConv(kernel,spkmat(:,cc)')';
         end
