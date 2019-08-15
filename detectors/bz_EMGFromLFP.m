@@ -163,7 +163,7 @@ end
 
 % get list of channels (1 from each good spike group)
 xcorr_chs = [];
-for gidx=1:length(spkgrpstouse)
+for gidx=1:length(usableshankchannels)
     %Remove rejectChannels
 %     usableshankchannels = setdiff(SpkGrps(spkgrpstouse(i)).Channels,rejectChannels);
         
