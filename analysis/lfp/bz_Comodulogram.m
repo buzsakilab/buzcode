@@ -42,10 +42,12 @@ end
 switch specparms.type
     case 'wavelet'
         %Calcualte the Wavelet Transform
-        [comod.freqs,~,spec] = bz_WaveSpec(single(lfp.data),...
-            specparms.frange,specparms.nfreqs,specparms.ncyc,...
-            1/lfp.samplingRate,specparms.space);
-        spectimestamps = LFP.timestamps; %Wavelet timestamp are same as LFP        
+%         [comod.freqs,~,spec] = bz_WaveSpec(single(lfp.data),...
+        wavespec = bz_WaveSpec(single(lfp.data),'frange',specparms.frange,'nfreqs',specparms.nfreqs,'ncyc',specparms.ncyc,'samplingRate',lfp.samplingRate,'space',specparms.space);
+        
+        comod.freqs = wavespec.freqs;
+        spec = wavespec.data';
+        spectimestamps = wavespec.timestamps; %Wavelet timestamp are same as LFP        
         
 	case 'FFT'
         %Calculate the frequences to use
