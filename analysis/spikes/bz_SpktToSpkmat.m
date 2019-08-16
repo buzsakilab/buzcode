@@ -161,11 +161,11 @@ switch bintype
         %timepoint in the resulting bin is the mean of timepoints from all bins added
     case 'gaussian'
         stddev = binsize./(2.*sqrt(2*log(2))); %convert to FWHM (width at half max)
-        kernelx = [-fliplr(dt:dt:3.5*stddev) 0 dt:dt:3.5*stddev];
+        kernelx = [-fliplr(dt:dt:3*stddev) 0 dt:dt:3*stddev];
         kernel = Gauss(kernelx,0,stddev);
         kernel = kernel./Gauss(0,0,stddev); %normalize for counts at peak
         for cc = 1:numcells
-            spkmat(:,cc) = FConv(kernel,spkmat(:,cc)')';
+            spkmat(:,cc) = abs(FConv(kernel,spkmat(:,cc)'))';
         end
 end
 
