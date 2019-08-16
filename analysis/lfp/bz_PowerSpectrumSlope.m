@@ -155,6 +155,8 @@ if IRASA
     spec.amp = spec.amp(:,validFreqInds);
     spec.data = spec.data(:,validFreqInds);
     
+    spec.IRASAsmooth = power4fit;
+    
     clear resampledData
 else
    power4fit = spec.amp;
