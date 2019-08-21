@@ -1,5 +1,7 @@
 function spikes = bz_GetSpikes(varargin)
 % bz_getSpikes - Get spike timestamps.
+%       if loading from clu/res/fet/spk files - must be formatted as:
+%       baseName.clu.shankNum
 %
 % USAGE
 %
@@ -90,16 +92,17 @@ onlyLoad = p.Results.onlyLoad;
 
 
 [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
+baseName = bz_BasenameFromBasepath(basepath);
 
 
 spikes.samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
 
-
+cellinfofile = [basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'];
 %% if the cellinfo file exist and we don't want to re-load files
-if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') && forceReload == false
+if exist(cellinfofile,'file') && forceReload == false
     disp('loading spikes from cellinfo file..')
-    load([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'])
+    load(cellinfofile)
     %Check that the spikes structure fits cellinfo requirements
     [iscellinfo] = bz_isCellInfo(spikes);
     switch iscellinfo
@@ -110,12 +113,15 @@ if exist([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'file') 
     
     %If regions have been added since creation... add them
     if ~isfield(spikes,'region') & isfield(sessionInfo,'region')
+        if ~isfield(spikes,'numcells')
+            spikes.numcells = length(spikes.UID);
+        end
         for cc = 1:spikes.numcells
             spikes.region{cc} = sessionInfo.region{spikes.maxWaveformCh(cc)==sessionInfo.channels};
         end
         
         if saveMat
-            save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
+            save(cellinfofile,'spikes')
         end
     end
     
@@ -141,14 +147,18 @@ end
 tempFiles = zeros(length(cluFiles),1);
 for i = 1:length(cluFiles) 
     dummy = strsplit(cluFiles(i).name, '.'); % Check whether the component after the last dot is a number or not. If not, exclude the file/dir. 
-    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | isempty(str2num(dummy{length(dummy)})) | find(contains(dummy, 'clu')) ~= length(dummy)-1  
+    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | ...
+            isempty(str2num(dummy{length(dummy)})) | find(contains(dummy, 'clu')) ~= length(dummy)-1  | ...
+            ~strcmp(dummy{1},baseName)
         tempFiles(i) = 1;
     end
 end
 cluFiles(tempFiles==1)=[];
 tempFiles = zeros(length(resFiles),1);
 for i = 1:length(resFiles)
-    if ~isempty(findstr('temp',resFiles(i).name)) | ~isempty(findstr('autosave',resFiles(i).name))
+    dummy = strsplit(resFiles(i).name, '.');
+    if ~isempty(findstr('temp',resFiles(i).name)) | ~isempty(findstr('autosave',resFiles(i).name)) | ...
+            ~strcmp(dummy{1},baseName)
         tempFiles(i) = 1;
     end
 end
@@ -156,7 +166,9 @@ if any(getWaveforms)
     resFiles(tempFiles==1)=[];
     tempFiles = zeros(length(spkFiles),1);
     for i = 1:length(spkFiles)
-        if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name))
+        dummy = strsplit(spkFiles(i).name, '.');
+        if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name)) | ...
+            ~strcmp(dummy{1},baseName)
             tempFiles(i) = 1;
         end
     end
@@ -293,7 +305,7 @@ end
 
 %% save to buzcode format (before exclusions)
 if saveMat
-    save([basepath filesep sessionInfo.FileName '.spikes.cellinfo.mat'],'spikes')
+    save(cellinfofile,'spikes')
 end
 
 
@@ -348,31 +360,20 @@ end
 end
 
 
-
+%%
 function spikes = removeCells(toRemove,spikes,getWaveforms)
 %Function to remove cells from the structure. toRemove is the INDEX of
 %the UID in spikes.UID
 
     spikes.UID(toRemove) = [];
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.times{r} = [];
-         spikes.region{r} = [];
-        end
-    end
-    spikes.times = removeEmptyCells(spikes.times);
-    spikes.region = removeEmptyCells(spikes.region);
+    spikes.times(toRemove) = [];
+    spikes.region(toRemove) = [];
     spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
     
     if any(getWaveforms)
-    for r = 1:length(toRemove)
-        if toRemove(r) == 1
-         spikes.rawWaveform{r} = [];
-        end
-    end
-    spikes.rawWaveform = removeEmptyCells(spikes.rawWaveform);
-    spikes.maxWaveformCh(toRemove) = [];
+        spikes.rawWaveform(toRemove) = [];
+        spikes.maxWaveformCh(toRemove) = [];
     end
     
 end

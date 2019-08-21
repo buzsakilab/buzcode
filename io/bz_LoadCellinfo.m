@@ -92,6 +92,7 @@ if dataset
         cellinfo = bz_CollapseStruct(cellinfo,'match','justcat',true);
     end
     
+    filename = baseNames;
     return %send out the compiled cellinfo structure
 end
 
@@ -137,7 +138,7 @@ end
 [isCellinfo] = bz_isCellInfo(cellinfo);
 switch isCellinfo
     case false
-        warning('Your cellinfo structure does not meet buzcode standards. Sad.')
+        %warning('Your cellinfo structure does not meet buzcode standards. Sad.')
 end
 
 end

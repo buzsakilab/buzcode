@@ -1,4 +1,4 @@
-function [SleepScoreLFP] = PickSWTHChannel(basePath,scoretime,SWWeightsName,...
+function [SleepScoreLFP,PickChannelStats] = PickSWTHChannel(basePath,scoretime,SWWeightsName,...
     Notch60Hz,NotchUnder3Hz,NotchHVS,NotchTheta,SWChannels,ThetaChannels,...
     rejectchannels,OVERWRITE,varargin)
 %UNTITLED Summary of this function goes here
@@ -13,12 +13,21 @@ p = inputParser;
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'saveFiles',false,@islogical);
 addParameter(p,'ignoretime',[]);
+addParameter(p,'window',2);
+addParameter(p,'SHOWFIG',false);
+addParameter(p,'smoothfact',15);
+addParameter(p,'IRASA',true);
+addParameter(p,'downsamplefactor',5);
 
 parse(p,varargin{:})
 noPrompts = p.Results.noPrompts;
 saveFiles = p.Results.saveFiles;
 ignoretime = p.Results.ignoretime;
-
+window = p.Results.window; 
+smoothfact = p.Results.smoothfact; 
+IRASA = p.Results.IRASA; 
+SHOWFIG = p.Results.SHOWFIG; 
+downsamplefactor = p.Results.downsamplefactor; 
 
 
 [datasetfolder,recordingname,extension] = fileparts(basePath);
@@ -27,9 +36,44 @@ recordingname = [recordingname extension];
 matfilename = fullfile(basePath,[recordingname,'.SleepScoreLFP.LFP.mat']);
 
 figfolder = [fullfile(basePath,'StateScoreFigures'),'/'];
-if ~exist(figfolder,'dir')
+if ~exist(figfolder,'dir') & saveFiles
     mkdir(figfolder)
 end
+
+%% Hist/Freqs Parms
+numhistbins = 21;
+histbins = linspace(0,1,numhistbins);
+numfreqs = 100;
+swFFTfreqs = logspace(0,2,numfreqs);
+noverlap = 0; %Updated to speed up (don't need to sample at fine time resolution for channel selection)
+
+
+%For SW calculation
+%Load the slowwave filter weights
+if ~exist('SWWeightsName','var') | strcmp(SWWeightsName,'PSS')
+    %SWWeightsName = 'SWweights.mat';
+    SWweights = 'PSS';
+    SWWeightsName = 'PSS';
+    SWfreqlist = logspace(0.5,2,numfreqs); %should get this from bz_PowerSpectrumSlope...
+else
+    load(SWWeightsName)% 'SWweights.mat' by default
+    %Alter the filter weights if requested by the user
+    if Notch60Hz; SWweights(SWfreqlist<=62.5 & SWfreqlist>=57.5) = 0; end
+    if NotchUnder3Hz; SWweights(SWfreqlist<=3) = 0; end
+    if NotchHVS
+        SWweights(SWfreqlist<=18 & SWfreqlist>=12) = 0;
+        SWweights(SWfreqlist<=10 & SWfreqlist>=4) = 0;
+    end
+    if NotchTheta; SWweights(SWfreqlist<=10 & SWfreqlist>=4) = 0; end
+
+    assert(isequal(swFFTfreqs,SWfreqlist),...
+        'spectrogram freqs.  are not what they should be...')
+end 
+
+%For Theta Calculation
+f_all = [2 20];
+f_theta = [5 10];
+thFFTfreqs = logspace(log10(f_all(1)),log10(f_all(2)),numfreqs);
 
 %% Check if SleepScoreLFP has already been claculated for this recording
 %If the SleepScoreLFP file already exists, load and return with SleepScoreLFP in hand
@@ -39,6 +83,17 @@ if exist(matfilename,'file') && ~OVERWRITE
     if ~exist('SleepScoreLFP','var')
         display([matfilename,' does not contain a variable called SleepScoreLFP'])
     end
+    
+    if ~isequal(SleepScoreLFP.params.SWWeightsName,SWWeightsName)
+       display(['SlowWave Method used for Channel selection doesn''t match, updating to ',SWWeightsName])
+       SleepScoreLFP.params.SWfreqlist_selection = SleepScoreLFP.params.SWfreqlist;
+       SleepScoreLFP.params.SWweights_selection = SleepScoreLFP.params.SWweights;
+       SleepScoreLFP.params.SWWeightsName_selection = SleepScoreLFP.params.SWWeightsName;
+       SleepScoreLFP.params.SWfreqlist = SWfreqlist;
+       SleepScoreLFP.params.SWweights = SWweights;
+       SleepScoreLFP.params.SWWeightsName = SWWeightsName;
+    end
+    
     return
 end
 display('Picking SW and TH Channels for SleepScoreLFP.LFP.mat')
@@ -69,48 +124,16 @@ else
     display('No SpikeGroups...')
 end
 
-%% Hist/Freqs Parms
-numhistbins = 21;
-histbins = linspace(0,1,numhistbins);
-numfreqs = 100;
-swFFTfreqs = logspace(0,2,numfreqs);
-window = 10;
-noverlap = 5; %Updated to speed up (don't need to sample at fine time resolution for channel selection)
-
-%Smoothing Parameters
-smoothfact = 10; %units of si_FFT (currently, seconds)
-thsmoothfact = 10;
-
-%For SW calculation
-%Load the slowwave filter weights
-if ~exist('SWWeightsName','var') | strcmp(SWWeightsName,'PSS')
-    %SWWeightsName = 'SWweights.mat';
-    SWweights = 'PSS';
-    SWWeightsName = 'PSS';
-    SWfreqlist = logspace(0.5,2,200); %should get this from bz_PowerSpectrumSlope...
-else
-    load(SWWeightsName)% 'SWweights.mat' by default
-    %Alter the filter weights if requested by the user
-    if Notch60Hz; SWweights(SWfreqlist<=62.5 & SWfreqlist>=57.5) = 0; end
-    if NotchUnder3Hz; SWweights(SWfreqlist<=3) = 0; end
-    if NotchHVS
-        SWweights(SWfreqlist<=18 & SWfreqlist>=12) = 0;
-        SWweights(SWfreqlist<=10 & SWfreqlist>=4) = 0;
-    end
-    if NotchTheta; SWweights(SWfreqlist<=10 & SWfreqlist>=4) = 0; end
-
-    assert(isequal(swFFTfreqs,SWfreqlist),...
-        'spectrogram freqs.  are not what they should be...')
-end 
-
-%For Theta Calculation
-f_all = [2 20];
-f_theta = [5 10];
-thFFTfreqs = logspace(log10(f_all(1)),log10(f_all(2)),numfreqs);
 
 
 %% Pick channels to use
 spkgroupchannels = [SpkGrps.Channels];
+
+try %In case some channels are in AnatGrps but not SpkGrps
+anatgoupchannels = [Par.AnatGrps.Channels];
+spkgroupchannels = union(spkgroupchannels,anatgoupchannels);
+catch
+end
 
 if sum(SWChannels)>0 && sum(ThetaChannels)>0%use all channels unless SWChannels and ThetaChannels are specified... if both specified then we know those are the only good ones
     goodchannels = union(SWChannels,ThetaChannels);
@@ -137,7 +160,6 @@ end
 numThetaChannels = length(ThetaChannels);
 
 %% Load LFP files from .lfp
-downsamplefactor = 10;
 allLFP = bz_GetLFP(usechannels,'basepath',basePath,'basename',recordingname,...
     'downsample',downsamplefactor,'intervals',scoretime,'noPrompts',noPrompts);
 Fs = allLFP.samplingRate;
@@ -175,9 +197,9 @@ parfor idx = 1:numSWChannels;
     
     if strcmp(SWweights,'PSS')
         [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',SWChannels(idx),'frange',[4 90]);
+            'channels',SWChannels(idx),'frange',[4 90],'nfreqs',100,'IRASA',IRASA);
         broadbandSlowWave = specslope.data;
-        SWfreqlist = specslope.freqs;
+        SWfreqlist(idx,:) = specslope.freqs;
         specdt = 1./specslope.samplingRate;
         t_FFT = specslope.timestamps;
 
@@ -215,6 +237,7 @@ parfor idx = 1:numSWChannels;
     swhists(:,idx) = swhist;
     dipSW(idx) = hartigansdiptest_ss(sort(broadbandSlowWave));
 end
+SWfreqlist = SWfreqlist(1,:);
 %parfor_progress(0);
 
 %% Get info to allow to pick Theta channel
@@ -249,7 +272,7 @@ parfor idx = 1:numThetaChannels;
     allpower = sum((thFFTspec),1);
 
     thratio = thpower./allpower;    %Narrowband Theta
-    thratio = smooth(thratio,thsmoothfact./specdt);
+    thratio = smooth(thratio,smoothfact./specdt);
     
     %Remove ignoretimes (after smoothing), before normalizoing
     if ~isempty(ignoretime)
@@ -272,7 +295,7 @@ parfor idx = 1:numThetaChannels;
     THmeanspec(:,idx) = meanspec;
     peakTH(idx) = meanthratio;
 end
-parfor_progress(0);
+%parfor_progress(0);
 %% Sort by dip (bimodality) and pick channels
 [~,dipsortSW] = sort(dipSW);
 [~,dipsortTH] = sort(peakTH);
@@ -296,8 +319,11 @@ sf = swthLFP.samplingRate;
 
 %% SleepScoreLFP output
 
+PickChannelStats = v2struct(dipSW,peakTH,SWChannels,ThetaChannels,...
+    swhists,THmeanspec);
+
 params = v2struct(SWfreqlist,SWweights,SWWeightsName,Notch60Hz,...
-    NotchUnder3Hz,NotchHVS,NotchTheta);
+    NotchUnder3Hz,NotchHVS,NotchTheta,ignoretime,window,smoothfact,IRASA);
     
 SleepScoreLFP = v2struct(thLFP,swLFP,THchanID,SWchanID,sf,t,params);
 
@@ -335,8 +361,11 @@ end
 %         title('Theta Ratio Histogram: All Channels') 
         
 %% Show Channels
-
-chanfig =figure('visible','off');
+if SHOWFIG
+    chanfig =figure('visible','on');
+else
+    chanfig =figure('visible','off');
+end
 normhists = bz_NormToRange(swhists,[0 numusedchannels.*0.6]);
 normTHspec = bz_NormToRange(THmeanspec,[0 numusedchannels.*0.6]);
     subplot(5,2,[7 9])
@@ -369,9 +398,9 @@ normTHspec = bz_NormToRange(THmeanspec,[0 numusedchannels.*0.6]);
         specdt = 1./specslope.samplingRate;
         t_FFT = specslope.timestamps;
         t_spec = spec.timestamps;
-        FFTspec = spec.amp;
+        FFTspec = spec.amp';
         swFFTfreqs = spec.freqs;
-        [zFFTspec,mu,sig] = zscore((FFTspec)');
+        [zFFTspec,mu,sig] = zscore((FFTspec));
 
     else
         [FFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,goodSWidx)),window*Fs,noverlap*Fs,swFFTfreqs,Fs);
@@ -404,7 +433,7 @@ normTHspec = bz_NormToRange(THmeanspec,[0 numusedchannels.*0.6]);
         axis xy; hold on
         plot(t_FFT,bz_NormToRange(broadbandSlowWave,log2(swFFTfreqs([1 end]))),'k','Linewidth',0.1)
         LogScale_ss('y',2)
-        caxis([min(mu)-2.5*max(sig) max(mu)+2.5*max(sig)])
+        caxis([min(mu)-2*max(sig) max(mu)+2*max(sig)])
         ylim([log2(swFFTfreqs(1)) log2(swFFTfreqs(end))+0.2])
         xlim(t_FFT([1,end]))
         
@@ -425,7 +454,7 @@ normTHspec = bz_NormToRange(THmeanspec,[0 numusedchannels.*0.6]);
     allpower = sum((thFFTspec),1);
 
     thratio = thpower./allpower;    %Narrowband Theta
-    thratio = smooth(thratio,thsmoothfact./specdt);
+    thratio = smooth(thratio,smoothfact./specdt);
     
     %Remove ignoretimes (after smoothing), before normalizoing
     if ~isempty(ignoretime)
@@ -452,8 +481,9 @@ subplot(5,1,3)
         set(gca,'XTick',[]);
         
         
-        
+        if saveFiles
 saveas(chanfig,[figfolder,recordingname,'_SWTHChannels'],'jpeg')
+        end
 %saveas(chanfig,[figfolder,recordingname,'_SWTHChannels'],'fig')
 end
 

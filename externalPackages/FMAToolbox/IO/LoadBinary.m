@@ -42,6 +42,7 @@ function data = LoadBinary(filename,varargin)
 % Default values
 nChannels = 1;
 precision = 'int16';
+error('this function is now deprecated, use bz_LoadBinary.m')
 %warning(['this function assumes int16 precision, if your file is not int16 use load/resample.m'])
 skip = 0;
 frequency = 20000;
