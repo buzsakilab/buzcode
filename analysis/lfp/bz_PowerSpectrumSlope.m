@@ -101,7 +101,7 @@ if length(lfp.channels)>1
     specslope.channels = lfp.channels;
     %spec = [];
     if saveMat
-        save(savename,'specslope','spec');
+        save(savename,'specslope');
     end
     return
 end
