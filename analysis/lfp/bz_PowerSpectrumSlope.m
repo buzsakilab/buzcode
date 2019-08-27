@@ -20,7 +20,7 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       'Redetect'  (default: false) to force redetection even if saved
 %                   file exists
 %       'IRASA'     (default: false) use IRASA method to median-smooth power
-%                   spectrum before fitting (under development)
+%                   spectrum before fitting
 %                   (Muthukumaraswamy and Liley, NeuroImage 2018)
 %       'nfreqs'    number of frequency values used to fitting (default: 200)
 %
@@ -79,9 +79,7 @@ end
 if length(lfp.channels)>1
   %loop each channel and put the stuff in the right place
 	for cc = 1:length(lfp.channels)
-        if mod(cc,4)==1
-            bz_Counter(cc,length(lfp.channels),'Channels');
-        end
+        bz_Counter(cc,length(lfp.channels),'Channels');
         lfp_temp = lfp; 
         lfp_temp.data = lfp_temp.data(:,cc); 
         lfp_temp.channels = lfp_temp.channels(cc);
@@ -94,7 +92,7 @@ if length(lfp.channels)>1
         else
             specslope.data(:,cc) = specslope_temp.data;
             specslope.intercept(:,cc) = specslope_temp.intercept;
-            specslope.resid(:,cc) = specslope_temp.resid;
+            specslope.resid(:,:,cc) = specslope_temp.resid;
             specslope.rsq(:,:,cc) = specslope_temp.rsq;
             specslope.specgram(:,:,cc) = specslope_temp.specgram;
         end
@@ -103,7 +101,7 @@ if length(lfp.channels)>1
     specslope.channels = lfp.channels;
     %spec = [];
     if saveMat
-        save(savename,'specslope','spec');
+        save(savename,'specslope','-v7.3');
     end
     return
 end
