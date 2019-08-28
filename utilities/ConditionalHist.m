@@ -55,6 +55,7 @@ if iscell(Y) && iscell(X)
     return
 end
 
+
 %% For multiple columns in X - conditonal probabilty of each
 
 if size(Y,2)>1 && size(X,2)==1
@@ -90,6 +91,10 @@ Yedges(1) = -inf;Yedges(end) = inf;
 %Then calculate the joint probabilty of X and Y
 if length(Ybins) ==1
     XYhist = Xhist;
+elseif isempty(Y)
+    warning('Y is empty... using nans')
+    Y = nan(size(X));
+    XYhist = nan(length(Xbins),length(Ybins));
 else
     [XYhist] = hist3([X,Y],{Xbins,Ybins});
 end
