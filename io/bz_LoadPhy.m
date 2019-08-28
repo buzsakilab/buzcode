@@ -156,7 +156,7 @@ end
 spikes.numcells = length(spikes.UID);
 if ~isfield(spikes,'region') && isfield(spikes,'maxWaveformCh') && isfield(sessionInfo,'region')
     for cc = 1:spikes.numcells
-        spikes.region{cc} = sessionInfo.region{spikes.maxWaveformCh(cc)==sessionInfo.channels};
+        spikes.region{cc} = sessionInfo.region{find(spikes.maxWaveformCh(cc)==sessionInfo.channels)};
     end
 end
 
