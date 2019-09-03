@@ -28,6 +28,7 @@ addParameter(p,'saveMat',false,@islogical);
 parse(p,varargin{:})
 noPrompts = p.Results.noPrompts;
 editGUI = p.Results.editGUI;
+saveMat = p.Results.saveMat;
 
 if ~exist('basePath','var')
     basePath = pwd;
