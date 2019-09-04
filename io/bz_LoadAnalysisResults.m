@@ -18,6 +18,7 @@ function [ analysisResults,filename ] = bz_LoadAnalysisResults(basePath,analysis
 %                   cellinfo file from
 %                   future update: 'select', 'all'
 %       'baseNames' list of basepaths to load from, only used if 'dataset', true
+%                   use 'all' to load from all basePaths without prompt
 %       'catall'    logical (default: false) if loading multiple cellinfo
 %                   files from a dataset, will try to concatenate all units
 %                   into a single cellinfo structure. Removes fields that
@@ -39,7 +40,7 @@ catall = p.Results.catall;
 baseNames_keep = p.Results.baseNames;
 
 
-%% For loading all cellinfo files of same name from dataset
+%% For loading all AnalysisResults files of same name from dataset
 
 if dataset
     %Figure out which basePaths to look at
@@ -51,7 +52,7 @@ if dataset
     [basePaths,baseNames] = bz_FindBasePaths(basePath,'select',select);
     
     %Only Keep baseNames passed in 
-    if ~isempty(baseNames_keep)
+    if ~isempty(baseNames_keep) && ~strcmp(baseNames_keep,'all')
         keepbaseNames = ismember(baseNames,baseNames_keep);
         baseNames = baseNames(keepbaseNames);
         basePaths = basePaths(keepbaseNames);
