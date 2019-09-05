@@ -70,7 +70,7 @@ if isempty(overlap)
     overlap = binsize./dt;
 end
 
-if mod(overlap,1)~=0
+if mod(overlap,1)~=0 & strcmp(bintype,'boxcar')
     error('binsize must be a multiple of dt')
 end
 %% Deal With Input Type Variability
