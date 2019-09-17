@@ -163,7 +163,7 @@ end
 
 % get list of channels (1 from each good spike group)
 xcorr_chs = [];
-for gidx=1:length(spkgrpstouse)
+for gidx=1:length(usableshankchannels)
     %Remove rejectChannels
 %     usableshankchannels = setdiff(SpkGrps(spkgrpstouse(i)).Channels,rejectChannels);
         
@@ -218,7 +218,8 @@ EMGCorr = zeros(numbins, 1);
 counter = 1;
 for j=1:(length(xcorr_chs))
     for k=(j+1):length(xcorr_chs)
-        disp([num2str(counter*2 ./ (length(xcorr_chs)*length(xcorr_chs)*length(timestamps)))])
+        %disp([num2str(counter*2 ./ (length(xcorr_chs)*length(xcorr_chs)*length(timestamps)))])
+        bz_Counter(counter*2,(length(xcorr_chs)*length(xcorr_chs)*length(timestamps)),'Pair/Window')
         c1 = [];
         c2 = [];
         binind = 0;

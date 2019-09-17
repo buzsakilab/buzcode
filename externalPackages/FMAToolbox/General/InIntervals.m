@@ -53,6 +53,14 @@ if nargin < 2 | mod(length(varargin),2) ~= 0,
 end
 
 % Check parameters
+if isempty(intervals)
+    status = logical(zeros(size(values)));
+    interval = zeros(size(values));
+    index = zeros(size(values));
+    return
+end
+
+
 intervals = double(intervals);
 values = double(values);
 if ~isdmatrix(intervals) || size(intervals,2) ~= 2,

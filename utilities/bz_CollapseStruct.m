@@ -53,15 +53,19 @@ for ff = 1:length(fields)
        structout.(currentfield) = bz_CollapseStruct(structout.(currentfield),dim,combine,true);
        continue
     elseif iscell(structin(1).(currentfield)) & NEST %For cell array in field
-            if strcmp(dim,'match')
-                catdim = bz_FindCatableDims({structin(:).(currentfield)});
-                if length(catdim)>1
-                    catdim = catdim(1); %Change this to be the largest dimension
-                end
-            else
-                catdim = dim;
+        if strcmp(dim,'match')
+            catdim = bz_FindCatableDims({structin(:).(currentfield)});
+            if length(catdim)>1
+                catdim = catdim(1); %Change this to be the largest dimension
             end
-        structout.(currentfield) = cat(catdim,structin(:).(currentfield));
+        else
+            catdim = dim;
+        end
+        try
+            structout.(currentfield) = cat(catdim,structin(:).(currentfield));
+        catch
+            display(['Failed to concatenate field ',currentfield])
+        end
     elseif (isstring(structin(1).(currentfield))||ischar(structin(1).(currentfield))) & NEST %For string in field
         structout.(currentfield) = {structin(:).(currentfield)};
     else %For simple array in field
@@ -73,14 +77,17 @@ for ff = 1:length(fields)
                 catdim = dim;
             end
         structout.(currentfield) = cat(catdim(1),structin(:).(currentfield));
-         catch
+        catch
+             display(['Failed to concatenate field ',currentfield])
 %            keyboard
 %             continue
          end
 	end
 
     
-    
+        if ~isfield(structout,currentfield)
+            continue
+        end
     switch combine
         case 'mean'
             structout.(currentfield) = nanmean(structout.(currentfield),catdim);

@@ -6,17 +6,20 @@ function [ CONDXY ] = ConditionalHist( X,Y,varargin)
 %   X
 %   Y
 % (options)
-%   'numXbins'
-%   'numYbins'
+%   'numXbins'  (default: 50)
+%   'numYbins'  (default: 50)
 %   'Xbounds'
 %   'Ybounds'
-%   'minX'
+%   'Xbinoverlap' (default: 1)
+%   'minX'      (default: 25)
+%   'conditionby'   condition on X with different occupancy from datapoints
 %   
 %
 %OUTPUT
 %   CONDXY
 %       .pYX    a [numXbins x numYbins] matrix in which the [x,y]th element is P(y|x) 
 %       .XYhist joint histogram of X and Y
+%       .XYprop joint probability of X and Y
 %       .Xhist  histogram of X
 %       .Xbins  X bins
 %       .Ybins  Y bins
@@ -29,12 +32,16 @@ addParameter(p,'numYbins',50)
 addParameter(p,'Xbounds',[])
 addParameter(p,'Ybounds',[])
 addParameter(p,'minX',25)
+addParameter(p,'Xbinoverlap',1)
+addParameter(p,'conditionby',[])
 parse(p,varargin{:})
 numXbins = p.Results.numXbins;
 numYbins = p.Results.numYbins;
 Xbounds = p.Results.Xbounds;
 Ybounds = p.Results.Ybounds;
 minX = p.Results.minX;
+Xbinoverlap = p.Results.Xbinoverlap;
+conditionby = p.Results.conditionby;
 
 
 %% For cell input
@@ -78,7 +85,7 @@ Yedges(1) = -inf;Yedges(end) = inf;
 
 %First calculate the marginal probability of X
 [Xhist,~,XbinID] = histcounts(X,Xedges);
-Xhist4norm = Xhist;Xhist4norm(Xhist4norm<=minX) = nan;
+
 
 %Then calculate the joint probabilty of X and Y
 if length(Ybins) ==1
@@ -88,6 +95,12 @@ else
 end
 
 % Conditional probability of Y given X
+if isempty(conditionby)
+    Xhist4norm = Xhist;
+else
+    Xhist4norm = histcounts(conditionby,Xedges);
+end
+Xhist4norm(Xhist4norm<=minX) = nan; %Remove bins that don't have enough sampling
 pYX = bsxfun(@(x,y) x./y,XYhist,Xhist4norm');
 
 %Mean Y given X
@@ -98,8 +111,10 @@ end
 
 CONDXY.pYX = pYX;
 CONDXY.XYhist = XYhist;
+CONDXY.XYprob = XYhist./nansum(XYhist(:));
 CONDXY.meanYX = meanYX;
 CONDXY.Xhist = Xhist;
+CONDXY.pX = Xhist./nansum(Xhist);
 CONDXY.Xbins = Xbins;
 CONDXY.Ybins = Ybins;
 

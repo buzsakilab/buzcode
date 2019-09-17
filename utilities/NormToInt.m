@@ -9,17 +9,21 @@ function [normdata,intmean,intstd] = NormToInt(data,normtype,int,sf,varargin)
 %           to normalize the data with respect to (optional)
 %   sf      (optional) sampling frequency of the data. default 1
 %
+%   (options)
+%   'moving'    window for moving normatilization
+%   'SHOWFIG'   show a figue with distribution of the data
 %Note: modified Z score is median-based and robust to outliers
 %see https://ibm.co/2qi4Vy5
 %
 %DLevenstein Summer 2016
 %TO DO: Improve input parsing, compadible with buzcode structures
 %%
-SHOWFIG = false;
 p = inputParser;
 addParameter(p,'moving',0,@isnumeric);
+addParameter(p,'SHOWFIG',false);
 parse(p,varargin{:})
 movingwin = p.Results.moving;
+SHOWFIG = p.Results.SHOWFIG;
 if movingwin>0
     MOVING = true;
 else
