@@ -242,7 +242,7 @@ SWfreqlist = SWfreqlist(1,:);
 %% Get info to allow to pick Theta channel
 %parfor_progress(numSWChannels);
 %tstart = tic;
-parfor idx = 1:numThetaChannels;
+for idx = 1:numThetaChannels;
 %channum = 1;
     %Progress Counter
 %     timespent=toc(tstart);
@@ -260,6 +260,7 @@ parfor idx = 1:numThetaChannels;
     bz_Counter(idx,numThetaChannels,'TH Channels')
 
     %% Get spectrogram and calculate theta ratio
+    %HERE: MATCH from GetMetrics for IRASA method
     LFPchanidx = find(usechannels==ThetaChannels(idx));
     [thFFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,LFPchanidx)),window*Fs,noverlap*Fs,thFFTfreqs,Fs);
     t_FFT = t_FFT+allLFP.timestamps(1); %Offset for scoretime start

@@ -14,15 +14,22 @@ function [] = LogScale( whichaxis,logbase,varargin)
 %%
 p = inputParser;
 addParameter(p,'exp',false)
+addParameter(p,'nohalf',false)
 parse(p,varargin{:})
 expo = p.Results.exp;
+nohalf = p.Results.nohalf;
 
 %%
 if strcmp(whichaxis,'y') || strcmp(whichaxis,'xy')
     range = get(gca,'YLim');
-    range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
+    switch nohalf
+        case true
+            range(1) = ceil(range(1)); range(2) = floor(range(2));
+        case false
+            range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
+    end
     ticks = [range(1):range(2)];
-    if length(ticks)<=3
+    if length(ticks)<=3 & ~nohalf
         ticks = [range(1):0.5:range(2)];
     end
     
@@ -44,10 +51,14 @@ end
 
 if strcmp(whichaxis,'x') || strcmp(whichaxis,'xy')
     range = get(gca,'XLim');
-    %range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
-    range(1) = ceil(range(1)); range(2) = floor(range(2));
+    switch nohalf
+        case true
+            range(1) = ceil(range(1)); range(2) = floor(range(2));
+        case false
+            range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
+    end
     ticks = [range(1):range(2)];
-    if length(ticks)<=3
+    if length(ticks)<=3 & ~nohalf
         ticks = [range(1):0.5:range(2)];
     end
     
@@ -69,9 +80,14 @@ end
 
 if strcmp(whichaxis,'z')
     range = get(gca,'ZLim');
-    range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
+    switch nohalf
+        case true
+            range(1) = ceil(range(1)); range(2) = floor(range(2));
+        case false
+            range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
+    end
     ticks = [range(1):range(2)];
-    if length(ticks)<=3
+    if length(ticks)<=3 & ~nohalf
         ticks = [range(1):0.5:range(2)];
     end
     
@@ -93,9 +109,14 @@ end
 
 if strcmp(whichaxis,'c')
     range = get(gca,'CLim');
-    range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
+    switch nohalf
+        case true
+            range(1) = ceil(range(1)); range(2) = floor(range(2));
+        case false
+            range(1) = ceil(range(1).*2)./2; range(2) = floor(range(2).*2)./2;
+    end
     ticks = [range(1):range(2)];
-    if length(ticks)<=3
+    if length(ticks)<=3 & ~nohalf
         ticks = [range(1):0.5:range(2)];
     end
     

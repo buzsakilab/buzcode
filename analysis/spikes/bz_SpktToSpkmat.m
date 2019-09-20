@@ -143,6 +143,8 @@ spikes_ind_c = [cells.index4spikes];
 %Spike Indices - convert to linear index
 spikes_ind = sub2ind(size(spkmat), spikes_ind_t,spikes_ind_c);
 
+clear spikes_ind_c spikes_ind_t
+
 %Add Spikes to bins of size dt
 while spikes_ind
     spkmat(spikes_ind) = spkmat(spikes_ind)+1;
@@ -164,8 +166,8 @@ switch bintype
         kernelx = [-fliplr(dt:dt:3*stddev) 0 dt:dt:3*stddev];
         kernel = Gauss(kernelx,0,stddev);
         kernel = kernel./Gauss(0,0,stddev); %normalize for counts at peak
-        for cc = 1:numcells
-            spkmat(:,cc) = abs(FConv(kernel,spkmat(:,cc)'))';
+        for cc = 1:numcells     
+            spkmat(:,cc) = abs(FConv(kernel,spkmat(:,cc)'))';    
         end
 end
 
