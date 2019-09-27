@@ -62,7 +62,7 @@ function [data,stats] = PhasePrecession(positions,spikes,phases,varargin)
 %    stats.all             cell array containing all phases for each subfield
 %                          (useful for population analyses)
 %
-%    stats.lap.slope       phase precession slope (via circular regression)
+%    stats.lap.slope       phase precopenession slope (via circular regression)
 %    stats.lap.intercept   phase precession intercept (via circular regression)
 %    stats.lap.r2          coefficient of determination for circular regression
 %    stats.lap.p           p-value for circular regression
