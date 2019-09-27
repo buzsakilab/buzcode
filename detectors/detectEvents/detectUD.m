@@ -39,7 +39,7 @@ function [UDStates] = detectUD(varargin)
 %                       detection, default false)
 %   saveMat        - true or false save a buzcode event file with results
 %                       (default true)
-%   spikeThreshold - scalar, if [] false, default N
+%   spikeThreshold - scalar, if [] false, default .25
 %   skipCluster    - vector with cell ID for non-hippocampal and down state active cells, default [] 
 %
 % OUTPUT
@@ -49,6 +49,7 @@ function [UDStates] = detectUD(varargin)
 %   timestamps.DOWN         - Down state peaks.
 %   timestamps.UP           - Up state peaks.
 %   timestamps.deltaWave
+
 %
 %   MV-BuzsakiLab 2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -139,18 +140,22 @@ NREM_ts = find(indState); % NREM timestamps
 clear tlfp
 if isempty(ch) % if no channel declared, pick channel with higher gamma std during NREM and out of stimulation periods %anticorrelation delta gamma
     disp('Selecting best channel... ');
-    params.Fs = sessionInfo.rates.lfp; params.fpass = [1 400]; params.tapers = [3 5]; params.pad = 1;    
+    params.Fs = sessionInfo.rates.lfp; params.fpass = [1 400]; params.tapers = [3 5]; params.pad = 1;
     parfor ii = 1:sessionInfo.nChannels
-        fprintf(' **Channel %3.i/ %3.i, ',ii, sessionInfo.nChannels); %\n
-        chlfp = bz_GetLFP(ii-1,'basepath',basepath,'noPrompts',noPrompts);
-        [S,t,f] = mtspecgramc_fast(double(chlfp.data(NREM_ts)),[2 1],params);
-        S = 10 * log10(S)' + 60;
-        gamm = sum(S(find(f >= filterparams.gamma(1) & f <= filterparams.gamma(2)),:));
-        delt = sum(S(find(f >= filterparams.delta(1) & f <= filterparams.delta(2)),:));
-        avGamma(ii) = mean(gamm);
-        stdGamma(ii) = std(gamm);
-        try gdCorr(ii) = corr(gamm',delt','Type','Spearman');
-        catch gdCorr(ii) = 0;
+        if isfield(sessionInfo,'badchannels') && any(sessionInfo.channels(ii) == sessionInfo.badchannels)
+            gdCorr(ii) = 0; stdGamma(ii) = 0;
+        else
+            fprintf(' **Channel %3.i/ %3.i, ',ii, sessionInfo.nChannels); %\n
+            chlfp = bz_GetLFP(ii-1,'basepath',basepath,'noPrompts',noPrompts);
+            [S,t,f] = mtspecgramc_fast(double(chlfp.data(NREM_ts)),[2 1],params);
+            S = 10 * log10(S)' + 60;
+            gamm = sum(S(find(f >= filterparams.gamma(1) & f <= filterparams.gamma(2)),:));
+            delt = sum(S(find(f >= filterparams.delta(1) & f <= filterparams.delta(2)),:));
+            avGamma(ii) = mean(gamm);
+            stdGamma(ii) = std(gamm);
+            try gdCorr(ii) = corr(gamm',delt','Type','Spearman');
+            catch gdCorr(ii) = 0;
+            end
         end
     end 
     gdCorr(gdCorr==0) = 1;
@@ -158,6 +163,7 @@ if isempty(ch) % if no channel declared, pick channel with higher gamma std duri
     sdScore(~isnan(sdScore)) = zscore(sdScore(~isnan(sdScore)));                                     % down score increase with std gamma and gamma delta anticorr
     sdScore(sdScore>4) = 0; % remove outlier
     [~,ch] = max(sdScore(sdScore<4));
+    ch = sessionInfo.channels(ch);
     fprintf(' Best channel: %3.i!! \n',ch);
 end
 clear gamm delt avGamma stdGamma gdCorr dscore
@@ -281,8 +287,9 @@ UDStates.detectionInfo.spikeThreshold = spikeThreshold;
 UDStates.detectionInfo.gamm_thr = gamm_thr;
 UDStates.detectionInfo.down_thr = down_thr;
 UDStates.detectionInfo.deltaWaveThreshold = deltaWaveThreshold;
-
-save([sessionInfo.FileName '.UDStates.events.mat'],'UDStates');
+if saveMat
+    save([sessionInfo.FileName '.UDStates.events.mat'],'UDStates');
+end
 
 % %% check parameters
 %t_in = [28*60+44.183 28*60+49.183];
