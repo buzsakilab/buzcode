@@ -85,18 +85,22 @@ end
 %If spike times is in the form [spiketimes(:,1) cellnum(:,2)], convert to
 %cell array
 if isa(spiketimes,'numeric') && size(spiketimes,2)==2
-    cellnums = unique(spiketimes(:,2));
+    cellnums = unique(spiketimes(~isnan(spiketimes(:,2)),2));
     for cc = cellnums'
         spiketimestemp{cc} = spiketimes(spiketimes(:,2)==cc,1);
     end
-    spiketimes = spiketimestemp;
+    if isempty(cellnums) %silly
+        spiketimes = {[]};
+    else
+        spiketimes = spiketimestemp;
+    end
 end
 
 %Take stock of the cells - if there are no cells that's silly, but doesn't
 %break.
 numcells = length(spiketimes);
 if numcells == 0
-    spkmat=[];t=[];spindices=[];
+    spikemat.data=[];spikemat.timestamps=[];
     return
 end
 
@@ -104,6 +108,8 @@ end
 %Time Window
 if isempty(win) || isequal(win,[0 Inf])
     t_start = 0; t_end = max(vertcat(spiketimes{:}));
+elseif length(win)==1
+    tstart = 0;t_end = win;
 elseif  length(win) == 2
     t_start = win(1); t_end = win(2);
 end
