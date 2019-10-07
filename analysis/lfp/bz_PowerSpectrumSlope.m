@@ -13,6 +13,7 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       'frange'    (default: [4 100])
 %       'channels'  subset of channels to calculate PowerSpectrumSlope
 %                   (default: all)
+%       'ints'      Intervals in which to calculate PSS. Default:[0 Inf]
 %       'showfig'   true/false - show a summary figure of the results
 %                   (default:false)
 %       'saveMat'   put your basePath here to save/load
@@ -32,9 +33,11 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %
 %OUTPUTS
 %   specslope
-%       .data
-%       .timestamps
-%       .intercept
+%       .data           [Nt x NChannels] vector of the power spectrum slope   
+%       .timestamps     [Nt] timestamps
+%       .intercept      [Nt x NChannels] vector of the 0-intercept
+%       .specgram       [Nt x Nfreqs x Nchannels] the spectrogram
+%       .resid          [Nt x Nfreqs x Nchannels] the PSS-removed spectrogram
 %   specgram
 %       .data       complex-valued spectrogram
 %       .timestamps
