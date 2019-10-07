@@ -13,22 +13,31 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       'frange'    (default: [4 100])
 %       'channels'  subset of channels to calculate PowerSpectrumSlope
 %                   (default: all)
+%       'ints'      Intervals in which to calculate PSS. Default:[0 Inf]
 %       'showfig'   true/false - show a summary figure of the results
 %                   (default:false)
 %       'saveMat'   put your basePath here to save/load
 %                   baseName.PowerSpectrumSlope.lfp.mat  (default: false)
 %       'Redetect'  (default: false) to force redetection even if saved
 %                   file exists
-%       'IRASA'     (default: false) use IRASA method to median-smooth power
+%       'IRASA'     (default: true) use IRASA method to median-smooth power
 %                   spectrum before fitting
 %                   (Muthukumaraswamy and Liley, NeuroImage 2018)
 %       'nfreqs'    number of frequency values used to fitting (default: 200)
+%       'spectype'  'fft' or 'wavelet' (default: fft)
+%                   if using wavelets, winsize corresponds to number of
+%                   cycles (recommended: 10) and dt downsamples wavelets to
+%                   approximate desired dt (recommended <0.01 for
+%                   resolution up to 100Hz)
+%                   
 %
 %OUTPUTS
 %   specslope
-%       .data
-%       .timestamps
-%       .intercept
+%       .data           [Nt x NChannels] vector of the power spectrum slope   
+%       .timestamps     [Nt] timestamps
+%       .intercept      [Nt x NChannels] vector of the 0-intercept
+%       .specgram       [Nt x Nfreqs x Nchannels] the spectrogram
+%       .resid          [Nt x Nfreqs x Nchannels] the PSS-removed spectrogram
 %   specgram
 %       .data       complex-valued spectrogram
 %       .timestamps
@@ -44,8 +53,10 @@ addParameter(p,'saveMat',false)
 addParameter(p,'channels',[])
 addParameter(p,'frange',[4 100])
 addParameter(p,'Redetect',false)
-addParameter(p,'IRASA',false)
+addParameter(p,'IRASA',true)
 addParameter(p,'nfreqs',200)
+addParameter(p,'spectype','fft')
+addParameter(p,'ints',[0 inf])
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
@@ -54,6 +65,8 @@ frange = p.Results.frange;
 REDETECT = p.Results.Redetect;
 IRASA = p.Results.IRASA;
 nfreqs = p.Results.nfreqs;
+spectype = p.Results.spectype;
+ints = p.Results.ints;
 
 %%
 if saveMat
@@ -117,20 +130,32 @@ if IRASA
     frange = frange .* [1/actualRescaleFactor actualRescaleFactor];
 end
 
-spec.freqs = logspace(log10(frange(1)),log10(frange(2)),nfreqs);
-winsize_sf = round(winsize .*lfp.samplingRate);
-noverlap_sf = round(noverlap.*lfp.samplingRate);
-[spec.data,~,spec.timestamps] = spectrogram(single(lfp.data),winsize_sf,noverlap_sf,spec.freqs,lfp.samplingRate);
+switch spectype
+    case 'fft'
+        spec.freqs = logspace(log10(frange(1)),log10(frange(2)),nfreqs);
+        winsize_sf = round(winsize .*lfp.samplingRate);
+        noverlap_sf = round(noverlap.*lfp.samplingRate);
+        [spec.data,~,spec.timestamps] = spectrogram(single(lfp.data),...
+            winsize_sf,noverlap_sf,spec.freqs,lfp.samplingRate);
+        
+        %Interpolate the time stamps to match the LFP timestamps
+        assumedLFPtimestamps = [0:length(lfp.data)-1]./lfp.samplingRate;
+        spec.timestamps = interp1(assumedLFPtimestamps,lfp.timestamps,spec.timestamps,'nearest');
+        
+        keeptimes = InIntervals(spec.timestamps,ints);
+        
+        spec.amp = log10(abs(spec.data(:,keeptimes)'));
+        spec.data = spec.data(:,keeptimes)';
+        spec.timestamps = spec.timestamps(keeptimes)';
+    case 'wavelet'
+        downsampleout = round(lfp.samplingRate.*dt);
+        dt = downsampleout/lfp.samplingRate; %actual dt another option is to do movmean on the amplitude...
+        [spec] = bz_WaveSpec(lfp,'frange',frange,'nfreqs',nfreqs,'ncyc',winsize,...
+            'downsampleout',downsampleout,'intervals',ints);
+        
+        spec.amp = log10(abs(spec.data));
+end
 
-spec.amp = log10(abs(spec.data'));
-spec.data = spec.data';
-spec.timestamps = spec.timestamps';
-
-%% Interpolate the time stamps to match the LFP timestamps
-%Spectrogram assumes continuous time, interpolate to LFP timestamps if
-%jumps/offsets... (note, jumps will induce transients)
-assumedLFPtimestamps = [0:length(lfp.data)-1]./lfp.samplingRate;
-spec.timestamps = interp1(assumedLFPtimestamps,lfp.timestamps,spec.timestamps,'nearest');
 
 
 %% IRASA before fitting
@@ -213,22 +238,36 @@ if SHOWFIG
    end
 figure
     subplot(4,1,1)
-        imagesc(spec.timestamps,log2(spec.freqs),spec.amp')
+        imagesc(specslope.timestamps,log2(specslope.freqs),specslope.specgram')
         hold on
-        plot(specslope.timestamps,bz_NormToRange(specslope.data,log2(spec.freqs([1 end]))),'w','linewidth',2)
+        plot(specslope.timestamps,bz_NormToRange(specslope.data),'w','linewidth',2)
+        title('Spectrogram and PSS')
         LogScale('y',2)
         ylabel('f (Hz)')
         axis xy
+        SpecColorRange( spec.amp );
+        %caxis([0 1])
         xlim(bigsamplewin)
         bz_ScaleBar('s')
-    subplot(8,1,3)
-        plot(lfp.timestamps,lfp.data,'k')
-        axis tight
-        box off
+    subplot(4,1,2)
+        imagesc(spec.timestamps,log2(spec.freqs),specslope.resid')
+        hold on
+        plot(lfp.timestamps,bz_NormToRange(single(lfp.data)),'w','linewidth',1)
+        LogScale('y',2)
+        ylabel('f (Hz)')
+        title('Residuals and raw LFP')
+        axis xy
+        caxis([0 1])
         xlim(bigsamplewin)
-        lfprange = get(gca,'ylim');
-        set(gca,'XTickLabel',[])
-        ylabel('LFP')
+        bz_ScaleBar('s')
+%     subplot(8,1,3)
+%         plot(lfp.timestamps,lfp.data,'k')
+%         axis tight
+%         box off
+%         xlim(bigsamplewin)
+%         lfprange = get(gca,'ylim');
+%         set(gca,'XTickLabel',[])
+%         ylabel('LFP')
          
     subplot(6,2,7)
         hist(specslope.data,10)
@@ -248,6 +287,7 @@ figure
 	subplot(6,2,12-(bb-1))
         plot(lfp.timestamps,lfp.data,'k')
         axis tight
+        lfprange = get(gca,'ylim');
         box off
         xlim(exwin(bb,:)');ylim(lfprange)
         set(gca,'XTickLabel',[])

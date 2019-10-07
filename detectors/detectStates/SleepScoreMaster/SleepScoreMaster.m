@@ -5,9 +5,9 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %It's strongly recommended that you 
 %   1) indicate bad (noisy) channels using bz_getSessionInfo(basePath,'editGUI',true)
 %      before running SleepScoreMaster.
-%   3) use the 'ignoretime' input to exclude time windows with opto
+%   2) use the 'ignoretime' input to exclude time windows with opto
 %       stimulation or behavior with electrical noise
-%   2) check the scoring quality using TheStateEditor after running SleepScoreMaster.
+%   3) check the scoring quality using TheStateEditor after running SleepScoreMaster.
 %      Use the 'A' key in TheStateEditory to further refine thresholds as
 %      needed, and implement sticky thresholds.
 %

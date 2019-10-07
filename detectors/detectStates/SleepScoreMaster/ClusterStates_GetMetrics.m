@@ -164,7 +164,8 @@ if ThIRASA && strcmp(SWweights,'PSS')
     lfp.timestamps = t_LFP;
     lfp.samplingRate = sf_LFP;
     %Calculate PSS
-    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,'nfreqs',200,'frange',f_all,'IRASA',ThIRASA);
+    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,...
+        'nfreqs',200,'frange',f_all,'IRASA',ThIRASA);
     t_thclu = specslope.timestamps;
     specdt = 1./specslope.samplingRate;
     thFFTspec = specslope.resid';

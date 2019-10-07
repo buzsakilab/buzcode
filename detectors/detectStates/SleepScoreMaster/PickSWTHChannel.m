@@ -111,37 +111,36 @@ else
     display('No .lfp file')
 end
 
-%% FMA
+%% Pick channels to use
+
 Par = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 nChannels = Par.nChannels;
 
-if isfield(Par,'SpkGrps')
-    SpkGrps = Par.SpkGrps;
-elseif isfield(Par,'AnatGrps')
-    SpkGrps = Par.AnatGrps;
-    display('No SpikeGroups, Using AnatomyGroups')
-else
-    display('No SpikeGroups...')
-end
+%Remove spike groups requirement DL9/3/19
+% if isfield(Par,'SpkGrps')
+%     SpkGrps = Par.SpkGrps;
+% elseif isfield(Par,'AnatGrps')
+%     SpkGrps = Par.AnatGrps;
+%     display('No SpikeGroups, Using AnatomyGroups')
+% else
+%     display('No SpikeGroups...')
+% end
 
-
-
-%% Pick channels to use
-spkgroupchannels = [SpkGrps.Channels];
-
-try %In case some channels are in AnatGrps but not SpkGrps
-anatgoupchannels = [Par.AnatGrps.Channels];
-spkgroupchannels = union(spkgroupchannels,anatgoupchannels);
-catch
-end
+% spkgroupchannels = [SpkGrps.Channels];
+% 
+% try %In case some channels are in AnatGrps but not SpkGrps
+% anatgoupchannels = [Par.AnatGrps.Channels];
+% spkgroupchannels = union(spkgroupchannels,anatgoupchannels);
+% catch
+% end
 
 if sum(SWChannels)>0 && sum(ThetaChannels)>0%use all channels unless SWChannels and ThetaChannels are specified... if both specified then we know those are the only good ones
     goodchannels = union(SWChannels,ThetaChannels);
-    badchannels = setdiff(spkgroupchannels,goodchannels);
+    badchannels = setdiff(Par.channels,goodchannels);
     rejectchannels = union(rejectchannels,badchannels);
 end
 
-usechannels = setdiff(spkgroupchannels,rejectchannels);
+usechannels = setdiff(Par.channels,rejectchannels);
 numusedchannels = length(usechannels);
 
 %% Handle specific candidacy of certain channels for SW vs Theta
@@ -246,33 +245,45 @@ SWfreqlist = SWfreqlist(1,:);
 parfor idx = 1:numThetaChannels;
 %channum = 1;
     %Progress Counter
-%     timespent=toc(tstart);
-%     percdone = parfor_progress;
-%     
-%     estimatedtotal = timespent./(percdone./100);
-%     estimatedremaining = estimatedtotal-timespent;
-   %if mod(idx,10) == 1
-   %fprintf('\r'); % delete previous counter display
-%         display(['TH Channels - Percent Complete: ',num2str(round(percdone)),...
-%             '.  Time Spent: ',num2str(round(timespent./60)),...
-%             '.  Est. Total Time: ',num2str(round(estimatedtotal./60)),...
-%             'min.  ETR: ',num2str(round(estimatedremaining./60)),'min.'])
-  % end
     bz_Counter(idx,numThetaChannels,'TH Channels')
 
-    %% Get spectrogram and calculate theta ratio
-    LFPchanidx = find(usechannels==ThetaChannels(idx));
-    [thFFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,LFPchanidx)),window*Fs,noverlap*Fs,thFFTfreqs,Fs);
-    t_FFT = t_FFT+allLFP.timestamps(1); %Offset for scoretime start
-    specdt = mode(diff(t_FFT));
-    thFFTspec = (abs(thFFTspec));
+    if IRASA && strcmp(SWweights,'PSS') %(new way... peak above 1/f)
+        
+        [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
+            'channels',ThetaChannels(idx),'frange',f_all,'nfreqs',100,'IRASA',IRASA);
+        specdt = 1./specslope.samplingRate;
+        t_FFT = specslope.timestamps;
+        thFFTspec = specslope.resid';
+        thFFTspec(thFFTspec<0)=0;
+        
+        % Remove transients before calculating SW histogram
+        %zFFTspec = NormToInt(spec.amp,'modZ');
+        %totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
+        %badtimes_TH = find(totz>3);
+        
+        thFFTfreqs = specslope.freqs';
+        thfreqs = (thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
+        thratio = max((thFFTspec(thfreqs,:)),[],1);
+        thratio = smooth(thratio,smoothfact./specdt);
 
-    thfreqs = find(thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
-    thpower = sum((thFFTspec(thfreqs,:)),1);
-    allpower = sum((thFFTspec),1);
+    else %(old way... ratio)
+        %% Get spectrogram and calculate theta ratio
+        %HERE: MATCH from GetMetrics for IRASA method
+        LFPchanidx = find(usechannels==ThetaChannels(idx));
+        [thFFTspec,~,t_FFT] = spectrogram(single(allLFP.data(:,LFPchanidx)),window*Fs,noverlap*Fs,thFFTfreqs,Fs);
+        t_FFT = t_FFT+allLFP.timestamps(1); %Offset for scoretime start
+        specdt = mode(diff(t_FFT));
+        thFFTspec = (abs(thFFTspec));
 
-    thratio = thpower./allpower;    %Narrowband Theta
-    thratio = smooth(thratio,smoothfact./specdt);
+        thfreqs = find(thFFTfreqs>=f_theta(1) & thFFTfreqs<=f_theta(2));
+        thpower = sum((thFFTspec(thfreqs,:)),1);
+        allpower = sum((thFFTspec),1);
+
+        thratio = thpower./allpower;    %Narrowband Theta
+        thratio = smooth(thratio,smoothfact./specdt);
+
+
+    end
     
     %Remove ignoretimes (after smoothing), before normalizoing
     if ~isempty(ignoretime)
@@ -280,20 +291,21 @@ parfor idx = 1:numThetaChannels;
         thratio(ignoretimeIDX) = [];
     end
     thratio = bz_NormToRange(thratio,[0 1]);
-
-    %% Histogram and diptest of Theta
+    %Histogram and diptest of Theta
     THhist(:,idx) = hist(thratio,histbins);
+    
     %Dip test of theta doesn't get used... could be incorporated for
     %selection?
     %dipTH(idx) = hartigansdiptest_ss(sort(thratio));
-    
+
     %% Ratio of Theta Peak to sorrounding in mean spectrum (for selection)
     meanspec = (mean(thFFTspec,2));
     meanthratio = sum((meanspec(thfreqs)))./sum((meanspec(:)));
-    
+
     %Record the spec and peak ratio for later comparison between chans
     THmeanspec(:,idx) = meanspec;
     peakTH(idx) = meanthratio;
+        
 end
 %parfor_progress(0);
 %% Sort by dip (bimodality) and pick channels
