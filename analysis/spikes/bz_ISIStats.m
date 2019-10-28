@@ -159,6 +159,7 @@ for cc = 1:numcells
     ISIhist.(statenames{ss}).meannorm(cc,:) = hist(log10(normISIs{cc}),ISIhist.logbins);
     
     CV2hist.(statenames{ss})(cc,:) = hist(CV2{cc},CV2hist.bins);
+    %Count CV2 of previous and next spike
     Jointhist.(statenames{ss}).log(cc,:,:) = hist3(...
         [log10([ISIs{cc};ISIs{cc}(2:end)]),[CV2{cc};CV2{cc}(1:end-1)]],...
         {ISIhist.logbins,CV2hist.bins});
@@ -175,8 +176,8 @@ for cc = 1:numcells
     
     CV2hist.(statenames{ss})(cc,:) = CV2hist.(statenames{ss})(cc,:)./numspks(cc);
     
-    Jointhist.(statenames{ss}).log(cc,:,:) = Jointhist.(statenames{ss}).log(cc,:,:)./numspks(cc);
-    Jointhist.(statenames{ss}).norm(cc,:,:) = Jointhist.(statenames{ss}).norm(cc,:,:)./numspks(cc);
+    Jointhist.(statenames{ss}).log(cc,:,:) = Jointhist.(statenames{ss}).log(cc,:,:)./(2.*numspks(cc));
+    Jointhist.(statenames{ss}).norm(cc,:,:) = Jointhist.(statenames{ss}).norm(cc,:,:)./(2.*numspks(cc));
 
     %Calculate Return maps
     if numspks(cc)>1
