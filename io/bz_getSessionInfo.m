@@ -10,6 +10,7 @@ function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 %INPUT
 %   basePath            directory: '/whatevetPath/baseName/'
 %   (options)
+%       'saveMat'       (default: prompt)
 %       'noPrompts'     (default: false) prevents prompts about
 %                       saving/adding metadata
 %       'editGUI'       (default: false) opens a GUI to edit select
@@ -23,9 +24,11 @@ function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 p = inputParser;
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'editGUI',false,@islogical);
+addParameter(p,'saveMat',false,@islogical);
 parse(p,varargin{:})
 noPrompts = p.Results.noPrompts;
 editGUI = p.Results.editGUI;
+saveMat = p.Results.saveMat;
 
 if ~exist('basePath','var')
     basePath = pwd;
@@ -60,16 +63,16 @@ bz_isSessionInfo(sessionInfo);
 if editGUI
     [ sessionInfo ] = bz_sessionInfoGUI(sessionInfo);
     SIexist = false;
-elseif ~isfield(sessionInfo,'region') && ~noPrompts
-    regionadd = questdlg(['Your sessionInfo is missing regions, ',...
-        'would you like to add them?'],'Add Regions?','Yes');
-    switch regionadd
-        case 'Yes'
-            [sessionInfo] = bz_sessionInfoGUI(sessionInfo,'Regions');
-            SIexist = false; 
-        case 'Cancel'
-            return
-    end
+% elseif ~isfield(sessionInfo,'region') && ~noPrompts
+%     regionadd = questdlg(['Your sessionInfo is missing regions, ',...
+%         'would you like to add them?'],'Add Regions?','Yes');
+%     switch regionadd
+%         case 'Yes'
+%             [sessionInfo] = bz_sessionInfoGUI(sessionInfo,'Regions');
+%             SIexist = false; 
+%         case 'Cancel'
+%             return
+%     end
 end
 
 %Should check that sessionInfo.session.name and sesioninfo.session.path
@@ -84,10 +87,16 @@ if ~noPrompts && ~SIexist %Inform the user that they should save a file for late
         filename '?'],'Save sessionInfo?','Yes');
     switch savebutton
         case 'Yes'
-            save(filename,'sessionInfo'); 
+            saveMat = true;
+        case 'No'
+            saveMat = false;
         case 'Cancel'
             return
     end
 end
 
+if saveMat
+    disp(['saving ',baseName,'.sessionInfo.mat'])
+    save(filename,'sessionInfo'); 
+end
 end

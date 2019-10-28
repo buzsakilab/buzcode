@@ -28,7 +28,10 @@ dat.data((abs(dat.data(:,8))>nanmean(dat.data(:,8))+nanstd(dat.data(:,8))*4),8)=
 dat.data((abs(dat.data(:,9))>nanmean(dat.data(:,9))+nanstd(dat.data(:,9))*4),9)=nan;
 
 % find poorly tracked frames using the error per marker column
+try
 dat.data(find(dat.data(:,10)>nanmean(dat.data(:,10))+nanstd(dat.data(:,10))*5),:)=nan;   
+catch
+end
 
 % find dropped frames or large translational shifts and call them nan's here
 f = find(diff(dat.data(:,8))==0 | abs(diff(dat.data(:,8)))> nanmean(nanstd(abs(diff(dat.data(:,8)))))+ nanstd(abs(diff(dat.data(:,8)))) * 5);
@@ -39,9 +42,9 @@ f = find(diff(dat.data(:,7))==0 | abs(diff(dat.data(:,7)))> nanmean(nanstd(abs(d
 dat.data(f+1,7)=nan;
 
 % median filtering
-dat.data(:,7) = medfilt1(dat.data(:,7),24);
-dat.data(:,8) = medfilt1(dat.data(:,8),24);
-dat.data(:,9) = medfilt1(dat.data(:,9),24);
+dat.data(:,7) = medfilt1(dat.data(:,7),5);% 24
+dat.data(:,8) = medfilt1(dat.data(:,8),5);
+dat.data(:,9) = medfilt1(dat.data(:,9),5);
 
 % pattern matching interpolation
 dat.data(:,7) = fillmissing(dat.data(:,7),'spline');

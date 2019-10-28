@@ -75,7 +75,7 @@ if size(pos,2)>6
 
     vel = nansum(abs(diff(p)'))';
     vel(vel>100) = 0;
-    vel = fastrms(fastrms(vel,40),100);
+    vel = fastrms(fastrms(vel,4),30);
     subplot(2,1,1)
     hist(vel(~isnan(p(2:end,1))),1000);
     axis([ 0 mean(vel)+8*std(vel) 0 max(hist(vel(~isnan(p(2:end,1))),1000))])
@@ -91,7 +91,7 @@ if size(pos,2)>6
     velThresh=x; %7e-5; % change this to first min peak in vel histogram
     close all
     scatter(p(:,1),p(:,2),1,'.k')
-    distThresh =  mean(max(p)-min(p))./2;
+    distThresh =  mean(max(p)-min(p))./20;
 
 %     axis([-1 1 -1 1])
 end
@@ -129,17 +129,17 @@ cc=1;
 
 for l=1:length(locsmat)
     next=1;
-    while l+next < length(locsmat) & locsmat(l,1) ~= locsmat(l+next,1)
+    while l+next+12 < length(locsmat) & locsmat(l,1) ~= locsmat(l+next,1)
         % check that the velocity doesn't drop below threshold
         if any(vel(locsmat(l,1):locsmat(l+next,1))<velThresh)
             break
         end
         % check that the run is long enough to be at least one lap 
-        if (sum(sum(abs(diff(p(locsmat(l,1):locsmat(l+next,:),:)))))) > distThresh
+%         if (sum(sum(abs(diff(p(locsmat(l,1):locsmat(l+next,:),:)))))) > distThresh
             
             % check that the velocity drops below threshold within a
             % certain number of frames
-            if any(vel(locsmat(l,1)-120:locsmat(l,1)+120)<velThresh) & any(vel(locsmat(l+next,1)-120:locsmat(l+next,1)+120)<velThresh)
+%             if any(vel(locsmat(l,1)-120:locsmat(l,1)+120)<velThresh) & any(vel(locsmat(l+next,1)-120:locsmat(l+next,1)+120)<velThresh)
             startPos=pos(locsmat(l,1),:);
             stopPos=pos(locsmat(l+next,1),:);
             if lastStop < startPos(1) % cut off four seconds for some 'wiggle' room
@@ -204,7 +204,7 @@ for l=1:length(locsmat)
                     bb(isnan(bb))=[];
                 pp=polyfit([a],...
                         [bb],1);    
-                trials{b,c,heaviside(pp(1))+1}{end+1}=pos(locsmat(l,1):locsmat(l+next,1),:);
+              trials{b,c,heaviside(pp(1))+1}{end+1}=pos(locsmat(l,1):locsmat(l+next,1),:);
                 lastStart = startPos(1); 
                 lastStop = stopPos(1);
                 end
@@ -213,8 +213,8 @@ for l=1:length(locsmat)
                     lastStop = stopPos(1);
                 end
             end
-            end
-        end
+%             end
+%         end
         next=next+1;
     end   
 end

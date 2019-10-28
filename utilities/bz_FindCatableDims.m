@@ -10,6 +10,9 @@ function [ catabledim ] = bz_FindCatableDims( tryarrays )
 %
 %DLevenstein 2018
 %%
+%Remove any empty arrays
+tryarrays(cellfun(@(X) isempty(X),tryarrays)) = [];
+
 arraysizes = cellfun(@size,tryarrays,'uniformoutput',false);
 numdims = cellfun(@length,arraysizes);
 

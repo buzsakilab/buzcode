@@ -1,15 +1,31 @@
-function [ window ] = bz_RandomWindowInIntervals( intervals,winsize )
-%[ window ] = RandomWindowInInterval( interval,winsize ) returns a random
+function [ window ] = bz_RandomWindowInIntervals( intervals,winsize,nwins )
+%[ window ] = bz_RandomWindowInIntervals( interval,winsize,nwins ) returns a random
 %time window from within an interval set.
 %
 %INPUTS
 %   interval     [N x 2] start stop pairs
 %   winsize      duration of the window
+%   nwins        number of random windows to get
 %
 %OUTPUTS
-%   window       random time window from within the interval
+%   window       random time window(s) from within the interval
 %
 %DLevenstein 2018
+%%
+if exist('nwins','var') 
+    for nn = 1:nwins
+        window(nn,:) = bz_RandomWindowInIntervals(intervals,winsize);
+        %Should exclude the window from intervals here...
+        [~,startin] = InIntervals(window(nn,1),intervals);
+        [~,endin] = InIntervals(window(nn,2),intervals);
+        newint_pre = [intervals(startin,1) window(nn,1)];
+        newint_post = [window(nn,2) intervals(endin,2)];
+        intervals(startin,:) = [];
+        intervals = [intervals; newint_pre; newint_post];
+    end
+    return
+end
+
 %%
 %Intervals of possible start times
 if isequal(size(intervals),[2 1])

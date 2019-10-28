@@ -1,4 +1,4 @@
-function [  ] = bz_MultiLFPPlot( lfp,varargin )
+function [ ywinrange ] = bz_MultiLFPPlot( lfp,varargin )
 %bz_MultiLFPPlot(lfp). This function plots multiple lfp channels from a 
 %buzcode lfp structure with the channels appropriately spaced. 
 %
@@ -20,6 +20,11 @@ function [  ] = bz_MultiLFPPlot( lfp,varargin )
 %   'axhandle'  axes handle in which to put the plot
 %   'scaleLFP'  multiplicative factor to scale the y range of LFP
 %   'scalespikes' size of spike points (default:5)
+%   'spikeside' 'top' (default) or 'bottom'
+%   'LFPlabels' text labels for each LFP channel (default: channel number)
+%   'LFPmidpoints' (default: evenly spaced)
+%   'lfpcolor'
+%   'lfpwidth'
 %
 %
 %DLevenstein 2017
@@ -39,6 +44,11 @@ addParameter(p,'axhandle',gca)
 addParameter(p,'scaleLFP',1,@isnumeric)
 addParameter(p,'scalespikes',5,@isnumeric)
 addParameter(p,'plotcells',nan,@isnumeric)
+addParameter(p,'spikeside','top')
+addParameter(p,'LFPlabels',[])
+addParameter(p,'LFPmidpoints',[])
+addParameter(p,'lfpcolor','k')
+addParameter(p,'lfpwidth',0.5)
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
@@ -49,11 +59,20 @@ plotcells = p.Results.plotcells;
 ax = p.Results.axhandle;
 scaleLFP = p.Results.scaleLFP;
 scalespikes = p.Results.scalespikes;
+spikeside = p.Results.spikeside;
+LFPlabels = p.Results.LFPlabels;
+lfpmidpoints = p.Results.LFPmidpoints;
+lfpcolor = p.Results.lfpcolor;
+lfpwidth = p.Results.lfpwidth;
 
 if isempty(spikes)
     spikes = spikedefault;
 else
     %Implement raster sorting - cell sort 
+    if min(spikes.spindices(:,2))==0
+        spikes.spindices(:,2) = spikes.spindices(:,2)+1;
+    end
+    
     if isempty(sortmetric)
         sortmetric = 1:max(spikes.spindices(:,2));
     end
@@ -105,27 +124,46 @@ winspikes = spikes.spindices(:,1)>=timewin(1) & spikes.spindices(:,1)<=timewin(2
 %% Calculate and implement spacing between channels
 
 %Space based on median absolute deviation over entire recording - robust to outliers.
-channelrange = 10.*mad(single(lfp.data(:,chindex)),1);
-lfpmidpoints = -cumsum(channelrange);
+randtimes = randsample(size(lfp.data,1),1000);
+channelrange = 12.*mad(single(lfp.data(randtimes,chindex)),1);
+if isempty(lfpmidpoints)
+    lfpmidpoints = -cumsum(channelrange);
+end
 lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfpmidpoints));
 
-spikeplotrange = [1 -lfpmidpoints(1)];
+switch spikeside
+    case 'top'
+        spikeplotrange = [0 -lfpmidpoints(1)];
+    case 'bottom'
+        spikeplotrange = lfpmidpoints(end)+[1.5 0.5].*lfpmidpoints(1);  
+end
 spikes.plotdata = spikes.spindices(winspikes,:);
-spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff(spikeplotrange));
-
+%spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff(spikeplotrange));
+spikes.plotdata(:,2) = bz_NormToRange(spikes.plotdata(:,2),spikeplotrange);
 %% Do the plot
 ywinrange = fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange));
 if ~isnan(spikes.spindices)
-    ywinrange(2) = ywinrange(2)+max([spikes.plotdata(:,2);0]);
+    switch spikeside
+        case 'top'
+            ywinrange(2) = ywinrange(2)+max([spikes.plotdata(:,2);0]);
+        case 'bottom'
+            ywinrange(1) = min(spikes.plotdata(:,2));
+    end
+    
 end
 
-plot(ax,lfp.timestamps(windex),lfp.plotdata,'k','linewidth',0.5)
+plot(ax,lfp.timestamps(windex),lfp.plotdata,'color',lfpcolor,'linewidth',lfpwidth)
 hold on
 plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.','markersize',scalespikes)
 xlabel('t (s)')
 ylabel('LFP Channel')
 set(ax,'Ytick',fliplr(lfpmidpoints))
-set(ax,'yticklabels',fliplr(channels))
+
+if isempty(LFPlabels)
+    set(ax,'yticklabels',fliplr(channels))
+else
+    set(ax,'yticklabels',fliplr(LFPlabels))
+end
 ylim(ywinrange)
 xlim(timewin)
 box off

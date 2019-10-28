@@ -11,8 +11,13 @@ numwins = 30; %number of windows to look at. determine to maximize sampling or h
 %Selecting from random times (RestrictInts takes way too long...)
 set(findobj(FO.fig,'Type','uicontrol'),'Enable','off');
 drawnow;
-[status,interval,index] = InIntervals(FO.data.lfp.timestamps,double(FO.detectionints));
-restrictedtimes = FO.data.lfp.timestamps(status);
+if ~isempty(FO.detectionints)
+    [status,interval,index] = InIntervals(FO.data.lfp.timestamps,double(FO.detectionints));
+    restrictedtimes = FO.data.lfp.timestamps(status);
+else
+    restrictedtimes = FO.data.lfp.timestamps;
+end
+
 %use InIntervals
 set(findobj(FO.fig,'Type','uicontrol'),'Enable','on');
 randevents = randsample(restrictedtimes,numwins);
@@ -93,7 +98,8 @@ while counter>0 && QUITLOOP~=true
         elseif length(FO.markedevents(FO.markedevents(:,3)==3,1))==1 && length(inwinevents)==1
             newfalsealarms = inwinevents;
         else
-        newfalsealarms = interp1(inwinevents,inwinevents,FO.markedevents(FO.markedevents(:,3)==3,1),'nearest');
+            newfalsealarms = interp1(inwinevents,inwinevents,...
+                FO.markedevents(FO.markedevents(:,3)==3,1),'nearest');
         end
         falsealarm = [falsealarm; newfalsealarms];
     end

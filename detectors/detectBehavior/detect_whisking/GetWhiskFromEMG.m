@@ -4,31 +4,70 @@ function [ EMGwhisk ] = GetWhiskFromEMG( basePath,varargin )
 %implanted EMG in the whisker pad. Extracts also the EMG and EMG envelope.
 %
 %INPUT
-%   Assumes presence of the following files:
-%       basePath/baseName.abf    (whisking/camera pulses from clampex)
-%       basePath/analogin.dat    (camera pulses to intan)
-%   where basePath is a folder of the form: 
-%       whateverPath/baseName/
-%If basePath not specified, tries the current path.
+%   basePath
+%       Assumes presence of the following files:
+%           basePath/baseName.abf    (whisking/camera pulses from clampex)
+%           basePath/analogin.dat    (camera pulses to intan)
+%       where basePath is a folder of the form: 
+%           whateverPath/baseName/
+%       If basePath not specified, tries the current path.
 %
-%   (options)
-%       'PulseChannel'
-%       'EMGChannel'
+%   (parameters)
+%       'gausswidth'    Gaussian smoothing width (s)        (default: 0.05)
+%       'Whthreshold'   EMG Threshold for Whisking          (default: 'auto')
+%       'NWhthreshold'  EMG Threshold for Non-Whisking      (default: 'auto')
+%       'minwhisk'      Min. whisking duration (s)          (default: 0.1)
+%       'minNWh'        Min. nonwhisking duration (s)       (default: 0.1)
+%       'whiskmerge'    Min. interwhisking duration (s)     (default: 0.1)
+%       'NWhmerge'      Min. internonwhisking duration (s)  (default: 0.02)
+%       'showfig'       show a detection figure (default: true)
+%       'saveMat'       save the output in a baseName.EMGwhisk.behavior.mat file
+%       'PulseChannel'  channel with camera pulses          (default: 1)
+%       'EMGChannel'    channel with EMG/Piezo signal       (default: 2)
+%       'analysis'      'EMG' or 'touch'                    (default: 'EMG')
+%
+%   Note: 'auto' threshold detection gradient descents to a local trough in
+%   the smoothed EMG envelope from an initial guess of 0.5
 %
 %OUTPUT
-%Creates file:
-%   basePath/baseName.EMGwhisk.states.mat
-%
-%
+%   EMGwhisk
+%   'saveMat' Creates file:
+%       basePath/baseName.EMGwhisk.behavior.mat
 %
 %To Add: option for no camera pulses, which just align time to intan/pupil
 %
-%
-%DLevenstein 2017
+%DLevenstein, WMunoz 2017
 %% DEV
 % basePath = '/mnt/proraidDL/Database/WMProbeData/';
 % baseName = 'Layers_LFP_Test02_170323_151411';
-%%
+%% Parameters
+p = inputParser;
+addParameter(p,'gausswidth',0.05,@isnumeric)
+addParameter(p,'Whthreshold','auto',@isnumeric)
+addParameter(p,'NWhthreshold','auto',@isnumeric)
+addParameter(p,'minwhisk',0.1,@isnumeric)
+addParameter(p,'minNWh',0.1,@isnumeric)
+addParameter(p,'whiskmerge',0.1,@isnumeric)
+addParameter(p,'NWhmerge',0.02,@isnumeric)
+addParameter(p,'showfig',true,@islogical)
+addParameter(p,'saveMat',true,@islogical)
+addParameter(p,'PulseChannel',1)
+addParameter(p,'EMGChannel',2)
+addParameter(p,'EMGanalysis','EMG',@islogical)
+
+parse(p,varargin{:})
+SHOWFIG = p.Results.showfig;
+saveMat = p.Results.saveMat;
+EMGparms.gausswidth = p.Results.gausswidth;  
+EMGparms.Whthreshold = p.Results.Whthreshold;
+EMGparms.NWhthreshold = p.Results.NWhthreshold;
+EMGparms.minwhisk = p.Results.minwhisk;
+EMGparms.minNWh = p.Results.minNWh;
+EMGparms.whiskmerge = p.Results.whiskmerge;
+EMGparms.NWhmerge = p.Results.NWhmerge;
+EMGparms.PulseChannel = p.Results.PulseChannel;
+EMGparms.EMGChannel = p.Results.EMGChannel;
+EMGanalysis = p.Results.EMGanalysis;
 
 if ~exist('basePath','var')
     basePath = pwd;
@@ -37,7 +76,14 @@ baseName = bz_BasenameFromBasepath(basePath);
 %%
 abfname = fullfile(basePath,[baseName,'.abf']);
 analogName = fullfile(basePath,['analogin.dat']);
-savefile = fullfile(basePath,[baseName,'.EMGwhisk.states.mat']);
+
+switch EMGanalysis
+    case 'EMG'
+        savefile = fullfile(basePath,[baseName,'.EMGwhisk.behavior.mat']);
+    case 'touch'
+        savefile = fullfile(basePath,[baseName,'.Piezotouch.behavior.mat']);
+end
+
 figfolder = fullfile(basePath,'DetectionFigures');
 
 if ~exist(abfname,'file')
@@ -49,10 +95,8 @@ end
 
 
 %% Clampex File
-timechan = 1;
-emgchan = 2;
-sf_abf = 20000; %Sampling Frequency of the .abf file
 
+sf_abf = 20000; %Sampling Frequency of the .abf file
 
 [abffile,si,file_info] = abfload(abfname);
 
@@ -64,8 +108,8 @@ sf_abf = 20000; %Sampling Frequency of the .abf file
 %     %Replace this with prompt file_info.recChNames
 % end
 
-pulse_abf = abffile(:,timechan);
-EMG = abffile(:,emgchan);
+pulse_abf = abffile(:,EMGparms.PulseChannel);
+EMG = abffile(:,EMGparms.EMGChannel);
 
 t_abf = [1:length(EMG)]'./sf_abf;
 
@@ -80,16 +124,6 @@ downsamplefactor = 16; %Downsample to same as the LFP;
 EMG = downsample(EMG,downsamplefactor);
 t_EMG = downsample(t_abf,downsamplefactor);
 sf_down = sf_abf./downsamplefactor;
-%%
-
-EMGparms.gausswidth = 0.05;  %Gaussian width for smoothing (s)
-EMGparms.Whthreshold = 3;    %EMG Threshold for Whisking (modSTDs)
-EMGparms.NWhthreshold = 0.5;    %EMG Threshold for Whisking (modSTDs)
-%EMGparms.threshold = 1;    %EMG Threshold for Whisking (modSTDs)
-EMGparms.minwhisk = 0.1;     %Minimum whisking duration (s)
-EMGparms.minNWh = 0.1;       %Minimum nonwhisking duration (s)
-EMGparms.whiskmerge = 0.1;     %Minimum interwhisking duration (s)
-EMGparms.NWhmerge = 0.02;       %Minimum internonwhisking duration (s)
 
 %% Z-Score the EMGZ and get EMG envelope with RMS
 EMGz = NormToInt(EMG,'modZ'); %Modified Z score - robust to outliers
@@ -97,8 +131,8 @@ EMGsm = RMSEnvelope(EMGz,EMGparms.gausswidth,1/sf_down);
 EMGsm = EMGsm-min(EMGsm);
 EMGwhisk.EMGenvelope = EMGsm;
 
-%% Set the thresholds by whisking troughs - 
-%find by "gradient descent"(ish) from initial guess
+%% Set the thresholds by whisking troughs - ('auto')
+%find by "gradient descent"(ish) from initial guess (0.5)
 EMGbins = linspace(-1.5,2,100);
 EMGhist = hist(log10(EMGsm),EMGbins);
 EMGgrad = smooth(gradient(EMGhist),4);
@@ -107,25 +141,74 @@ EMGgrad = smooth(gradient(EMGhist),4);
 troughidx = find(diff(EMGgrad>0)==1);
 troughs = 10.^EMGbins(troughidx);
 
-%Get sign of gradient at each of the thresholds and use that to pick trough
-Whsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.Whthreshold),'nearest'));
-if Whsign==-1 
-    EMGparms.Whthreshold = troughs(find(troughs>EMGparms.Whthreshold,1,'first'));
-    if isempty(EMGparms.Whthreshold)
-        EMGparms.Whthreshold = troughs(end);
+if strcmp(EMGparms.Whthreshold,'auto')
+    EMGparms.Whthreshold = 0.5;
+    %Get sign of gradient at each of the thresholds and use that to pick trough
+    Whsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.Whthreshold),'nearest'));
+    if Whsign==-1 
+        EMGparms.Whthreshold = troughs(find(troughs>EMGparms.Whthreshold,1,'first'));
+        if isempty(EMGparms.Whthreshold)
+            warning('NO DIP! Try Setting manual Wh threshold, saving distribution...')
+            figure
+                %subplot(4,2,6)
+                    hist(log10(EMGsm),100)
+                    hold on
+                    %plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g')
+                    %plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r')
+                    axis tight
+                    xlabel('EMG/Piezo Envelope (modZ)');
+                    xlim([-1.5 max(log10(EMGsm))])
+
+                    LogScale('x',10)
+                    
+                    switch EMGanalysis
+                        case 'EMG'
+                            NiceSave('FAILEDWhiskingDetection',figfolder,baseName)
+                    	case 'touch'
+                            NiceSave('FAILEDTouchDetection',figfolder,baseName)
+                    end
+            EMGwhisk = [];
+            return
+        end
+    elseif Whsign==1
+        EMGparms.Whthreshold = troughs(find(troughs<EMGparms.Whthreshold,1,'last'));
     end
-elseif Whsign==1
-    EMGparms.Whthreshold = troughs(find(troughs<EMGparms.Whthreshold,1,'last'));
 end
 
-NWhsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.NWhthreshold),'nearest'));
-if NWhsign==-1 
-    EMGparms.NWhthreshold = troughs(find(troughs>EMGparms.NWhthreshold,1,'first'));
-elseif NWhsign==1
-    EMGparms.NWhthreshold = troughs(find(troughs<EMGparms.NWhthreshold,1,'last'));
+if strcmp(EMGparms.NWhthreshold,'auto')
+    EMGparms.NWhthreshold = 0.5;
+    NWhsign = sign(interp1(EMGbins,EMGgrad,log10(EMGparms.NWhthreshold),'nearest'));
+    if NWhsign==-1 
+        EMGparms.NWhthreshold = troughs(find(troughs>EMGparms.NWhthreshold,1,'first'));
+        if isempty(EMGparms.NWhthreshold)
+            warning('NO DIP! Try Setting manual NWh threshold, saving distribution...')
+            
+            figure
+                %subplot(4,2,6)
+                    hist(log10(EMGsm),100)
+                    hold on
+                    plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g')
+                    %plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r')
+                    axis tight
+                    xlim([-1.5 max(log10(EMGsm))])
+
+                    xlabel('EMG/Piezo Envelope (modZ)');
+                    LogScale('x',10)
+                    
+                    switch EMGanalysis
+                        case 'EMG'
+                        NiceSave('FAILEDWhiskingDetection',figfolder,baseName)
+                        case 'touch'
+                        NiceSave('FAILEDTouchDetection',figfolder,baseName)
+                    end
+            EMGwhisk = [];
+            return
+        end
+    elseif NWhsign==1
+        EMGparms.NWhthreshold = troughs(find(troughs<EMGparms.NWhthreshold,1,'last'));
+    end
 end
 %%
-
 % figure
 % bar(EMGbins,EMGhist)
 % hold on
@@ -137,8 +220,6 @@ end
 % xlabel('EMG Envelope (modZ)');
 % LogScale('x',10)
 % xlim([-1.5 max(log10(EMGsm))])
-
-
 
 %% Identify Whisking on/offsets: EMG envelope crosses threshold
 wh_thresh = EMGsm > EMGparms.Whthreshold;
@@ -173,19 +254,14 @@ wh_off = wh_off./sf_down;
 nwh_on = nwh_on./sf_down;
 nwh_off = nwh_off./sf_down;
 
-
-
 %Merge brief interruptions
 [ NWhints ] = MergeSeparatedInts( [nwh_on,nwh_off],EMGparms.NWhmerge );
 [ Whints ] = MergeSeparatedInts( [wh_on,wh_off],EMGparms.whiskmerge );
-
 
 %Drop nonwhisk epochs smaller than a minimum
 [nwh_on,nwh_off] = MinEpochLength(NWhints(:,1),NWhints(:,2),EMGparms.minNWh,1);
 %Drop whisking epochs smaller than a minimum
 [wh_on,wh_off] = MinEpochLength(Whints(:,1),Whints(:,2),EMGparms.minwhisk,1);
-
-
 
 %% Durations
 Whdur = wh_off-wh_on;
@@ -239,7 +315,6 @@ if range(interpulse)>tol
     warning('Frame rate is not constant...')
 end
 
-
 firstpulstime_lfp = pulset(1);
 
 %% Reset time to align to LFP
@@ -249,78 +324,164 @@ Whints = [wh_on wh_off]-firstpulstime_abf+firstpulstime_lfp;
 NWhints = [nwh_on nwh_off]-firstpulstime_abf+firstpulstime_lfp;
 
 %% Figure
+if SHOWFIG
+    switch EMGanalysis
+        case 'EMG'
+      
+            figure
+            subplot(4,1,1)
+            plot(t_align,EMGz,'k')
 
-figure
-subplot(4,1,1)
-    plot(t_align,EMGz,'k')
+            hold on
+            plot(t_align,EMGsm,'b','linewidth',2)
+            plot(Whints',EMGparms.Whthreshold.*ones(size(Whints))','g','linewidth',2)
+            plot(NWhints',EMGparms.NWhthreshold.*ones(size(NWhints))','r','linewidth',2)
+            axis tight
+            ylim([-100 100])
+            ylabel('EMG (modZ)');
 
-    hold on
-    plot(t_align,EMGsm,'b','linewidth',2)
-    plot(Whints',EMGparms.Whthreshold.*ones(size(Whints))','g','linewidth',2)
-    plot(NWhints',EMGparms.NWhthreshold.*ones(size(NWhints))','r','linewidth',2)
-    axis tight
-    ylim([-100 100])
-    ylabel('EMG (modZ)');
-    
-subplot(4,1,2)
-    plot(t_align,EMGz,'k')
+            subplot(4,1,2)
+            plot(t_align,EMGz,'k')
 
-    hold on
-    plot(t_align,EMGsm,'b','linewidth',2)
-    plot(Whints',EMGparms.Whthreshold.*ones(size(Whints))','g','linewidth',2)
-    plot(NWhints',EMGparms.NWhthreshold.*ones(size(NWhints))','r','linewidth',2)
-    xlim([100 160])
-    ylim([-20 40])
-    ylabel('EMG (modZ)');
+            hold on
+            plot(t_align,EMGsm,'b','linewidth',2)
+            plot(Whints',EMGparms.Whthreshold.*ones(size(Whints))','g','linewidth',2)
+            plot(NWhints',EMGparms.NWhthreshold.*ones(size(NWhints))','r','linewidth',2)
+            xlim([100 160])
+            ylim([-20 40])
+            ylabel('EMG (modZ)');
 
-subplot(4,2,6)
-hist(log10(EMGsm),100)
-hold on
-plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g')
-plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r')
+            subplot(4,2,6)
+            hist(log10(EMGsm),100)
+            hold on
+            plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g')
+            plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r')
 
-axis tight
-xlabel('EMG Envelope (modZ)');
-LogScale('x',10)
-xlim([-1.5 max(log10(EMGsm))])
+            axis tight
+            xlabel('EMG Envelope (modZ)');
+            LogScale('x',10)
+            xlim([-1.5 max(log10(EMGsm))])
 
-subplot(4,2,8)
-plot(durhist.bins,durhist.NWh,'r','linewidth',2)
-hold on
-plot(durhist.bins,durhist.Wh,'g','linewidth',2)
-LogScale('x',10)
-xlabel('Duration (s)')
-ylabel('# Epochs')
-legend('NWh','Wh')
+            subplot(4,2,8)
+            plot(durhist.bins,durhist.NWh,'r','linewidth',2)
+            hold on
+            plot(durhist.bins,durhist.Wh,'g','linewidth',2)
+            LogScale('x',10)
+            xlabel('Duration (s)')
+            ylabel('# Epochs')
+            legend('NWh','Wh')
 
-subplot(4,2,5)
-plot(t_abf-firstpulstime_abf+firstpulstime_lfp,pulse_abf,'k')
-hold on
-plot(pulset,pulsethreshold_abf.*ones(size(pulset)),'r+')
-xlim(firstpulstime_lfp+[-0.2 0.5])
-ylabel('Clampex Pulse Onset')
+            subplot(4,2,5)
+            plot(t_abf-firstpulstime_abf+firstpulstime_lfp,pulse_abf,'k')
+            hold on
+            plot(pulset,pulsethreshold_abf.*ones(size(pulset)),'r+')
+            xlim(firstpulstime_lfp+[-0.2 0.5])
+            ylabel('Clampex Pulse Onset')
 
-subplot(4,2,7)
+            subplot(4,2,7)
 
-plot(t_pulse,timepulses,'k')
-hold on
-plot(pulset,pulsethreshold.*ones(size(pulset)),'r+')
-xlim(firstpulstime_lfp+[-0.2 0.5])
-ylabel('Intan Pulse Onset')
+            plot(t_pulse,timepulses,'k')
+            hold on
+            plot(pulset,pulsethreshold.*ones(size(pulset)),'r+')
+            xlim(firstpulstime_lfp+[-0.2 0.5])
+            ylabel('Intan Pulse Onset')
 
-NiceSave('WhiskingDetection',figfolder,baseName)
+            NiceSave('WhiskingDetection',figfolder,baseName)
+        
+        case 'touch'
+            figure
+            subplot(4,1,1)
+            plot(t_align,EMGz,'k')
 
+            hold on
+            plot(t_align,EMGsm,'b','linewidth',2)
+            plot(Whints',EMGparms.Whthreshold.*ones(size(Whints))','g','linewidth',2)
+            plot(NWhints',EMGparms.NWhthreshold.*ones(size(NWhints))','r','linewidth',2)
+            axis tight
+            ylim([-100 100])
+            ylabel('Piezo (modZ)');
+
+            subplot(4,1,2)
+            plot(t_align,EMGz,'k')
+
+            hold on
+            plot(t_align,EMGsm,'b','linewidth',2)
+            plot(Whints',EMGparms.Whthreshold.*ones(size(Whints))','g','linewidth',2)
+            plot(NWhints',EMGparms.NWhthreshold.*ones(size(NWhints))','r','linewidth',2)
+            xlim([100 160])
+            ylim([-20 40])
+            ylabel('Piezo (modZ)');
+
+            subplot(4,2,6)
+            hist(log10(EMGsm),100)
+            hold on
+            plot([1 1].*log10(EMGparms.Whthreshold),get(gca,'ylim'),'g')
+            plot([1 1].*log10(EMGparms.NWhthreshold),get(gca,'ylim'),'r')
+
+            axis tight
+            xlabel('Piezo Envelope (modZ)');
+            LogScale('x',10)
+            xlim([-1.5 max(log10(EMGsm))])
+
+            subplot(4,2,8)
+            plot(durhist.bins,durhist.NWh,'r','linewidth',2)
+            hold on
+            plot(durhist.bins,durhist.Wh,'g','linewidth',2)
+            LogScale('x',10)
+            xlabel('Duration (s)')
+            ylabel('# Epochs')
+            legend('NonTouch','Touch')
+
+            subplot(4,2,5)
+            plot(t_abf-firstpulstime_abf+firstpulstime_lfp,pulse_abf,'k')
+            hold on
+            plot(pulset,pulsethreshold_abf.*ones(size(pulset)),'r+')
+            xlim(firstpulstime_lfp+[-0.2 0.5])
+            ylabel('Clampex Pulse Onset')
+
+            subplot(4,2,7)
+
+            plot(t_pulse,timepulses,'k')
+            hold on
+            plot(pulset,pulsethreshold.*ones(size(pulset)),'r+')
+            xlim(firstpulstime_lfp+[-0.2 0.5])
+            ylabel('Intan Pulse Onset')
+
+            NiceSave('TouchDetection',figfolder,baseName)
+    end
+end
 %%
 
-EMGwhisk.ints.Wh = Whints;
-EMGwhisk.ints.NWh = NWhints;
-EMGwhisk.detectorparms = EMGparms;
-EMGwhisk.detectorname = 'GetWhiskFromEMG';
-EMGwhisk.detectiondate = today('datetime');
-EMGwhisk.EMG = EMGz;
-EMGwhisk.EMGsm = EMGsm;
-EMGwhisk.t = t_align;
+switch EMGanalysis
+    case 'EMG'
+        EMGwhisk.timestamps = t_align;
+        EMGwhisk.EMG = EMGz;
+        EMGwhisk.EMGsm = EMGsm;
+        EMGwhisk.ints.Wh = Whints;
+        EMGwhisk.ints.NWh = NWhints;
+        EMGwhisk.samplingRate = sf_down;
+        EMGwhisk.detectorparms = EMGparms;
+        EMGwhisk.detectorname = 'GetWhiskFromEMG';
+        EMGwhisk.detectiondate = today('datetime');
+    case 'touch'
+        Piezotouch.timestamps = t_align;
+        Piezotouch.Piezo = EMGz;
+        Piezotouch.Piezosm = EMGsm;
+        Piezotouch.ints.Touch = Whints;
+        Piezotouch.ints.NoTouch = NWhints;
+        Piezotouch.samplingRate = sf_down;
+        Piezotouch.detectorparms = EMGparms;
+        Piezotouch.detectorname = 'GetWhiskFromEMG';
+        Piezotouch.detectiondate = today('datetime');
+end
 
-save(savefile,'EMGwhisk')
+if saveMat 
+    switch EMGanalysis
+        case 'EMG'
+            save(savefile,'EMGwhisk')
+        case 'touch'
+            save(savefile,'Piezotouch')
+    end
+end
 end
 

@@ -13,6 +13,7 @@
 %    -------------------------------------------------------------------------
 %     'manualROI'   boolean: whether or not you want to manually adjust the
 %                   area where LEDs are detected (default = 1)
+%     'ROI'         2 X C matrix where C1 is x and C2 is y from ROI
 %    =========================================================================
 %
 % DEPENDENCIES:
@@ -21,6 +22,7 @@
 
 
 % Copyright (C) 2015 Adrien Peyrache, some inspiration from John D Long II
+% 2019 Manu Valero (added roi inputs)
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -29,25 +31,14 @@
 
 
 function whl = Process_DetectLED(fbasename,thresh,varargin)
-manualROI = 1;
-
 % Parse options
-for i = 1:2:length(varargin),
-  if ~isa(varargin{i},'char'),
-    error(['Parameter ' num2str(i+3) ' is not a property (type ''help Process_ConvertBasler2Pos'' for details).']);
-  end
-  switch(lower(varargin{i})),
-    case 'manualroi',
-      manualROI = varargin{i+1};
-      if ~isa(manualROI,'numeric')
-        error('Incorrect value for property ''manualROI'' (type ''help Process_DetectLED'' for details).');
-      end
-   
-    otherwise,
-      error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help Process_DetectLED'' for details).']);
-  end
-end
+p = inputParser;
+addParameter(p,'manualROI',false,@islogical);
+addParameter(p,'roi',[],@ismatrix);
+parse(p,varargin{:});
 
+manualROI = p.Results.manualROI;
+roi = p.Results.roi;
 
 if strcmp(fbasename(end-3:end),'avi')
     fbasename = fbasename(end-3:end);
@@ -97,8 +88,15 @@ if manualROI
             ok = 1;
         end
     end
+elseif ~manualROI && ~isempty(roi)
+    x = roi(:,1);
+    y = roi(:,2);
+    inArea = inpolygon(X(:),Y(:),x,y);
+    inArea = double(reshape(inArea,[height width]));
+    frame(~inArea) = 0;
+else
+    inArea = ones(size(X));
 end
-
 % Initialize background as a grayscale image of the first frame
 bg_bw       = rgb2gray(firstFrame);
 

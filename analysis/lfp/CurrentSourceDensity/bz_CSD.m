@@ -25,7 +25,7 @@ function [ csd ] = bz_CSD (lfp, varargin)
 %    =========================================================================
 
 % OUTPUT:
-%    CSD            a buzcode structure with fields csd.data,
+%    CSD           a buzcode structure with fields csd.data,
 %                                                   csd.timestamps
 %                                                   csd.samplingRate
 %                                                   csd.channels 

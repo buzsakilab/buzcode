@@ -5,12 +5,17 @@
 %    [ccg,t] = CCG(times,groups,<options>)
 %
 %    times          times of all events
-%                   (alternate) - can be {Ncells} array of [Nspikes] 
-%                   spiketimes for each cell 
 %                   NOTE: spiketimes in SECONDS.
 %    groups         group IDs for each event in time list (should be
 %                   integers 1:nGroups)
-%                   (alternate) - []
+%
+%   alternate buzcode usage: 
+%   times           {Ncells} array of [Nspikes]  spiketimes for each cell.
+%   groups          []
+%
+%                   spikes = bz_GetSpikes
+%                   [ccg,t] = CCG(spikes.times,[])  
+%
 %    <options>      optional list of property-value pairs (see table below)
 %
 %    =========================================================================

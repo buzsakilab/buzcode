@@ -1,5 +1,5 @@
 function [ IDX,timestamps ] = bz_INTtoIDX(INT,varargin)
-%[IDX] = INTtoIDX(INT,len,sf) Converts state on/offsets to vector of indices
+%[IDX] = bz_INTtoIDX(INT) Converts state on/offsets to vector of indices
 %
 %INPUT
 %   INT:    {nstates} cell array of [nintervals x 2] start and end times.
@@ -20,7 +20,6 @@ function [ IDX,timestamps ] = bz_INTtoIDX(INT,varargin)
 %                                   IDX.timestamps
 %   timestamps
 %
-%Last Updated: 11/15/15
 %DLevenstein 2015
 %Updated 2018 for buzcode
 %% DEV
@@ -58,7 +57,12 @@ if isstruct(INT)
     
     %Convert to the cell array format needed for this function 
     for ss = 1:length(statenames)
-        if isempty(statenames{ss}); continue; end
+        if isempty(statenames{ss})
+            continue; 
+        elseif  ~ismember(statenames{ss},fieldstates) 
+            INTtemp{ss} = [];
+            continue; 
+        end
         INTtemp{ss} = INT.([statenames{ss},'state']);
     end
     INT = INTtemp;
@@ -81,6 +85,7 @@ if isinf(len)
     allints = cat(1,INT{:});
     len = ceil(max(allints(:,2)));
 end
+
 %%
 
 IDX = zeros(len,1);
@@ -90,6 +95,10 @@ statenums = 1:numstates; %for possible later implementation of non 1:numstates n
 for ss = statenums
     if isempty(INT{ss}); continue; end
     stateints = round(INT{ss});
+    
+    stateints(stateints==0)=1;
+    stateints(isinf(stateints))=len;
+    
     numints = length(stateints(:,1));
     for ii = 1:numints
         IDX(stateints(ii,1):stateints(ii,2))=ss;

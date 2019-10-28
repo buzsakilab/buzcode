@@ -1,7 +1,7 @@
-function [thresh,cross,bihist,diptest] = bz_BimodalThresh(bimodaldata,varargin)
-%[thresh,cross,bihist] = BimodalThresh(bimodaldata) takes bimodal time
-%series data, calculates the threshold between the modes (i.e. UP vs DOWN states),
-%and returns the crossing times (i.e. UP/DOWN onset/offset times)
+function [thresh,cross,bihist,diptest,overthresh] = bz_BimodalThresh(bimodaldata,varargin)
+%[thresh,cross,bihist,diptest,overthresh] = bz_BimodalThresh(bimodaldata) 
+%takes bimodal time series data, calculates the threshold between the modes
+%(i.e. UP vs DOWN states), and returns the crossing times (i.e. UP/DOWN onset/offset times)
 %
 %INPUTS
 %   bimodaldata     vector of bimodal data
@@ -10,9 +10,14 @@ function [thresh,cross,bihist,diptest] = bz_BimodalThresh(bimodaldata,varargin)
 %       'maxthresh' sets a maximum threshold
 %       'Schmidt'   Schmidt trigger uses halfway points between trough and 
 %                   lower/upper peaks for DOWN/UP state thresholds
+%                   (default: false)
 %       'maxhistbins' Maximum number of hist bins to try before giving up
 %       'startbins'  minimum number of hist bins (initial hist)
 %       'setthresh'     set your own threshold
+%       'diptest'   (true/false) use hardigans dip test for bimodality
+%                   (default: true)
+%       '0Inf'      include 0 and inf as the start/end (default:false)
+%       'pcheck'    only calculate bimodality if p<0.05 for HDT
 %
 %OUTPUS
 %   thresh          threshold
@@ -37,7 +42,10 @@ Schmidt = false;
 maxhistbins = 25;
 SETTHRESH = false;
 starthistbins = 10;
+DIPTEST = true;
+ZINF = false;
 
+%Replace this with inputparser
 for i = 1:length(varargin)
 	switch(lower(varargin{i}))
         case 'maxthresh'
@@ -47,27 +55,38 @@ for i = 1:length(varargin)
         case 'startbins'
             starthistbins = varargin{i+1};
         case 'schmidt'
-            Schmidt = true;
+            Schmidt = varargin{i+1};
         case 'setthresh'
             thresh = varargin{i+1};
             SETTHRESH = true;
+        case 'diptest'
+            DIPTEST = varargin{i+1}; 
+        case '0inf'
+            ZINF = varargin{i+1}; 
+        case 'pcheck'
+            pcheck = varargin{i+1}; 
     end
 end
 
 %Run hartigansdiptest for bimodality
-nboot = 500; %number of times for bootstrapped significance
-[diptest.dip, diptest.p_value]=hartigansdipsigniftest(bimodaldata,nboot);
+if DIPTEST
+    nboot = 500; %number of times for bootstrapped significance
+    [diptest.dip, diptest.p_value]=hartigansdipsigniftest(bimodaldata,nboot);
 
-if diptest.p_value>0.05  %add option to bipass this
-    display('Dip test says: not bimodal')
-    cross.upints = []; cross.downints = []; thresh=nan; 
-    [bihist.hist,bihist.bins]= hist(bimodaldata,starthistbins);
-    return
+    if diptest.p_value>0.05 && pcheck %add option to bipass this
+        display('Dip test says: not bimodal')
+        cross.upints = []; cross.downints = []; thresh=nan; 
+        overthresh = nan(size(bimodaldata));
+        [bihist.hist,bihist.bins]= hist(bimodaldata,starthistbins);
+        return
+    end
+else
+    diptest = [];
 end
 
 %Remove data over the threshold... this is klugey
-overmax = bimodaldata>=maxthresh;
-bimodaldata(overmax) = nan;
+%overmax = bimodaldata>=maxthresh;
+%bimodaldata(overmax) = nan;
 
 numpeaks = 1;
 numbins = starthistbins; 
@@ -80,7 +99,9 @@ while numpeaks ~=2
     numpeaks = length(LOCS);
     if numbins==maxhistbins && ~SETTHRESH
         display('Unable to find trough')
-    	cross.upints = []; cross.downints = []; thresh=nan; return
+    	cross.upints = []; cross.downints = []; thresh=nan;
+        overthresh = nan(size(bimodaldata));
+        return
     end
 end
 
@@ -88,10 +109,15 @@ betweenpeaks = bihist.bins(LOCS(1):LOCS(2));
 [dip,diploc] = findpeaks(-bihist.hist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
 
 if ~SETTHRESH
-thresh = betweenpeaks(diploc);
+    thresh = betweenpeaks(diploc);
 end
 
-    
+if thresh>maxthresh 
+        display('Threshold over max')
+    	cross.upints = []; cross.downints = []; thresh=nan;
+        overthresh = nan(size(bimodaldata));
+        return
+end
 
 
 
@@ -128,28 +154,73 @@ else
     crossdown = find(diff(overind)==-1);
 end
 
-%If there's only one crossing...
-if isempty(crossup) || isempty(crossdown)
-    cross.upints = []; cross.downints = []; return
-end
-
 %%
 upforup = crossup;
 upfordown = crossup;
 downforup = crossdown;
 downfordown = crossdown;
 
-if crossup(1) < crossdown(1)
-    upfordown(1) = [];
-end
-if crossdown(end) > crossup(end)
-    downfordown(end) = [];
-end
-if crossdown(1) < crossup(1)
-    downforup(1) = [];
-end
-if crossup(end) > crossdown(end)
-    upforup(end) = [];
+switch ZINF
+    case false
+        if (isempty(crossup) || isempty(crossdown)) %Only one crossing...
+            cross.upints = []; cross.downints = []; overthresh = nan(size(bimodaldata)); return
+        end
+        if crossup(1) < crossdown(1)
+            upfordown(1) = [];
+        end
+        if crossdown(end) > crossup(end)
+            downfordown(end) = [];
+        end
+        if crossdown(1) < crossup(1)
+            downforup(1) = [];
+        end
+        if crossup(end) > crossdown(end)
+            upforup(end) = [];
+        end
+    case true
+        if isempty(crossup) %Only one crossing...
+            upforup = 0; upfordown = Inf;
+            
+        elseif isempty(crossdown)
+            downfordown = 0; downforup = Inf;
+            
+        else
+        
+            switch Schmidt
+                case false   %Regular threshold assumes first state 
+                             %is opposite first crossing
+                    if crossup(1) < crossdown(1)
+                        downfordown = [0;downfordown];
+                    end
+                    if crossdown(end) > crossup(end)
+                        upfordown = [upfordown;Inf];
+                    end
+                    if crossdown(1) < crossup(1)
+                        upforup = [0;upforup];
+                    end
+                    if crossup(end) > crossdown(end)
+                        downforup = [downforup;Inf];
+                    end
+                case true   %Sticky threshold assumes first threshold crossing  
+                             %is in first state
+                    if crossup(1) < crossdown(1)
+                        upfordown(1) = [];
+                        upforup(1) = 0;
+                    end
+                    if crossdown(end) > crossup(end)
+                        upfordown = [upfordown;Inf];
+                    end
+                    if crossdown(1) < crossup(1)
+                        downforup(1) = [];
+                        downfordown(1) = 0;
+                    end
+                    if crossup(end) > crossdown(end)
+                        downforup = [downforup;Inf];
+                    end
+            end
+        
+        end
+        
 end
     
 
@@ -157,6 +228,9 @@ end
 cross.upints = [upforup downforup];
 cross.downints = [downfordown upfordown];
 
+overthresh = bz_INTtoIDX({cross.downints,cross.upints},'length',length(bimodaldata))-1;
+overthresh(overthresh==-1) = nan;
+overthresh = logical(overthresh);
 
 end
 

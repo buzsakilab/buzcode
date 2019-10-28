@@ -7,10 +7,13 @@ function  [CellClass] = bz_CellClassification (basePath, varargin)
 % baseName - basename of files in the local folder (default: pwd)
 % 'knownE' - UIDs of known E cells, ie from synaptic interactions
 % 'knownI' - UIDs of known I cells, ie from synaptic interactions
+% 'ignorecells' - UIDs of cells to ignore in the clustering
+% 'keepKnown' - keep the knownE/knownI labels (default: true) 
 % 'saveMat'- true/false, save basePath/baseName.CellClass.cellinfo.mat
 %            (default:true)
 % 'saveFig'- true/false, save a DetectionFigure for posterity/QC 
 %            (default:true)
+% 'showFig'  show the figure without saving (default: false)
 % 'forceReload'     -logical (default=false) to force reclassifying even if
 %                    the CellClass.cellinfo.mat already exists
 % 'noPrompts'          -logical (default) to supress any user prompts
@@ -40,8 +43,11 @@ addParameter(p,'knownE',[],@isvector);
 addParameter(p,'knownI',[],@isvector);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'saveFig',true,@islogical);
+addParameter(p,'showFig',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'keepKnown',true,@islogical);
+addParameter(p,'ignorecells',[],@isvector);
 
 parse(p,varargin{:})
 
@@ -49,8 +55,11 @@ knownE = p.Results.knownE;
 knownI = p.Results.knownI;
 SAVEMAT = p.Results.saveMat;
 SAVEFIG = p.Results.saveFig;
+SHOWFIG = p.Results.showFig;
 FORCERELOAD = p.Results.forceReload;
 noPrompts = p.Results.noPrompts;
+keepKnown = p.Results.keepKnown;
+ignorecells = p.Results.ignorecells;
 %%
 Par = bz_getSessionInfo(basePath, 'noPrompts', noPrompts);
 OneMs = round(Par.rates.wideband/1000);
@@ -71,32 +80,18 @@ if ~exist(spikesfile,'file')
         'saving one to insure cell UIDs are consistent across cellinfo files.'])
 end
 spikes = bz_GetSpikes('basepath',basePath,'saveMat',true);
-MaxWaves = cat(1,spikes.rawWaveform{:})';
 
-%% Previous waveform loading code
-% for a = 1:length(allshanks);
-%     thisshank = allshanks(a);
-%     AllWaves{thisshank} = [];%separated AllWaves in case each shank has diff number of sites
-% %     theseChannels = Par.SpkGrps(thisshank).Channels;
-%     numChannels = length(Par.SpkGrps(thisshank).Channels);
-%     nSamples = Par.SpkGrps(a).nSamples;
-%     spkname = fullfile(fpath,[filebasename '.spk.' num2str(thisshank)]);
-%     
-%     cellsthisshank = cellnums(shanks==thisshank);
-%     intrashankclunums = cellshanknums(shanks == thisshank);
-%     cluname = fullfile(fpath,[filebasename '.clu.' num2str(thisshank)]);
-%     clu = LoadClu(cluname);
-%     for b = 1:length(cellsthisshank)
-%         spikesthiscell = find(clu == intrashankclunums(b));        
-%         Waveforms = LoadSpikeWaveforms(spkname,numChannels,nSamples,spikesthiscell);%load one cell at a time
-%         meanwaves = squeeze(mean(Waveforms,1));
-%         AllWaves{thisshank}(:,:,end+1) = meanwaves;
-%         [dummy,maxwaveidx] = max(abs(max(meanwaves,[],2)-min(meanwaves,[],2)));
-%         MaxWaves(:,end+1) = meanwaves(maxwaveidx,:);
-%     end
-%     disp(['Shank ',num2str(a),' (Orig#:' num2str(thisshank) ') Done'])
-%     AllWaves{thisshank}(:,:,1) = [];
-% end
+MaxWaves = [];
+for a = 1:length(spikes.rawWaveform)%in case stored wrong
+    if iscolumn(spikes.rawWaveform{1})
+        MaxWaves = cat(2,spikes.rawWaveform{:});
+    elseif isrow(spikes.rawWaveform{1})
+        MaxWaves = cat(1,spikes.rawWaveform{:})';
+    else
+        error('Something is wrong with your waveforms')
+    end
+end
+
 
 %% get trough-peak delay times
 %AllWaves(:,:,1) = [];
@@ -141,18 +136,36 @@ b = yy( 1 ) - m * xx( 1 );  % y = ax+b
 RS = y>= m*x+b;
 INT = ~RS;
 
-%% Plot for manual selection of boundary, with display of separatrix as a guide.
-h = figure;
-title({'Discriminate pyr and int (select Pyramidal)','left click to draw boundary', 'center click/ENTER to complete)'});
-fprintf('\nDiscriminate pyr and int (select Pyramidal)');
-xlabel('Trough-To-Peak Time (ms)')
-ylabel('Wave width (via inverse frequency) (ms)')
-[ELike,PyrBoundary] = ClusterPointsBoundaryOutBW([x y],knownE,knownI,m,b);
+%% Convert knownE and knownI UIDs in to indices
+knownEidx = ismember(spikes.UID,knownE);
+knownIidx = ismember(spikes.UID,knownI);
+ignoreidx = ismember(spikes.UID,ignorecells);
 
+%% Plot for manual selection of boundary, with display of separatrix as a guide.
+
+if all(knownEidx | knownIidx | ignoreidx) && keepKnown
+    PyrBoundary = [nan nan];
+    ELike = false(size(spikes.UID));
+else
+    h = figure('position',[674   456   560   420]);
+    fprintf('\nDiscriminate pyr and int (select Pyramidal)');
+    xlabel('Trough-To-Peak Time (ms)')
+    ylabel('Wave width (via inverse frequency) (ms)')
+    figure('position',[674   961   561   109]);
+    title({'Discriminate pyr and int (select Pyramidal)','left click to draw boundary', 'center click/ENTER to complete)'});
+    figure(h)
+    [ELike,PyrBoundary] = ClusterPointsBoundaryOutBW([x y],knownEidx,knownIidx,m,b);
+    ELike = ELike';
+end
+
+if keepKnown
+    ELike(knownEidx) = 1;
+    ELike(knownIidx) = 0;
+end
 %% Mean waveforms output
 CellClass.UID = spikes.UID;
-CellClass.pE = ELike';
-CellClass.pI = ~ELike';
+CellClass.pE = ELike & ~ignoreidx;
+CellClass.pI = ~ELike & ~ignoreidx;
 CellClass.label = cell(size(CellClass.UID));
 CellClass.label(CellClass.pE) = {'pE'};
 CellClass.label(CellClass.pI) = {'pI'};
@@ -167,14 +180,16 @@ if SAVEMAT
 end
 
 %%
-if SAVEFIG
+if SAVEFIG || SHOWFIG
     figure
     subplot(2,2,1)
         plot(CellClass.detectionparms.TroughPeakMs(CellClass.pE),...
-            CellClass.detectionparms.SpikeWidthMs(CellClass.pE),'k.')
+            CellClass.detectionparms.SpikeWidthMs(CellClass.pE),'.','color',[0 0.6 0])
         hold on
         plot(CellClass.detectionparms.TroughPeakMs(CellClass.pI),...
-            CellClass.detectionparms.SpikeWidthMs(CellClass.pI),'r.')
+            CellClass.detectionparms.SpikeWidthMs(CellClass.pI),'.','color',[0.6 0 0])
+        plot(CellClass.detectionparms.TroughPeakMs(ignoreidx),...
+            CellClass.detectionparms.SpikeWidthMs(ignoreidx),'x','color',[0.5 0.5 0.5])
         axis tight
         plot(CellClass.detectionparms.PyrBoundary(:,1),...
             CellClass.detectionparms.PyrBoundary(:,2))
@@ -188,11 +203,19 @@ if SAVEFIG
         title([baseName,': Cell Classification'])
         
     subplot(2,2,2)
-        plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pE),'color',[0 0.6 0])
+        if any(CellClass.pE)
+            plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pE),'color',[0 0.6 0])
+        end
         hold on
-        plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pI),'color',[0.6 0 0])
+        if any(CellClass.pI)
+            plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pI),'color',[0.6 0 0])
+        end
+        if any(ignoreidx)
+            plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,ignoreidx),'color',[0.5 0.5 0.5])
+        end
         axis tight
         xlabel('t (ms)')
-        
+        if SAVEFIG
         NiceSave('CellClassification',figfolder,baseName)
+        end
 end

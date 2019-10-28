@@ -4,22 +4,26 @@ function [normdata,intmean,intstd] = NormToInt(data,normtype,int,sf,varargin)
 %
 %INPUTS
 %   data    [Nt x Ndim] 
-%   normtype 'mean', 'Z', 'max', 'percentile', 'modZ' for modified Z-score
+%   normtype 'mean','median' 'Z', 'max', 'percentile', 'modZ' for modified Z-score
 %   int     [Nints x 2] reference interval onsets and offset times   
 %           to normalize the data with respect to (optional)
 %   sf      (optional) sampling frequency of the data. default 1
 %
+%   (options)
+%   'moving'    window for moving normatilization
+%   'SHOWFIG'   show a figue with distribution of the data
 %Note: modified Z score is median-based and robust to outliers
 %see https://ibm.co/2qi4Vy5
 %
 %DLevenstein Summer 2016
 %TO DO: Improve input parsing, compadible with buzcode structures
 %%
-SHOWFIG = false;
 p = inputParser;
 addParameter(p,'moving',0,@isnumeric);
+addParameter(p,'SHOWFIG',false);
 parse(p,varargin{:})
 movingwin = p.Results.moving;
+SHOWFIG = p.Results.SHOWFIG;
 if movingwin>0
     MOVING = true;
 else
@@ -59,7 +63,7 @@ switch MOVING
                 intstd = nanstd(int_data,0,1);
                 intmeanlong = repmat(intmean,length(data(:,1)),1);
                 intstdlong = repmat(intstd,length(data(:,1)),1);
-            case 'modZ'
+            case {'modZ','median'}
                 intmedian = nanmedian(int_data);
                 intMAD = mad(int_data,[],1);
                 intmedianlong = repmat(intmedian,length(data(:,1)),1);
@@ -74,7 +78,7 @@ switch MOVING
                 intmean(isnan(int_data))=nan; intstd(isnan(int_data))=nan; 
                 intmeanlong = intmean; intstdlong = intstd;
 
-            case 'modZ'
+            case {'modZ','median'}
                 intmedian = movmedian(int_data,movingwin.*sf,1,'omitnan');
                 intMAD = movmad(int_data,movingwin.*sf,'omitnan');
                 intmedian(isnan(int_data))=nan; intMAD(isnan(int_data))=nan; 
@@ -88,6 +92,8 @@ switch normtype
         normdata = (data-intmeanlong)./intstdlong;
     case 'mean'
         normdata = data./intmeanlong;
+    case 'median'
+        normdata = data./intmedianlong;
     case 'max'
         colmax = max(int_data,[],1);
         normdata = bsxfun(@(X,Y) X./Y,data,colmax);
