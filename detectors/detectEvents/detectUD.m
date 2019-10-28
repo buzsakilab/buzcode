@@ -32,13 +32,16 @@ function [UDStates] = detectUD(varargin)
 %   down_thr       - Down state threshold, in -std of the gamma envelope (default 0)
 %   minEvDistance  - Minimum distance between up and down peaks, seconds (default .5)
 %   deltaWaveThreshold 
-%                  - Delta wave threshold of the lfp signal (default [])
+%                  - Delta wave threshold of the lfp signal (default 0)
 %   plotOpt        - true or false option for plots with Up and Down sizes 
 %                       and averages (default false)
 %   forceDetect    - true or false to force detection (avoid load previous 
 %                       detection, default false)
 %   saveMat        - true or false save a buzcode event file with results
 %                       (default true)
+%   spikeThreshold - scalar, if [] false, default .25
+%   skipCluster    - vector with cell ID for non-hippocampal and down state active cells, default [] 
+%
 % OUTPUT
 %   UDStates structure with the following fields:
 %   ints.DOWN               - Down state intervals
@@ -46,6 +49,7 @@ function [UDStates] = detectUD(varargin)
 %   timestamps.DOWN         - Down state peaks.
 %   timestamps.UP           - Up state peaks.
 %   timestamps.deltaWave
+
 %
 %   MV-BuzsakiLab 2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -64,11 +68,13 @@ addParameter(p,'smoothGamm',.1,@isnumeric);
 addParameter(p,'gamm_thr',.5,@isnumeric);
 addParameter(p,'down_thr',0,@isnumeric);
 addParameter(p,'minEvDistance',.5,@isnumeric);
-addParameter(p,'deltaWaveThreshold',[],@isnumeric);
+addParameter(p,'deltaWaveThreshold',0,@isnumeric);
 addParameter(p,'plotOpt',false,@islogical);
 addParameter(p,'forceDetect',false,@islogical);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'noPrompts',true,@islogical);
+addParameter(p,'spikeThreshold',.25,@isnumeric);
+addParameter(p,'skipCluster',[],@isnumeric);
 
 parse(p,varargin{:})
 basepath = p.Results.basepath;
@@ -85,6 +91,8 @@ deltaWaveThreshold = p.Results.deltaWaveThreshold;
 plotOpt = p.Results.plotOpt;
 forceDetect = p.Results.forceDetect;
 saveMat = p.Results.saveMat;
+spikeThreshold = p.Results.spikeThreshold;
+skipCluster = p.Results.skipCluster;
 
 %% Collect pieces
 sessionInfo = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
@@ -130,29 +138,36 @@ end                                                                    % start o
 NREMInts = [tlfp.timestamps(find(diff(indState)==1)+1) tlfp.timestamps(find(diff(indState)==-1))]; 
 NREM_ts = find(indState); % NREM timestamps
 clear tlfp
-    
 if isempty(ch) % if no channel declared, pick channel with higher gamma std during NREM and out of stimulation periods %anticorrelation delta gamma
-    disp('Selecting best channel... ')
-    for ii = 1:sessionInfo.nChannels
-        fprintf(' ** Looking at channel %3.i of %3.i... \n',ii, sessionInfo.nChannels);
-        chlfp = bz_GetLFP(ii-1,'basepath',basepath,'noPrompts',noPrompts);
-        params.Fs = sessionInfo.rates.lfp; params.fpass = [1 400]; params.tapers = [3 5]; params.pad = 1;
-        [S,t,f] = mtspecgramc_fast(double(chlfp.data(NREM_ts)),[2 1],params);
-        S = 10 * log10(S)' + 60;
-        gamm = sum(S(find(f >= filterparams.gamma(1) & f <= filterparams.gamma(2)),:));
-        delt = sum(S(find(f >= filterparams.delta(1) & f <= filterparams.delta(2)),:));
-        avGamma(ii) = mean(gamm);
-        stdGamma(ii) = std(gamm);
-        gdCorr(ii) = corr(gamm',delt','Type','Spearman');
+    disp('Selecting best channel... ');
+    params.Fs = sessionInfo.rates.lfp; params.fpass = [1 400]; params.tapers = [3 5]; params.pad = 1;
+    parfor ii = 1:sessionInfo.nChannels
+        if isfield(sessionInfo,'badchannels') && any(sessionInfo.channels(ii) == sessionInfo.badchannels)
+            gdCorr(ii) = 0; stdGamma(ii) = 0;
+        else
+            fprintf(' **Channel %3.i/ %3.i, ',ii, sessionInfo.nChannels); %\n
+            chlfp = bz_GetLFP(ii-1,'basepath',basepath,'noPrompts',noPrompts);
+            [S,t,f] = mtspecgramc_fast(double(chlfp.data(NREM_ts)),[2 1],params);
+            S = 10 * log10(S)' + 60;
+            gamm = sum(S(find(f >= filterparams.gamma(1) & f <= filterparams.gamma(2)),:));
+            delt = sum(S(find(f >= filterparams.delta(1) & f <= filterparams.delta(2)),:));
+            avGamma(ii) = mean(gamm);
+            stdGamma(ii) = std(gamm);
+            try gdCorr(ii) = corr(gamm',delt','Type','Spearman');
+            catch gdCorr(ii) = 0;
+            end
+        end
     end 
     gdCorr(gdCorr==0) = 1;
     sdScore = stdGamma./gdCorr;
     sdScore(~isnan(sdScore)) = zscore(sdScore(~isnan(sdScore)));                                     % down score increase with std gamma and gamma delta anticorr
     sdScore(sdScore>4) = 0; % remove outlier
     [~,ch] = max(sdScore(sdScore<4));
+    ch = sessionInfo.channels(ch);
     fprintf(' Best channel: %3.i!! \n',ch);
 end
 clear gamm delt avGamma stdGamma gdCorr dscore
+
 %% find states
 lfp = bz_GetLFP(ch,'basepath',basepath,'noPrompts',noPrompts);
 gammaLFP = bz_Filter(lfp,'passband',filterparams.gamma,'filter','fir1','order',4);
@@ -219,13 +234,62 @@ for ii = 1:length(upPeaks)                                                 % fin
     UP(ii,2) = double(min(zx(zx>win)) + upPeaks(ii)*sessionInfo.rates.lfp - win - 1)/ sessionInfo.rates.lfp;
 end
 
-UDStates.ints.DOWN = DOWN;
-UDStates.ints.UP = UP;
-UDStates.timestamps.DOWN = downValley;
-UDStates.timestamps.UP = upPeaks;
-UDStates.timestamps.deltaWave = deltaPeak(~isnan(deltaPeak))';
+%% Spike thresholding
+if ~isempty(spikeThreshold)
+    downWinSize = 0.4;
+    spikes = bz_LoadPhy('noPrompts',true);
+    if ~isempty(skipCluster)                                               % skip non-cortical cluster and DownStateActive cells
+        for ii = 1:length(skipCluster)
+            spikes.times{skipCluster(ii)} = [];
+        end
+    end
+    
+    allspikes = sort(cat(1,spikes.times{:}));
+    spikemat = bz_SpktToSpkmat(spikes.times,'binsize',0.03,'overlap',6);
+    sSpkMat = sum(spikemat.data,2)/size(spikemat.data,2);
+    downValley(downValley<downWinSize) = [];
+    
+    disp('Population cell response... ');
+    downPopResponse = [];
+    tic
+    parfor (ii = 1: length(downValley),6)
+        a = sSpkMat(spikemat.timestamps>=downValley(ii)-downWinSize ...
+            & spikemat.timestamps<=downValley(ii)+downWinSize);
+        downPopResponse(ii,:) = zscore(a(int32(1:downWinSize*2/(mean(diff(spikemat.timestamps)))-1)));
+    end
+    toc
+    t_ds = linspace(-downWinSize,downWinSize,size(downPopResponse,2));
+    
+    % sort response according to population response
+    [~,idx]=sort(mean(downPopResponse(:,t_ds>-downWinSize/8 & t_ds<downWinSize/8),2));
+    
+    if plotOpt
+        figure
+        imagesc(t_ds,1:length(downValley),downPopResponse(idx,:),[-3 3]);
+        hold on
+        plot([t_ds(1) t_ds(end)],[length(downValley)*spikeThreshold length(downValley)*spikeThreshold],'w','LineWidth',2)
+        xlabel('s'); ylabel('# events');
+        mkdir('SummaryFigures'); % create folder    
+        saveas(gcf,'SummaryFigures\UDStates.png');
+    end
+    
+    classEvs = sort(idx(1:int32(length(downValley)*spikeThreshold)));
+end
+%% Saving...
 
-save([sessionInfo.FileName '.UDStates.events.mat'],'UDStates');
+UDStates.ints.DOWN = DOWN(classEvs,:);
+UDStates.ints.UP = UP;
+UDStates.timestamps.DOWN = downValley(classEvs);
+UDStates.timestamps.UP = upPeaks;
+UDStates.timestamps.deltaWave = deltaPeak(~isnan(deltaPeak(classEvs)))';
+UDStates.detectionInfo.ch = ch;
+UDStates.detectionInfo.spikeThreshold = spikeThreshold;
+UDStates.detectionInfo.gamm_thr = gamm_thr;
+UDStates.detectionInfo.down_thr = down_thr;
+UDStates.detectionInfo.deltaWaveThreshold = deltaWaveThreshold;
+if saveMat
+    save([sessionInfo.FileName '.UDStates.events.mat'],'UDStates');
+end
 
 % %% check parameters
 %t_in = [28*60+44.183 28*60+49.183];
@@ -243,44 +307,44 @@ save([sessionInfo.FileName '.UDStates.events.mat'],'UDStates');
 % xlim([t_in]);
 
 
-%% plots
-if plotOpt
-    % size histograms
-    xbins = [0:0.04:1.5];
-    figure
-    hold on
-    upH = histogram(diff(UP'),xbins,'FaceColor',[.3 .4 .8],'EdgeColor','none','FaceAlpha',.5);
-    doH = histogram(diff(DOWN'),xbins,'FaceColor',[.8 .4 .3],'EdgeColor','none','FaceAlpha',.5);
-    legend([upH doH], 'Up', 'Down');
-    ylabel('#'); xlabel('s');
-    
-    % all down
-    win = int32(minEvDistance * sessionInfo.rates.lfp);
-    for ii = 1:length(downValley)
-        AD(:,ii) = lfp.data(downValley(ii)*lfp.samplingRate-win : downValley(ii)*lfp.samplingRate+win);
-    end
-    xt = linspace(-minEvDistance,minEvDistance,size(AD,1));
-    [~,idxD] = sort(AD(win+1,:));
-    % all UP
-    for ii = 1:length(upPeaks)
-        AU(:,ii) = lfp.data(upPeaks(ii)*lfp.samplingRate-win : upPeaks(ii)*lfp.samplingRate+win);
-    end
-    [~,idxU] = sort(AU(win+1,:));
-    
-    figure
-    subplot(3,2,1)
-    plot(xt,mean(AD,2)/1000);
-    set(gca,'XTick',[]); ylabel('mV'); title('Down','FontWeight','normal');
-    subplot(3,2,2)
-    plot(xt,mean(AU,2)/1000);
-    set(gca,'XTick',[]); ylabel('mV'); title('Up','FontWeight','normal');
-    subplot(3,2,[3 5])
-    imagesc(xt,1:size(AD,2),AD(:,idxD)',[-abs(max(AD(:))) abs(max(AD(:)))]);
-    colormap jet
-    ylabel('#'); xlabel('s');
-    subplot(3,2,[4 6])
-    imagesc(xt,1:size(AU,2),AU(:,idxU)',[-abs(max(AU(:))) abs(max(AU(:)))]);
-    xlabel('s');
-end
+% %% plots
+% if plotOpt
+%     % size histograms
+%     xbins = [0:0.04:1.5];
+%     figure
+%     hold on
+%     upH = histogram(diff(UP'),xbins,'FaceColor',[.3 .4 .8],'EdgeColor','none','FaceAlpha',.5);
+%     doH = histogram(diff(DOWN'),xbins,'FaceColor',[.8 .4 .3],'EdgeColor','none','FaceAlpha',.5);
+%     legend([upH doH], 'Up', 'Down');
+%     ylabel('#'); xlabel('s');
+%     
+%     % all down
+%     win = int32(minEvDistance * sessionInfo.rates.lfp);
+%     for ii = 1:length(downValley)
+%         AD(:,ii) = lfp.data(downValley(ii)*lfp.samplingRate-win : downValley(ii)*lfp.samplingRate+win);
+%     end
+%     xt = linspace(-minEvDistance,minEvDistance,size(AD,1));
+%     [~,idxD] = sort(AD(win+1,:));
+%     % all UP
+%     for ii = 1:length(upPeaks)
+%         AU(:,ii) = lfp.data(upPeaks(ii)*lfp.samplingRate-win : upPeaks(ii)*lfp.samplingRate+win);
+%     end
+%     [~,idxU] = sort(AU(win+1,:));
+%     
+%     figure
+%     subplot(3,2,1)
+%     plot(xt,mean(AD,2)/1000);
+%     set(gca,'XTick',[]); ylabel('mV'); title('Down','FontWeight','normal');
+%     subplot(3,2,2)
+%     plot(xt,mean(AU,2)/1000);
+%     set(gca,'XTick',[]); ylabel('mV'); title('Up','FontWeight','normal');
+%     subplot(3,2,[3 5])
+%     imagesc(xt,1:size(AD,2),AD(:,idxD)',[-abs(max(AD(:))) abs(max(AD(:)))]);
+%     colormap jet
+%     ylabel('#'); xlabel('s');
+%     subplot(3,2,[4 6])
+%     imagesc(xt,1:size(AU,2),AU(:,idxU)',[-abs(max(AU(:))) abs(max(AU(:)))]);
+%     xlabel('s');
+% end
 
 end

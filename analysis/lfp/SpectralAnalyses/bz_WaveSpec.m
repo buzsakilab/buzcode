@@ -34,6 +34,7 @@ function [wavespec] = bz_WaveSpec(lfp,varargin)
 %       'showprogress' true/false (default:false)
 %       'saveMat '   put the basePath to save an LFP file
 %       'MatNameExtraText'   text(X) to add to name as in: 'basename.wavespec(text).lfp.mat'
+%       'downsampleout' factor by which to downsample output (default: 1)
 %    =========================================================================
 %
 %OUTPUT
@@ -79,6 +80,7 @@ addParameter(parms,'MatNameExtraText',[]);
 addParameter(parms,'fvector',[]);
 addParameter(parms,'intervals',[-Inf Inf])
 addParameter(parms,'chanID',[])
+addParameter(parms,'downsampleout',1)
 
 parse(parms,varargin{:})
 frange = parms.Results.frange;
@@ -93,6 +95,7 @@ MatNameExtraText = parms.Results.MatNameExtraText;
 fvector = parms.Results.fvector;
 intervals = parms.Results.intervals;
 chanID = parms.Results.chanID;
+downsampleout = parms.Results.downsampleout;
 
 
 %Channel restrict
@@ -153,16 +156,17 @@ end
 %Filter with wavelets
 nfreqs = size(freqs,2);
 nchan = size(lfp.data,2);
-ntime = size(lfp.data,1);
+ntime = ceil(size(lfp.data,1)./downsampleout);
 wavespec.data = nan(ntime,nfreqs,nchan);
-wavespec.timestamps = lfp.timestamps;
+wavespec.timestamps = downsample(lfp.timestamps,downsampleout);
 for cidx = 1:nchan
     for f_i = 1:nfreqs
         if showprogress
             bz_Counter(f_i,nfreqs,'Wavelet Frequency')
         end
         wavelet = MorletWavelet(freqs(f_i),ncyc,si);
-        wavespec.data(:,f_i,cidx) = FConv(wavelet',lfp.data(:,cidx));
+         wavespec.data(:,f_i,cidx) = ...
+             downsample(FConv(wavelet',lfp.data(:,cidx)),downsampleout);
     end
 end
 
@@ -174,7 +178,7 @@ wavespec.timestamps = wavespec.timestamps(keepIDX);
 
 wavespec.freqs = freqs;
 wavespec.nfreqs = nfreqs;
-wavespec.samplingRate = samplingRate;
+wavespec.samplingRate = samplingRate./downsampleout;
 if isstruct(lfp) && isfield(lfp,'channels')
     wavespec.channels = lfp.channels;
 end

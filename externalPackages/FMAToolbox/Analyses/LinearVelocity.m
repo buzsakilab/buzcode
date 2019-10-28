@@ -35,10 +35,13 @@ else
 	smooth = 0;
 end
 
+try
 DX = Diff(X,'smooth',smooth);
-% DX(:,1) = Diff(X(:,1),'smooth',smooth);
-% DX(:,2) = Diff(X(:,2),'smooth',smooth);
-% DX(:,3) = Diff(X(:,3),'smooth',smooth);
+catch
+DX(:,1) = Diff(X(:,1),'smooth',smooth);
+DX(:,2) = Diff(X(:,2),'smooth',smooth);
+DX(:,3) = Diff(X(:,3),'smooth',smooth);
+end
 
 Y = DX(:,2:3).*DX(:,2:3);
 N = sqrt(Y(:,1)+Y(:,2));
