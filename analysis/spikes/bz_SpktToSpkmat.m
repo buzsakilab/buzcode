@@ -31,10 +31,6 @@ function [spikemat] = bz_SpktToSpkmat(spikes, varargin)
 %time vector
 %Spike time/cell indices for plotting
 %
-%To Do:
-%   -Remove for loop... don't need to go through structure.
-%   -T is just silly... make this a reasonable time window able to select
-%   only spikes within a given time
 %
 %
 %DLevenstein 2015. Updated 2018 for buzcode

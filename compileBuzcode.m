@@ -1,6 +1,8 @@
 % this function recompiles all .c scripts to create the apropriate .mex* files on your local machine
 %NOTE: current directory must be the buzcode base directory
 
+buzpath = pwd;
+
 addpath(genpath('externalPackages'))
 
 compilefma % compiles FMAToolbox
@@ -24,6 +26,7 @@ compile % compiles chronux
 cd(['..' filesep '..' filesep '..' filesep '..' filesep ''])
 catch
     warning('CHRONUX DIDN''T COMPILE. sad.')
+    cd(buzpath);
 end
 
 cd(['externalPackages' filesep 'xmltree-2.0' filesep '@xmltree' filesep 'private' filesep ''])
