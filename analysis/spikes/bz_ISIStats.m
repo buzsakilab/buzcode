@@ -3,7 +3,7 @@ function [ ISIstats ] = bz_ISIStats( spikes,varargin )
 %inter-spike intervals for the spiketimes in spikes.
 %
 %   INPUTS
-%       spikes
+%       spikes      Structure with spikes.times and spikes.UID
 %
 %       (options)
 %       'ints'        A structure with intervals in which to calculate ISIs.
@@ -146,12 +146,20 @@ CV2hist.bins = linspace(0,2,numCV2bins+1);
 CV2hist.bins = CV2hist.bins(1:end-1)+0.5.*diff(CV2hist.bins([1 2]));
 CV2hist.(statenames{ss}) = zeros(numcells,numCV2bins);
 
+Jointhist.(statenames{ss}).log = zeros(numcells,numISIbins,numCV2bins);
+Jointhist.(statenames{ss}).norm = zeros(numcells,numISIbins,numCV2bins);
+
 
 
 %Calculate all the histograms: ISI, log(ISI), 1/ISI, log(1/ISI)
 for cc = 1:numcells
     numspks(cc) = length(ISIs{cc});
+    spikethresh = 100; %need 100 spikes to show in mean plot
+    enoughspikes(cc) = numspks(cc)>spikethresh;
     
+    if numspks(cc)<1
+        continue
+    end
     %Calculate ISI histograms
     ISIhist.(statenames{ss}).lin(cc,:) = hist(ISIs{cc},ISIhist.linbins);
     ISIhist.(statenames{ss}).log(cc,:) = hist(log10(ISIs{cc}),ISIhist.logbins);
@@ -159,9 +167,11 @@ for cc = 1:numcells
     ISIhist.(statenames{ss}).meannorm(cc,:) = hist(log10(normISIs{cc}),ISIhist.logbins);
     
     CV2hist.(statenames{ss})(cc,:) = hist(CV2{cc},CV2hist.bins);
-    Jointhist.(statenames{ss}).log(cc,:,:) = hist3([log10(ISIs{cc}),CV2{cc}],...
+    Jointhist.(statenames{ss}).log(cc,:,:) = hist3(...
+        [log10([ISIs{cc};ISIs{cc}(2:end)]),[CV2{cc};CV2{cc}(1:end-1)]],...
         {ISIhist.logbins,CV2hist.bins});
-    Jointhist.(statenames{ss}).norm(cc,:,:) = hist3([log10(normISIs{cc}),CV2{cc}],...
+    Jointhist.(statenames{ss}).norm(cc,:,:) = hist3(...
+        [log10([normISIs{cc};normISIs{cc}(2:end)]),[CV2{cc};CV2{cc}(1:end-1)]],...
         {ISIhist.logbins,CV2hist.bins});
     
     
@@ -184,6 +194,8 @@ for cc = 1:numcells
   
 end
 
+summstats.(statenames{ss}).numspikes = numspks;
+
 %Sortings
 [~,sorts.(statenames{ss}).rate]=sort(summstats.(statenames{ss}).meanrate);
 [~,sorts.(statenames{ss}).ISICV]=sort(summstats.(statenames{ss}).ISICV);
@@ -201,9 +213,9 @@ if ~isempty(cellclass)
         inclasscells{cl} = strcmp(classnames{cl},cellclass);
         
         %Mean distributions
-        meandists.(statenames{ss}).(classnames{cl}).ISIdist = squeeze(nanmean(ISIhist.(statenames{ss}).log(inclasscells{cl},:),1));
-        meandists.(statenames{ss}).(classnames{cl}).CV2dist = squeeze(nanmean(CV2hist.(statenames{ss})(inclasscells{cl},:),1));
-        meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss}).log(inclasscells{cl},:,:),1));
+        meandists.(statenames{ss}).(classnames{cl}).ISIdist = squeeze(nanmean(ISIhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:),1));
+        meandists.(statenames{ss}).(classnames{cl}).CV2dist = squeeze(nanmean(CV2hist.(statenames{ss})(inclasscells{cl}&enoughspikes,:),1));
+        meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:,:),1));
         
         %Sorts
         sorttypes = {'rate','ISICV','CV2'};
@@ -220,12 +232,18 @@ if ~isempty(cellclass)
             
     end  
 else
-    numclasses = 1; 
+    numclasses = 1; cl=1;
+    classnames{1} = 'ALL';
     sorts.numclassycells = numcells;
     inclasscells{1} = true(1,numcells);
     sorts.(statenames{ss}).ratebyclass = sorts.(statenames{ss}).rate;
     sorts.(statenames{ss}).ISICVbyclass = sorts.(statenames{ss}).ISICV;
     sorts.(statenames{ss}).CV2byclass = sorts.(statenames{ss}).CV2;
+    
+        %Mean distributions
+        meandists.(statenames{ss}).(classnames{cl}).ISIdist = squeeze(nanmean(ISIhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:),1));
+        meandists.(statenames{ss}).(classnames{cl}).CV2dist = squeeze(nanmean(CV2hist.(statenames{ss})(inclasscells{cl},:)&enoughspikes,1));
+        meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:,:),1));
 end
 
 
@@ -323,6 +341,9 @@ figure
             LogScale('x',10)
             ylabel({(classnames{cl}),'CV2'});
             xlabel('ISI (s)');
+            
+            bottomrow = meandists.(statenames{ss}).(classnames{cl}).Jointdist(:,1);
+            caxis([0 max([bottomrow;0])])
 	end
         
 %     subplot(2,3,5)
