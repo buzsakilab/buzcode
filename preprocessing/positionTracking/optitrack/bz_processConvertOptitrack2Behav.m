@@ -139,7 +139,7 @@ end
 % The system sometimes (rarely) keeps on recording a few frames after software stopped
 % recording. So we skip the last frames of the TTL
 
-if length(frameT)<size(pos,1) % this is a problem if optitrack started before intan
+if length(frameT)<size(pos,1)
     warning('Too many video frames!'); % maybe because intan was stopped before Optitrack
     %keyboard
     pos(pos==-1) = NaN;
