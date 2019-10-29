@@ -2,7 +2,7 @@ function [firingMaps] = bz_firingMapAvg(positions,spikes,varargin)
 
 % USAGE
 % [firingMaps] = bz_firingMapAvg(positions,spikes,varargin)
-% Calculates averaged firing map for a set of linear postions 
+% Calculates averaged firing maps for each cell in 1D or 2D enviroments
 %
 % INPUTS
 %
@@ -20,6 +20,9 @@ function [firingMaps] = bz_firingMapAvg(positions,spikes,varargin)
 %     'smooth'      smoothing size in bins (0 = no smoothing, default = 2)
 %     'nBins'       number of bins (default = 50)
 %     'minTime'     minimum time spent in each bin (in s, default = 0)
+%     'mode'        'interpolate' to interpolate missing points (< minTime),
+%                   or 'discard' to discard them (default)
+%     'maxDistance' maximal distance for interpolation (default = 5)
 %     'maxGap'      z values recorded during time gaps between successive (x,y)
 %                   samples exceeding this threshold (e.g. undetects) will not
 %                   be interpolated; also, such long gaps in (x,y) sampling
@@ -28,6 +31,9 @@ function [firingMaps] = bz_firingMapAvg(positions,spikes,varargin)
 %     'type'        'linear' for linear data, 'circular' for angular data
 %                   (default 'linear')
 %      saveMat   - logical (default: false) that saves firingMaps file
+%      CellInspector   - logical (default: false) that creates an otuput
+%                   compatible with CellInspector
+
 %
 %
 % OUTPUT
@@ -49,6 +55,9 @@ addParameter(p,'maxGap',0.1,@isnumeric);
 addParameter(p,'minTime',0,@isnumeric);
 addParameter(p,'type','linear',@isstr);
 addParameter(p,'saveMat',false,@islogical);
+addParameter(p,'CellInspector',false,@islogical);
+addParameter(p,'mode','discard',@isstr);
+addParameter(p,'maxDistance',5,@isnumeric);
 
 parse(p,varargin{:});
 smooth = p.Results.smooth;
@@ -57,6 +66,9 @@ maxGap = p.Results.maxGap;
 minTime = p.Results.minTime;
 type = p.Results.type;
 saveMat = p.Results.saveMat;
+CellInspector = p.Results.CellInspector;
+mode = p.Results.mode;
+maxDistance = p.Results.maxDistance;
 
 % number of conditions
   if iscell(positions)
@@ -67,13 +79,18 @@ saveMat = p.Results.saveMat;
   %%% TODO: conditions label
   
 %% Calculate
+
+% speed threshold 
+
+
+
+% get firign rate maps
 for unit = 1:length(spikes.times)
     for c = 1:conditions
-        map{unit}{c} = Map(positions{c},spikes.times{unit},...
-            'smooth',smooth,'nBins',nBins,'maxGap',maxGap,'minTime',minTime);
+        map{unit}{c} = Map(positions{c},spikes.times{unit},'smooth',smooth,'minTime',minTime,...
+            'nBins',nBins,'maxGap',maxGap,'mode',mode,'type',type,'maxDistance',maxDistance);
     end
 end
-%%% TODO: pass rest of inputs to Map
 
 %% restructure into cell info data type
 
@@ -102,4 +119,21 @@ if saveMat
    save([firingMaps.sessionName '.firingMapsAvg.cellinfo.mat'],'firingMaps'); 
 end
 
+% output for cell inspector - only works for 1D
+if CellInspector
+    for unit = 1:length(spikes.times)
+        for c = 1:conditions
+            firingRateMap.map{unit}(:,c) = map{unit}{c}.z;
+        end
+    end
+    firingRateMap.x_bins = 1:1:lenght(map{1}{1}.z);
+    firingRateMap.state_labels = nan(1,conditions);
+            
+    save([firingMaps.sessionName '.firingRateMap.mat'],'firingMaps'); 
+
+end
+
+%% Add option to plot
+
+   
 end
