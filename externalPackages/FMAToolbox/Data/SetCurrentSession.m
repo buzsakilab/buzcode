@@ -53,6 +53,7 @@ addParameter(p,'basepath','',@isstr)
 addParameter(p,'basename','',@isstr)
 addParameter(p,'xmlFile','',@isstr)
 addParameter(p,'spikes',true,@islogical)
+addParameter(p,'reload',false,@islogical)
 
 % addParameter(p,'position',true,@islogical)  to be added some day
 % addParameter(p,'events',true,@islogical)
@@ -63,6 +64,7 @@ basename = p.Results.basename;
 basepath = p.Results.basepath;
 xmlFile = p.Results.xmlFile;
 spikes = p.Results.spikes;
+reload = p.Results.reload;
 
 % did you give one of the correct input sets? let's find out...
 
@@ -145,7 +147,7 @@ end
 disp(['Loading session files for ' basename]);
 
 % File already loaded?
-if strcmp(basename,DATA.session.basename) & strcmp(basepath,DATA.session.basepath) 
+if strcmp(basename,DATA.session.basename) && strcmp(basepath,DATA.session.basepath) && reload == 0
 	disp(['... session files already loaded, skipping - type SetCurrentSession(''same'') to force reload']);
 	disp('Done');
 	return
