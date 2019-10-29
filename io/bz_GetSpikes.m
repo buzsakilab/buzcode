@@ -23,7 +23,10 @@ function spikes = bz_GetSpikes(varargin)
 %    noPrompts       -logical (default=false) to supress any user prompts
 %    verbose         -logical (default=false)
 %    keepCluWave     -logical (default=false) to keep waveform from
-%                       previous bz_getSpikes functions (before 2019). 
+%                       previous bz_getSpikes functions (before 2019). It only
+%                       affects clu inputs.
+%    sortingMethod   - [], 'kilosort' or 'clu'. If [], tries to detect a
+%                   kilosort folder or clu files. 
 %    
 % OUTPUTS
 %
@@ -68,6 +71,9 @@ function spikes = bz_GetSpikes(varargin)
 %
 % written by David Tingley, 2017
 % added Phy loading by Manu Valero, 2019 (previos bz_LoadPhy)
+
+% TO DO: Get waveforms by an independent function (ie getWaveform) that
+% generates a waveform.cellinfo.mat file with all channels waves.
 %% Deal With Inputs 
 spikeGroupsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
     'spikeGroups must be numeric or "all"');
@@ -84,6 +90,7 @@ addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'onlyLoad',[]);
 addParameter(p,'verbose',true,@islogical);
 addParameter(p,'keepCluWave',false,@islogical);
+addParameter(p,'sortingMethod',[],@isstr);
 
 parse(p,varargin{:})
 
@@ -98,6 +105,7 @@ noPrompts = p.Results.noPrompts;
 onlyLoad = p.Results.onlyLoad;
 verbose = p.Results.verbose;
 keepCluWave = p.Results.keepCluWave;
+sortingMethod = p.Results.sortingMethod;
 
 [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
 baseName = bz_BasenameFromBasepath(basepath);
@@ -149,7 +157,7 @@ else % do the below then filter by inputs... (Load from clu/res/fet)
     end
     kilosort_path = dir([basepath filesep '*kilosort*']);
 
-if ~isempty(cluFiles) % LOADING FROM CLU/ RES
+if strcmpi(sortingMethod,'clu') || ~isempty(cluFiles) % LOADING FROM CLU/ RES
     disp('loading spikes from clu/res/spk files..')
     
     % remove *temp*, *autosave*, and *.clu.str files/directories
@@ -294,7 +302,7 @@ if ~isempty(cluFiles) % LOADING FROM CLU/ RES
     end
     spikes.sessionName = sessionInfo.FileName;
     
-elseif ~isempty(kilosort_path) % LOADING FROM KILOSORT
+elseif strcmpi(sortingMethod, 'kilosort') || ~isempty(kilosort_path) % LOADING FROM KILOSORT
     
     disp('loading spikes from Kilosort/Phy format...')
     fs = spikes.samplingRate; 
