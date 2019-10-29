@@ -1,4 +1,4 @@
-If you run into a big, are having a problem using the code, or find a feature missing you think should be in the code:
+If you run into a bug, are having a problem using the code, or find a feature missing you think should be in the code:
 
 1) [Open an issue](https://github.com/buzsakilab/buzcode/issues/new). 
 This will send an email to everyone following the repository so they can comment on the issue - maybe someone else has had it before.
