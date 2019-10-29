@@ -16,6 +16,10 @@ function [mapStats] = bz_findPlaceFields1D(firingMaps,varargin)
 %     'verbose'     display processing information (default = 'off')
 %    =========================================================================
 
+% Antonio FR, 10/2019
+
+%%%%%%%%%%%%%%  WORK IN PROGRESS
+
 %% Parse inputs 
 p=inputParser;
 addParameter(p,'threshold',0.2,@isnumeric);
