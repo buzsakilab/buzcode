@@ -22,6 +22,11 @@ function spikes = bz_GetSpikes(varargin)
 %    saveMat         -logical (default=false) to save in buzcode format
 %    noPrompts       -logical (default=false) to supress any user prompts
 %    verbose         -logical (default=false)
+%    keepCluWave     -logical (default=false) to keep waveform from
+%                       previous bz_getSpikes functions (before 2019). It only
+%                       affects clu inputs.
+%    sortingMethod   - [], 'kilosort' or 'clu'. If [], tries to detect a
+%                   kilosort folder or clu files. 
 %    
 % OUTPUTS
 %
@@ -65,7 +70,10 @@ function spikes = bz_GetSpikes(varargin)
 %
 %
 % written by David Tingley, 2017
-% added compatibility with Phy by Manu Valero, 2019 (previos bz_LoadPhy)
+% added Phy loading by Manu Valero, 2019 (previos bz_LoadPhy)
+
+% TO DO: Get waveforms by an independent function (ie getWaveform) that
+% generates a waveform.cellinfo.mat file with all channels waves.
 %% Deal With Inputs 
 spikeGroupsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
     'spikeGroups must be numeric or "all"');
@@ -81,6 +89,8 @@ addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'onlyLoad',[]);
 addParameter(p,'verbose',true,@islogical);
+addParameter(p,'keepCluWave',false,@islogical);
+addParameter(p,'sortingMethod',[],@isstr);
 
 parse(p,varargin{:})
 
@@ -94,7 +104,8 @@ saveMat = p.Results.saveMat;
 noPrompts = p.Results.noPrompts;
 onlyLoad = p.Results.onlyLoad;
 verbose = p.Results.verbose;
-
+keepCluWave = p.Results.keepCluWave;
+sortingMethod = p.Results.sortingMethod;
 
 [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
 baseName = bz_BasenameFromBasepath(basepath);
@@ -146,7 +157,7 @@ else % do the below then filter by inputs... (Load from clu/res/fet)
     end
     kilosort_path = dir([basepath filesep '*kilosort*']);
 
-if ~isempty(cluFiles) % LOADING FROM CLU/ RES
+if strcmpi(sortingMethod,'clu') || ~isempty(cluFiles) % LOADING FROM CLU/ RES
     disp('loading spikes from clu/res/spk files..')
     
     % remove *temp*, *autosave*, and *.clu.str files/directories
@@ -291,7 +302,7 @@ if ~isempty(cluFiles) % LOADING FROM CLU/ RES
     end
     spikes.sessionName = sessionInfo.FileName;
     
-elseif ~isempty(kilosort_path) % LOADING FROM KILOSORT
+elseif strcmpi(sortingMethod, 'kilosort') || ~isempty(kilosort_path) % LOADING FROM KILOSORT
     
     disp('loading spikes from Kilosort/Phy format...')
     fs = spikes.samplingRate; 
@@ -316,45 +327,7 @@ elseif ~isempty(kilosort_path) % LOADING FROM KILOSORT
             spikes.ts{jj} = double(spike_times(ids)); % cluster time
             cluster_id = find(cluster_group.cluster_id == spikes.UID_kilosort(jj));
             spikes.shankID(jj) = shanks(cluster_id);
-            % spikes.amplitudes{jj} = double(spike_amplitudes(ids));
             jj = jj + 1;
-        end
-    end
-    
-    % get waveforms
-    if getWaveforms
-        nPull = 1000; % number of spikes to pull out
-        wfWin = 0.008; % Larger size of waveform windows for filterning
-        filtFreq = 500;
-        hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
-        wfWin = round((wfWin * fs)/2);
-        for ii = 1 : size(spikes.times,2)
-            spkTmp = spikes.ts{ii};
-            if length(spkTmp) > nPull
-                spkTmp = spkTmp(randperm(length(spkTmp)));
-                spkTmp = spkTmp(1:nPull);
-            end
-            wf = [];
-            for jj = 1 : length(spkTmp)
-                if verbose
-                    fprintf(' ** %3.i/%3.i for cluster %3.i/%3.i  \n',jj, length(spkTmp), ii, size(spikes.times,2));
-                end
-                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spkTmp(jj) - (wfWin),...
-                    'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
-            end
-            wf = mean(wf,3);
-            if isfield(sessionInfo,'badchannels')
-                wf(:,ismember(sessionInfo.channels,sessionInfo.badchannels))=0;
-            end
-            for jj = 1 : size(wf,2)          
-                wfF(:,jj) = filtfilt(hpFilt,wf(:,jj) - mean(wf(:,jj)));
-            end
-            [~, maxCh] = max(abs(wfF(wfWin,:)));
-            rawWaveform = detrend(wf(:,maxCh) - mean(wf(:,maxCh))); 
-            filtWaveform = wfF(:,maxCh) - mean(wfF(:,maxCh));
-            spikes.rawWaveform{ii} = rawWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); % keep only +- 1ms of waveform
-            spikes.filtWaveform{ii} = filtWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); 
-            spikes.maxWaveformCh(ii) = sessionInfo.channels(maxCh);
         end
     end
     
@@ -367,6 +340,42 @@ else
     error('Unit format not recognized...');
 end
 
+% get waveforms
+if getWaveforms || ~keepCluWave
+    nPull = 1000;  % number of spikes to pull out
+    wfWin = 0.008; % Larger size of waveform windows for filterning
+    filtFreq = 500;
+    hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
+    wfWin = round((wfWin * fs)/2);
+    for ii = 1 : size(spikes.times,2)
+        spkTmp = spikes.ts{ii};
+        if length(spkTmp) > nPull
+            spkTmp = spkTmp(randperm(length(spkTmp)));
+            spkTmp = spkTmp(1:nPull);
+        end
+        wf = [];
+        for jj = 1 : length(spkTmp)
+            if verbose
+                fprintf(' ** %3.i/%3.i for cluster %3.i/%3.i  \n',jj, length(spkTmp), ii, size(spikes.times,2));
+            end
+            wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spkTmp(jj) - (wfWin),...
+                'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
+        end
+        wf = mean(wf,3);
+        if isfield(sessionInfo,'badchannels')
+            wf(:,ismember(sessionInfo.channels,sessionInfo.badchannels))=0;
+        end
+        for jj = 1 : size(wf,2)          
+            wfF(:,jj) = filtfilt(hpFilt,wf(:,jj) - mean(wf(:,jj)));
+        end
+        [~, maxCh] = max(abs(wfF(wfWin,:)));
+        rawWaveform = detrend(wf(:,maxCh) - mean(wf(:,maxCh))); 
+        filtWaveform = wfF(:,maxCh) - mean(wfF(:,maxCh));
+        spikes.rawWaveform{ii} = rawWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); % keep only +- 1ms of waveform
+        spikes.filtWaveform{ii} = filtWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); 
+        spikes.maxWaveformCh(ii) = sessionInfo.channels(maxCh);
+    end
+end
 
 if ~isempty(onlyLoad)
     toRemove = true(size(spikes.UID));
@@ -384,6 +393,8 @@ end
 %% save to buzcode format (before exclusions)
 if saveMat
     save(cellinfofile,'spikes')
+end
+
 end
 
 %% EXCLUSIONS %%
@@ -434,24 +445,27 @@ end
 
 end
 
-end
-
 %%
 function spikes = removeCells(toRemove,spikes,getWaveforms)
 %Function to remove cells from the structure. toRemove is the INDEX of
 %the UID in spikes.UID
-
     spikes.UID(toRemove) = [];
     spikes.times(toRemove) = [];
     spikes.region(toRemove) = [];
-    spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
+    if isfield(spikes,'cluID')
+        spikes.cluID(toRemove) = [];
+    elseif isfield(spikes,'UID_kilosort')
+        spikes.UID_kilosort(toRemove) = [];
+    end
     
     if any(getWaveforms)
         spikes.rawWaveform(toRemove) = [];
         spikes.maxWaveformCh(toRemove) = [];
+        if isfield(spikes,'filtWaveform')
+            spikes.filtWaveform(toRemove) = [];
+        end
     end
-    
 end
 
 
