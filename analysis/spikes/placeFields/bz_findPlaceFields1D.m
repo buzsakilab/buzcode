@@ -5,6 +5,8 @@ function [placeFieldStats] = bz_findPlaceFields1D(firingMaps,varargin)
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
+%     'basepath'    full path where session is located (default pwd)
+%                   e.g. /mnt/Data/buddy140_060813_reo/buddy140_060813_reo
 %     'threshold'   values above threshold*peak belong to the field
 %                   (default = 0.2)
 %     'minSize'     fields smaller than this percentage of the maze size 
