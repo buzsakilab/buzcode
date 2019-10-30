@@ -24,11 +24,13 @@ function [placeFieldStats] = bz_findPlaceFields1D(firingMaps,varargin)
 %    =========================================================================
 
 % Antonio FR, 10/2019
+% Convert to buzcode format: Andrea Navas-Olive, 2019
 
 %%%%%%%%%%%%%%  WORK IN PROGRESS
 
 % Parse inputs 
 p=inputParser;
+addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'threshold',0.2,@isnumeric);
 addParameter(p,'minSize',0.05,@isnumeric);
 addParameter(p,'maxSize',0.50,@isnumeric);
@@ -39,6 +41,7 @@ addParameter(p,'verbose','off',@isstr);
 addParameter(p,'saveMat', true, @islogical);
 
 parse(p,varargin{:});
+basepath = p.Results.basepath;
 sizeMaze = length(firingMaps.rateMaps{1}{1});
 threshold = p.Results.threshold;
 minSize = p.Results.minSize * sizeMaze;
@@ -183,7 +186,7 @@ placeFieldStats.params.verbose = verbose;
 placeFieldStats.params.saveMat = saveMat;
 
 if saveMat
-   save([placeFieldStats.sessionName '.placeFields.cellinfo.mat'],'placeFieldStats'); 
+   save([basepath,filesep,placeFieldStats.sessionName '.placeFields.cellinfo.mat'],'placeFieldStats'); 
 end
 
  
@@ -209,7 +212,7 @@ for unit = 1:length(firingMaps.rateMaps)
         if c==1, title(['                                                                  Cell ' num2str(unit)]);; end
         %ylim([0,12])
     end
-    saveas(gcf,[pwd '\newPCs\cell_' num2str(unit) '.png'],'png');
+    saveas(gcf,[basepath,filesep,'\newPCs\cell_' num2str(unit) '.png'],'png');
     close all;
 end
  
