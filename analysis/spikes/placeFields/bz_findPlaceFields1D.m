@@ -1,7 +1,9 @@
-function [placeFieldStats] = bz_findPlaceFields1D(firingMaps,varargin)
-%   [stats] = bz_findPlaceFields1D(firingMaps)
+function [placeFieldStats] = bz_findPlaceFields1D(varargin)
+%   [placeFieldStats] = bz_findPlaceFields1D(firingMaps)
 %   Find place fields from 1D firing maps. Reads the output of bz_firingMapAvg 
-
+%
+%   INPUTS
+%
 %    =========================================================================
 %     Properties    Values
 %    -------------------------------------------------------------------------
@@ -24,6 +26,42 @@ function [placeFieldStats] = bz_findPlaceFields1D(firingMaps,varargin)
 %                   considered spurious and ignored (default 0.60)
 %     'verbose'     display processing information (default = 'off')
 %    =========================================================================
+%
+%   OUTPUTS
+%
+%   placeFieldStats cellinfo structure with the followin fields
+%
+%    =========================================================================
+%     Properties    Values
+%    -------------------------------------------------------------------------
+%		.UID            unit ids
+%		.sessionName    name of session
+%		.params         parameters:
+%                         - sizeMaze
+%                         - threshold
+%                         - minSize
+%                         - maxSize
+%                         - sepEdge
+%                         - minPeak
+%                         - minPeak2nd
+%                         - verbose
+%                         - saveMat
+%		.mapStats       Statistics of the Firing Map
+%                         - x
+%                         - field
+%                         - size
+%                         - peak
+%                         - mean
+%                         - fieldX
+%                         - specificity
+%                         - m
+%                         - r
+%                         - mode
+%                         - k
+%                         - y
+%                         - fieldY
+%
+%    =========================================================================
 
 % Antonio FR, 10/2019
 % Convert to buzcode format: Andrea Navas-Olive, 2019
@@ -33,6 +71,7 @@ function [placeFieldStats] = bz_findPlaceFields1D(firingMaps,varargin)
 % Parse inputs 
 p=inputParser;
 addParameter(p,'basepath',pwd,@isstr);
+addParameter(p,'firingMapsAvg',{},@isstruct);
 addParameter(p,'threshold',0.2,@isnumeric);
 addParameter(p,'minSize',0.05,@isnumeric);
 addParameter(p,'maxSize',0.50,@isnumeric);
@@ -44,6 +83,15 @@ addParameter(p,'saveMat', true, @islogical);
 
 parse(p,varargin{:});
 basepath = p.Results.basepath;
+firingMaps = p.Results.firingMapsAvg;
+% Get session info
+basename = bz_BasenameFromBasepath(basepath);
+load([basepath filesep basename '.sessionInfo.mat']);
+% Default firingMapsAvg
+if isempty(firingMaps)
+    firingMaps = load([basepath filesep basename '.firingMapsAvg.cellinfo.mat']);
+    firingMaps = firingMaps.firingMaps;
+end
 sizeMaze = length(firingMaps.rateMaps{1}{1});
 threshold = p.Results.threshold;
 minSize = p.Results.minSize * sizeMaze;
@@ -53,6 +101,10 @@ minPeak = p.Results.minPeak;
 minPeak2nd = p.Results.minPeak2nd;
 verbose = p.Results.verbose;
 saveMat = p.Results.saveMat;
+
+
+
+
 
 
 % Find place fields
@@ -127,9 +179,9 @@ for unit = 1:length(firingMaps.rateMaps)
             % discard new place field
             good2ndPF = true;
             if i>1
-                field0ini = find(diff(isnan(z))==1);
-                field0end = find(diff(isnan(z))==-1);
-                field1ini = find(diff(field)==1);
+                field0ini = find(diff(isnan(z))==1); if length(field0ini)>1, field0ini = field0ini(2); end
+                field0end = find(diff(isnan(z))==-1); if length(field0end)>1, field0end = field0end(2); end
+                field1ini = find(diff(field)==1); if isempty(field1ini), field1ini = 1; end
                 field1end = find(diff(field)==-1);
                 [~,idxBetwFields] = min([abs(field1ini-field0end),abs(field0ini-field1end)]);
                 if idxBetwFields == 1
@@ -187,6 +239,8 @@ placeFieldStats.params.minPeak2nd = minPeak2nd;
 placeFieldStats.params.verbose = verbose;
 placeFieldStats.params.saveMat = saveMat;
 
+placeFieldStats.mapStats = mapStats;
+
 if saveMat
    save([basepath,filesep,placeFieldStats.sessionName '.placeFields.cellinfo.mat'],'placeFieldStats'); 
 end
@@ -211,7 +265,7 @@ for unit = 1:length(firingMaps.rateMaps)
         end
         if c==1 || c==3, ylabel('FR(Hz)'); end
         if c>2, xlabel('Track (cm)'); end
-        if c==1, title(['                                                                  Cell ' num2str(unit)]);; end
+        if c==1, title(['                                                                  Cell ' num2str(unit)]); end
         %ylim([0,12])
     end
     saveas(gcf,[basepath,filesep,'\newPCs\cell_' num2str(unit) '.png'],'png');
