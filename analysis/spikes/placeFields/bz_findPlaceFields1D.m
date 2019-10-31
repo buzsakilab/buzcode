@@ -9,6 +9,14 @@ function [placeFieldStats] = bz_findPlaceFields1D(varargin)
 %    -------------------------------------------------------------------------
 %     'basepath'    full path where session is located (default pwd)
 %                   e.g. /mnt/Data/buddy140_060813_reo/buddy140_060813_reo
+%     'firingMaps'  cellinfo struct with the following fields
+%        .rateMaps              gaussian filtered rates
+%        .rateMaps_unsmooth     raw rate data
+%        .rateMaps_box          box filtered rates
+%        .countMaps             raw spike count data
+%        .occuMaps              position occupancy data
+%                   ouput structure from bz_firingMapAvg. If not provided,
+%                   it loads it from 'basepath' or current folder
 %     'threshold'   values above threshold*peak belong to the field
 %                   (default = 0.2)
 %     'minSize'     fields smaller than this percentage of the maze size 
@@ -25,11 +33,12 @@ function [placeFieldStats] = bz_findPlaceFields1D(varargin)
 %                   percentage of maximum Firing Rate along the maze are
 %                   considered spurious and ignored (default 0.60)
 %     'verbose'     display processing information (default = 'off')
+%     'saveMat'   	Saves file, logical (default: true) 
 %    =========================================================================
 %
 %   OUTPUTS
 %
-%   placeFieldStats cellinfo structure with the followin fields
+%   placeFieldStats cellinfo structure with the following fields
 %
 %    =========================================================================
 %     Properties    Values
@@ -37,29 +46,29 @@ function [placeFieldStats] = bz_findPlaceFields1D(varargin)
 %		.UID            unit ids
 %		.sessionName    name of session
 %		.params         parameters:
-%                         - sizeMaze
-%                         - threshold
-%                         - minSize
-%                         - maxSize
-%                         - sepEdge
-%                         - minPeak
-%                         - minPeak2nd
-%                         - verbose
-%                         - saveMat
-%		.mapStats       Statistics of the Firing Map
-%                         - x
-%                         - field
-%                         - size
-%                         - peak
-%                         - mean
-%                         - fieldX
-%                         - specificity
-%                         - m
-%                         - r
-%                         - mode
-%                         - k
-%                         - y
-%                         - fieldY
+%         .sizeMaze
+%         .threshold
+%         .minSize
+%         .maxSize
+%         .sepEdge
+%         .minPeak
+%         .minPeak2nd
+%         .verbose
+%         .saveMat
+%       .mapStats       Statistics of the Firing Map
+%         .x
+%         .field
+%         .size
+%         .peak
+%         .mean
+%         .fieldX
+%         .specificity
+%         .m
+%         .r
+%         .mode
+%         .k
+%         .y
+%         .fieldY
 %
 %    =========================================================================
 
