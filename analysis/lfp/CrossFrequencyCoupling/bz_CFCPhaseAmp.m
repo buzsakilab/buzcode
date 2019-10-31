@@ -39,8 +39,13 @@ function [comodulogram] = bz_CFCPhaseAmp(lfp,phaserange,amprange,varargin)
 %    =========================================================================
 %
 %OUTPUT
-%   comod               phase-frequency versus amplitude-frequency
-%                       comodulogram matrix in modulation index units
+%   comodulogram.comod              phase-frequency x amplitude-frequency x 
+%           ch  comodulogram matrix in modulation index units
+%   comodulogram.phase_bincenters   phase bin centers
+%   comodulogram.amp_bincenters     amp bin centers
+%   comodulogram.params.method      method used to extract the amplitude
+%   comodulogram.params.filter      filter type 
+%   comodulogram.params.filterOrder filter order
 %
 %Dependencies
 %   bz_Filter
