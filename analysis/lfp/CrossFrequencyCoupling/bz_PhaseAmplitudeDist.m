@@ -76,7 +76,7 @@ filtered_phase = bz_Filter(lfp,'passband',phaserange,'filter',filterType,'order'
 % LFPphase_int = IsolateEpochs2(filtered.phase,int,edgebuffer,sf_LFP);
 
 %% Wavelet Transform LFP in intervals
-wavespec_amp = bz_WaveSpec(lfp,'frange',amprange);
+wavespec_amp = bz_WaveSpec(lfp,'frange',amprange,'nfreqs',nfreqs,'intervals',intervals);
 %[ampfreqs,~,spec_int]
 %spec_int = cellfun(@(X) abs(X),spec_int,'UniformOutput',false);
 wavespec_amp.data = log10(abs(wavespec_amp.data)); %log scaled for normality
