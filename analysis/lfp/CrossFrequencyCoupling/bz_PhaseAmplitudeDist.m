@@ -1,4 +1,4 @@
-function [phaseamplitudemap,ampfreqs,phasecenters] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange)
+function [phaseamplitudemap] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange,varargin)
 % [phaseamplitudemap,ampfreqs,phasecenters] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange)
 %This function calculates the mean amplitude of higher frequency bands at
 %a the phase for a given lower frequency band signal
@@ -35,23 +35,38 @@ function [phaseamplitudemap,ampfreqs,phasecenters] = bz_PhaseAmplitudeDist(lfp,p
 %   bz_Filter
 %   bz_WaveSpec
 %
-%Last Updated: 10/9/15
+%Last Updated: 31/10/2019 (EFO)
 %DLevenstein
 
 %
 %
 %DLevenstein 2016
+%Updated by Eliezyer de Oliviera (EFO)/2019
 %TO DO: intervals support
-%% DEV (these should be varagins)
-nfreqs = 100;
-ncyc = 7;
+%% parsing inputs
+p = inputParser;
+addParameter(p,'filterType','fir1',@ischar);
+addParameter(p,'filterOrder',4,@isnumeric);
+addParameter(p,'numBins',50,@isnumeric);
+addParameter(p,'intervals',[0 inf],@isvector);
+addParameter(p,'nfreqs',100,@isnumeric);
+addParameter(p,'ncyc',7,@isnumeric);
+addParameter(p,'makePlot',true,@islogical);
+
+parse(p,varargin{:});
+makePlot = p.Results.makePlot;
+filterType = p.Results.filterType;
+filterOrder = p.Results.filterOrder;
+numBins = p.Results.numBins;
+nfreqs = p.Results.nfreqs;
+ncyc = p.Results.ncyc;
 
 %% Deal with input types
-sf_LFP = lfp.samplingRate;
+% sf_LFP = lfp.samplingRate;
 
 
 %% Filter LFP for the phase
-filtered_phase = bz_Filter(lfp,'passband',phaserange,'filter','fir1');
+filtered_phase = bz_Filter(lfp,'passband',phaserange,'filter',filterType,'order',filterOrder);
 
 %% Get LFP, Phase in intervals
 %edgebuffer = 1; %s
@@ -71,31 +86,39 @@ wavespec_amp.mean = mean(wavespec_amp.data,1);
 %LFPphase_int = cellfun(@(X) X(edgebuffer_si:end-edgebuffer_si),LFPphase_int,'UniformOutput',false);
 
 %% Bin phase and power
-numbins = 50;
-phasebins = linspace(-pi,pi,numbins+1);
-phasecenters = phasebins(1:end-1)+(phasebins(2)-phasebins(1));
+phasebins = linspace(-pi,pi,numBins+1);
+phasecenters = phasebins(1:end-1)+(diff(phasebins)/2);
 
-[phasedist,~,phaseall] = histcounts(filtered_phase.phase,phasebins);
+[~,~,phaseall] = histcounts(filtered_phase.phase,phasebins);
 
-
-phaseamplitudemap = zeros(numbins,nfreqs);
-for bb = 1:numbins
+phaseamplitudemap = zeros(numBins,nfreqs);
+for bb = 1:numBins
     phaseamplitudemap(bb,:) = mean(wavespec_amp.data(phaseall==bb,:),1)./wavespec_amp.mean;
 end
  
 ampfreqs = wavespec_amp.freqs;
+
+phaseamplitude.map = phaseamplitudemap;
+phaseamplitude.phasecenters = phasecenters;
+phaseamplitude.amp_freq = ampfreqs;
+phaseamplitude.phase_range = num2str(mean(phaserange));
+phaseamplitude.params.filterType  = filterType;
+phaseamplitude.params.filterOrder = filterOrder;
+
 %% Plot
-figure
-    imagesc(phasecenters,log2(ampfreqs),((phaseamplitudemap))')
-    hold on
-    imagesc(phasecenters+2*pi,log2(ampfreqs),((phaseamplitudemap))')
-    plot(linspace(-pi,3*pi),cos(linspace(-pi,3*pi))+log2(ampfreqs(end/2)),'k')
-    xlabel(['Phase (',num2str(phaserange),'Hz)']);
-    ylabel('Frequency (Hz')
-    LogScale('y',2)
-    xlim([phasecenters(1) phasecenters(end)+2*pi]);
-    colorbar
-    axis xy
+if makePlot
+    figure
+        imagesc(phaseamplitude.phasecenters,log2(phaseamplitude.amp_freq),((phaseamplitude.map))')
+        hold on
+        imagesc(phaseamplitude.phasecenters+2*pi,log2(phaseamplitude.amp_freq),((phaseamplitude.map))')
+        plot(linspace(-pi,3*pi),cos(linspace(-pi,3*pi))+log2(phaseamplitude.amp_freq(end/2)),'k')
+        xlabel(['Phase (',num2str(phaseamplitude.phase_range),'Hz)']);
+        ylabel('Frequency (Hz')
+        LogScale('y',2)
+        xlim([phaseamplitude.phasecenters(1) phaseamplitude.phasecenters(end)+2*pi]);
+        colorbar
+        axis xy
+end
 
 end
 
