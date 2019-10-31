@@ -30,8 +30,8 @@ function [firingMaps] = bz_firingMapAvg(positions,spikes,varargin)
 %                 	    will be clipped to 'maxGap' to compute the occupancy map
 %                 	    (default = 0.100 s)
 %     'orderKalmanVel'	order of Kalman Velocity Filter (default 2)
-%      saveMat   		- logical (default: false) that saves firingMaps file
-%      CellInspector   	- logical (default: false) that creates an otuput
+%     'saveMat'   		- logical (default: false) that saves firingMaps file
+%     'CellInspector'  	- logical (default: false) that creates an otuput
 %                   	compatible with CellInspector
 
 %
