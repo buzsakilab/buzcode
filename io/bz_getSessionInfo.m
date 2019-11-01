@@ -10,6 +10,7 @@ function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 %INPUT
 %   basePath            directory: '/whatevetPath/baseName/'
 %   (options)
+%       'saveMat'       (default: prompt)
 %       'noPrompts'     (default: false) prevents prompts about
 %                       saving/adding metadata
 %       'editGUI'       (default: false) opens a GUI to edit select
@@ -23,9 +24,11 @@ function [sessionInfo] = bz_getSessionInfo(basePath,varargin)
 p = inputParser;
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'editGUI',false,@islogical);
+addParameter(p,'saveMat',false,@islogical);
 parse(p,varargin{:})
 noPrompts = p.Results.noPrompts;
 editGUI = p.Results.editGUI;
+saveMat = p.Results.saveMat;
 
 if ~exist('basePath','var')
     basePath = pwd;
@@ -84,10 +87,16 @@ if ~noPrompts && ~SIexist %Inform the user that they should save a file for late
         filename '?'],'Save sessionInfo?','Yes');
     switch savebutton
         case 'Yes'
-            save(filename,'sessionInfo'); 
+            saveMat = true;
+        case 'No'
+            saveMat = false;
         case 'Cancel'
             return
     end
 end
 
+if saveMat
+    disp(['saving ',baseName,'.sessionInfo.mat'])
+    save(filename,'sessionInfo'); 
+end
 end

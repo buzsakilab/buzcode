@@ -118,6 +118,9 @@ if strcmp(SWweights,'PSS')
     specdt = 1./specslope.samplingRate;
     swFFTspec = 10.^spec.amp'; %To reverse log10 in bz_PowerSpectrumSlope
 
+    IRASAsmooth = spec.IRASAsmooth';
+    IRASAintercept = specslope.intercept;
+    IRASAslope = specslope.data;
     
     % Remove transients before calculating SW histogram
     zFFTspec = NormToInt(log10(swFFTspec)','modZ');
@@ -161,11 +164,15 @@ if ThIRASA && strcmp(SWweights,'PSS')
     lfp.timestamps = t_LFP;
     lfp.samplingRate = sf_LFP;
     %Calculate PSS
-    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,'nfreqs',200,'frange',f_all,'IRASA',ThIRASA);
+    [specslope,spec] = bz_PowerSpectrumSlope(lfp,window,window-noverlap,...
+        'nfreqs',200,'frange',f_all,'IRASA',ThIRASA);
     t_thclu = specslope.timestamps;
     specdt = 1./specslope.samplingRate;
     thFFTspec = specslope.resid';
     thFFTspec(thFFTspec<0)=0;
+    
+    IRASAsmooth_th = spec.IRASAsmooth';
+    thFFTspec_raw = 10.^spec.amp';
     
     % Remove transients before calculating SW histogram
     zFFTspec = NormToInt(spec.amp,'modZ');
@@ -351,5 +358,15 @@ SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,...
     recordingname,THdiptest,EMGdiptest,SWdiptest);
 %save(matfilename,'SleepScoreMetrics');
 
-StatePlotMaterials = v2struct(swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);
+StatePlotMaterials = v2struct(t_clus,swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);
+if exist('IRASAsmooth_th','var')
+    StatePlotMaterials.IRASAsmooth_th = IRASAsmooth_th;
+    StatePlotMaterials.thFFTspec_raw = thFFTspec_raw;
+
+end
+if exist('IRASAsmooth','var')
+    StatePlotMaterials.IRASAsmooth = IRASAsmooth;
+    StatePlotMaterials.IRASAintercept = IRASAintercept;
+    StatePlotMaterials.IRASAslope = IRASAslope;
+end
 %save(plotmaterialsfilename,'StatePlotMaterials'); 
