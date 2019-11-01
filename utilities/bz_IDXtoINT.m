@@ -90,9 +90,9 @@ for ss = 1:numstates
     statetimes = IDX==states(ss);
     %Get indices of state on/offsets
     stateints = [find(diff(statetimes)==1) find(diff(statetimes)==-1)-1];
-    stateints = timestamps(stateints); %Get timestamps of state on/offsets
+    stateints = [timestamps(stateints(:,1)) timestamps(stateints(:,2))]; %Get timestamps of state on/offsets
     
-    if isempty(stateints);continue;end 
+    if isempty(stateints) && isempty(statenames{ss});continue;end
     
     %Get the name
     if ~isempty(statenames{ss})

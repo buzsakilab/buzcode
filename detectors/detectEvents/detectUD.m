@@ -39,6 +39,13 @@ function [UDStates] = detectUD(varargin)
 %                       detection, default false)
 %   saveMat        - true or false save a buzcode event file with results
 %                       (default true)
+% OUTPUT
+%   UDStates structure with the following fields:
+%   ints.DOWN               - Down state intervals
+%   ints.UP                 - UP state intervals
+%   timestamps.DOWN         - Down state peaks.
+%   timestamps.UP           - Up state peaks.
+%   timestamps.deltaWave
 %
 %   MV-BuzsakiLab 2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -108,11 +115,7 @@ if isempty(pulPeriods)
     if ~isempty(dir('*Pulses.events.mat'))
         f = dir('*Pulses.events.mat');
         load(f.name);
-        pulPeriods_c = pulses.intsPeriods;
-        pulPeriods = [];
-        for ii = 1:numel(pulPeriods,2)                                     % concatenate different channels pulses
-            pulPeriods = [pulPeriods; pulPeriods_c{ii}];
-        end
+        pulPeriods = pulses.intsPeriods;
     end
 end
 
@@ -142,13 +145,14 @@ if isempty(ch) % if no channel declared, pick channel with higher gamma std duri
         stdGamma(ii) = std(gamm);
         gdCorr(ii) = corr(gamm',delt','Type','Spearman');
     end 
-    sdScore = zscore(stdGamma./gdCorr);                                     % down score increase with std gamma and gamma delta anticorr
+    gdCorr(gdCorr==0) = 1;
+    sdScore = stdGamma./gdCorr;
+    sdScore(~isnan(sdScore)) = zscore(sdScore(~isnan(sdScore)));                                     % down score increase with std gamma and gamma delta anticorr
     sdScore(sdScore>4) = 0; % remove outlier
     [~,ch] = max(sdScore(sdScore<4));
     fprintf(' Best channel: %3.i!! \n',ch);
 end
 clear gamm delt avGamma stdGamma gdCorr dscore
-
 %% find states
 lfp = bz_GetLFP(ch,'basepath',basepath,'noPrompts',noPrompts);
 gammaLFP = bz_Filter(lfp,'passband',filterparams.gamma,'filter','fir1','order',4);

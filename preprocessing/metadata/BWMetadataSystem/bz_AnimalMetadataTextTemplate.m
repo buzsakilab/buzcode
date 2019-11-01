@@ -100,7 +100,7 @@ if AnimalMetadata.Modules.ExtracellEphys
     %Enter a list of spike group numbers (from neuroscope) for each probe
     AnimalMetadata.ExtracellEphys.Probes.ProbeSpikegroups = {[],[]};
 
-    AnimalMetadata.ExtracellEphys.Probes.BadShanks = [];%not used now
+%     AnimalMetadata.ExtracellEphys.Probes.BadShanks = [];%not used now
     AnimalMetadata.ExtracellEphys.Channels.BadChannels = [];
 
     AnimalMetadata.ExtracellEphys.Channels.ImpedanceFilepaths = {};%Filenames in basepath folder, or leave as {} if none
@@ -219,6 +219,28 @@ if AnimalMetadata.Modules.ExtracellEphys
         AnimalMetadata.ExtracellEphys.Probes.WithinProbeXYLocations = SpatialXY;
     end
 
+    %handling group names - for case of extra channels - esp if not named
+    %by user
+    for gnidx = 1:length(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup)
+        addsubstitutename = false;
+        if length(AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames) >= gnidx
+            if isempty(AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames)
+                addsubstitutename = true;
+            else
+            end
+        else 
+            addsubstitutename = true;
+        end
+        if addsubstitutename
+            AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames{gnidx} = ['ExtraChannelGroup' num2str(gnidx)];
+        end
+    end
+    AnimalMetadata.ExtracellEphys.Probes.TargetRegions = cat(2,...
+        AnimalMetadata.ExtracellEphys.Probes.TargetRegions,...
+        AnimalMetadata.ExtracellEphys.ExtraChannels.GroupNames);
+
+
+    
     AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe = sum(~cellfun(@isempty,PerGroupSuperficialToDeep),2);
     AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe = NumChansPerProbe;%to do
     AnimalMetadata.ExtracellEphys.Probes.ProbeSpikeGroupLayoutSuperficialToDeep = PerGroupSuperficialToDeep;
@@ -252,12 +274,25 @@ if AnimalMetadata.Modules.ExtracellEphys
     for pidx = 1:AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes
         lut = cat(1,lut,pidx*ones(AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe(pidx),1));
         lut_ap = cat(1,lut_ap,po(pidx)*ones(AnimalMetadata.ExtracellEphys.Probes.NumChansPerProbe(po(pidx)),1));
-        glut = cat(1,glut,GroupsPerChannel{pidx}+length(pglut));
+        glut = cat(1,glut,GroupsPerChannel{pidx});
         glut_ap = cat(1,glut_ap,GroupsPerChannel{po(pidx)});
         pglut = cat(1,pglut,[1:AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe(pidx)]'+length(pglut));
         pglut_p = cat(1,pglut_p,pidx*ones(AnimalMetadata.ExtracellEphys.Probes.NumGroupsPerProbe(pidx),1));
     end
-
+    numrealprobes = AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes;
+    numspikegroups = AnimalMetadata.ExtracellEphys.SpikeGroups.nGroups;
+    if ~isempty(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup);
+       for eidx = 1:length(AnimalMetadata.ExtracellEphys.Probes.NumberOfProbes);
+          lut = cat(1,lut,(eidx+numrealprobes)*ones(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup(eidx),1));
+          lut_ap = cat(1,lut_ap,(eidx+numrealprobes)*ones(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup(eidx),1));
+          glut = cat(1,glut,(eidx+max(glut))*ones(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup(eidx),1));
+          glut_ap = cat(1,glut_ap,(eidx+max(glut_ap))*ones(AnimalMetadata.ExtracellEphys.ExtraChannels.NumExtraChansPerExtraGroup(eidx),1));
+          
+          pglut = cat(1,pglut,1+length(pglut));%one "probe" for each set of extra channels
+          pglut_p = cat(1,pglut_p,(eidx+numrealprobes));
+       end
+    end
+    
     AnimalMetadata.ExtracellEphys.Probes.ProbeToGroupLookupTable.Labels = {'ProbeNumber';'GroupNumber'};
     AnimalMetadata.ExtracellEphys.Probes.ProbeToGroupLookupTable.Table = [pglut_p pglut];
     AnimalMetadata.ExtracellEphys.Channels.ChannelToProbeLookupTable.Labels = {'ChannelNumber';'ProbeNumber'};
@@ -309,7 +344,7 @@ sessionInfo.session.name = basename;
 sessionInfo.session.path = basepath;
 sessionInfo.spikeGroups = AnimalMetadata.ExtracellEphys.SpikeGroups;
 sessionInfo.nChannels = AnimalMetadata.ExtracellEphys.NumberOfChannels;
-sessionInfo.channels = [1:AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal];
+sessionInfo.channels = [0:AnimalMetadata.ExtracellEphys.Channels.NumChannelsTotal-1];
 sessionInfo.nBits = AnimalMetadata.ExtracellEphys.Parameters.BitsPerSample;
 sessionInfo.rates.lfp = AnimalMetadata.ExtracellEphys.Parameters.LfpSampleRate;
 sessionInfo.rates.wideband = AnimalMetadata.ExtracellEphys.Parameters.SampleRate;
@@ -341,7 +376,7 @@ for gidx = 1:(sessionInfo.spikeGroups.nGroups)%making SpkGrps
 end
 %sessionInfo.Units = 
 sessionInfo.region = AnimalMetadata.ExtracellEphys.Channels.ChannelToAnatomyLookupTable.Table';
-sessionInfo.badchannels = AnimalMetadata.ExtracellEphys.CurrentBadChannels;
+sessionInfo.badchannels = AnimalMetadata.ExtracellEphys.Channels.BadChannels;
 sessionInfo.badshanks = AnimalMetadata.ExtracellEphys.CurrentBadShanks;%not used now
 
 AnimalMetadata.sessionInfo = sessionInfo;

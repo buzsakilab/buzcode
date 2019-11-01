@@ -95,7 +95,7 @@ end
 offset = 0;
 nSamples = floor(100000/nChannels);
 while true,
-	data = LoadBinary(filename,'nChannels',nChannels,'offset',offset,'samples',nSamples,'precision',precision,'skip',skip);
+	data = bz_LoadBinary(filename,'nChannels',nChannels,'offset',offset,'samples',nSamples,'precision',precision,'skip',skip);
 	data = data .* repmat(gains,size(data,1),1);
 	SaveBinary(output,data,'precision',precision,'mode','append');
 	offset = offset + nSamples;

@@ -76,7 +76,7 @@ switch recsys
         bdatemonth = str2num(basedate(1:2));
     case 'Intan' %if not amplipex, look for intan
         bunderscore = strfind(basename,'_');
-        basedate = basename(bunderscore+1:end);
+        basedate = basename(bunderscore(end)+1:end);
         bdateday = str2num(basedate(5:6));
         bdateyear = 2000+str2num(basedate(1:2));
         bdatemonth = str2num(basedate(3:4));
@@ -152,12 +152,12 @@ end
 function seconds = getintanfilestarttime(fname,lightsondatenum,lightsonhours,lightsonminutes,lightsonseconds)
 
 underscores = strfind(fname,'_');
-ttime = fname(underscores(2)+1:end);
+ttime = fname(underscores(end)+1:end);
 h = str2num(ttime(1:2));
 m = str2num(ttime(3:4));
 s = str2num(ttime(5:6));
 
-tdate = fname(underscores(1)+1:underscores(2)-1);
+tdate = fname(underscores(end-1)+1:underscores(end)-1);
 dateday = tdate(5:6);
 dateyear = num2str(2000+str2num(tdate(1:2)));
 datemonth = tdate(3:4);

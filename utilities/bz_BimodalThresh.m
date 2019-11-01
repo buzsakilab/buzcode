@@ -1,5 +1,5 @@
 function [thresh,cross,bihist,diptest,overthresh] = bz_BimodalThresh(bimodaldata,varargin)
-%[thresh,cross,bihist,diptest,overthresh] = BimodalThresh(bimodaldata) 
+%[thresh,cross,bihist,diptest,overthresh] = bz_BimodalThresh(bimodaldata) 
 %takes bimodal time series data, calculates the threshold between the modes
 %(i.e. UP vs DOWN states), and returns the crossing times (i.e. UP/DOWN onset/offset times)
 %
@@ -143,11 +143,6 @@ else
     crossdown = find(diff(overind)==-1);
 end
 
-%If there's only one crossing...
-if isempty(crossup) || isempty(crossdown)
-    cross.upints = []; cross.downints = []; return
-end
-
 %%
 upforup = crossup;
 upfordown = crossup;
@@ -156,6 +151,9 @@ downfordown = crossdown;
 
 switch ZINF
     case false
+        if (isempty(crossup) || isempty(crossdown)) %Only one crossing...
+            cross.upints = []; cross.downints = []; overthresh = nan(size(bimodaldata)); return
+        end
         if crossup(1) < crossdown(1)
             upfordown(1) = [];
         end
@@ -169,37 +167,47 @@ switch ZINF
             upforup(end) = [];
         end
     case true
-        switch Schmidt
-            case false   %Regular threshold assumes first state 
-                         %is opposite first crossing
-                if crossup(1) < crossdown(1)
-                    downfordown = [0;downfordown];
-                end
-                if crossdown(end) > crossup(end)
-                    upfordown = [upfordown;Inf];
-                end
-                if crossdown(1) < crossup(1)
-                    upforup = [0;upforup];
-                end
-                if crossup(end) > crossdown(end)
-                    downforup = [downforup;Inf];
-                end
-            case true   %Sticky threshold assumes first threshold crossing  
-                         %is in first state
-                if crossup(1) < crossdown(1)
-                    upfordown(1) = [];
-                    upforup(1) = 0;
-                end
-                if crossdown(end) > crossup(end)
-                    upfordown = [upfordown;Inf];
-                end
-                if crossdown(1) < crossup(1)
-                    downforup(1) = [];
-                    downfordown(1) = 0;
-                end
-                if crossup(end) > crossdown(end)
-                    downforup = [downforup;Inf];
-                end
+        if isempty(crossup) %Only one crossing...
+            upforup = 0; upfordown = Inf;
+            
+        elseif isempty(crossdown)
+            downfordown = 0; downforup = Inf;
+            
+        else
+        
+            switch Schmidt
+                case false   %Regular threshold assumes first state 
+                             %is opposite first crossing
+                    if crossup(1) < crossdown(1)
+                        downfordown = [0;downfordown];
+                    end
+                    if crossdown(end) > crossup(end)
+                        upfordown = [upfordown;Inf];
+                    end
+                    if crossdown(1) < crossup(1)
+                        upforup = [0;upforup];
+                    end
+                    if crossup(end) > crossdown(end)
+                        downforup = [downforup;Inf];
+                    end
+                case true   %Sticky threshold assumes first threshold crossing  
+                             %is in first state
+                    if crossup(1) < crossdown(1)
+                        upfordown(1) = [];
+                        upforup(1) = 0;
+                    end
+                    if crossdown(end) > crossup(end)
+                        upfordown = [upfordown;Inf];
+                    end
+                    if crossdown(1) < crossup(1)
+                        downforup(1) = [];
+                        downfordown(1) = 0;
+                    end
+                    if crossup(end) > crossdown(end)
+                        downforup = [downforup;Inf];
+                    end
+            end
+        
         end
         
 end

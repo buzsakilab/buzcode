@@ -323,13 +323,19 @@ if FileExistsIn([baseName,'.eegstates.mat'])
                     e = [];
                 end
             catch
-                try
-                    %First try Anton's LoadBinary - this is not in buzcode
-                    eeg = LoadBinary([baseName, suffix], Chs+1, nCh, [], 'int16', 'single');
+                disp('No eeg in your eegstates.mat. Loading from .lfp/.eeg file...');
+                try %first try bz_getLFP
+                    eeg = bz_GetLFP(Chs,'basepath',FO.basePath,'noPrompts',true);
+                    eeg = single(eeg.data)';
                 catch
-                    %Otherwise try to use Micheal Zugaro
-                    eeg = LoadBinaryIn([baseName, suffix], 'channels', Chs+1, 'nChannels', nCh)';
-                    eeg = double(eeg);
+                    try
+                        % try Anton's LoadBinary
+                        eeg = LoadBinary([baseName, suffix], Chs+1, nCh, [], 'int16', 'single');
+                    catch
+                        %Otherwise try to use Micheal Zugaro
+                        eeg = LoadBinaryIn([baseName, suffix], 'channels', Chs+1, 'nChannels', nCh)';
+                        eeg = single(eeg);
+                    end
                 end
                 
             end
@@ -357,7 +363,7 @@ else
         
         if exist([baseName '.SleepScoreLFP.LFP.mat'],'file')
             load([baseName '.SleepScoreLFP.LFP.mat'])
-            defaultchans = unique([SleepScoreLFP.SWchanID SleepScoreLFP.THchanID]);
+            defaultchans = ([SleepScoreLFP.SWchanID SleepScoreLFP.THchanID]);
             if length(defaultchans)<2
                 defaultchans = num2str(defaultchans);
             elseif length(defaultchans)>=2
@@ -1509,8 +1515,8 @@ function FO = updateEEG(FO,varargin)
     eeg = getappdata(FO.fig,'eeg');
     eegX = (1:length(eeg{1}))/(FO.eegFS/FO.downsample);
 % catch
-%     eeg = F0.eeg;
-%     eegX = F0
+%     eeg = FO.eeg;
+%     eegX = FO
 % end
 
 if isempty(varargin)
@@ -2478,7 +2484,7 @@ baseName = FO.baseName;
 basePath = FO.basePath;
 
 %Load baseName.SleepState.states.mat
-SleepState = bz_LoadStates(basePath,'SleepState');
+[SleepState,sleepstatefilename] = bz_LoadStates(basePath,'SleepState');
 
 %Check if the SleepState file is new, manually detected, or auto-detected
 if isempty(SleepState)
@@ -2486,6 +2492,7 @@ if isempty(SleepState)
     SleepState.detectorinfo.detectorname = 'TheStateEditor';
     SleepState.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd'); 
     SleepState.idx.statenames = {'','','','',''};
+    SleepState.idx.timestamps = FO.to;
 elseif isfield(FO,'AutoScore')
     STATESFILETYPE = 'auto';
 elseif isfield(SleepState,'detectorinfo')
@@ -2511,13 +2518,13 @@ if isfield(SleepState,'idx')
 else
     idx.statenames = {'WAKE','','NREM','','REM'}; %assume...
 end
-idx.states = FO.States';
-idx.timestamps = FO.to;
-%note: FO.to is 0-indexed... does not line up with F0.states. issue with
-%loading. to fix.
+%Interpolate back to the scoring timestamps
+idx.timestamps = SleepState.idx.timestamps;
+idx.states = interp1(FO.to,FO.States,idx.timestamps,'nearest');
+
 
 %Make a buzcode-style ints structure (should wrap this into IDXtoINT.mat)
-ints = bz_IDXtoINT(idx,'nameStates',true); %2:end to deal with 0-indexing
+ints = bz_IDXtoINT(idx,'nameStates',true);
 
 
 switch STATESFILETYPE
@@ -2563,7 +2570,7 @@ SleepState.idx = idx;
 SleepState.detectorinfo.LastManualUpdate = datestr(now,'yyyy-mm-dd');
 
 %Save the results!
-save([baseName '.SleepState.states.mat'],'SleepState')
+save(sleepstatefilename,'SleepState')
 
 
 %Make a new figure
@@ -3796,7 +3803,8 @@ end
 function FO = ChangeThisStateAssigmnent_Setup(FO,pointTo)
 states = FO.States;
 ds = logical(abs(diff(states)));%find state switches with 1's
-ds = cat(2,ds,0);%pad
+ds = cat(2,ds(:)',0);%pad
+
 %find start
 spanstart = find(ds(1:pointTo)>0,1,'last')+1;
 if isempty(spanstart)
@@ -5302,9 +5310,9 @@ end
 if paramsAvailBool 
     %DL: this seems weird to me... 
     %why do we assume the detectionparms in SleepState are auto?
-    F0.AutoScore.detectionparms =  detectionparms;
+    FO.AutoScore.detectionparms =  detectionparms;
 else
-    F0.AutoScore.detectionparms = [];
+    FO.AutoScore.detectionparms = [];
 end
 
 
@@ -5350,21 +5358,21 @@ FO.AutoScore.histsandthreshs_orig = histsandthreshs_orig;
 
 
 % start figure
-h = figure('position',[940 5 480 720]);
+h = figure('position',[940 5 960 720]);
 set(h, 'MenuBar', 'none');
 set(h, 'ToolBar', 'none');
 
 %top plot: Slow wave power
-ax1 = subplot(3,1,1,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
+ax1 = subplot(3,2,2,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.swhistbins,histsandthreshs.swhist)
-swline = plot(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1),'tag','bw');
+swline = plot(ax1,[histsandthreshs.swthresh histsandthreshs.swthresh],ylim(ax1),'r','tag','bw');
 xlabel('SWS Band Power (NREM vs other)')
 ylabel('Counts (sec)')
-ResetToInitButton_sw = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.95, 0.15, 0.05]);
+ResetToInitButton_sw = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.92, 0.87, 0.08, 0.05]);
 set(ResetToInitButton_sw,'Callback',@ResetToInitSw);
-ResetToOrigButton_sw = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.85, 0.9, 0.15, 0.05]);
+ResetToOrigButton_sw = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.92, 0.82, 0.08, 0.05]);
 set(ResetToOrigButton_sw,'Callback',@ResetToOrigSw);
-StickyThreshCheck_sw = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.85, 0.85, 0.15, 0.05],...
+StickyThreshCheck_sw = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.77, 0.08, 0.05],...
     'Value',histsandthreshs.stickySW);
 %set(StickyThreshCheck_sw,'Callback',@SetStickySw);
 
@@ -5372,32 +5380,57 @@ title({'Click in plots to reset X value of thresholds',...
     'Setting thresholds to ''Sticky'' will reduce noise'})
 
 %middle plot: EMG amplitude
-ax2 = subplot(3,1,2,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
+ax2 = subplot(3,2,4,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.EMGhistbins,histsandthreshs.EMGhist)
-EMGline = plot(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2),'tag','bw');
+EMGline = plot(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2),'r','tag','bw');
 xlabel('EMG (300-600Hz Correlation, active WAKE vs REM/inactive)')
 ylabel('Counts (sec)')
-ResetToInitButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.62, 0.15, 0.05]);
+ResetToInitButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.92, 0.58, 0.08, 0.05]);
 set(ResetToInitButton_EMG,'Callback',@ResetToInitEMG);
-ResetToOrigButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.85, 0.57, 0.15, 0.05]);
+ResetToOrigButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.92, 0.53, 0.08, 0.05]);
 set(ResetToOrigButton_EMG,'Callback',@ResetToOrigEMG);
-StickyThreshCheck_EMG = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.85, 0.52, 0.15, 0.05],...
+StickyThreshCheck_EMG = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.48, 0.08, 0.05],...
     'Value',histsandthreshs.stickyEMG);
 %set(StickyThreshCheck_EMG,'Callback',@SetStickyEMG);
 
 %bottom plot: Theta power
-ax3 = subplot(3,1,3,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
+ax3 = subplot(3,2,6,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
 bar(histsandthreshs.THhistbins,histsandthreshs.THhist)
-THline = plot(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3),'tag','bw');
+THline = plot(ax3,[histsandthreshs.THthresh histsandthreshs.THthresh],ylim(ax3),'r','tag','bw');
 xlabel('Theta ratio (5-10Hz/2-15Hz, REM vs inactive WAKE)')
 ylabel('Counts (sec)')
-ResetToInitButton_TH = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.85, 0.29, 0.15, 0.05]);
+ResetToInitButton_TH = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.92, 0.28, 0.08, 0.05]);
 set(ResetToInitButton_TH,'Callback',@ResetToInitTH);
-ResetToOrigButton_TH = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.85, 0.24, 0.15, 0.05]);
+ResetToOrigButton_TH = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.92, 0.23, 0.08, 0.05]);
 set(ResetToOrigButton_TH,'Callback',@ResetToOrigTH);
-StickyThreshCheck_TH = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.85, 0.19, 0.15, 0.05],...
+StickyThreshCheck_TH = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.18, 0.08, 0.05],...
     'Value',histsandthreshs.stickyTH);
 %set(StickyThreshCheck_TH,'Callback',@SetStickyTH);
+
+%For 2d cluster plots
+broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
+thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
+EMG = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.EMG;
+plotstates = interp1(FO.to,FO.States,SleepState.detectorinfo.detectionparms.SleepScoreMetrics.t_clus,'nearest');
+%right plot
+ax4 = subplot(2,2,1);hold on;
+    for ss = 1:5
+        plot(ax4,broadbandSlowWave(plotstates==ss),EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+    end
+    swline2 = plot(histsandthreshs.swthresh*[1 1],ylim(ax4),'r','LineWidth',1);
+    EMGline2 = plot(histsandthreshs.swthresh*[0 1],histsandthreshs.EMGthresh*[1 1],'r','LineWidth',1);
+    xlabel('Broadband SW');ylabel('EMG')
+    title('Isolate NREM')
+    
+    
+ax5 = subplot(2,2,3);hold on;
+    for ss = [1 2 4 5]
+    plot(ax5,thratio(plotstates==ss),EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+    end
+    xlabel('Narrowband Theta');ylabel('EMG')
+    thline2 = plot(histsandthreshs.THthresh*[1 1],histsandthreshs.EMGthresh*[0 1],'r','LineWidth',1);
+    EMGline3 = plot([0 1],histsandthreshs.EMGthresh*[1 1],'r','LineWidth',1);
+    title('Isolate REM from WAKE')
 
 %RESCORE!
 ReScoreButton = uicontrol('style', 'pushbutton', 'String', 'Re-Score', 'Units', 'normalized', 'Position',  [0.4, 0.01, 0.2, 0.05]);
@@ -5408,9 +5441,15 @@ AutoClusterFig.fig = h;
 AutoClusterFig.ax1 = ax1;
 AutoClusterFig.ax2 = ax2;
 AutoClusterFig.ax3 = ax3;
+AutoClusterFig.ax4 = ax4;
+AutoClusterFig.ax5 = ax5;
 AutoClusterFig.swline = swline;
 AutoClusterFig.EMGline = EMGline;
 AutoClusterFig.THline = THline;
+AutoClusterFig.swline2 = swline2;
+AutoClusterFig.EMGline2 = EMGline2;
+AutoClusterFig.thline2 = thline2;
+AutoClusterFig.EMGline3 = EMGline3;
 AutoClusterFig.stickySWbox = StickyThreshCheck_sw;
 AutoClusterFig.stickyEMGbox = StickyThreshCheck_EMG;
 AutoClusterFig.stickyTHbox = StickyThreshCheck_TH;
@@ -5519,7 +5558,7 @@ if ~histsandthreshsOK
 end
 end
 
-function [states,StateIntervals] = ReClusterStates_In(obj,ev)
+function [states] = ReClusterStates_In(obj,ev)
 % Wrapper around functions ClusterStates_DetermineStates and
 % StatesToEpisodes.  Note only the more raw (but not totally raw) 
 % SleepState output from StatesToEpisodes is used... not the Episodes.
@@ -5536,7 +5575,7 @@ basePath = FO.basePath;
 % load detectionparameters if not loaded when user pressed "a" in ViewAutoScoreThresholds
 if isfield(FO,'AutoScore')
     if isfield(FO.AutoScore,'detectionparms')
-        dp = F0.AutoScore.detectionparms;
+        dp = FO.AutoScore.detectionparms;
     end
 end
 if ~exist('dp','var')
@@ -5568,12 +5607,29 @@ end
 % Execute scoring - USE SleepScore toolbox functions
 [stateintervals,stateidx,~] = ClusterStates_DetermineStates(...
                                            dp.SleepScoreMetrics,dp.MinTimeWindowParms,FO.AutoScore.histsandthreshs);
-%May want to re-make figure here using CluterStates_MakeFigure....
-%Pad the beginning and end to match fspec{1}.to
-states = stateidx.states';
-states = cat(2,zeros(1,stateidx.timestamps(1)-(FO.to(1))),states);
-states = cat(2,states,zeros(1,length(FO.to)-length(states)));                                       
 
+plotstates = interp1(stateidx.timestamps,stateidx.states,dp.SleepScoreMetrics.t_clus,'nearest');
+%Redraw 2d cluster plots
+cla(FO.AutoClusterFig.ax4)
+    for ss = 1:5
+        plot(FO.AutoClusterFig.ax4,dp.SleepScoreMetrics.broadbandSlowWave(plotstates==ss),...
+            dp.SleepScoreMetrics.EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+    end
+    plot(FO.AutoClusterFig.ax4,swthresh.*[1 1],ylim(FO.AutoClusterFig.ax4),'r','LineWidth',1);
+    plot(FO.AutoClusterFig.ax4,[0 swthresh],EMGthresh.*[1 1],'r','LineWidth',1);
+    
+cla(FO.AutoClusterFig.ax5)
+    for ss = [1 2 4 5]
+        plot(FO.AutoClusterFig.ax5,dp.SleepScoreMetrics.thratio(plotstates==ss),...
+            dp.SleepScoreMetrics.EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+    end
+    plot(FO.AutoClusterFig.ax5,THthresh.*[1 1],[0 EMGthresh],'r','LineWidth',1);
+    plot(FO.AutoClusterFig.ax5,[0 1],EMGthresh.*[1 1],'r','LineWidth',1); 
+
+%Interpolate to match fspec{1}.to
+states = interp1(stateidx.timestamps,stateidx.states,FO.to,'nearest');
+states(isnan(states)) = 0; %Bug fix DL - FO.to starts at time 0....    
+    
 FO.States = states;
 guidata(FO.fig,FO);
 modifyStates(1, states, 0);
@@ -6699,6 +6755,7 @@ else
    error('Your SleepState is broken.')
 end
 
+states(isnan(states)) = 0; %Bug fix DL
 
 %% END for TheStateEditor
 end
