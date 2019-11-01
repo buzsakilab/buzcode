@@ -74,6 +74,11 @@ for i = 1:2:length(varargin)
       if ~isa(posSampFq,'numeric')
         error('Incorrect value for property ''posSampFq'' .');
       end
+    case 'columnorder'
+      columnOrder = varargin{i+1};
+      if ~isa(columnOrder,'numeric')
+        error('Incorrect value for property ''syncNbCh'' .');
+      end      
     otherwise
       error(['Unknown property ''' num2str(varargin{i}) ''' .']);
   end
@@ -101,28 +106,35 @@ end
 %%
 pos = dat.data; % all tracking variables   
 
-% read optitrack sync channel
-fid = fopen(syncDatFile); 
-dig = fread(fid,[syncNbCh inf],'int16=>int16');  % default type for Intan digitalin
-dig = dig(syncChan,:);
+    % read optitrack sync channel
+    fid = fopen(syncDatFile); 
+    dig = fread(fid,[syncNbCh inf],'int16=>int16');  % default type for Intan digitalin
+    dig = dig(syncChan,:);
+    t = (0:length(dig)-1)'/syncSampFq; % time vector in sec
+    
+if exist('digitalIn.events.mat','file') 
+   % new way of getting frames, better than before. Requiere running before
+   % bz_getDigitalIn
+   load('digitalIn.events.mat');
+   temp = digitalIn.timestampsOn{syncChan}; % frame onsets
+   frameT = temp+(0.5/posSampFq); % center of the frame
+   
+else
+    % this is the old way. Prone to errors when there are more that digital input. 
+    dPos = find(diff(dig)==1);
+    dNeg = find(diff(dig)==-1);
 
-t = (0:length(dig)-1)'/syncSampFq; % time vector in sec
-
-% get frames
-dPos = find(diff(dig)==1);
-dNeg = find(diff(dig)==-1);
-
-if length(dPos) == length(dNeg)+1
-    dPos = dPos(1:end-1);
-elseif length(dNeg) == length(dPos)+1
-    dNeg = dNeg(1:end-1);
-elseif abs(length(dNeg)-length(dPos)) > 1
-    warning('some problem with frames');
-    keyboard
+    if length(dPos) == length(dNeg)+1
+        dPos = dPos(1:end-1);
+    elseif length(dNeg) == length(dPos)+1
+        dNeg = dNeg(1:end-1);
+    elseif abs(length(dNeg)-length(dPos)) > 1
+        warning('some problem with frames');
+        keyboard
+    end
+    % Frame timing is the middle of shuter opening
+    frameT = (t(dPos)+t(dNeg))/2;
 end
-
-% Frame timing is the middle of shuter opening
-frameT = (t(dPos)+t(dNeg))/2;
 
 % The system sometimes (rarely) keeps on recording a few frames after software stopped
 % recording. So we skip the last frames of the TTL

@@ -147,7 +147,7 @@ M = max(positions(good,2:end));
 
 if strcmp(coordinates,'normalized'),
 	% Normalize coordinates
-	maxima = [DATA.maxX DATA.maxY];
+	maxima = M(1:2);%[DATA.maxX DATA.maxY];
 	positions(good,2:end) = positions(good,2:end) ./ repmat(maxima,sum(good),(size(positions,2)-1)/2);
 elseif strcmp(coordinates,'real'),
 	% Convert to cm

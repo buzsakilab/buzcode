@@ -21,6 +21,12 @@ function spikes = bz_GetSpikes(varargin)
 %                       clu/res/fet to spikes.cellinfo.mat file
 %    saveMat         -logical (default=false) to save in buzcode format
 %    noPrompts       -logical (default=false) to supress any user prompts
+%    verbose         -logical (default=false)
+%    keepCluWave     -logical (default=false) to keep waveform from
+%                       previous bz_getSpikes functions (before 2019). It only
+%                       affects clu inputs.
+%    sortingMethod   - [], 'kilosort' or 'clu'. If [], tries to detect a
+%                   kilosort folder or clu files. 
 %    
 % OUTPUTS
 %
@@ -36,6 +42,7 @@ function spikes = bz_GetSpikes(varargin)
 %          .rawWaveform    -average waveform on maxWaveformCh (from raw .dat)
 %          .cluID          -cluster ID, NOT UNIQUE ACROSS SHANKS
 %          .numcells       -number of cells/UIDs
+%          .filtWaveform   -average filtered waveform on maxWaveformCh
 %           
 % NOTES
 %
@@ -63,6 +70,10 @@ function spikes = bz_GetSpikes(varargin)
 %
 %
 % written by David Tingley, 2017
+% added Phy loading by Manu Valero, 2019 (previos bz_LoadPhy)
+
+% TO DO: Get waveforms by an independent function (ie getWaveform) that
+% generates a waveform.cellinfo.mat file with all channels waves.
 %% Deal With Inputs 
 spikeGroupsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
     'spikeGroups must be numeric or "all"');
@@ -74,9 +85,12 @@ addParameter(p,'UID',[],@isvector);
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'getWaveforms',true)
 addParameter(p,'forceReload',false,@islogical);
-addParameter(p,'saveMat',false,@islogical);
+addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'onlyLoad',[]);
+addParameter(p,'verbose',true,@islogical);
+addParameter(p,'keepCluWave',false,@islogical);
+addParameter(p,'sortingMethod',[],@isstr);
 
 parse(p,varargin{:})
 
@@ -89,11 +103,12 @@ forceReload = p.Results.forceReload;
 saveMat = p.Results.saveMat;
 noPrompts = p.Results.noPrompts;
 onlyLoad = p.Results.onlyLoad;
-
+verbose = p.Results.verbose;
+keepCluWave = p.Results.keepCluWave;
+sortingMethod = p.Results.sortingMethod;
 
 [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
 baseName = bz_BasenameFromBasepath(basepath);
-
 
 spikes.samplingRate = sessionInfo.rates.wideband;
 nChannels = sessionInfo.nChannels;
@@ -134,157 +149,233 @@ else % do the below then filter by inputs... (Load from clu/res/fet)
         if strcmp(savebutton,'Yes'); saveMat = true; end
     end
     
-disp('loading spikes from clu/res/spk files..')
-% find res/clu/fet/spk files here
-cluFiles = dir([basepath filesep '*.clu*']);  
-resFiles = dir([basepath filesep '*.res.*']);
-if any(getWaveforms)
-    spkFiles = dir([basepath filesep '*.spk*']);
-end
-
-
-% remove *temp*, *autosave*, and *.clu.str files/directories
-tempFiles = zeros(length(cluFiles),1);
-for i = 1:length(cluFiles) 
-    dummy = strsplit(cluFiles(i).name, '.'); % Check whether the component after the last dot is a number or not. If not, exclude the file/dir. 
-    if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | ...
-            isempty(str2num(dummy{length(dummy)})) | find(contains(dummy, 'clu')) ~= length(dummy)-1  | ...
-            ~strcmp(dummy{1},baseName)
-        tempFiles(i) = 1;
+    % find res/clu/fet/spk files or kilosort folder here...
+    cluFiles = dir([basepath filesep '*.clu*']);  
+    resFiles = dir([basepath filesep '*.res.*']);
+    if any(getWaveforms)
+        spkFiles = dir([basepath filesep '*.spk*']);
     end
-end
-cluFiles(tempFiles==1)=[];
-tempFiles = zeros(length(resFiles),1);
-for i = 1:length(resFiles)
-    dummy = strsplit(resFiles(i).name, '.');
-    if ~isempty(findstr('temp',resFiles(i).name)) | ~isempty(findstr('autosave',resFiles(i).name)) | ...
-            ~strcmp(dummy{1},baseName)
-        tempFiles(i) = 1;
-    end
-end
-if any(getWaveforms)
-    resFiles(tempFiles==1)=[];
-    tempFiles = zeros(length(spkFiles),1);
-    for i = 1:length(spkFiles)
-        dummy = strsplit(spkFiles(i).name, '.');
-        if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name)) | ...
-            ~strcmp(dummy{1},baseName)
+    kilosort_path = dir([basepath filesep '*kilosort*']);
+
+if strcmpi(sortingMethod,'clu') || ~isempty(cluFiles) % LOADING FROM CLU/ RES
+    disp('loading spikes from clu/res/spk files..')
+    
+    % remove *temp*, *autosave*, and *.clu.str files/directories
+    tempFiles = zeros(length(cluFiles),1);
+    for i = 1:length(cluFiles) 
+        dummy = strsplit(cluFiles(i).name, '.'); % Check whether the component after the last dot is a number or not. If not, exclude the file/dir. 
+        if ~isempty(findstr('temp',cluFiles(i).name)) | ~isempty(findstr('autosave',cluFiles(i).name)) | ...
+                isempty(str2num(dummy{length(dummy)})) | find(contains(dummy, 'clu')) ~= length(dummy)-1  | ...
+                ~strcmp(dummy{1},baseName)
             tempFiles(i) = 1;
         end
     end
-    spkFiles(tempFiles==1)=[];
-end
-
-if isempty(cluFiles)
-    disp('no clu files found...')
-    spikes = [];
-    return
-end
-
-
-% ensures we load in sequential order (forces compatibility with FMAT
-% ordering)
-for i = 1:length(cluFiles)
-    temp = strsplit(cluFiles(i).name,'.');
-    shanks(i) = str2num(temp{length(temp)});
-end
-[shanks ind] = sort(shanks);
-cluFiles = cluFiles(ind); %Bug here if there are any files x.clu.x that are not your desired clus
-resFiles = resFiles(ind);
-if any(getWaveforms)
-    spkFiles = spkFiles(ind);
-end
-
-% check if there are matching #'s of files
-if length(cluFiles) ~= length(resFiles) & length(cluFiles) ~= length(spkFiles)
-    error('found an incorrect number of res/clu/spk files...')
-end
-
-% use the .clu files to get spike ID's and generate UID and spikeGroup
-% use the .res files to get spike times
-count = 1;
-
-if isempty(sessionInfo.spikeGroups.groups)
-    sessionInfo.spikeGroups = sessionInfo.AnatGrps;
-end
-for i=1:length(cluFiles) 
-    disp(['working on ' cluFiles(i).name])
-    
-    temp = strsplit(cluFiles(i).name,'.');
-    shankID = str2num(temp{length(temp)}); %shankID is the spikegroup number
-    clu = load(fullfile(basepath,cluFiles(i).name));
-    clu = clu(2:end); % toss the first sample to match res/spk files
-    res = load(fullfile(basepath,resFiles(i).name));
-    spkGrpChans = sessionInfo.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
-    
-    if any(getWaveforms) && sum(clu)>0 %bug fix if no clusters 
-        nSamples = sessionInfo.spikeGroups.nSamples(shankID);
-        % load waveforms
-        chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
-        fid = fopen(fullfile(basepath,spkFiles(i).name),'r');
-        wav = fread(fid,[1 inf],'int16=>int16');
-        try %bug in some spk files... wrong number of samples?
-            wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
-        catch
-            if strcmp(getWaveforms,'force')
-                wav = nan(chansPerSpikeGrp,nSamples,length(clu));
-                display([spkFiles(i).name,' error.'])
-            else
-            error(['something is wrong with ',spkFiles(i).name,...
-                ' Use ''getWaveforms'', false to skip waveforms or ',...
-                '''getWaveforms'', ''force'' to write nans on bad shanks.'])
+    cluFiles(tempFiles==1)=[];
+    tempFiles = zeros(length(resFiles),1);
+    for i = 1:length(resFiles)
+        dummy = strsplit(resFiles(i).name, '.');
+        if ~isempty(findstr('temp',resFiles(i).name)) | ~isempty(findstr('autosave',resFiles(i).name)) | ...
+                ~strcmp(dummy{1},baseName)
+            tempFiles(i) = 1;
+        end
+    end
+    if any(getWaveforms)
+        resFiles(tempFiles==1)=[];
+        tempFiles = zeros(length(spkFiles),1);
+        for i = 1:length(spkFiles)
+            dummy = strsplit(spkFiles(i).name, '.');
+            if ~isempty(findstr('temp',spkFiles(i).name)) | ~isempty(findstr('autosave',spkFiles(i).name)) | ...
+                ~strcmp(dummy{1},baseName)
+                tempFiles(i) = 1;
             end
         end
-        wav = permute(wav,[3 1 2]);
+        spkFiles(tempFiles==1)=[];
     end
-    
-    cells  = unique(clu);
-    % remove MUA and NOISE clusters...
-    cells(cells==0) = [];
-    cells(cells==1) = [];  % consider adding MUA as another input argument...?
-    
-    for c = 1:length(cells)
-       spikes.UID(count) = count; % this only works if all shanks are loaded... how do we optimize this?
-       ind = find(clu == cells(c));
-       spikes.times{count} = res(ind) ./ spikes.samplingRate;
-       spikes.shankID(count) = shankID;
-       spikes.cluID(count) = cells(c);
 
-       %Waveforms    
-       if any(getWaveforms)
-           wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
-           if prod(size(wvforms))==length(wvforms)%in single-channel groups wvforms will squeeze too much and will have amplitude on D1 rather than D2
-               wvforms = wvforms';%fix here
-           end
-           for t = 1:size(wvforms,1)
-              [a(t) b(t)] = max(abs(wvforms(t,:))); 
-           end
-           [aa bb] = max(a,[],2);
-           spikes.rawWaveform{count} = wvforms(bb,:);
-           spikes.maxWaveformCh(count) = spkGrpChans(bb);  
-           %Regions (needs waveform peak)
-           if isfield(sessionInfo,'region') %if there is regions field in your metadata
-                spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)};
-           elseif isfield(sessionInfo,'Units') %if no regions, but unit region from xml via Loadparamteres
-                %Find the xml Unit that matches group/cluster
-                unitnum = cellfun(@(X,Y) X==spikes.shankID(count) && Y==spikes.cluID(count),...
-                    {sessionInfo.Units(:).spikegroup},{sessionInfo.Units(:).cluster});
-                if sum(unitnum) == 0
-                    display(['xml Missing Unit - spikegroup: ',...
-                        num2str(spikes.shankID(count)),' cluster: ',...
-                        num2str(spikes.cluID(count))])
-                    spikes.region{count} = 'missingxml';
-                else %possible future bug: two xml units with same group/clu...              
-                    spikes.region{count} = sessionInfo.Units(unitnum).structure;
-                end
-           end
-           clear a aa b bb
-       end
-       
-       count = count + 1;
+    if isempty(cluFiles)
+        disp('no clu files found...')
+        spikes = [];
+        return
     end
+
+    % ensures we load in sequential order (forces compatibility with FMAT
+    % ordering)
+    for i = 1:length(cluFiles)
+        temp = strsplit(cluFiles(i).name,'.');
+        shanks(i) = str2num(temp{length(temp)});
+    end
+    [shanks ind] = sort(shanks);
+    cluFiles = cluFiles(ind); %Bug here if there are any files x.clu.x that are not your desired clus
+    resFiles = resFiles(ind);
+    if any(getWaveforms)
+        spkFiles = spkFiles(ind);
+    end
+
+    % check if there are matching #'s of files
+    if length(cluFiles) ~= length(resFiles) & length(cluFiles) ~= length(spkFiles)
+        error('found an incorrect number of res/clu/spk files...')
+    end
+
+    % use the .clu files to get spike ID's and generate UID and spikeGroup
+    % use the .res files to get spike times
+    count = 1;
+
+    if isempty(sessionInfo.spikeGroups.groups)
+        sessionInfo.spikeGroups = sessionInfo.AnatGrps;
+    end
+    for i=1:length(cluFiles) 
+        disp(['working on ' cluFiles(i).name])
+
+        temp = strsplit(cluFiles(i).name,'.');
+        shankID = str2num(temp{length(temp)}); %shankID is the spikegroup number
+        clu = load(fullfile(basepath,cluFiles(i).name));
+        clu = clu(2:end); % toss the first sample to match res/spk files
+        res = load(fullfile(basepath,resFiles(i).name));
+        spkGrpChans = sessionInfo.spikeGroups.groups{shankID}; % we'll eventually want to replace these two lines
+
+        if any(getWaveforms) && sum(clu)>0 %bug fix if no clusters 
+            nSamples = sessionInfo.spikeGroups.nSamples(shankID);
+            % load waveforms
+            chansPerSpikeGrp = length(sessionInfo.spikeGroups.groups{shankID});
+            fid = fopen(fullfile(basepath,spkFiles(i).name),'r');
+            wav = fread(fid,[1 inf],'int16=>int16');
+            try %bug in some spk files... wrong number of samples?
+                wav = reshape(wav,chansPerSpikeGrp,nSamples,[]);
+            catch
+                if strcmp(getWaveforms,'force')
+                    wav = nan(chansPerSpikeGrp,nSamples,length(clu));
+                    display([spkFiles(i).name,' error.'])
+                else
+                error(['something is wrong with ',spkFiles(i).name,...
+                    ' Use ''getWaveforms'', false to skip waveforms or ',...
+                    '''getWaveforms'', ''force'' to write nans on bad shanks.'])
+                end
+            end
+            wav = permute(wav,[3 1 2]);
+        end
+
+        cells  = unique(clu);
+        % remove MUA and NOISE clusters...
+        cells(cells==0) = [];
+        cells(cells==1) = [];  % consider adding MUA as another input argument...?
+
+        for c = 1:length(cells)
+           spikes.UID(count) = count; % this only works if all shanks are loaded... how do we optimize this?
+           ind = find(clu == cells(c));
+           spikes.times{count} = res(ind) ./ spikes.samplingRate;
+           spikes.shankID(count) = shankID;
+           spikes.cluID(count) = cells(c);
+
+           %Waveforms    
+           if any(getWaveforms)
+               wvforms = squeeze(mean(wav(ind,:,:)))-mean(mean(mean(wav(ind,:,:)))); % mean subtract to account for slower (theta) trends
+               if prod(size(wvforms))==length(wvforms)%in single-channel groups wvforms will squeeze too much and will have amplitude on D1 rather than D2
+                   wvforms = wvforms';%fix here
+               end
+               for t = 1:size(wvforms,1)
+                  [a(t) b(t)] = max(abs(wvforms(t,:))); 
+               end
+               [aa bb] = max(a,[],2);
+               spikes.rawWaveform{count} = wvforms(bb,:);
+               spikes.maxWaveformCh(count) = spkGrpChans(bb);  
+               %Regions (needs waveform peak)
+               if isfield(sessionInfo,'region') %if there is regions field in your metadata
+                    spikes.region{count} = sessionInfo.region{find(spkGrpChans(bb)==sessionInfo.channels)};
+               elseif isfield(sessionInfo,'Units') %if no regions, but unit region from xml via Loadparamteres
+                    %Find the xml Unit that matches group/cluster
+                    unitnum = cellfun(@(X,Y) X==spikes.shankID(count) && Y==spikes.cluID(count),...
+                        {sessionInfo.Units(:).spikegroup},{sessionInfo.Units(:).cluster});
+                    if sum(unitnum) == 0
+                        display(['xml Missing Unit - spikegroup: ',...
+                            num2str(spikes.shankID(count)),' cluster: ',...
+                            num2str(spikes.cluID(count))])
+                        spikes.region{count} = 'missingxml';
+                    else %possible future bug: two xml units with same group/clu...              
+                        spikes.region{count} = sessionInfo.Units(unitnum).structure;
+                    end
+               end
+               clear a aa b bb
+           end
+
+           count = count + 1;
+        end
+    end
+    spikes.sessionName = sessionInfo.FileName;
+    
+elseif strcmpi(sortingMethod, 'kilosort') || ~isempty(kilosort_path) % LOADING FROM KILOSORT
+    
+    disp('loading spikes from Kilosort/Phy format...')
+    fs = spikes.samplingRate; 
+    spike_cluster_index = readNPY(fullfile(kilosort_path.name, 'spike_clusters.npy'));
+    spike_times = readNPY(fullfile(kilosort_path.name, 'spike_times.npy'));
+    cluster_group = tdfread(fullfile(kilosort_path.name,'cluster_group.tsv'));
+    try
+        shanks = readNPY(fullfile(kilosort_path.name, 'shanks.npy')); % done
+    catch
+        shanks = ones(size(cluster_group.cluster_id));
+        warning('No shanks.npy file, assuming single shank!');
+    end
+    
+    spikes.sessionName = sessionInfo.FileName;
+    jj = 1;
+    for ii = 1:length(cluster_group.group)
+        if strcmpi(strtrim(cluster_group.group(ii,:)),'good')
+            ids = find(spike_cluster_index == cluster_group.cluster_id(ii)); % cluster id
+            spikes.UID_kilosort(jj) = cluster_group.cluster_id(ii);
+            spikes.UID(jj) = jj;
+            spikes.times{jj} = double(spike_times(ids))/fs; % cluster time
+            spikes.ts{jj} = double(spike_times(ids)); % cluster time
+            cluster_id = find(cluster_group.cluster_id == spikes.UID_kilosort(jj));
+            spikes.shankID(jj) = shanks(cluster_id);
+            jj = jj + 1;
+        end
+    end
+    
+    if ~isfield(spikes,'region') && isfield(spikes,'maxWaveformCh') && isfield(sessionInfo,'region')
+        for cc = 1:length(spikes.times)
+            spikes.region{cc} = [sessionInfo.region{find(spikes.maxWaveformCh(cc)==sessionInfo.channels)} ''];
+        end
+    end
+else
+    error('Unit format not recognized...');
 end
 
+% get waveforms
+if getWaveforms || ~keepCluWave
+    nPull = 1000;  % number of spikes to pull out
+    wfWin = 0.008; % Larger size of waveform windows for filterning
+    filtFreq = 500;
+    hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
+    wfWin = round((wfWin * fs)/2);
+    for ii = 1 : size(spikes.times,2)
+        spkTmp = spikes.ts{ii};
+        if length(spkTmp) > nPull
+            spkTmp = spkTmp(randperm(length(spkTmp)));
+            spkTmp = spkTmp(1:nPull);
+        end
+        wf = [];
+        for jj = 1 : length(spkTmp)
+            if verbose
+                fprintf(' ** %3.i/%3.i for cluster %3.i/%3.i  \n',jj, length(spkTmp), ii, size(spikes.times,2));
+            end
+            wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',spkTmp(jj) - (wfWin),...
+                'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
+        end
+        wf = mean(wf,3);
+        if isfield(sessionInfo,'badchannels')
+            wf(:,ismember(sessionInfo.channels,sessionInfo.badchannels))=0;
+        end
+        for jj = 1 : size(wf,2)          
+            wfF(:,jj) = filtfilt(hpFilt,wf(:,jj) - mean(wf(:,jj)));
+        end
+        [~, maxCh] = max(abs(wfF(wfWin,:)));
+        rawWaveform = detrend(wf(:,maxCh) - mean(wf(:,maxCh))); 
+        filtWaveform = wfF(:,maxCh) - mean(wfF(:,maxCh));
+        spikes.rawWaveform{ii} = rawWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); % keep only +- 1ms of waveform
+        spikes.filtWaveform{ii} = filtWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); 
+        spikes.maxWaveformCh(ii) = sessionInfo.channels(maxCh);
+    end
+end
 
 if ~isempty(onlyLoad)
     toRemove = true(size(spikes.UID));
@@ -299,15 +390,12 @@ if ~isempty(onlyLoad)
     spikes = removeCells(toRemove,spikes,getWaveforms);
 end
 
-
-spikes.sessionName = sessionInfo.FileName;
-end
-
 %% save to buzcode format (before exclusions)
 if saveMat
     save(cellinfofile,'spikes')
 end
 
+end
 
 %% EXCLUSIONS %%
 
@@ -355,27 +443,29 @@ if isempty(spikes.times) | spikes.numcells == 0
     spikes = [];
 end
 
-
-
 end
-
 
 %%
 function spikes = removeCells(toRemove,spikes,getWaveforms)
 %Function to remove cells from the structure. toRemove is the INDEX of
 %the UID in spikes.UID
-
     spikes.UID(toRemove) = [];
     spikes.times(toRemove) = [];
     spikes.region(toRemove) = [];
-    spikes.cluID(toRemove) = [];
     spikes.shankID(toRemove) = [];
+    if isfield(spikes,'cluID')
+        spikes.cluID(toRemove) = [];
+    elseif isfield(spikes,'UID_kilosort')
+        spikes.UID_kilosort(toRemove) = [];
+    end
     
     if any(getWaveforms)
         spikes.rawWaveform(toRemove) = [];
         spikes.maxWaveformCh(toRemove) = [];
+        if isfield(spikes,'filtWaveform')
+            spikes.filtWaveform(toRemove) = [];
+        end
     end
-    
 end
 
 
