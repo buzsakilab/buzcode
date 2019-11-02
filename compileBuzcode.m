@@ -33,9 +33,18 @@ cd(['externalPackages' filesep 'xmltree-2.0' filesep '@xmltree' filesep 'private
 mex -O xml_findstr.c
 cd(['..' filesep '..' filesep '..' filesep '..'])
 
-cd(['analysis' filesep 'spikes' filesep 'correlation' filesep ''])
+cd(['analysis' filesep 'monosynapticPairs' filesep ])
 mex -O CCGHeart.c
-cd(['..' filesep '..' filesep '..'])
+cd(['..' filesep '..'])
+
+cd(['externalPackages' filesep 'fastBSpline'])
+CompileMexFiles
+cd(['..' filesep '..'])
+
+cd(['externalPackages' filesep 'CONVNFFT'])
+convnfft_install
+cd(['..' filesep '..'])
+
 
 % below is incomplete
 % below adds buzcode to the matlab path and saves
