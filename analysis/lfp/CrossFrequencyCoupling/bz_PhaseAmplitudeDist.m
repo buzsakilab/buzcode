@@ -1,13 +1,13 @@
-function [phaseamplitudemap] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange,varargin)
+function [phaseamplitude] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange,varargin)
 % [phaseamplitudemap,ampfreqs,phasecenters] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange)
-%This function calculates the mean amplitude of higher frequency bands at
-%a the phase for a given lower frequency band signal
+%This function calculates the mean amplitude of multiple higher frequency bands at
+%a the phase for a single lower frequency band signal
 %
 %%INPUT
 %    lfp            a buzcode structure with fields lfp.data,
 %                                                   lfp.timestamps
 %                                                   lfp.samplingRate
-%    phaserange     [min max] frequency to filter for the phase signal
+%    phaserange     [min max] frequency to filter for the single phase signal
 %    amprange       [min max] frequency range for wavelets for the power
 %                   signal
 %    <options>      optional list of property-value pairs (see table below)
@@ -24,7 +24,7 @@ function [phaseamplitudemap] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange,var
 %    =========================================================================
 %
 %OUTPUT
-%   phaseamplitudemap   phase by frequency matrix. value is mean amplitude 
+%   phaseamplitude   phase by frequency matrix. value is mean amplitude 
 %                       of that frequency at that phase 
 %                       (relative to the mean over the entire signal)
 %   ampfreqs            amplitude frequencies
@@ -41,14 +41,20 @@ function [phaseamplitudemap] = bz_PhaseAmplitudeDist(lfp,phaserange,amprange,var
 %
 %
 %DLevenstein 2016
-%Updated by Eliezyer de Oliviera (EFO)/2019
-%TO DO: intervals support
+%Updated by Eliezyer de Oliveira (EFO)/2019
+
 %% parsing inputs
+
+if ~bz_isLFP(lfp)
+    error('Not following the lfp structure required, see documentation')
+end
+
+
 p = inputParser;
 addParameter(p,'filterType','fir1',@ischar);
 addParameter(p,'filterOrder',4,@isnumeric);
 addParameter(p,'numBins',50,@isnumeric);
-addParameter(p,'intervals',[0 inf],@isvector);
+addParameter(p,'intervals',[0 inf],@isnumeric);
 addParameter(p,'nfreqs',100,@isnumeric);
 addParameter(p,'ncyc',7,@isnumeric);
 addParameter(p,'makePlot',true,@islogical);
@@ -60,13 +66,14 @@ filterOrder = p.Results.filterOrder;
 numBins = p.Results.numBins;
 nfreqs = p.Results.nfreqs;
 ncyc = p.Results.ncyc;
+intervals = p.Results.intervals;
 
 %% Deal with input types
 % sf_LFP = lfp.samplingRate;
 
 
 %% Filter LFP for the phase
-filtered_phase = bz_Filter(lfp,'passband',phaserange,'filter',filterType,'order',filterOrder);
+filtered_phase = bz_Filter(lfp,'passband',phaserange,'filter',filterType,'order',filterOrder,'intervals',intervals);
 
 %% Get LFP, Phase in intervals
 %edgebuffer = 1; %s
@@ -76,7 +83,7 @@ filtered_phase = bz_Filter(lfp,'passband',phaserange,'filter',filterType,'order'
 % LFPphase_int = IsolateEpochs2(filtered.phase,int,edgebuffer,sf_LFP);
 
 %% Wavelet Transform LFP in intervals
-wavespec_amp = bz_WaveSpec(lfp,'frange',amprange,'nfreqs',nfreqs,'intervals',intervals);
+wavespec_amp = bz_WaveSpec(lfp,'frange',amprange,'nfreqs',nfreqs,'ncyc',ncyc,'intervals',intervals);
 %[ampfreqs,~,spec_int]
 %spec_int = cellfun(@(X) abs(X),spec_int,'UniformOutput',false);
 wavespec_amp.data = log10(abs(wavespec_amp.data)); %log scaled for normality
@@ -112,8 +119,8 @@ if makePlot
         hold on
         imagesc(phaseamplitude.phasecenters+2*pi,log2(phaseamplitude.amp_freq),((phaseamplitude.map))')
         plot(linspace(-pi,3*pi),cos(linspace(-pi,3*pi))+log2(phaseamplitude.amp_freq(end/2)),'k')
-        xlabel(['Phase (',num2str(phaseamplitude.phase_range),'Hz)']);
-        ylabel('Frequency (Hz')
+        xlabel(['Phase (',num2str(phaseamplitude.phase_range),' Hz)']);
+        ylabel('Amplitude Frequency (Hz)')
         LogScale('y',2)
         xlim([phaseamplitude.phasecenters(1) phaseamplitude.phasecenters(end)+2*pi]);
         colorbar

@@ -61,10 +61,13 @@ function [comodulogram] = bz_CFCPhaseAmp(lfp,phaserange,amprange,varargin)
 
 
 %% Parse inputs
+if ~bz_isLFP(lfp)
+    error('Not following the lfp structure required, see documentation')
+end
 
 p = inputParser;
 addParameter(p,'phaseCh',lfp.channels(1),@isnumeric);
-addParameter(p,'ampChans',lfp.channels(1),@isnumeric);
+addParameter(p,'ampCh',lfp.channels(1),@isnumeric);
 addParameter(p,'samplingRate',1250,@isnumeric);
 addParameter(p,'makePlot',true,@islogical);
 addParameter(p,'filterType','fir1',@ischar);
@@ -74,7 +77,7 @@ addParameter(p,'method','wavelet',@ischar);
 
 parse(p,varargin{:});
 phaseCh = p.Results.phaseCh;
-ampChans = p.Results.ampChans;
+ampChans = p.Results.ampCh;
 samplingRate = p.Results.samplingRate;
 makePlot = p.Results.makePlot;
 filterType = p.Results.filterType;
