@@ -1,4 +1,4 @@
-function [f,df,lambda] = nll_rate(bta,X,Yy,opts)
+function [f,df,lambda] = nll_poissPlasticity(bta,X,Yy,opts)
 % The log of the binned slow rate (opts.rate) is used as a regressor, with the 
 % weight fixed to be 1. Only the basis parameters affect the likelihood and its
 % gradient.
