@@ -33,6 +33,10 @@ function mono_res = bz_GetMonoSynapticallyConnected(basepath,varargin)
 %%%         tight_subplot, mtit (from matlabcentral)
 %%%         bz_cch_conv, bz_PlotMonoSyn, bz_MonoSynConvClick
 %%%
+%%%  saveMat: logical (default = false) to save as buzcode-style mono_res.cellinfo file
+%%%
+%%%  plot: logical (default = true)
+%%%
 %%%  OUTPUT
 %%%  mono_res.alpha = p-value
 %%%  mono_res.ccgR = 3D CCG (time x ref x target;
@@ -48,14 +52,48 @@ function mono_res = bz_GetMonoSynapticallyConnected(basepath,varargin)
 %%%  mono_res.FalsePositive = FalsePositive rate from English et al., 2017;
 %%%  mono_res.TruePositive = TruePositive rate from English et al., 2017;
 
-%Written by Sam McKenzie 2017
+% Written by Sam McKenzie 2017
+% Modified by Roman Huszar 2019
 
-%load data
+saveMat = false;
+% Look specifically for saveMat input type among inputs
+charInds = find( cellfun(@ischar, varargin) );
+flag = cellfun(@(x) strcmp(x, 'saveMat'), varargin(charInds));
+if ~isempty( charInds(flag) )
+    saveMat = varargin{charInds(flag)+1};
+    if ~islogical(saveMat)
+        error('Incorrect value for property ''saveMat''');
+    end
+    varargin(charInds(flag):charInds(flag)+1) = [];
+end
+
+% Load data
 spikes = bz_GetSpikes('basepath',basepath);
 
-%get shank clu
-spikeIDs = [spikes.shankID(spikes.spindices(:,2))' spikes.cluID(spikes.spindices(:,2))' spikes.spindices(:,2)];
+% Get shank clu
+try
+    spikeIDs = [spikes.shankID(spikes.spindices(:,2))' spikes.cluID(spikes.spindices(:,2))' spikes.spindices(:,2)];
+catch
+% For datasets where length(spikes.UID) ~= max(spikes.UID)
+    inds = nan(length(spikes.spindices), 1);
+    for kp = 1:length(spikes.spindices)
+        inds(kp) = find(spikes.UID == spikes.spindices(kp,2));
+    end
+    spikeIDs = [spikes.shankID(inds)' spikes.cluID(inds)' inds];
+    
+end
 
-%call main script
+% Call detection script - here is where the heavy lifting happens
 mono_res = bz_MonoSynConvClick (spikeIDs,spikes.spindices(:,1),varargin);
+basename = bz_BasenameFromBasepath(basepath);
+mono_res.UID = spikes.UID;
+mono_res.sessionName = basename;
+
+% Save
+if saveMat
+    outpath = fullfile(basepath, [basename '.mono_res.cellinfo.mat']);
+    save(outpath, 'mono_res')
+end
+
+
 end

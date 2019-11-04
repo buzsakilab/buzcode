@@ -57,7 +57,7 @@ function mono_res = bz_MonoSynConvClick (spikeIDs,spiketimes,varargin)
 
 
 fil = which('bz_MonoSynConvClick');
-sl = regexp(fil,'/');
+sl = regexp(fil,filesep);
 fil = fil(1:sl(end));
   foundMat = false;
 if exist([fil 'ProbSynMat.mat'],'file')==2
@@ -267,7 +267,7 @@ for refcellID=1:max(IDindex)
         end
         
         %check which is bigger
-        if (any(sigud(prebins)) && sigpre)
+        if (any(sigud(postbins)) && sigpre)
             
             %test if causal is bigger than anti causal
             
