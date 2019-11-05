@@ -1,5 +1,4 @@
-function read_Intan_RHD2000_file
-
+function intaninfo = read_Intan_RHD2000_file(varargin)
 % read_Intan_RHD2000_file
 %
 % Version 2.01, 11 October 2017
@@ -16,9 +15,36 @@ function read_Intan_RHD2000_file
 % >> whos
 % >> amplifier_channels(1)
 % >> plot(t_amplifier, amplifier_data(1,:))
+% 
+% INPUT:
+%   returnStruct  - logical (default=false) to return a structure instead
+%                   of moving variables to the workspace (which is horrible)
+%   filepath      - char (default=[]), give path to an info.rhd file
+%
+% Updated by Roman Huszar, 2019
+% Added functionality to return a struct with all the extracted info instead of 
+% saving variables to the base workspace, which is the default.
+% Also added option to load from pre-identified info.rhd file when optional input 
+% is provided.
 
-[file, path, filterindex] = ...
+% Parse user input
+p = inputParser;
+addParameter(p,'returnStruct',false,@islogical);
+addParameter(p,'filepath',[],@isstr);
+parse(p,varargin{:})
+
+% Store user input
+returnStruct = p.Results.returnStruct;
+filepath = p.Results.filepath;
+
+% Get path to info.rhd file
+if isempty(filepath)
+    [file, path, filterindex] = ...
     uigetfile('*.rhd', 'Select an RHD2000 Data File', 'MultiSelect', 'off');
+else
+    file = 'info.rhd';
+    path = [filepath, filesep];
+end
 
 if (file == 0)
     return;
@@ -457,77 +483,145 @@ if (data_present)
 
 end
 
-% Move variables to base workspace.
+% Output struct
+intaninfo = struct();
 
-% new for version 2.01: move filename info to base workspace
-filename = file;
-move_to_base_workspace(filename);
-move_to_base_workspace(path);
+% Move variables to base workspace
+if ~returnStruct
 
-move_to_base_workspace(notes);
-move_to_base_workspace(frequency_parameters);
-if (data_file_main_version_number > 1)
-    move_to_base_workspace(reference_channel);
-end
+    filename = file;
+    move_to_base_workspace(filename);
+    move_to_base_workspace(path);
 
-if (num_amplifier_channels > 0)
-    move_to_base_workspace(amplifier_channels);
-    if (data_present)
-        move_to_base_workspace(amplifier_data);
-        move_to_base_workspace(t_amplifier);
+    move_to_base_workspace(notes);
+    move_to_base_workspace(frequency_parameters);
+    if (data_file_main_version_number > 1)
+        move_to_base_workspace(reference_channel);
     end
-    move_to_base_workspace(spike_triggers);
-end
-if (num_aux_input_channels > 0)
-    move_to_base_workspace(aux_input_channels);
-    if (data_present)
-        move_to_base_workspace(aux_input_data);
-        move_to_base_workspace(t_aux_input);
-    end
-end
-if (num_supply_voltage_channels > 0)
-    move_to_base_workspace(supply_voltage_channels);
-    if (data_present)
-        move_to_base_workspace(supply_voltage_data);
-        move_to_base_workspace(t_supply_voltage);
-    end
-end
-if (num_board_adc_channels > 0)
-    move_to_base_workspace(board_adc_channels);
-    if (data_present)
-        move_to_base_workspace(board_adc_data);
-        move_to_base_workspace(t_board_adc);
-    end
-end
-if (num_board_dig_in_channels > 0)
-    move_to_base_workspace(board_dig_in_channels);
-    if (data_present)
-        move_to_base_workspace(board_dig_in_data);
-        move_to_base_workspace(t_dig);
-    end
-end
-if (num_board_dig_out_channels > 0)
-    move_to_base_workspace(board_dig_out_channels);
-    if (data_present)
-        move_to_base_workspace(board_dig_out_data);
-        move_to_base_workspace(t_dig);
-    end
-end
-if (num_temp_sensor_channels > 0)
-    if (data_present)
-        move_to_base_workspace(temp_sensor_data);
-        move_to_base_workspace(t_temp_sensor);
-    end
-end
 
-fprintf(1, 'Done!  Elapsed time: %0.1f seconds\n', toc);
-if (data_present)
-    fprintf(1, 'Extracted data are now available in the MATLAB workspace.\n');
+    if (num_amplifier_channels > 0)
+        move_to_base_workspace(amplifier_channels);
+        if (data_present)
+            move_to_base_workspace(amplifier_data);
+            move_to_base_workspace(t_amplifier);
+        end
+        move_to_base_workspace(spike_triggers);
+    end
+    if (num_aux_input_channels > 0)
+        move_to_base_workspace(aux_input_channels);
+        if (data_present)
+            move_to_base_workspace(aux_input_data);
+            move_to_base_workspace(t_aux_input);
+        end
+    end
+    if (num_supply_voltage_channels > 0)
+        move_to_base_workspace(supply_voltage_channels);
+        if (data_present)
+            move_to_base_workspace(supply_voltage_data);
+            move_to_base_workspace(t_supply_voltage);
+        end
+    end
+    if (num_board_adc_channels > 0)
+        move_to_base_workspace(board_adc_channels);
+        if (data_present)
+            move_to_base_workspace(board_adc_data);
+            move_to_base_workspace(t_board_adc);
+        end
+    end
+    if (num_board_dig_in_channels > 0)
+        move_to_base_workspace(board_dig_in_channels);
+        if (data_present)
+            move_to_base_workspace(board_dig_in_data);
+            move_to_base_workspace(t_dig);
+        end
+    end
+    if (num_board_dig_out_channels > 0)
+        move_to_base_workspace(board_dig_out_channels);
+        if (data_present)
+            move_to_base_workspace(board_dig_out_data);
+            move_to_base_workspace(t_dig);
+        end
+    end
+    if (num_temp_sensor_channels > 0)
+        if (data_present)
+            move_to_base_workspace(temp_sensor_data);
+            move_to_base_workspace(t_temp_sensor);
+        end
+    end
+    
+    fprintf(1, 'Done!  Elapsed time: %0.1f seconds\n', toc);
+    if (data_present)
+        fprintf(1, 'Extracted data are now available in the MATLAB workspace.\n');
+    else
+        fprintf(1, 'Extracted waveform information is now available in the MATLAB workspace.\n');
+    end
+    fprintf(1, 'Type ''whos'' to see variables.\n');
+    fprintf(1, '\n');
+
+% Return a structure all the relevant information
 else
-    fprintf(1, 'Extracted waveform information is now available in the MATLAB workspace.\n');
+    
+    intaninfo.filepath = filename;
+    intaninfo.notes    = notes;
+    intaninfo.frequency_parameters = frequency_parameters;
+
+    if (data_file_main_version_number > 1)
+        intaninfo.reference_channel = reference_channel;
+    end
+
+    if (num_amplifier_channels > 0)
+        intaninfo.amplifier_channels = amplifier_channels;
+        if (data_present)
+            intaninfo.amplifier_data = amplifier_data;
+            intaninfo.t_amplifier = t_amplifier;
+        end
+        intaninfo.spike_triggers = spike_triggers;
+    end
+    if (num_aux_input_channels > 0)
+        intaninfo.aux_input_channels = aux_input_channels;
+        if (data_present)
+            intaninfo.aux_input_data = aux_input_data;
+            intaninfo.t_aux_input = t_aux_input;
+        end
+    end
+    if (num_supply_voltage_channels > 0)
+        intaninfo.supply_voltage_channels = supply_voltage_channels;
+        if (data_present)
+            intaninfo.supply_voltage_data = supply_voltage_data;
+            intaninfo.t_supply_voltage = t_supply_voltage;
+        end
+    end
+    if (num_board_adc_channels > 0)
+        intaninfo.board_adc_channels = board_adc_channels;
+        if (data_present)
+            intaninfo.board_adc_data = board_adc_data;
+            intaninfo.t_board_adc = t_board_adc;
+        end
+    end
+    if (num_board_dig_in_channels > 0)
+        intaninfo.board_dig_in_channels = board_dig_in_channels;
+        if (data_present)
+            intaninfo.board_dig_in_data = board_dig_in_data;
+            intaninfo.t_dig = t_dig;
+        end
+    end
+    if (num_board_dig_out_channels > 0)
+        intaninfo.board_dig_out_channels = board_dig_out_channels;
+        if (data_present)
+            intaninfo.board_dig_out_data = board_dig_out_data;
+        end
+    end
+    if (num_temp_sensor_channels > 0)
+        if (data_present)
+            intaninfo.temp_sensor_data = temp_sensor_data;
+            intaninfo.t_temp_sensor = t_temp_sensor;
+        end
+    end
+    
+    fprintf(1, 'Done!  Elapsed time: %0.1f seconds\n', toc);
+     
 end
-fprintf(1, 'Type ''whos'' to see variables.\n');
-fprintf(1, '\n');
+
 
 return
 
