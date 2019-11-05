@@ -277,7 +277,8 @@ for unit = 1:length(firingMaps.rateMaps)
         if c==1, title(['                                                                  Cell ' num2str(unit)]); end
         %ylim([0,12])
     end
-    saveas(gcf,[basepath,filesep,'\newPCs\cell_' num2str(unit) '.png'],'png');
+    mkdir(basepath,'newPCs')
+    saveas(gcf,[basepath,filesep,'newPCs',filesep ,'cell_' num2str(unit) '.png'],'png');
     close all;
 end
  
