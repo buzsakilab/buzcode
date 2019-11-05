@@ -81,7 +81,6 @@ order = p.Results.orderKalmanVel;
   %%% TODO: conditions label
   
 %% Calculate
-
 % Erase positions below speed threshold
 for iCond = 1:size(positions,2)
     % Compute speed
