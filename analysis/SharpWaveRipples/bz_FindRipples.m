@@ -14,15 +14,15 @@ function [ripples] = bz_FindRipples(varargin)
 %    from a previous call.  The estimated EMG can be used as an additional
 %    exclusion criteria
 %
-% INPUTS
+% INPUTS - note these are NOT name-value pairs... just raw values
 %    lfp            unfiltered LFP (one channel) to use
 %	 timestamps	    timestamps to match filtered variable
-%    <options>      optional list of property-value pairs (see table below)
+%    <options>      optional list of property-value pairs (see tables below)
 %
 %    OR
 %
 %    basepath       path to a single session to run findRipples on
-%    channel      	Ripple channel to use for detection
+%    channel      	Ripple channel to use for detection (0-indexed, a la neuroscope)
 %
 %    =========================================================================
 %     Properties    Values
@@ -378,6 +378,16 @@ detectorinfo.detectionparms = rmfield(detectorinfo.detectionparms,'noise');
 if isfield(detectorinfo.detectionparms,'timestamps')  
     detectorinfo.detectionparms = rmfield(detectorinfo.detectionparms,'timestamps');
 end
+if isfield(p.Results,'channel')
+    detectorinfo.detectionchannel = p.Results.channel;
+end
+if ~isempty(noise)
+    detectorinfo.noisechannel = noise;
+else
+    detectorinfo.noisechannel = nan;
+end
+
+
 %Put it into the ripples structure
 ripples.detectorinfo = detectorinfo;
 
