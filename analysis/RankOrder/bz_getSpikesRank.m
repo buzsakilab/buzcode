@@ -1,5 +1,5 @@
-function [spkEventTimes] = bz_getEventSpikes(varargin)
-% [SpkEventTimes] = bz_getEventSpikes()
+function [spkEventTimes] = bz_getSpikesRank(varargin)
+% [SpkEventTimes] = bz_getSpikesRank()
 % Saves spike times of different units in different ways:
 %   1. Absolute and relative time of spikes by unit and by event
 %   2. Absolute and relative time of spikes by unit
@@ -64,6 +64,10 @@ function [spkEventTimes] = bz_getEventSpikes(varargin)
 %                    the above spike.
 %
 %    =========================================================================
+%
+%  See also bz_RankOrder
+%
+%
 %
 %    Antonio FR, 2017
 % Convert to buzcode format: Andrea Navas-Olive, 2019

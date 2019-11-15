@@ -1,7 +1,13 @@
-function [rankStats] = bz_getEventRank(varargin)
-% [rankStats] = getEventRank()
+function [rankStats] = bz_RankOrder(varargin)
+% [rankStats] = RankOrder()
 %  Get rank order of spikes inside events from previously calculated 
-% bz_getEventSpikes structure
+% bz_getSpikesRank structure. The 'corrEvents' output field structure shows
+% rank correlation of each event with the selected 'templateType', and the
+% 'pvalEvents' field states how significantly different from chance is that
+% correlation, so presumably those events with low 'pvalEvents' will have a
+% rank order that repeats over time. In the case that there is more than 
+% one rank sequence, the output field structure 'rankClusters' will number
+% the events equally if they have similar sequences.
 %
 % INPUTS
 %
@@ -9,7 +15,7 @@ function [rankStats] = bz_getEventRank(varargin)
 %     Properties    Values
 %    -------------------------------------------------------------------------
 %     'basepath'	    full path where session is located (default pwd)
-%                       e.g. /mnt/Data/buddy140_060813_reo/buddy140_060813_reo
+%                       E.g. /mnt/Data/buddy140_060813_reo/buddy140_060813_reo
 %     'spkEventTimes'	Field to be used is:    
 %                   		.EventRel: 2xN cell matrix. In the first row, relative 
 %                   		times of spikes for that particular event across all units.
@@ -38,11 +44,23 @@ function [rankStats] = bz_getEventRank(varargin)
 %                           third column has the position of  the unit in the UID 
 %                           vector. The third dimension contains this similar matrix 
 %                           for the other conditions.
+%     'eventIDs'        A (#events)-length array of 0s and 1s that indicates
+%                       which event belongs to one of two different groups 
+%                       of events. By default all events will belong to a
+%                       single group, and the rank correlation of each event
+%                       will be performed against the rest of the events.
+%                       However, if an 'eventIDs' array establishes two
+%                       different groups of events (e.g. spontaneous vs induced
+%                       ripples), then the rank correlation of events in 
+%                       one group will be performed against the rank of the
+%                       other group.
 %     'timeSpike'       A string, to determine what time reference of spike:
 %                       1. 'first': (default) takes into account the first time
 %                           the unit fires 
 %                       2. 'mean': takes the mean of the spike time
-%     'minUnits'        Minimum number of units parcitipating in each event. 
+%     'minUnits'        Minimum number of units parcitipating in each event.
+%                       Events with less than 'minUnits' are not considered
+%                       for correlation.
 %     'normalize'       Work with normalized ranks, logical (default: true)
 %                       So instead of ranking 1, 4, 5, 2, 3, it will be 0,
 %                       0.8, 1.0, 0.2, 0.4.
@@ -52,16 +70,17 @@ function [rankStats] = bz_getEventRank(varargin)
 %                       event is randomly permuted (default: 1000)
 %     'pvalTest'        pval value under which to test the total statistical 
 %                       significance of sequence consistency (default: 0.05)
-%     'minCorr'         minimum correlation value to search for rank
-%                       clusters, clusters within which rank is highly 
+%     'minCorr'         minimum correlation value to search for different 
+%                       rank clusters (that can be interpreted as different
+%                       sequences), clusters within which rank is highly 
 %                       correlated (default: 0.8)
-%     'doPlot'	        Make plot, logical (default: true) 
+%     'doPlot'	        Make plots, logical (default: true) 
 %     'saveMat'	        Saves file, logical (default: true) 
 %
 %    =========================================================================
 %
 %
-% INPUTS
+% OUTPUTS
 %
 %    =========================================================================
 %     Properties    Values
@@ -69,21 +88,38 @@ function [rankStats] = bz_getEventRank(varargin)
 %     'rankStats'	    structure with the following subfields:
 %         .corrMean          (double) Mean of rank correlations of all events
 %         .corrStd           (double) Standard deviation of rank correlations
-%         .corrEvents        (1xN matrix) Rank correlations of each event.
-%                            N: number of events
+%         .corrEvents        (1x#events matrix) Rank correlations of each event.
 %         .corrMeanShuff     (numRep x 1 matrix) Mean of rank correlations 
 %                            of each event for all permutation tests
-%         .corrEventsShuff   (numRep x N matrix) Rank correlations 
+%         .corrEventsShuff   (numRep x #events matrix) Rank correlations 
 %                            of each event for all permutation tests
 %         .pvalEvents        pvalue per event
 %         .pvalTotal         binomial test over 'pvalEvents'
-%                            
-%                            
+%         .rankUnits         (#units x #events matrix) Rank of units for
+%                            each event. This is the matrix that has been
+%                            used to compute the correlation.
+%                            E.g.:  A  [ 0.0  0.4  0.6  nan       0.6 
+%                                   B    0.2  0.2  nan  nan       nan
+%                                   C    0.4  0.0  nan  nan       nan
+%                                   D    0.6  0.6  1.0  nan  ...  1.0
+%                                   E    0.8  0.8  0.3  nan       0.3
+%                                   F    1.0  1.0  nan  nan       nan ]
+%         .rankClusters      (1 x #events array) Different sequences are
+%                            searched using an agglomerative hierarchical
+%                            cluster tree. This array shows which of the
+%                            different found sequences has each event.
+%                            E.g.:    [  1    1    2   nan  ...   2  ]
+%                                  where 1 is sequence A B C D E F
+%                                        2 is sequence E A D
+%                                  
+%
+%  See also bz_getSpikesRank
+%
+%
 %
 %  Andrea Navas-Olive, 2019
 
 % TODO:
-%  - Have an option to test two group events 
 %  - Test With an external template
 
 %% Parse inputs 
@@ -91,6 +127,7 @@ p = inputParser;
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'spkEventTimes',{},@isstruct);
 addParameter(p,'templateType','MeanRank',@isstr);
+addParameter(p,'eventIDs',1,@isnumeric);
 addParameter(p,'timeSpike','first',@isstr);
 addParameter(p,'minUnits',5,@isnumeric);
 addParameter(p,'normalize',true,@islogical);
@@ -104,6 +141,7 @@ parse(p,varargin{:});
 basepath = p.Results.basepath;
 spkEventTimes = p.Results.spkEventTimes;
 templateType = p.Results.templateType;
+eventIDs = p.Results.eventIDs;
 normalize = p.Results.normalize;
 timeSpike = p.Results.timeSpike;
 minUnits = p.Results.minUnits;
@@ -175,7 +213,7 @@ end
 
 % Compute mean and standard deviation of rank correlation, and correlation
 % event by event
-[corrMean, corrStd, corrEvents] = compute_rank_correlation(templateType, rankUnits, evtTimes, templateExt);
+[corrMean, corrStd, corrEvents] = compute_rank_correlation(templateType, rankUnits, evtTimes, templateExt, eventIDs);
 
 % Permutation test: random shuffling the ranks of the units that 
 % participated in each event and carrying out the entire procedure, 
@@ -189,7 +227,7 @@ parfor irep = 1:numRep
     % Suffle each column of rankUnits 
     rankUnitsSuffled = shuffle_by_column(rankUnits,normalize);
     % Rank correlation with suffled rankUnits
-    [tmpcorr, ~, tmpcorrTemplate] = compute_rank_correlation(templateType, rankUnitsSuffled, evtTimes, templateExt);
+    [tmpcorr, ~, tmpcorrTemplate] = compute_rank_correlation(templateType, rankUnitsSuffled, evtTimes, templateExt, eventIDs);
     corrMeanShuff(irep) = tmpcorr;
     corrEventsShuff(irep,:) = tmpcorrTemplate;    
 end
@@ -213,7 +251,7 @@ pvalTotal = binom_test(pvalEvents,pvalTest);
 % Events with statistically significant rank sequences
 statEvents = find(pvalEvents<=0.05); 
 
-if length(statEvents)>2
+try 
     % Perform a pairwise correlation
     corrMat = corr(rankUnits(:,statEvents), 'rows', 'pairwise');
     % Clean correlation matrix (remove nans)
@@ -232,7 +270,7 @@ if length(statEvents)>2
     % Save sequences
     rankClusters = zeros(size(pvalEvents));
     rankClusters(statEvents) = groups;
-else
+catch
     rankClusters = zeros(size(pvalEvents));
 end
 
@@ -268,7 +306,7 @@ if doPlot
     xlabel('Correlation values')
     ylabel('Distribution') 
     
-    if exist('tree')
+    if exist('groups')
         % Plot hierarchical tree 
         figure(),
         dendrogram(tree,'ColorThreshold',cutoff)
@@ -311,33 +349,61 @@ end
 
 
 % RANK CORRELATION...
-function [corrMean, corrStd, corrEvents] = compute_rank_correlation(templateType, spkPos, evtTimes, templateExt)
+function [corrMean, corrStd, corrEvents] = compute_rank_correlation(templateType, rankUnits, evtTimes, templateExt, eventIDs)
 
 
     % ... WITHOUT EXTERNAL TEMPLATE
+    
     % Template method: a template for each specific ripple or theta event is
-    % constructed based on the averaged rank of all units over all other events
-    % (i.e., excluding that specific event). Then the rank correlation between
-    % each specific event and its template was computed, and averaged over all
-    % events
+    %   constructed based on the averaged rank of all units over all other events
+    %   (i.e., excluding that specific event). Then the rank correlation between
+    %   each specific event and its template was computed, and averaged over all
+    %   events
     if strcmp(templateType,'MeanRank')
         corrEvents = zeros(size(evtTimes));
-        parfor event = 1:length(evtTimes)
-            % Order of units in this event
-            rankThisEvent = spkPos(:,event);
-            % Mean order of units alon  g the rest of the events (template)
-            rankTemplate = nanmean(spkPos(:,[1:event-1,event+1:end]),2);
-            % Correlation between these previous variables
-            corrEvents(event) = corr(rankThisEvent, rankTemplate, 'rows', 'complete');
+        % - If there are no two groups of events
+        if length(unique(eventIDs))==1
+            parfor event = 1:length(evtTimes)
+                % Order of units in this event
+                rankThisEvent = rankUnits(:,event);
+                % Mean order of units along the rest of the events (template)
+                rankTemplate = nanmean(rankUnits(:,[1:event-1,event+1:end]),2);
+                % Correlation between these previous variables
+                corrEvents(event) = corr(rankThisEvent, rankTemplate, 'rows', 'complete');
+            end
+        % - If there are two groups of events, test this event against 
+        %   the meank rank of the other group
+        else
+            parfor event = 1:length(evtTimes)
+                % Order of units in this event
+                rankThisEvent = rankUnits(:,event);
+                % Mean order of units along the rest of the events (template)
+                rankTemplate = nanmean(rankUnits(:,eventIDs==(1-eventIDs(event))),2);
+                % Correlation between these previous variables
+                corrEvents(event) = corr(rankThisEvent, rankTemplate, 'rows', 'complete');
+            end
         end
         % Mean and standard deviation of rank correlation
         corrMean = nanmean(corrEvents);
         corrStd = nanstd(corrEvents);
+        
     % Pairwise method:
     elseif strcmp(templateType,'Pairwise')
-        corrEvents = corr(spkPos, 'rows', 'pairwise');
-        corrEvents(find(eye(size(corrEvents)))) = nan;
-        corrEvents = nanmean(corrEvents);
+        corrEvents = corr(rankUnits, 'rows', 'pairwise');
+        corrEvents(eye(size(corrEvents))==1) = nan;
+        % Mean and standard deviation of rank correlation...
+        % - If there are no two groups of events
+        if length(unique(eventIDs))==1
+            corrEvents = nanmean(corrEvents);
+        % - If there are two groups of events, test this event against 
+        %   the meank rank of the other group
+        else
+            corrEventsMean = zeros(size(evtTimes));
+            parfor event = 1:length(evtTimes)
+                corrEventsMean(event) = nanmean(corrEvents(event,eventIDs==(1-eventIDs(event))));
+            end
+            corrEvents = corrEventsMean;
+        end
         % Mean and standard deviation of rank correlation
         corrMean = nanmean(corrEvents);
         corrStd = nanstd(corrEvents);
@@ -354,7 +420,7 @@ function [corrMean, corrStd, corrEvents] = compute_rank_correlation(templateType
         for iCond = 1:length(templateExt)
             parfor event = 1:size(evtTimes,2)
                 % Order of units in this event
-                rankThisEvent = spkPos(:,event);
+                rankThisEvent = rankUnits(:,event);
                 % External template (we need to transform it to an array
                 % similar to rankThisEvent: a (# units) x 1 array, where in
                 % the position of each unit the rank is written 
