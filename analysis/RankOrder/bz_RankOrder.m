@@ -88,14 +88,30 @@ function [rankStats] = bz_RankOrder(varargin)
 %     Properties    Values
 %    -------------------------------------------------------------------------
 %     'rankStats'	    structure with the following subfields:
-%         .corrMean          (double) Mean of rank correlations of all events
-%         .corrStd           (double) Standard deviation of rank correlations
-%         .corrEvents        (1x#events matrix) Rank correlations of each event.
-%         .corrMeanShuff     (numRep x 1 matrix) Mean of rank correlations 
-%                            of each event for all permutation tests
-%         .corrEventsShuff   (numRep x #events matrix) Rank correlations 
-%                            of each event for all permutation tests
-%         .pvalEvents        pvalue per event
+%         .corrMean          (#conditions x 1) Mean of rank correlations 
+%                            of all events. If there are several conditions
+%                            each row is the mean correlation of events
+%                            against the template given by each condition.
+%         .corrStd           (#conditions x 1) Standard deviation of rank 
+%                            of all events. If there are several conditions
+%                            each row is the mean correlation of events
+%                            against the template given by each condition.
+%         .corrEvents        (#conditions x #events matrix) Rank correlation
+%                            of each event. Same as with 'corrMean' happens
+%                            for each row.
+%         .corrMeanShuff     (numRep x #conditions matrix) Mean of rank 
+%                            correlations of each event for all permutation 
+%                            tests. Same as with 'corrEvents' happens for 
+%                            each column. 
+%         .corrEventsShuff   (numRep x #events x #conditions matrix) Rank 
+%                            correlations of each event for all permutation
+%                            tests. Same as with 'corrEvents' happens for 
+%                            the third dimension. 
+%         .pvalEvents        (#conditions x 1) P-value per event. If there
+%                            are several conditions each row is the p-value
+%                            of the correlation between each event rank
+%                            against the external template given by each
+%                            condition.
 %         .pvalTotal         binomial test over 'pvalEvents'
 %         .rankUnits         (#units x #events matrix) Rank of units for
 %                            each event. This is the matrix that has been
@@ -121,8 +137,6 @@ function [rankStats] = bz_RankOrder(varargin)
 %
 %  Andrea Navas-Olive, 2019
 
-% TODO:
-%  - Test With an external template
 
 %% Parse inputs 
 p = inputParser;
