@@ -28,21 +28,23 @@ function [rankStats] = bz_RankOrder(varargin)
 %                           of the rest of the events.
 %                       - 'Peak': searchs for the bz_findPlaceFieldsTemplate
 %                           output, the X.placeFieldTemplate.mat, loads it
-%                           and takes the 'Peak' field, a (# units) x 3 x (# conditions)
+%                           and takes the 'Peak' field, a 1 x (# conditions) 
+%                           cell array. Within each cell there is a (# units) x 3
 %                           matrix, which has bins corresponding to the firing 
 %                           map peak for each unit (NaN for units without place
 %                           field); second column has the unit ID; third column
 %                           has the position of  the unit in the UID vector. The
-%                           third dimension contains this similar matrix for the
+%                           rest of the cells contain this similar matrix for the
 %                           other conditions.
 %                       - 'CenterofMass': searchs for the bz_findPlaceFieldsTemplate
 %                           output, the X.placeFieldTemplate.mat, loads it
-%                           and takes the 'CenterofMass' field, a (# units) x 
-%                           3 x (# conditions) matrix, which has bins corresponding 
-%                           to the firing map peak for each unit (NaN for units  
-%                           without place field); second column has the unit ID; 
-%                           third column has the position of  the unit in the UID 
-%                           vector. The third dimension contains this similar matrix 
+%                           and takes the 'CenterofMass', a 1 x (# conditions) 
+%                           cell array. Within each cell there is a (# units) x 3
+%                           matrix, which has bins corresponding to the firing 
+%                           map peak for each unit (NaN for units without place 
+%                           field); second column has the unit ID; third column
+%                           has the position of  the unit in the UID vector. 
+%                           The rest of the cells contain this similar matrix 
 %                           for the other conditions.
 %     'eventIDs'        A (#events)-length array of 0s and 1s that indicates
 %                       which event belongs to one of two different groups 
@@ -113,7 +115,7 @@ function [rankStats] = bz_RankOrder(varargin)
 %                                        2 is sequence E A D
 %                                  
 %
-%  See also bz_getSpikesRank
+%  See also bz_getSpikesRank, bz_findPlaceFieldsTemplate
 %
 %
 %
@@ -221,23 +223,24 @@ end
 % repeated 'numRep' times and the observed mean rank correlation is 
 % compared with the distribution of the randomly permuted mean rank 
 % correlations
-corrMeanShuff = zeros(numRep,1);
-corrEventsShuff = zeros(numRep,length(evtTimes));
+nCond = size(corrEvents,1);
+corrMeanShuff = zeros(numRep,nCond);
+corrEventsShuff = zeros(numRep,length(evtTimes),nCond);
 parfor irep = 1:numRep
     % Suffle each column of rankUnits 
     rankUnitsSuffled = shuffle_by_column(rankUnits,normalize);
     % Rank correlation with suffled rankUnits
     [tmpcorr, ~, tmpcorrTemplate] = compute_rank_correlation(templateType, rankUnitsSuffled, evtTimes, templateExt, eventIDs);
-    corrMeanShuff(irep) = tmpcorr;
-    corrEventsShuff(irep,:) = tmpcorrTemplate;    
+    corrMeanShuff(irep,:) = tmpcorr';
+    corrEventsShuff(irep,:,:) = tmpcorrTemplate';    
 end
 
 % For statistical significance of sequence consistency, get percentage of
 % times that the correlation of a certain event has been higher that the
 % correlation of that same event in the permutation test
-pvalEvents = zeros(1,length(corrEvents));
+pvalEvents = zeros(nCond,length(corrEvents));
 parfor event = 1:length(corrEvents)
-    pvalEvents(event) = sum( corrEvents(event) > corrEventsShuff(:,event) ) / numRep;    
+    pvalEvents(:,event) = sum( corrEvents(:,event) > squeeze(corrEventsShuff(:,event,:))',2 ) / numRep;    
 end
 % Transform it in a p-value
 pvalEvents = 1 - pvalEvents;
@@ -248,32 +251,35 @@ pvalTotal = binom_test(pvalEvents,pvalTest);
 
 %% Find different sequences
 
-% Events with statistically significant rank sequences
-statEvents = find(pvalEvents<=0.05); 
+if any(ismember(templateType,{'Pairwise','MeanRank'}))
+    % Events with statistically significant rank sequences
+    statEvents = find(pvalEvents<=0.05); 
 
-try 
-    % Perform a pairwise correlation
-    corrMat = corr(rankUnits(:,statEvents), 'rows', 'pairwise');
-    % Clean correlation matrix (remove nans)
-    corrMat(isnan(corrMat)) = 0;
-    % Take intro account correlation above 'minCorr'
-    corrMat(corrMat <= minCorr) = 0;
+    try 
+        % Perform a pairwise correlation
+        corrMat = corr(rankUnits(:,statEvents), 'rows', 'pairwise');
+        % Clean correlation matrix (remove nans)
+        corrMat(isnan(corrMat)) = 0;
+        % Take intro account correlation above 'minCorr'
+        corrMat(corrMat <= minCorr) = 0;
 
-    % Perform an agglomerative hierarchical cluster tree
-    tree = linkage(corrMat,'complete','correlation');
-    % Compute a cutoff (to select the hierarchical level to perform the clusterization)
-    treeNonan = tree(~isnan(tree(:,3)),:);
-    cutoff = median([treeNonan(end-2,3) treeNonan(end-1,3)]); 
-    % Cluster
-    groups = cluster(tree,'cutoff',cutoff,'criterion','distance');
-    
-    % Save sequences
-    rankClusters = zeros(size(pvalEvents));
-    rankClusters(statEvents) = groups;
-catch
-    rankClusters = zeros(size(pvalEvents));
+        % Perform an agglomerative hierarchical cluster tree
+        tree = linkage(corrMat,'complete','correlation');
+        % Compute a cutoff (to select the hierarchical level to perform the clusterization)
+        treeNonan = tree(~isnan(tree(:,3)),:);
+        cutoff = median([treeNonan(end-2,3) treeNonan(end-1,3)]); 
+        % Cluster
+        groups = cluster(tree,'cutoff',cutoff,'criterion','distance');
+
+        % Save sequences
+        rankClusters = zeros(size(pvalEvents));
+        rankClusters(statEvents) = groups;
+    catch
+        rankClusters = zeros(size(pvalEvents));
+    end
+else
+    rankClusters = [];
 end
-
 
 
 %% Save and plot
@@ -414,9 +420,9 @@ function [corrMean, corrStd, corrEvents] = compute_rank_correlation(templateType
     % Template method: external template
     if ismember(templateType,{'Peak','CenterofMass'})
         % Initialize
-        corrEvents = zeros(size(evtTimes,2),length(templateExt));
-        corrMean = zeros(1,length(templateExt));
-        corrStd = zeros(1,length(templateExt));
+        corrEvents = zeros(length(templateExt),size(evtTimes,2));
+        corrMean = zeros(length(templateExt),1);
+        corrStd = zeros(length(templateExt),1);
         for iCond = 1:length(templateExt)
             parfor event = 1:size(evtTimes,2)
                 % Order of units in this event
@@ -425,18 +431,18 @@ function [corrMean, corrStd, corrEvents] = compute_rank_correlation(templateType
                 % similar to rankThisEvent: a (# units) x 1 array, where in
                 % the position of each unit the rank is written 
                 rankTemplate = nan*ones(size(rankThisEvent));
-                rankTemplate(templateExt{iCond}(:,3)) = [1:length(templateExt{iCond}(:,3))];
+                rankTemplate(templateExt{iCond}(:,3)) = templateExt{iCond}(:,1);
                 % Normalize
-                if normalize
-                    rankTemplate = rankTemplate / length(templateExt{iCond}(:,3));
+                if max(max(rankUnits))==1
+                    rankTemplate = (rankTemplate - nanmin(templateExt{iCond}(:,1)))/ (nanmax(templateExt{iCond}(:,1))- nanmin(templateExt{iCond}(:,1)));
                 end
                 % Correlation between these previous variables
-                corrEvents(event,iCond) = corr(rankThisEvent, rankTemplate, 'rows', 'complete');
+                corrEvents(iCond,event) = corr(rankThisEvent, rankTemplate, 'rows', 'complete');
             end
         end
         % Mean and standard deviation of rank correlation
-        corrMean(iCond) = nanmean(corrEvents);
-        corrStd(iCond) = nanstd(corrEvents);
+        corrMean = nanmean(corrEvents,2);
+        corrStd = nanstd(corrEvents,[],2);
     end
 end
 
