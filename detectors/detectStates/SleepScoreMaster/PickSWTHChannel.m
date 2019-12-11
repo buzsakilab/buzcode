@@ -116,7 +116,8 @@ end
 Par = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 nChannels = Par.nChannels;
 
-%Remove spike groups requirement DL9/3/19
+%Remove spike groups requirement DL9/3/19 - returned 12/11/19...
+%Should make this optional
 if isfield(Par,'SpkGrps')
     SpkGrps = Par.SpkGrps;
     %display('Looking at all channels in SpikeGroups')
@@ -128,17 +129,17 @@ else
 end
 
 spkgroupchannels = [SpkGrps.Channels];
-% 
-% try %In case some channels are in AnatGrps but not SpkGrps
-% anatgoupchannels = [Par.AnatGrps.Channels];
-% spkgroupchannels = union(spkgroupchannels,anatgoupchannels);
-% catch
-% end
+
+try %In case some channels are in AnatGrps but not SpkGrps
+anatgoupchannels = [Par.AnatGrps.Channels];
+spkgroupchannels = union(spkgroupchannels,anatgoupchannels);
+catch
+end
 
 %use all channels unless SWChannels and ThetaChannels are specified... if both specified then we know those are the only good ones
 if sum(SWChannels)>0 && sum(ThetaChannels)>0
     goodchannels = union(SWChannels,ThetaChannels);
-    badchannels = setdiff(Par.channels,goodchannels);
+    badchannels = setdiff(spkgroupchannels,goodchannels);
     rejectchannels = union(rejectchannels,badchannels);
 end
 
