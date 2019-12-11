@@ -130,11 +130,11 @@ end
 
 spkgroupchannels = [SpkGrps.Channels];
 
-try %In case some channels are in AnatGrps but not SpkGrps
-anatgoupchannels = [Par.AnatGrps.Channels];
-spkgroupchannels = union(spkgroupchannels,anatgoupchannels);
-catch
-end
+% try %In case some channels are in AnatGrps but not SpkGrps
+% anatgoupchannels = [Par.AnatGrps.Channels];
+% spkgroupchannels = union(spkgroupchannels,anatgoupchannels);
+% catch
+% end
 
 %use all channels unless SWChannels and ThetaChannels are specified... if both specified then we know those are the only good ones
 if sum(SWChannels)>0 && sum(ThetaChannels)>0
