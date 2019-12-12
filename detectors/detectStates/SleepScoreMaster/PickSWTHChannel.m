@@ -117,19 +117,19 @@ Par = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 nChannels = Par.nChannels;
 
 %Remove spike groups requirement DL9/3/19 - returned 12/11/19...
-%Should make this optional
-if isfield(Par,'SpkGrps')
-    SpkGrps = Par.SpkGrps;
-    %display('Looking at all channels in SpikeGroups')
-elseif isfield(Par,'AnatGrps')
-    SpkGrps = Par.AnatGrps;
-    display('No SpikeGroups, Using AnatomyGroups')
-else
-    display('No SpikeGroups... checking all channels')
-end
-
-spkgroupchannels = [SpkGrps.Channels];
-
+%Should make this optional - move to SSM main f'n
+% if isfield(Par,'SpkGrps')
+%     SpkGrps = Par.SpkGrps;
+%     %display('Looking at all channels in SpikeGroups')
+% elseif isfield(Par,'AnatGrps')
+%     SpkGrps = Par.AnatGrps;
+%     display('No SpikeGroups, Using AnatomyGroups')
+% else
+%     display('No SpikeGroups... checking all channels')
+% end
+% 
+% spkgroupchannels = [SpkGrps.Channels];
+% 
 % try %In case some channels are in AnatGrps but not SpkGrps
 % anatgoupchannels = [Par.AnatGrps.Channels];
 % spkgroupchannels = union(spkgroupchannels,anatgoupchannels);
@@ -139,11 +139,11 @@ spkgroupchannels = [SpkGrps.Channels];
 %use all channels unless SWChannels and ThetaChannels are specified... if both specified then we know those are the only good ones
 if sum(SWChannels)>0 && sum(ThetaChannels)>0
     goodchannels = union(SWChannels,ThetaChannels);
-    badchannels = setdiff(spkgroupchannels,goodchannels);
+    badchannels = setdiff(Par.channels,goodchannels);
     rejectchannels = union(rejectchannels,badchannels);
 end
 
-usechannels = setdiff(spkgroupchannels,rejectchannels);
+usechannels = setdiff(Par.channels,rejectchannels);
 numusedchannels = length(usechannels);
 
 %% Handle specific candidacy of certain channels for SW vs Theta
