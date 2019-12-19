@@ -72,7 +72,7 @@ function [ripples] = bz_FindRipples(varargin)
 % the Free Software Foundation; either version 3 of the License, or
 % (at your option) any later version.
 
-warning('this function is under development and may not work... yet')
+% warning('this function is under development and may not work... yet')
 
 % Default values
 p = inputParser;
@@ -85,25 +85,40 @@ addParameter(p,'show','off',@isstr)
 addParameter(p,'noise',[],@ismatrix)
 addParameter(p,'passband',[130 200],@isnumeric)
 addParameter(p,'EMGThresh',.9,@isnumeric);
+
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'minDuration',20,@isnumeric)
 addParameter(p,'plotType',2,@isnumeric)
+addParameter(p,'lfpExtension','.lfp',@isstr);
 
 if isstr(varargin{1})  % if first arg is basepath
-    addRequired(p,'basepath',@isstr)
-    addRequired(p,'channel',@isnumeric)    
-    parse(p,varargin{:})
-    basename = bz_BasenameFromBasepath(p.Results.basepath);
+     addParameter(p,'basepath','');
+     addParameter(p,'channel',94);
+     parse(p,varargin{:});
+     lfpExtension = p.Results.lfpExtension;
+% %     basename = bz_BasenameFromBasepath(p.Results.basepath);
+%     basename = p.Results.basename;
+%     basepath = p.Results.basepath;
+%     passband = p.Results.passband;
+    EMG = 0;
     basepath = p.Results.basepath;
+    channel = p.Results.channel;
+    basename = bz_BasenameFromBasepath(p.Results.basepath);
+    EMGThresh = p.Results.EMGThresh;
+    p.Results.channel;
+    lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename,'lfpExtension',lfpExtension);%currently cannot take path inputs
     passband = p.Results.passband;
+
     EMGThresh = p.Results.EMGThresh;
     lfp = bz_GetLFP(p.Results.channel,'basepath',p.Results.basepath,'basename',basename);%currently cannot take path inputs
+
     signal = bz_Filter(double(lfp.data),'filter','butter','passband',passband,'order', 3);
     timestamps = lfp.timestamps;
 elseif isnumeric(varargin{1}) % if first arg is filtered LFP
     addRequired(p,'lfp',@isnumeric)
     addRequired(p,'timestamps',@isnumeric)
     parse(p,varargin{:})
+    lfpExtension = p.Results.lfpExtension;
     passband = p.Results.passband;
     EMGThresh = p.Results.EMGThresh;
     signal = bz_Filter(double(p.Results.lfp),'filter','butter','passband',passband,'order', 3);
@@ -124,6 +139,7 @@ minInterRippleInterval = p.Results.durations(1);
 maxRippleDuration = p.Results.durations(2);
 minRippleDuration = p.Results.minDuration;
 plotType = p.Results.plotType;
+
 
 %% filter and calculate noise
 

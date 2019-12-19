@@ -75,7 +75,8 @@ addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'downsample',1,@isnumeric);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
-addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'noPrompts',true,@islogical);
+addParameter(p,'lfpExtension','.lfp',@isstr);
 
 parse(p,varargin{:})
 basename = p.Results.basename;
@@ -83,6 +84,7 @@ channels = p.Results.channels;
 downsamplefactor = p.Results.downsample;
 basepath = p.Results.basepath;
 noPrompts = p.Results.noPrompts;
+lfpExtension = p.Results.lfpExtension;
 
 % doing this so you can use either 'intervals' or 'restrict' as parameters to do the same thing
 intervals = p.Results.intervals;
@@ -118,16 +120,9 @@ if isempty(basename)
    end
    
 else
-   d = dir([basepath filesep basename '.lfp']);
-   if length(d) > 1 % we assume one .lfp file or this should break
-       error('there is more than one .lfp file in this directory?');
-   elseif length(d) == 0
-       d = dir([basepath filesep basename '.eeg']);
-       if isempty(d)
-           error('could not find an lfp/eeg file..')
-       end
-   end
-   lfp.Filename = d.name;   
+
+lfp.Filename = [basename lfpExtension];
+
 end
 
 %% things we can parse from sessionInfo or xml file
@@ -156,7 +151,7 @@ else
 end
 
 %% get the data
-disp('loading LFP file...')
+% disp('loading LFP file...')
 nIntervals = size(intervals,1);
 % returns lfp/bz format
 for i = 1:nIntervals

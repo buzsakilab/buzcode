@@ -34,7 +34,6 @@ if ~strcmp(filename(end-3:end),'.xml') % we can now give LoadParameters.m the fo
         baseName = bz_BasenameFromBasepath(filename);
         correctxmlfilename = cellfun(@(X) strcmp(X,[baseName,'.xml']),{d.name});
         d = d(correctxmlfilename);
-        display(['Multiple .xml files in this folder, trying ',baseName,'.xml'])
     end
     if isempty(d) %if no .xmls - you have a problem
         error('LoadParameters:noXmls',['No .xml in ',filename])
@@ -219,7 +218,7 @@ try
         end
     end
 catch
-  warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
+%   warning('could not load .SpkGrps and .AnatGrps, something may be missing from your XML file..') 
 end
 
 %% Unit Info - will generally just get passed through in bz_GetSpikes

@@ -100,6 +100,7 @@ switch specparms.type
     
     case 'wavelet'
         %Calcualte the Wavelet Transform
+
         if size(lfp.data,2) == 1
             [wavespec] = bz_WaveSpec(single(data),...
                 'frange',specparms.frange,'nfreqs',specparms.nfreqs,'ncyc',specparms.ncyc,...
@@ -124,6 +125,7 @@ switch specparms.type
             spectimestamps = timestamps; %Wavelet timestamp are same as LFP        
             comod.freqs = wavespec.freqs;
             
+
 	case 'FFT'
         %Calculate the frequences to use
         if ~isempty(specparms.fvector)

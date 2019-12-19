@@ -42,6 +42,7 @@ function bz_LFPfromDat(basepath,varargin)
 %Dependency: iosr tool box https://github.com/IoSR-Surrey/MatlabToolbox
 %
 %SMckenzie, BWatson, DLevenstein 2018
+
 %% Input handling
 if ~exist('basepath','var')
     basepath = pwd;
