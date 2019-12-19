@@ -321,12 +321,12 @@ elseif strcmpi(sortingMethod, 'kilosort') || ~isempty(kilosort_path) % LOADING F
     for ii = 1:length(cluster_group.group)
         if strcmpi(strtrim(cluster_group.group(ii,:)),'good')
             ids = find(spike_cluster_index == cluster_group.cluster_id(ii)); % cluster id
-            spikes.UID_kilosort(jj) = cluster_group.cluster_id(ii);
+            spikes.cluID(jj) = cluster_group.cluster_id(ii);
             spikes.UID(jj) = jj;
             spikes.times{jj} = double(spike_times(ids))/fs; % cluster time
             spikes.ts{jj} = double(spike_times(ids)); % cluster time
-            cluster_id = find(cluster_group.cluster_id == spikes.UID_kilosort(jj));
-            spikes.shankID(jj) = shanks(cluster_id);
+            cluster_id = find(cluster_group.cluster_id == spikes.cluID(jj));
+            spikes.shankID(jj) = double(shanks(cluster_id));
             jj = jj + 1;
         end
     end
