@@ -17,6 +17,7 @@ addParameter(p,'window',2);
 addParameter(p,'SHOWFIG',false);
 addParameter(p,'smoothfact',15);
 addParameter(p,'IRASA',true);
+addParameter(p,'thIRASA',true);
 addParameter(p,'downsamplefactor',5);
 
 parse(p,varargin{:})
@@ -26,6 +27,7 @@ ignoretime = p.Results.ignoretime;
 window = p.Results.window; 
 smoothfact = p.Results.smoothfact; 
 IRASA = p.Results.IRASA; 
+thIRASA = p.Results.thIRASA; 
 SHOWFIG = p.Results.SHOWFIG; 
 downsamplefactor = p.Results.downsamplefactor; 
 
@@ -250,10 +252,10 @@ parfor idx = 1:numThetaChannels;
     %Progress Counter
     bz_Counter(idx,numThetaChannels,'TH Channels')
 
-    if IRASA && strcmp(SWweights,'PSS') %(new way... peak above 1/f)
+    if thIRASA && strcmp(SWweights,'PSS') %(new way... peak above 1/f)
         
         [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',ThetaChannels(idx),'frange',f_all,'nfreqs',100,'IRASA',IRASA);
+            'channels',ThetaChannels(idx),'frange',f_all,'nfreqs',100,'IRASA',thIRASA);
         specdt = 1./specslope.samplingRate;
         t_FFT = specslope.timestamps;
         thFFTspec = specslope.resid';

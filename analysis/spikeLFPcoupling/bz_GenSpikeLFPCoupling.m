@@ -55,6 +55,7 @@ function [SpikeLFPCoupling] = bz_GenSpikeLFPCoupling(spikes,LFP,varargin)
 %   -clean and buzcode
 %
 %DLevenstein 2016
+
 %% inputParse for Optional Inputs and Defaults
 p = inputParser;
 

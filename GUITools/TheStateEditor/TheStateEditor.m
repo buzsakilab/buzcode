@@ -2524,7 +2524,7 @@ idx.states = interp1(FO.to,FO.States,idx.timestamps,'nearest');
 
 
 %Make a buzcode-style ints structure (should wrap this into IDXtoINT.mat)
-ints = bz_IDXtoINT(idx,'nameStates',true);
+[ints,idx] = bz_IDXtoINT(idx,'nameStates',true);
 
 
 switch STATESFILETYPE
@@ -2544,19 +2544,23 @@ switch STATESFILETYPE
 
         %Save histsandthreshs... different depending on whether AutoScore was
         %used or not
-        HistAndThreshAlready_Bool = 0;
-        if isfield(FO,'AutoScore')
+        HistAndThreshNew_Bool = 0;
+        if isfield(FO,'AutoScore') %If autoscoring was updated (new thresholds)
             if isfield(FO.AutoScore,'histsandthreshs')
-                HistAndThreshAlready_Bool = 1;
+                HistAndThreshNew_Bool = 1;
             end
         end
-        if HistAndThreshAlready_Bool
+        if HistAndThreshNew_Bool
             histsandthreshs = FO.AutoScore.histsandthreshs;
         else
-            answer = questdlg({'We usually save hisograms and thresholds for sleep autoscoring, but they are not here... Regenerate them?'});
-            switch answer
-                case 'Yes'
-                    histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath);
+            try %If autoscoring wasn't updated but histsandthreshs exist
+                histsandthreshs = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.histsandthreshs;
+            catch
+                answer = questdlg({'We usually save hisograms and thresholds for sleep autoscoring, but they are not here... Regenerate them?'});
+                switch answer
+                    case 'Yes'
+                        histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath);
+                end
             end
         end
         if exist('histsandthreshs','var')

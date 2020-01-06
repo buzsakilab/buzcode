@@ -1,4 +1,4 @@
-function [ INT ] = bz_IDXtoINT( IDX ,varargin)
+function [ INT,IDX_new ] = bz_IDXtoINT( IDX ,varargin)
 %bz_IDXtoINT(IDX) Converts state indices to state on/offsets
 %
 %INPUT
@@ -45,6 +45,7 @@ nameStates = p.Results.nameStates;
 jumptol = p.Results.jumptol; 
 
 %%
+IDX_new = IDX; %Saving to pass through if new names;
 if isstruct(IDX)
     if isfield(IDX,'statenames')
         statenames = IDX.statenames;
@@ -107,6 +108,7 @@ for ss = 1:numstates
             usernamedstate = inputdlg(['What is the name of state ',num2str(ss),'?']);
             statenames{ss} = usernamedstate{1};
             newname = strcat(statenames{ss},'state');
+            IDX_new.statenames = statenames;
         else
             newname = strcat('state',ss);
         end
