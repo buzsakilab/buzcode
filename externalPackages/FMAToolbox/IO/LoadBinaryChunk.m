@@ -32,7 +32,7 @@ start = 0;
 fromCurrentIndex = true;
 nChannels = 1;
 precision = 'int16';
-% warning(['this function assumes int16 precision, if your file is not int16 use resample.m'])
+warning(['this function assumes int16 precision, if your file is not int16 use resample.m'])
 duration = 1;
 frequency = 20000;
 channels = [];

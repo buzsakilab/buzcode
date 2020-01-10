@@ -50,6 +50,8 @@ if exist(filename,'file')
     end
     SIexist = true;  %Marks that session info exists as expected
 else
+   warning(['could not find file ',baseName,'.sessionInfo.mat ',...
+       'running LoadParameters instead..']) 
    sessionInfo = LoadParameters(basePath);
    SIexist = false; 
 end
