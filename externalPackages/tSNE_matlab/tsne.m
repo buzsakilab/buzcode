@@ -1,4 +1,4 @@
-function ydata = tsne(X, labels, no_dims, initial_dims, perplexity)
+function [ydata,D] = tsne(X, labels, no_dims, initial_dims, perplexity)
 %TSNE Performs symmetric t-SNE on dataset X
 %
 %   mappedX = tsne(X, labels, no_dims, initial_dims, perplexity)
@@ -73,8 +73,10 @@ function ydata = tsne(X, labels, no_dims, initial_dims, perplexity)
     D = bsxfun(@plus, sum_X, bsxfun(@plus, sum_X', -2 * (X * X')));
     
     % Compute joint probabilities
-    P = d2p(D, perplexity, 1e-5);                                           % compute affinities using fixed perplexity
-    clear D
+    P = d2p(D, perplexity, 1e-5);  % compute affinities using fixed perplexity
+    if nargout ==1
+        clear D
+    end
     
     % Run t-SNE
     if initial_solution

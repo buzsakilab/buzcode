@@ -1,7 +1,7 @@
-function ydata = tsne_p(P, labels, no_dims)
+function ydata = tsne_p(P, labels, no_dims, max_iter)
 %TSNE_P Performs symmetric t-SNE on affinity matrix P
 %
-%   mappedX = tsne_p(P, labels, no_dims)
+%   mappedX = tsne_p(P, labels, no_dims, max_iter)
 %
 % The function performs symmetric t-SNE on pairwise similarity matrix P 
 % to create a low-dimensional map of no_dims dimensions (default = 2).
@@ -23,6 +23,10 @@ function ydata = tsne_p(P, labels, no_dims)
     if ~exist('no_dims', 'var') || isempty(no_dims)
         no_dims = 2;
     end
+    if ~exist('max_iter', 'var') || isempty(max_iter)
+        max_iter = 1000;  
+    end
+    
     
     % First check whether we already have an initial solution
     if numel(no_dims) > 1
@@ -39,7 +43,7 @@ function ydata = tsne_p(P, labels, no_dims)
     final_momentum = 0.8;                               % value to which momentum is changed
     mom_switch_iter = 250;                              % iteration at which momentum is changed
     stop_lying_iter = 100;                              % iteration at which lying about P-values is stopped
-    max_iter = 1000;                                    % maximum number of iterations
+   % max_iter = 1000;                                    % maximum number of iterations
     epsilon = 500;                                      % initial learning rate
     min_gain = .01;                                     % minimum gain for delta-bar-delta
     
