@@ -63,6 +63,9 @@ if dataset
     for rr = 1:length(baseNames)
         thisAResults = bz_LoadAnalysisResults(basePaths{rr},analysisName);
         
+        if isempty(thisAResults)
+            continue
+        end
         %Add baseName to the cellinfo file. this could be for each unit....
         thisAResults.baseName = baseNames(rr);
         

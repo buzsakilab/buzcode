@@ -341,7 +341,7 @@ else
 end
 
 % get waveforms
-if getWaveforms || ~keepCluWave
+if any(getWaveforms) && ~keepCluWave
     nPull = 1000;  % number of spikes to pull out
     wfWin = 0.008; % Larger size of waveform windows for filterning
     filtFreq = 500;
