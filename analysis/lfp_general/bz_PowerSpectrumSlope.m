@@ -18,6 +18,9 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %                   (default:false)
 %       'saveMat'   put your basePath here to save/load
 %                   baseName.PowerSpectrumSlope.lfp.mat  (default: false)
+%       'saveName'  add a string here to append to your saved name
+%                   i.e. 'saveName','_wav' will save as
+%                   baseName.PowerSpectrumSlope_wav.lfp.mat
 %       'Redetect'  (default: false) to force redetection even if saved
 %                   file exists
 %       'IRASA'     (default: true) use IRASA method to median-smooth power
@@ -26,7 +29,7 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       'nfreqs'    number of frequency values used to fitting (default: 200)
 %       'spectype'  'fft' or 'wavelet' (default: fft)
 %                   if using wavelets, winsize corresponds to number of
-%                   cycles (recommended: 10) and dt downsamples wavelets to
+%                   cycles (recommended: 5-10) and dt downsamples wavelets to
 %                   approximate desired dt (recommended <0.01 for
 %                   resolution up to 100Hz)
 %                   
@@ -50,6 +53,7 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 p = inputParser;
 addParameter(p,'showfig',false,@islogical)
 addParameter(p,'saveMat',false)
+addParameter(p,'saveName',[])
 addParameter(p,'channels',[])
 addParameter(p,'frange',[4 100])
 addParameter(p,'Redetect',false)
@@ -60,6 +64,7 @@ addParameter(p,'ints',[0 inf])
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
+addName = p.Results.saveName;
 channels = p.Results.channels;
 frange = p.Results.frange;
 REDETECT = p.Results.Redetect;
@@ -72,7 +77,7 @@ ints = p.Results.ints;
 if saveMat
     basePath = saveMat;
     baseName = bz_BasenameFromBasepath(basePath);
-    savename = fullfile(basePath,[baseName,'.PowerSpectrumSlope.lfp.mat']);
+    savename = fullfile(basePath,[baseName,'.PowerSpectrumSlope',addName,'.lfp.mat']);
     
     if exist(savename,'file') && ~REDETECT
         load(savename)
