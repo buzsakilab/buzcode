@@ -200,7 +200,7 @@ for tt = 1:length(spec.timestamps)
     s(tt,:) = polyfit(x,y,1);
     %Calculate the residuals (from the full PS)
     yfit =  s(tt,1) * x + s(tt,2);
-    yresid(tt,:) = spec.amp(tt,:) - yfit; %residual between "raw" PS, not IRASA-smoothed
+    yresid(tt,:) = spec.amp(tt,:) - yfit; %residual between "raw" PS line, not IRASA-smoothed
     %Calculate the rsquared value
     SSresid = sum(yresid(tt,:).^2);
     SStotal = (length(y)-1) * var(y);
@@ -225,7 +225,7 @@ specslope.freqs = spec.freqs;
 specslope.channels = lfp.channels;
 
 if saveMat
-    save(savename,'specslope','spec');
+    save(savename,'specslope');
 end
 
 %% Figure
