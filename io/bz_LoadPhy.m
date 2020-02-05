@@ -118,7 +118,7 @@ else
     wfWin = 0.008; % Larger size of waveform windows for filterning
     filtFreq = 500;
     hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);
-    f = waitbar(0,'Getting waveforms...');
+    % f = waitbar(0,'Getting waveforms...');
     wfWin = round((wfWin * fs)/2);
         for ii = 1 : size(spikes.times,2)
             spkTmp = spikes.ts{ii};
@@ -135,20 +135,22 @@ else
                     'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
             end
             wf = mean(wf,3);
-            for jj = 1 : size(wf,2)
-                wfF(:,jj) = filtfilt(hpFilt,wf(:,jj));
+            if isfield(sessionInfo,'badchannels')
+                wf(:,ismember(sessionInfo.channels,sessionInfo.badchannels))=0;
             end
-            [~, spikes.maxWaveformCh(ii)] = max(abs(wfF(wfWin,:)));
-            rawWaveform{ii} = detrend(wf(:,spikes.maxWaveformCh(ii)) - mean(wf(:,spikes.maxWaveformCh(ii)))); 
-            filtWaveform{ii} = wfF(:,spikes.maxWaveformCh(ii)) - mean(wfF(:,spikes.maxWaveformCh(ii)));
-           
-            spikes.rawWaveform{ii} = rawWaveform{ii}(wfWin-(0.002*fs):wfWin+(0.002*fs)); % keep only +- 1ms of waveform
-            spikes.filtWaveform{ii} = filtWaveform{ii}(wfWin-(0.002*fs):wfWin+(0.002*fs)); 
-
+            for jj = 1 : size(wf,2)          
+                wfF(:,jj) = filtfilt(hpFilt,wf(:,jj) - mean(wf(:,jj)));
+            end
+            [~, maxCh] = max(abs(wfF(wfWin,:)));
+            rawWaveform = detrend(wf(:,maxCh) - mean(wf(:,maxCh))); 
+            filtWaveform = wfF(:,maxCh) - mean(wfF(:,maxCh));
+            spikes.rawWaveform{ii} = rawWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); % keep only +- 1ms of waveform
+            spikes.filtWaveform{ii} = filtWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); 
+            spikes.maxWaveformCh(ii) = sessionInfo.channels(maxCh);
             % figure;plot(spikes.filtWaveform{ii},'r');hold on;plot(spikes.rawWaveform{ii},'b');
-            waitbar(ii/size(spikes.times,2),f,'Pulling out waveforms...');
+            % waitbar(ii/size(spikes.times,2),f,'Pulling out waveforms...');
         end
-        close(f)
+        % close(f)
     end
 end
 
@@ -156,7 +158,7 @@ end
 spikes.numcells = length(spikes.UID);
 if ~isfield(spikes,'region') && isfield(spikes,'maxWaveformCh') && isfield(sessionInfo,'region')
     for cc = 1:spikes.numcells
-        spikes.region{cc} = sessionInfo.region{spikes.maxWaveformCh(cc)==sessionInfo.channels};
+        spikes.region{cc} = [sessionInfo.region{find(spikes.maxWaveformCh(cc)==sessionInfo.channels)} ''];
     end
 end
 

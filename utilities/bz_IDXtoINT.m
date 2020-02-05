@@ -1,4 +1,4 @@
-function [ INT ] = bz_IDXtoINT( IDX ,varargin)
+function [ INT,IDX_new ] = bz_IDXtoINT( IDX ,varargin)
 %bz_IDXtoINT(IDX) Converts state indices to state on/offsets
 %
 %INPUT
@@ -19,6 +19,9 @@ function [ INT ] = bz_IDXtoINT( IDX ,varargin)
 %   'timestamps'
 %   'nameStates'
 %   'dt'
+%   'jumptol'   tolernce for jumps, in units of dt (default: 2). If
+%               adjacent timestamps are bigger than the tolerence, will
+%               end/start interval around the jump
 %   
 %OUTPUT
 %   INT:    {nstates} cell array of intervals - start and end times
@@ -33,13 +36,16 @@ addParameter(p,'timestamps',[])
 addParameter(p,'numstates',[])
 addParameter(p,'dt',[])
 addParameter(p,'nameStates',false)
+addParameter(p,'jumptol',2)
 parse(p,varargin{:})
 statenames = p.Results.statenames; 
 dt = p.Results.dt; 
 numstates = p.Results.numstates; 
 nameStates = p.Results.nameStates; 
+jumptol = p.Results.jumptol; 
 
 %%
+IDX_new = IDX; %Saving to pass through if new names;
 if isstruct(IDX)
     if isfield(IDX,'statenames')
         statenames = IDX.statenames;
@@ -75,8 +81,8 @@ if isempty(dt)
    dt = mode(diff(timestamps));
 end
 %For timestamps with breaks Fill in with state 0 and timestamp nan 
-if any(diff(timestamps)>dt)
-    jumps = find(diff(timestamps)>dt);
+if any(diff(timestamps)>(jumptol.*dt))
+    jumps = find(diff(timestamps)>(jumptol.*dt));
     for jj = length(jumps):-1:1
         IDX = [IDX(1:jumps(jj));0;IDX(jumps(jj)+1:end)];
         timestamps = [timestamps(1:jumps(jj));nan;timestamps(jumps(jj)+1:end)];
@@ -102,6 +108,7 @@ for ss = 1:numstates
             usernamedstate = inputdlg(['What is the name of state ',num2str(ss),'?']);
             statenames{ss} = usernamedstate{1};
             newname = strcat(statenames{ss},'state');
+            IDX_new.statenames = statenames;
         else
             newname = strcat('state',ss);
         end
