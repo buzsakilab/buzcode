@@ -45,6 +45,7 @@ addParameter(p,'forceRedetect',false,@islogical);
 addParameter(p,'shuffleCV2',false,@islogical);
 addParameter(p,'numISIbins',60);
 addParameter(p,'numCV2bins',50);
+addParameter(p,'logISIbounds',[0.001 200]);
 %addParameter(p,'fitGammas',false);
 
 
@@ -60,6 +61,7 @@ SHUFFLECV2 = p.Results.shuffleCV2;
 numISIbins = p.Results.numISIbins;
 numCV2bins = p.Results.numCV2bins;
 %fitGammas = p.Results.fitGammas;
+logISIbounds = p.Results.logISIbounds;
 
 
 %% Load the stuff
@@ -139,7 +141,7 @@ end
 %%
 %Set up all the bins and matrices
 ISIhist.linbins = linspace(0,10,numISIbins);
-ISIhist.logbins = linspace(log10(0.001),log10(200),numISIbins);
+ISIhist.logbins = linspace(log10(logISIbounds(1)),log10(logISIbounds(2)),numISIbins);
 ISIhist.(statenames{ss}).lin = zeros(numcells,numISIbins);
 ISIhist.(statenames{ss}).log = zeros(numcells,numISIbins);
 ISIhist.(statenames{ss}).return = zeros(numISIbins,numISIbins,numcells);
