@@ -43,8 +43,9 @@ addParameter(p,'showfig',false,@islogical);
 addParameter(p,'cellclass',[]);
 addParameter(p,'forceRedetect',false,@islogical);
 addParameter(p,'shuffleCV2',false,@islogical);
-addParameter(p,'numISIbins',60,@islogical);
-addParameter(p,'numCV2bins',50,@islogical);
+addParameter(p,'numISIbins',60);
+addParameter(p,'numCV2bins',50);
+%addParameter(p,'fitGammas',false);
 
 
 parse(p,varargin{:})
@@ -58,6 +59,7 @@ forceRedetect = p.Results.forceRedetect;
 SHUFFLECV2 = p.Results.shuffleCV2;
 numISIbins = p.Results.numISIbins;
 numCV2bins = p.Results.numCV2bins;
+%fitGammas = p.Results.fitGammas;
 
 
 %% Load the stuff
