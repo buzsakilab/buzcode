@@ -139,7 +139,7 @@ if exist(cellinfofile,'file') && forceReload == false
             save(cellinfofile,'spikes')
         end
     end
-    
+    spikes.filename = cellinfofile;
 else % do the below then filter by inputs... (Load from clu/res/fet)
     
     if ~noPrompts & saveMat == 0 %Inform the user that they should save a file for later

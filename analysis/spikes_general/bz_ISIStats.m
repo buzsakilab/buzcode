@@ -418,6 +418,7 @@ ISIstats.Jointhist = Jointhist;
 ISIstats.sorts = sorts;
 ISIstats.UID = spikes.UID;
 ISIstats.allspikes = allspikes;
+ISIstats.cellinfo.regions = spikes.region;
 
 
 if SAVECELLINFO
