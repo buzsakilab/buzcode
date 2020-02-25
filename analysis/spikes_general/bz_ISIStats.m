@@ -422,7 +422,11 @@ ISIstats.Jointhist = Jointhist;
 ISIstats.sorts = sorts;
 ISIstats.UID = spikes.UID;
 ISIstats.allspikes = allspikes;
-ISIstats.cellinfo.regions = spikes.region;
+try
+    ISIstats.cellinfo.regions = spikes.region;
+catch
+    display('No regions. Bummer dude.')
+end
 
 
 if SAVECELLINFO
