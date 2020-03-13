@@ -108,7 +108,7 @@ for ss = 1:numstates
             statenames{ss} = usernamedstate{1};
             newname = strcat(statenames{ss},'state');
         else
-            newname = strcat('state',ss);
+            newname = strcat('state',num2str(ss));
         end
     end
     

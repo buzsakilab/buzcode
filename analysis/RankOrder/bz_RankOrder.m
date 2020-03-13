@@ -169,7 +169,7 @@ saveMat = p.Results.saveMat;
 
 % Get session info
 basename = bz_BasenameFromBasepath(basepath);
-load([basepath filesep basename '.sessionInfo.mat']);
+% load([basepath filesep basename '.sessionInfo.mat']);
 % Load default spkEventTimes
 if isempty(spkEventTimes)
     spkEventTimes = load([basepath filesep basename '.spkEventTimes.mat']);
@@ -299,7 +299,7 @@ end
 %% Save and plot
 
 % Save statistics
-if saveMat
+
     rankStats.corrMean = corrMean;
     rankStats.corrStd = corrStd;
     rankStats.corrEvents = corrEvents;
@@ -309,6 +309,7 @@ if saveMat
     rankStats.pvalTotal = pvalTotal;
     rankStats.rankUnits = rankUnits;
     rankStats.rankClusters = rankClusters;
+if saveMat
     save([basepath filesep basename '.rankStats.mat'],'rankStats'); 
 end
 % Plot statistics

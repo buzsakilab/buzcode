@@ -91,8 +91,8 @@ saveMat = p.Results.saveMat;
 
 % Get session info
 basename = bz_BasenameFromBasepath(basepath);
-load([basepath filesep basename '.sessionInfo.mat']);
-SR = sessionInfo.rates.wideband;
+% load([basepath filesep basename '.sessionInfo.mat']);
+% SR = sessionInfo.rates.wideband;
 
 % Default events, UIDs and spikes
 if isempty(spikes)
