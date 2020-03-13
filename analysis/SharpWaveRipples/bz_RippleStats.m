@@ -78,7 +78,7 @@ centerBins = centerBin-nHalfCenterBins:centerBin+nHalfCenterBins;
 idx = ceil((ripples.peaks-ripples.timestamps(:,1))*ripples.detectorinfo.detectionparms.frequency);
 
 % Compute instantaneous phase and amplitude
-h = hilbert(filtered);
+h = hilbert(double(filtered));
 phase = angle(h);
 amplitude = abs(h);
 unwrapped = unwrap(phase);

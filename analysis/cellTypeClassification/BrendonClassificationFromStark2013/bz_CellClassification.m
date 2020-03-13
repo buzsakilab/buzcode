@@ -183,13 +183,14 @@ end
 if SAVEFIG || SHOWFIG
     figure
     subplot(2,2,1)
+        plot(CellClass.detectionparms.TroughPeakMs(ignoreidx),...
+            CellClass.detectionparms.SpikeWidthMs(ignoreidx),'x','color',[0.5 0.5 0.5],'markersize',3)
+        hold on
         plot(CellClass.detectionparms.TroughPeakMs(CellClass.pE),...
             CellClass.detectionparms.SpikeWidthMs(CellClass.pE),'.','color',[0 0.6 0])
-        hold on
         plot(CellClass.detectionparms.TroughPeakMs(CellClass.pI),...
             CellClass.detectionparms.SpikeWidthMs(CellClass.pI),'.','color',[0.6 0 0])
-        plot(CellClass.detectionparms.TroughPeakMs(ignoreidx),...
-            CellClass.detectionparms.SpikeWidthMs(ignoreidx),'x','color',[0.5 0.5 0.5])
+
         axis tight
         plot(CellClass.detectionparms.PyrBoundary(:,1),...
             CellClass.detectionparms.PyrBoundary(:,2))
@@ -203,6 +204,9 @@ if SAVEFIG || SHOWFIG
         title([baseName,': Cell Classification'])
         
     subplot(2,2,2)
+        if any(ignoreidx)
+            plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,ignoreidx),'color',[0.5 0.5 0.5])
+        end
         if any(CellClass.pE)
             plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pE),'color',[0 0.6 0])
         end
@@ -210,9 +214,7 @@ if SAVEFIG || SHOWFIG
         if any(CellClass.pI)
             plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,CellClass.pI),'color',[0.6 0 0])
         end
-        if any(ignoreidx)
-            plot([1:size(MaxWaves,1)]./OneMs,MaxWaves(:,ignoreidx),'color',[0.5 0.5 0.5])
-        end
+
         axis tight
         xlabel('t (ms)')
         if SAVEFIG

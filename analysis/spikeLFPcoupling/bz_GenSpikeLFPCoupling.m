@@ -55,6 +55,7 @@ function [SpikeLFPCoupling] = bz_GenSpikeLFPCoupling(spikes,LFP,varargin)
 %   -clean and buzcode
 %
 %DLevenstein 2016
+
 %% inputParse for Optional Inputs and Defaults
 p = inputParser;
 
@@ -68,7 +69,7 @@ checkSorttype = @(x) any(validatestring(x,validSorttypes)) || size(x) == [1,2];
 addParameter(p,'int',[0 Inf],checkInt)
 addParameter(p,'frange',[1 128],checkFrange)
 addParameter(p,'nfreqs',100,@isnumeric)
-addParameter(p,'ncyc',5,@isnumeric)
+addParameter(p,'ncyc',7,@isnumeric)
 addParameter(p,'synchdt',0.005,@isnumeric)
 addParameter(p,'synchwin',0.02,@isnumeric)
 addParameter(p,'sorttype','rate',checkSorttype)
@@ -128,7 +129,9 @@ if isequal(subpop,0)
         popcellind = {1:numcells};
 elseif isequal(subpop,'done')
 else
-        pops = unique(subpop);
+        emptycells =cellfun(@isempty,subpop);
+        pops = unique(subpop(~emptycells));
+        subpop(emptycells) = {'nopop'};
         numpop = length(pops);
         for pp = 1:numpop
             popcellind{pp} = find(ismember(subpop,pops{pp}));
@@ -209,30 +212,6 @@ for cc = 1:length(LFP.channels)
         spikes.filtLFP{nn} = interp1(LFP_filt.timestamps,LFP_filt.data,spikes.times{nn},'nearest');
     end
 
-    %% Population Synchrony: Phase Coupling and Rate Modulation
-    for pp = 1:numpop
-        if length(popcellind{pp}) == 0
-            popcoupling.(pops{pp}).powercorr = [];
-            popcoupling.(pops{pp}).phasemag = [];
-            popcoupling.(pops{pp}).phaseangle = [];
-            numpop = numpop-1;
-            continue
-        end
-        cellpopidx(popcellind{pp}) = pp;
-        numpopcells = length(popcellind{pp});
-        popsynch = sum(spikemat.data(:,popcellind{pp})>0,2)./numpopcells;
-        popsynch = popsynch./mean(popsynch);
-
-        %Calculate Synchrony-Power Coupling as correlation between synchrony and power
-        [popcoupling.(pops{pp}).powercorr(:,cc)] = corr(popsynch,abs(spikemat.filtLFP),'type','spearman','rows','complete');
-
-        %Synchrony-Phase Coupling (magnitude/angle of power-weighted mean resultant vector)
-        resultvect = nanmean(abs(spikemat.filtLFP).*bsxfun(@(popmag,ang) popmag.*exp(1i.*ang),...
-            popsynch,angle(spikemat.filtLFP)),1);
-        popcoupling.(pops{pp}).phasemag(:,cc) = abs(resultvect);
-        popcoupling.(pops{pp}).phaseangle(:,cc) = angle(resultvect);
-   
-    end
 
     %% Cell Rate-Power Modulation
 
@@ -289,9 +268,7 @@ for cc = 1:length(LFP.channels)
             [totmutXPow(nn,:,cc)] = ISIpowerMutInf(spikes.ISIs_prev{nn}(spikes.inint{nn}),...
                 spikes.ISIs_next{nn}(spikes.inint{nn}),spikes.filtLFP{nn});
         end
-        
     end
-    
     %%
 %     randsample(spikes.numcells,1);
 %     figure
@@ -301,7 +278,37 @@ for cc = 1:length(LFP.channels)
 %     subplot(2,2,2)
 %         imagesc(log2(freqs),[1 10],squeeze(totmutXPow(randsample(spikes.numcells,1),:,:))')
 %     %caxis([0 0.2])
-%     LogScale('x',2)
+%     LogScale('x',2) 
+    
+    %% Population Synchrony: Phase Coupling and Rate Modulation
+    for pp = 1:numpop
+        if length(popcellind{pp}) == 0
+            popcoupling.(pops{pp}).powercorr = [];
+            popcoupling.(pops{pp}).phasemag = [];
+            popcoupling.(pops{pp}).phaseangle = [];
+            numpop = numpop-1;
+            continue
+        end
+        cellpopidx(popcellind{pp}) = pp;
+        numpopcells = length(popcellind{pp});
+        popsynch = sum(spikemat.data(:,popcellind{pp})>0,2)./numpopcells;
+        popsynch = popsynch./mean(popsynch);
+
+        %Calculate Synchrony-Power Coupling as correlation between synchrony and power
+        [popcoupling.(pops{pp}).powercorr(:,cc)] = corr(popsynch,abs(spikemat.filtLFP),'type','spearman','rows','complete');
+
+        %Synchrony-Phase Coupling (magnitude/angle of power-weighted mean resultant vector)
+        %Note: need a way ehere to account for phase/power occupancy...
+        resultvect = nanmean(abs(spikemat.filtLFP).*bsxfun(@(popmag,ang) popmag.*exp(1i.*ang),...
+            popsynch,angle(spikemat.filtLFP)),1);
+        popcoupling.(pops{pp}).phasemag(:,cc) = abs(resultvect);
+        popcoupling.(pops{pp}).phaseangle(:,cc) = angle(resultvect);
+   
+        if ISIpower
+            popcoupling.(pops{pp}).ISIpowermodulation(:,cc) = nanmean(totmutXPow(popcellind{pp},:,cc),1);
+        end
+    end
+
 end
 
 clear LFP_filt
