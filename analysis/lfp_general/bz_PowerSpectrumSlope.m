@@ -76,8 +76,12 @@ if saveMat
     savename = fullfile(basePath,[baseName,'.PowerSpectrumSlope',addName,'.lfp.mat']);
     
     if exist(savename,'file') && ~REDETECT
-        load(savename)
-        return
+        try
+            load(savename)
+            return
+        catch
+            display('error loading file... recalculating PSS')
+        end
     end
 end
 
