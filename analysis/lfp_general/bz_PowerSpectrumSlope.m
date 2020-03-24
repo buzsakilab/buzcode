@@ -1,5 +1,5 @@
-function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
-%[specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt) calculates the
+function [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
+%[specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt) calculates the
 %slope of the power spectrum, a metric of cortical state and E/I balance
 %see Gao, Peterson, Voytek 2016;  Waston, Ding, Buzsaki 2017
 %
@@ -225,7 +225,7 @@ specslope.freqs = spec.freqs;
 specslope.channels = lfp.channels;
 
 if saveMat
-    save(savename,'specslope');
+    save(savename,'specslope','-v7.3');
 end
 
 %% Figure
