@@ -41,10 +41,6 @@ function [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       .intercept      [Nt x NChannels] vector of the 0-intercept
 %       .specgram       [Nt x Nfreqs x Nchannels] the spectrogram
 %       .resid          [Nt x Nfreqs x Nchannels] the PSS-removed spectrogram
-%   specgram
-%       .data       complex-valued spectrogram
-%       .timestamps
-%       .amp        log10-transformed amplitude of the spectrogram
 %
 %
 %DLevenstein 2018
