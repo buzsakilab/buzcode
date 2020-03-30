@@ -105,8 +105,13 @@ for ss = 1:numstates
 %ss=1;
 
 %Find which spikes are during state of interest
+if numstates ==1
+    statespikes = cellfun(@(X) true(size(X)),...
+        allspikes.times,'UniformOutput',false);
+else
 statespikes = cellfun(@(X) InIntervals(X,ints.(statenames{ss})),...
     allspikes.times,'UniformOutput',false);
+end
 allspikes.instate.(statenames{ss}) = statespikes;
 CV2 = cellfun(@(X,Y) X(Y(2:end-1)),allspikes.CV2,statespikes,'Uniformoutput',false);
 ISIs = cellfun(@(X,Y) X(Y(2:end-1)),allspikes.ISIs,statespikes,'Uniformoutput',false);
