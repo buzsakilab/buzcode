@@ -1,5 +1,5 @@
-function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
-%[specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt) calculates the
+function [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
+%[specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt) calculates the
 %slope of the power spectrum, a metric of cortical state and E/I balance
 %see Gao, Peterson, Voytek 2016;  Waston, Ding, Buzsaki 2017
 %
@@ -18,6 +18,9 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %                   (default:false)
 %       'saveMat'   put your basePath here to save/load
 %                   baseName.PowerSpectrumSlope.lfp.mat  (default: false)
+%       'saveName'  add a string here to append to your saved name
+%                   i.e. 'saveName','_wav' will save as
+%                   baseName.PowerSpectrumSlope_wav.lfp.mat
 %       'Redetect'  (default: false) to force redetection even if saved
 %                   file exists
 %       'IRASA'     (default: true) use IRASA method to median-smooth power
@@ -26,7 +29,7 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       'nfreqs'    number of frequency values used to fitting (default: 200)
 %       'spectype'  'fft' or 'wavelet' (default: fft)
 %                   if using wavelets, winsize corresponds to number of
-%                   cycles (recommended: 10) and dt downsamples wavelets to
+%                   cycles (recommended: 5-10) and dt downsamples wavelets to
 %                   approximate desired dt (recommended <0.01 for
 %                   resolution up to 100Hz)
 %                   
@@ -38,10 +41,6 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       .intercept      [Nt x NChannels] vector of the 0-intercept
 %       .specgram       [Nt x Nfreqs x Nchannels] the spectrogram
 %       .resid          [Nt x Nfreqs x Nchannels] the PSS-removed spectrogram
-%   specgram
-%       .data       complex-valued spectrogram
-%       .timestamps
-%       .amp        log10-transformed amplitude of the spectrogram
 %
 %
 %DLevenstein 2018
@@ -50,6 +49,7 @@ function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 p = inputParser;
 addParameter(p,'showfig',false,@islogical)
 addParameter(p,'saveMat',false)
+addParameter(p,'saveName',[])
 addParameter(p,'channels',[])
 addParameter(p,'frange',[4 100])
 addParameter(p,'Redetect',false)
@@ -60,6 +60,7 @@ addParameter(p,'ints',[0 inf])
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
+addName = p.Results.saveName;
 channels = p.Results.channels;
 frange = p.Results.frange;
 REDETECT = p.Results.Redetect;
@@ -72,11 +73,15 @@ ints = p.Results.ints;
 if saveMat
     basePath = saveMat;
     baseName = bz_BasenameFromBasepath(basePath);
-    savename = fullfile(basePath,[baseName,'.PowerSpectrumSlope.lfp.mat']);
+    savename = fullfile(basePath,[baseName,'.PowerSpectrumSlope',addName,'.lfp.mat']);
     
     if exist(savename,'file') && ~REDETECT
-        load(savename)
-        return
+        try
+            load(savename)
+            return
+        catch
+            display('error loading file... recalculating PSS')
+        end
     end
 end
 
@@ -195,7 +200,7 @@ for tt = 1:length(spec.timestamps)
     s(tt,:) = polyfit(x,y,1);
     %Calculate the residuals (from the full PS)
     yfit =  s(tt,1) * x + s(tt,2);
-    yresid(tt,:) = spec.amp(tt,:) - yfit; %residual between "raw" PS, not IRASA-smoothed
+    yresid(tt,:) = spec.amp(tt,:) - yfit; %residual between "raw" PS line, not IRASA-smoothed
     %Calculate the rsquared value
     SSresid = sum(yresid(tt,:).^2);
     SStotal = (length(y)-1) * var(y);
@@ -220,7 +225,7 @@ specslope.freqs = spec.freqs;
 specslope.channels = lfp.channels;
 
 if saveMat
-    save(savename,'specslope','spec');
+    save(savename,'specslope','-v7.3');
 end
 
 %% Figure

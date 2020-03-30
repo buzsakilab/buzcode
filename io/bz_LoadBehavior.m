@@ -43,11 +43,11 @@ else
 end
 
 %Check that the behavior structure meets buzcode standards
-[isBehavior] = bz_isBehavior(behavior);
-switch isBehavior
-    case false
-        warning('Your behavior structure does not meet buzcode standards. Sad.')
-end
+%[isBehavior] = bz_isBehavior(behavior);
+% switch isBehavior
+%     case false
+%         %warning('Your behavior structure does not meet buzcode standards. Sad.')
+% end
 
 
 end
