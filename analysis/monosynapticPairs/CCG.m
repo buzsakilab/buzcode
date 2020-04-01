@@ -117,6 +117,8 @@ end
 if length(groups) == 1,
 	groups = ones(length(times),1);
 	nGroups = 1;
+elseif exist('numcells','var')
+    nGroups = numcells;
 else
 	nGroups = max(unique(groups));
 end
