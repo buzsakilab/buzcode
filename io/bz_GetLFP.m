@@ -25,6 +25,7 @@ function [lfp] = bz_GetLFP(varargin)
 %    'downsample'         -factor to downsample the LFP (i.e. 'downsample',5
 %                           will load a 1250Hz .lfp file at 250Hz)
 %    'noPrompts'          -logical (default) to supress any user prompts
+%    'fromDat'            -option to load directly from .dat file (default:false)
 %
 %  OUTPUT
 %
@@ -76,6 +77,7 @@ addParameter(p,'downsample',1,@isnumeric);
 addParameter(p,'saveMat',false,@islogical);
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
+addParameter(p,'fromDat',false,@islogical);
 
 parse(p,varargin{:})
 basename = p.Results.basename;
@@ -83,6 +85,7 @@ channels = p.Results.channels;
 downsamplefactor = p.Results.downsample;
 basepath = p.Results.basepath;
 noPrompts = p.Results.noPrompts;
+fromDat = p.Results.fromDat;
 
 % doing this so you can use either 'intervals' or 'restrict' as parameters to do the same thing
 intervals = p.Results.intervals;
@@ -96,7 +99,12 @@ end
 %% let's check that there is an appropriate LFP file
 if isempty(basename)
    %disp('No basename given, so we look for a *lfp/*eeg file...')
-   d = dir([basepath filesep '*lfp']);
+   switch fromDat
+       case false
+           d = dir([basepath filesep '*lfp']);
+       case true
+           d = dir([basepath filesep '*dat']);
+   end
    if length(d) > 1 % we assume one .lfp file or this should break
        error('there is more than one .lfp file in this directory?');
    elseif length(d) == 0
@@ -118,7 +126,13 @@ if isempty(basename)
    end
    
 else
-   d = dir([basepath filesep basename '.lfp']);
+   switch fromDat
+       case false
+           d = dir([basepath filesep basename '.lfp']);
+       case true
+           d = dir([basepath filesep basename '.dat']);
+   end
+   
    if length(d) > 1 % we assume one .lfp file or this should break
        error('there is more than one .lfp file in this directory?');
    elseif length(d) == 0
@@ -134,14 +148,19 @@ end
 
 sessionInfo = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
 
-try
-    samplingRate = sessionInfo.lfpSampleRate;
-catch
-    samplingRate = sessionInfo.rates.lfp; % old ugliness we need to get rid of
+switch fromDat
+   case false
+        try
+            samplingRate = sessionInfo.lfpSampleRate;
+        catch
+            samplingRate = sessionInfo.rates.lfp; % old ugliness we need to get rid of
+        end
+    case true
+        samplingRate = sessionInfo.rates.wideband;
 end
-samplingRateLFP = samplingRate./downsamplefactor;
+samplingRateLFP_out = samplingRate./downsamplefactor;
 
-if mod(samplingRateLFP,1)~=0
+if mod(samplingRateLFP_out,1)~=0
     error('samplingRate/downsamplefactor must be an integer')
 end
 %% Channel load options
@@ -171,11 +190,11 @@ for i = 1:nIntervals
                   'frequency',samplingRate,'nchannels',sessionInfo.nChannels,...
                   'start',double(lfp(i).interval(1)),'channels',channels+1,...
                   'downsample',downsamplefactor);
-    lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRateLFP):...
+    lfp(i).timestamps = [lfp(i).interval(1):(1/samplingRateLFP_out):...
                         (lfp(i).interval(1)+(length(lfp(i).data)-1)/...
-                        samplingRateLFP)]';
+                        samplingRateLFP_out)]';
     lfp(i).channels = channels;
-    lfp(i).samplingRate = samplingRateLFP;
+    lfp(i).samplingRate = samplingRateLFP_out;
     % check if duration is inf, and reset to actual duration...
     if lfp(i).interval(2) == inf
         lfp(i).interval(2) = length(lfp(i).timestamps)/lfp(i).samplingRate;

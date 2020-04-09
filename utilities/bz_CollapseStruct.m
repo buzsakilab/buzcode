@@ -50,7 +50,11 @@ for ff = 1:length(fields)
         %bz_Matchfields
        %structout.(currentfield) = cat(1,structin(:).(currentfield));
        structout.(currentfield) = bz_Matchfields({structin(:).(currentfield)},[],'remove');
+       try
        structout.(currentfield) = bz_CollapseStruct(structout.(currentfield),dim,combine,true);
+       catch
+           keyboard
+       end
        continue
     elseif iscell(structin(1).(currentfield)) & NEST %For cell array in field
         if strcmp(dim,'match')
@@ -85,7 +89,10 @@ for ff = 1:length(fields)
 	end
 
     
-        if ~exist('structout','var') || ~isfield(structout,currentfield)
+        if ~exist('structout','var')
+            structout = [];
+            continue
+        elseif ~isfield(structout,currentfield)
             continue
         end
     switch combine
