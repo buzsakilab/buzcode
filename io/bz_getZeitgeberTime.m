@@ -1,4 +1,4 @@
-function [zeitgeberTime relativeTime absTime] = bz_getZeitgeberTime(basename,downSampleFactor)
+function [zeitgeberTime relativeTime absTime] = bz_getZeitgeberTime(basename,downSampleFactor,samplingRate)
 % assumes pwd is basepath for now
 
 
@@ -45,23 +45,23 @@ fclose(fid);
 
 [a b] = min(t);  %% fixes output for time.dat files that 'wrap' at the int32 limit
 if a < 0
-    t = double(t)./20000;
+    t = double(t)./samplingRate;
     for i=b:length(t)
     t(i) = t(i-1)+1;
     end
 else
-    t = single(t)./20000;
+    t = single(t)./samplingRate;
 end
-% t = t / 20000;
+% t = t / samplingRate;
 
 idx = find(t==0);
 idx(length(idx)+1) = length(t); % add end ts
 
 for ind = 1:length(idx)-1
-    zeitgeberTime(idx(ind):idx(ind+1)) = single(t(idx(ind):idx(ind+1)))/20000 + single(timeSeconds(ind));
+    zeitgeberTime(idx(ind):idx(ind+1)) = single(t(idx(ind):idx(ind+1))) + single(timeSeconds(ind));
 end
 
-zeitgeberTime = single(wrap(double(zeitgeberTime)/86400*pi*2,2))/ (2*pi) * 86400; % wrap it up
+zeitgeberTime = single(wrap(double(zeitgeberTime)/86400*pi*2,2))/ ((2*pi) * 86400); % wrap it up
 
 relativeTime = t;  % recording time
 

@@ -6,12 +6,14 @@ function [  ] = bz_Counter(current,total,name)
 
 if current==1
     fprintf('%s (of %d): %d',name,total,current)
+    %tic
 elseif current==total
     for j=0:log10(current-1)
       fprintf('\b'); % delete previous counter display
     end
     fprintf('\b DONE!\n')
 else
+    %timetillnow = toc;
     for j=0:log10(current-1)
       fprintf('\b'); % delete previous counter display
     end

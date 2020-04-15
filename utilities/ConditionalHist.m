@@ -13,6 +13,7 @@ function [ CONDXY ] = ConditionalHist( X,Y,varargin)
 %   'Xbinoverlap' (default: 1)
 %   'minX'      (default: 25)
 %   'conditionby'   condition on X with different occupancy from datapoints
+%   'SHOWFIG'   (default:false)
 %   
 %
 %OUTPUT
@@ -34,6 +35,7 @@ addParameter(p,'Ybounds',[])
 addParameter(p,'minX',25)
 addParameter(p,'Xbinoverlap',1)
 addParameter(p,'conditionby',[])
+addParameter(p,'SHOWFIG',false)
 parse(p,varargin{:})
 numXbins = p.Results.numXbins;
 numYbins = p.Results.numYbins;
@@ -42,6 +44,7 @@ Ybounds = p.Results.Ybounds;
 minX = p.Results.minX;
 Xbinoverlap = p.Results.Xbinoverlap;
 conditionby = p.Results.conditionby;
+SHOWFIG = p.Results.SHOWFIG;
 
 
 %% For cell input
@@ -125,8 +128,12 @@ CONDXY.Ybins = Ybins;
 
 
 %%
-% figure
-% imagesc(CONDXY.Xbins,CONDXY.Ybins,CONDXY.pYX')
-% axis xy
+if SHOWFIG
+figure
+imagesc(CONDXY.Xbins,CONDXY.Ybins,CONDXY.pYX')
+hold on
+%plot(CONDXY.Xbins,bz_NormToRange(CONDXY.pX,0.5),'k')
+axis xy
+end
 end
 

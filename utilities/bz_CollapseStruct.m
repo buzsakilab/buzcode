@@ -85,7 +85,7 @@ for ff = 1:length(fields)
 	end
 
     
-        if ~isfield(structout,currentfield)
+        if ~exist('structout','var') || ~isfield(structout,currentfield)
             continue
         end
     switch combine

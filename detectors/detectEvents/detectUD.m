@@ -69,7 +69,7 @@ addParameter(p,'gamm_thr',.5,@isnumeric);
 addParameter(p,'down_thr',0,@isnumeric);
 addParameter(p,'minEvDistance',.5,@isnumeric);
 addParameter(p,'deltaWaveThreshold',0,@isnumeric);
-addParameter(p,'plotOpt',false,@islogical);
+addParameter(p,'plotOpt',true,@islogical);
 addParameter(p,'forceDetect',false,@islogical);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'noPrompts',true,@islogical);
@@ -230,8 +230,17 @@ upPeaks(find(upPeaks>= lfp.duration-double(win)/sessionInfo.rates.lfp)) = [];
 for ii = 1:length(upPeaks)                                                 % find UP interval
     uw = envGammFilt(upPeaks(ii)*sessionInfo.rates.lfp-win:upPeaks(ii)*sessionInfo.rates.lfp+win);
     zx = zci(uw);
-    UP(ii,1) = double(max(zx(zx<win)) + upPeaks(ii)*sessionInfo.rates.lfp - win - 1)/ sessionInfo.rates.lfp;
-    UP(ii,2) = double(min(zx(zx>win)) + upPeaks(ii)*sessionInfo.rates.lfp - win - 1)/ sessionInfo.rates.lfp;
+    if isempty(max(zx(zx<win)))
+        UP(ii,1) = double(0 + upPeaks(ii)*sessionInfo.rates.lfp - win - 1)/ sessionInfo.rates.lfp;
+    else
+        UP(ii,1) = double(max(zx(zx<win)) + upPeaks(ii)*sessionInfo.rates.lfp - win - 1)/ sessionInfo.rates.lfp;
+    end
+    
+    if isempty(min(zx(zx>win)))
+        UP(ii,2) = double(win + upPeaks(ii)*sessionInfo.rates.lfp - win - 1)/ sessionInfo.rates.lfp;
+    else
+        UP(ii,2) = double(min(zx(zx>win)) + upPeaks(ii)*sessionInfo.rates.lfp - win - 1)/ sessionInfo.rates.lfp;
+    end
 end
 
 %% Spike thresholding
@@ -248,7 +257,6 @@ if ~isempty(spikeThreshold)
     spikemat = bz_SpktToSpkmat(spikes.times,'binsize',0.03,'overlap',6);
     sSpkMat = sum(spikemat.data,2)/size(spikemat.data,2);
     downValley(downValley<downWinSize) = [];
-    
     disp('Population cell response... ');
     downPopResponse = [];
     tic
