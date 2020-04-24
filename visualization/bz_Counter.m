@@ -11,7 +11,8 @@ elseif current==total
     for j=0:log10(current-1)
       fprintf('\b'); % delete previous counter display
     end
-    fprintf('\b DONE!\n')
+    fprintf('\b DONE! \n')
+    newline
 else
     %timetillnow = toc;
     for j=0:log10(current-1)
