@@ -100,6 +100,7 @@ allspikes.CV2 = cellfun(@(X) 2.*abs(X(2:end)-X(1:end-1))./(X(2:end)+X(1:end-1)),
 %Make sure times line up
 allspikes.times = cellfun(@(X) X(2:end-1),spikes.times,'UniformOutput',false);
 allspikes.ISIs = cellfun(@(X) X(1:end-1),allspikes.ISIs,'UniformOutput',false);
+allspikes.ISInp1 = cellfun(@(X) X(2:end),allspikes.ISIs,'UniformOutput',false);
 %%
 for ss = 1:numstates
 %ss=1;
@@ -430,7 +431,7 @@ ISIstats.allspikes = allspikes;
 try
     ISIstats.cellinfo.regions = spikes.region;
 catch
-    display('No regions. Bummer dude.')
+    %display('No regions. Bummer dude.')
 end
 
 
