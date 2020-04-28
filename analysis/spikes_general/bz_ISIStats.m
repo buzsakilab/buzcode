@@ -431,7 +431,7 @@ ISIstats.allspikes = allspikes;
 try
     ISIstats.cellinfo.regions = spikes.region;
 catch
-    display('No regions. Bummer dude.')
+    %display('No regions. Bummer dude.')
 end
 
 
