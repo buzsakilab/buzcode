@@ -39,6 +39,7 @@ addParameter(p,'ints',defaultstates)
 addParameter(p,'savecellinfo',false,@islogical)
 addParameter(p,'basePath',pwd,@isstr)
 addParameter(p,'figfolder',false)
+addParameter(p,'figname',[])
 addParameter(p,'showfig',false,@islogical);
 addParameter(p,'cellclass',[]);
 addParameter(p,'forceRedetect',false,@islogical);
@@ -55,6 +56,7 @@ cellclass = p.Results.cellclass;
 basePath = p.Results.basePath;
 SAVECELLINFO = p.Results.savecellinfo;
 figfolder = p.Results.figfolder;
+figname = p.Results.figname;
 SHOWFIG = p.Results.showfig;
 forceRedetect = p.Results.forceRedetect;
 SHUFFLECV2 = p.Results.shuffleCV2;
@@ -403,6 +405,9 @@ figure
 
 
 if figfolder
+    if ~isempty(figname)
+        baseName = figname;
+    end
     NiceSave(['ISIstats_',(statenames{ss})],figfolder,baseName);
 end
 
