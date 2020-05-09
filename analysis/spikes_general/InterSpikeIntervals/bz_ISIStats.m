@@ -266,7 +266,7 @@ end
 %[ccg,t] = CCG(statespiketimes,[],<options>)
 
 %%
-if SHOWFIG | figfolder
+if SHOWFIG || figfolder
 figure
     subplot(2,2,1)
         for cl = 1:numclasses
