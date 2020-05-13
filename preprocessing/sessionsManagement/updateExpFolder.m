@@ -2,7 +2,7 @@
 function updateExpFolder(inputFolder, outputFolder)
 % Update experiment folder from Recording computer to Analysis computer
 %
-% USAGE
+% USAGE 
 %   updateFolderSession(inputFolder, outputFoder)
 %
 % INPUT
