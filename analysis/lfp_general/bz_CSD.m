@@ -38,9 +38,9 @@ function [ csd ] = bz_CSD (lfp, varargin)
 p = inputParser;
 addParameter(p,'channels',1:size(lfp.data,2),@isvector);
 addParameter(p,'samplingRate',1250,@isnumeric);
-addParameter(p,'win',[1 size(lfp.data,1)],@isnumeric);
-addParameter(p,'spat_sm',11,@isnumeric);
-addParameter(p,'temp_sm',11,@isnumeric);
+addParameter(p,'win',[lfp.timestamps(1) lfp.timestamps(end)],@isnumeric);
+addParameter(p,'spat_sm',0,@isnumeric);
+addParameter(p,'temp_sm',0,@isnumeric);
 addParameter(p,'doDetrend',false,@islogical);
 addParameter(p,'plotCSD',true,@islogical);
 addParameter(p,'plotLFP',true,@islogical);
@@ -67,7 +67,7 @@ elseif isnumeric(lfp)
     timestamps = [1:length(lfp)]'./samplingRate;
 end
 
-win = p.Results.win*samplingRate;
+win = (p.Results.win*samplingRate)+1;
 
 
 %% Compute CSD
@@ -82,14 +82,14 @@ end
 % temporal smoothing
 if temp_sm > 0
    for ch = 1:size(lfp_frag,2) 
-       lfp_frag(:,ch) = smooth(lfp_frag(:,ch),temp_sm,'sgolay');
+       lfp_frag(:,ch) = smooth(double(lfp_frag(:,ch)),temp_sm,'sgolay');
    end
 end
 
 % spatial smoothing
 if spat_sm > 0
    for t = 1:size(lfp_frag,1) 
-       lfp_frag(t,:) = smooth(lfp_frag(t,:),spat_sm,'lowess');
+       lfp_frag(t,:) = smooth(double(lfp_frag(t,:)),spat_sm,'lowess');
    end
 end
 
