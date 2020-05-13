@@ -12,6 +12,7 @@ function updateExpFolder(inputFolder, outputFolder)
 %                       folder...
 %
 % Manu Valero-BuzsakiLab 2019
+% Antonio testing...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 or = pwd;
 % get session list codes from output folder
