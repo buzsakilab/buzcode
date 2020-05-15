@@ -20,6 +20,8 @@ function sessionsPipeline(varargin)
 %   analogCh       - List of analog channels with pulses to be detected (it support Intan Buzsaki Edition).
 %   forceSum       - Force make folder summary (overwrite, if necessary). Default false.
 %   cleanArtifacts - Remove artifacts from dat file. By default, if there is analogEv in folder, is true.
+%   stateScore     - Run automatic brain state detection with SleepScoreMaster. Default true.
+%   spikeSort      - Run automatic spike sorting using Kilosort. Default true.
 %   analisysList   - Logical array to indicate analysis to perform, according to the following list: 
 %                           1. Spike-waveform, autocorrelogram and spatial position 
 %                           2. Psth from analog-in inputs
@@ -30,12 +32,14 @@ function sessionsPipeline(varargin)
 %                   Example: [1 1 1 1 1] or 'all' make all. Default 'all'    
 %   pullData       - Path for raw data. Look for not analized session to copy to the main folder basepath. To do...
 %
-%   MManu Valero-BuzsakiLab 2019
-
-% TO DO:
-% - Verify that data format and alysis output are compatible with CellExplorer
-% - Include Kilosort2 support
-% - Improve auto-clustering routine 
+%  HISTORY: 
+%   - Manu Valero-BuzsakiLab 2019
+%   - Some reorganization, added state scoring and LFP creation, other minor changes: 5/20, AntonioFR
+%
+%  TO DO:
+%   - Verify that data format and alysis output are compatible with CellExplorer
+%   - Include Kilosort2 support
+%   - Improve auto-clustering routine 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -44,6 +48,8 @@ p = inputParser;
 addParameter(p,'expPath',[],@isdir);
 addParameter(p,'analogCh',[],@isnumeric);
 addParameter(p,'forceSum',false,@islogical);
+addParameter(p,'stateScore',true,@islogical);
+addParameter(p,'spikeSort',true,@islogical);
 addParameter(p,'analisysList','all');
 addParameter(p,'cleanArtifacts',false,@islogical);
 % addParameter(p,'pullData',[],@isdir); To do... 
@@ -52,6 +58,8 @@ parse(p,varargin{:});
 expPath = p.Results.expPath;
 analogCh = p.Results.analogCh;
 forceSum = p.Results.forceSum;
+stateScore = p.Results.stateScore;
+spikeSort = p.Results.spikeSort;
 analisysList = p.Results.analisysList;
 cleanArtifacts = p.Results.cleanArtifacts;
 
@@ -134,28 +142,54 @@ for ii = 1:size(allSess,1)
     bz_ConcatenateDats;
 end
 
+%% Make SessionInfo
+[sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  save(strcat(sessionInfo.session.name,'.sessionInfo.mat'),'sessionInfo');
+
 %% Remove stimulation artifacts
 if cleanArtifacts && ~isempty(analogCh)
     [pulses] = bz_getAnalogPulses('analogCh',analogCh);
-    sess = bz_getSessionInfo(pwd,'noPrompts',true);
-    cleanPulses(pulses.ints{1}(:),'ch',0:sess.nChannels-mod(sess.nChannels,16)-1);
+    cleanPulses(pulses.ints{1}(:),'ch',0:sessionInfo.nChannels-mod(sessionInfo.nChannels,16)-1);
 end
 
-%% Kilosort all sessions
-disp('Spike sort all sessions...');
-for ii = 1:size(allSess,1)
-    cd(strcat(allSess(ii).folder,'\',allSess(ii).name));
-    if  isempty(dir('*Kilosort*')) % if not kilosorted yet
-    fprintf(' ** Kilosorting session %3.i of %3.i... \n',ii, size(allSess,1));
-        KiloSortWrapper;
-        kilosortFolder = dir('*Kilosort*');
-        try PhyAutoClustering(strcat(kilosortFolder.folder,'\',kilosortFolder.name)); % autoclustering
-        catch
-            warning('PhyAutoClustering not possible!!');
-        end
-        if exist('phyLink') && ~isempty(phyLink) % move phy link to
-            kilosort_path = dir('*Kilosort*');
-            try copyfile(phyLink, strcat(kilosort_path.name,filesep,'LaunchPhy')); % copy pulTime to kilosort folder
+%% Make LFP
+if isempty(dir('*.lfp'))
+    try 
+        bz_LFPfromDat(pwd,'outFs',1250); % generating lfp
+        disp('Making LFP file ...');
+    catch
+        disp('Problems with bz_LFPfromDat, resampling...');
+        ResampleBinary(strcat(sessionInfo.session.name,'.dat'),strcat(sessionInfo.session.name,'.lfp'),...
+        sessionInfo.nChannels,1,sessionInfo.rates.wideband/sessionInfo.rates.lfp);
+    end
+end
+
+%% Get brain states
+if stateScore && exist('StateScoreFigures','dir')~=7
+    try 
+        SleepScoreMaster(pwd,'noPrompts',true,'ignoretime',pulses.intsPeriods); % try to sleep score
+    catch
+        disp('Problem with SleepScore skyping...');
+    end
+end
+
+
+%% Kilosort concatenated sessions
+if spikeSort
+    disp('Spike sort concatenated sessions...');
+    for ii = 1:size(allSess,1)
+        cd(strcat(allSess(ii).folder,'\',allSess(ii).name));
+        if  isempty(dir('*Kilosort*')) % if not kilosorted yet
+        fprintf(' ** Kilosorting session %3.i of %3.i... \n',ii, size(allSess,1));
+            KiloSortWrapper;
+            kilosortFolder = dir('*Kilosort*');
+            try PhyAutoClustering(strcat(kilosortFolder.folder,'\',kilosortFolder.name)); % autoclustering
+            catch
+                warning('PhyAutoClustering not possible!!');
+            end
+            if exist('phyLink') && ~isempty(phyLink) % move phy link to
+                kilosort_path = dir('*Kilosort*');
+                try copyfile(phyLink, strcat(kilosort_path.name,filesep,'LaunchPhy')); % copy pulTime to kilosort folder
+                end
             end
         end
     end
@@ -166,6 +200,7 @@ for ii = 1:size(allSess,1)
     fprintf(' ** Summary %3.i of %3.i... \n',ii, size(allSess,1));
     cd(strcat(allSess(ii).folder,'\',allSess(ii).name));
     if forceSum || (~isempty(dir('*Kilosort*')) && (isempty(dir('summ*')))) % is kilosorted but no summ
+        disp('running summary analysis...');
         AnalysisBatchScript;         
     end
 end
