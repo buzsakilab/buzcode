@@ -3,16 +3,17 @@ function updateExpFolder(inputFolder, outputFolder)
 % Update experiment folder from Recording computer to Analysis computer
 %
 % USAGE 
-%   updateFolderSession(inputFolder, outputFoder)
+%   updateExpFolder(inputFolder, outputFoder)
 %
 % INPUT
 %   inputFolder     Experiment folder in recording computer, can be
-%                       multiple folder
+%                       multiple folders
 %   outputFolder    Experiment folder in analysis computer. Only one
 %                       folder...
 %
 % Manu Valero-BuzsakiLab 2019
-% Antonio testing...
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 or = pwd;
 % get session list codes from output folder
