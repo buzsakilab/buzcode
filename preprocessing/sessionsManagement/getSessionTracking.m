@@ -1,6 +1,10 @@
 
 function [tracking] = getSessionTracking(varargin)
-% Tracking and concatenation over all session subfolder recordings
+%
+% Gets position trackign for each sub-session and concatenate all of them so they are 
+% aligned with LFP and spikes. Default is recording with Basler, and requiere avi videos 
+% and at least one tracking LED. There is an alternative in case OptiTrack was used. 
+% Needs to be run in main session folder. 
 %
 % USAGE
 %
@@ -19,19 +23,29 @@ function [tracking] = getSessionTracking(varargin)
 %                   normalize maze size.
 %   saveMat        - default true
 %   forceReload    - default false
+%   optitrack      - if optitrack instead of basler was used. Default false
 %
 % OUTPUT
 %       - tracking.behaviour output structure, with the fields:
-%   x               - x position in cm/ normalize
-%   y               - y position in cm/ normalize
-%   timestamps      - in seconds, if Bazler ttl detected, sync by them
+%   position.x               - x position in cm/ normalize
+%   position.y               - y position in cm/ normalize
+%   timestamps      - in seconds, if Basler ttl detected, sync by them
 %   folder          - 
 %   sync.sync       - Rx1 LED luminance.
 %   sync.timestamps - 2xC with start stops of sync LED.
-%
-%   Manuel Valero 2019
+%       only for OptiTrack
+%   position.z 
+%   orientation.x
+%   orientation.y
+%   orientation.z
+
+%   HISTORY:
+%     - Manuel Valero 2019
+%     - Added OptiTrack support: 5/20, AntonioFR (STILL NEEDS TESTING)
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Defaults and Parms
+
+%% Defaults and Params
 p = inputParser;
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'convFact',[],@isnumeric); % 0.1149
@@ -40,6 +54,7 @@ addParameter(p,'roiLED',[],@ismatrix);
 addParameter(p,'roisPath',[],@isfolder);
 addParameter(p,'saveMat',true,@islogical)
 addParameter(p,'forceReload',false,@islogical)
+addParameter(p,'optitrack',false,@islogical)
 
 parse(p,varargin{:});
 basepath = p.Results.basepath;
@@ -49,8 +64,9 @@ roiLED = p.Results.roiLED;
 roisPath = p.Results.roisPath;
 saveMat = p.Results.saveMat;
 forceReload = p.Results.forceReload;
+optitrack = p.Results.optitrack;
 
-%% Deal with inputs
+%% In case tracking already exists 
 if ~isempty(dir([basepath filesep '*Tracking.Behavior.mat'])) || forceReload
     disp('Trajectory already detected! Loading file.');
     file = dir([basepath filesep '*Tracking.Behavior.mat']);
@@ -58,80 +74,159 @@ if ~isempty(dir([basepath filesep '*Tracking.Behavior.mat'])) || forceReload
     return
 end
 
-cd(basepath); cd ..; upBasepath = pwd; cd(basepath);
-if isempty(roisPath)
-    if exist([basepath filesep 'roiTracking.mat'],'file') || ...
-        exist([basepath filesep 'roiLED.mat'],'file')
-            roisPath = basepath;
-            load([roisPath filesep 'roiLED.mat'],'roiLED');
-            load([roisPath filesep 'roiTracking.mat'],'roiTracking');
-    elseif exist([upBasepath filesep 'roiTracking.mat'],'file') || ...
-        exist([upBasepath filesep 'roiLED.mat'],'file')
-            roisPath = upBasepath;
-            load([roisPath filesep 'roiLED.mat'],'roiLED');
-            load([roisPath filesep 'roiTracking.mat'],'roiTracking');
-    end   
-end
-
-%% Find subfolder recordings
-cd(basepath);
-[sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', true);
-C = strsplit(sessionInfo.session.name,'_');
-sess = dir(strcat(C{1},'_',C{2},'*')); % get session files
-count = 1;
-for ii = 1:size(sess,1)
-    if sess(ii).isdir && ~isempty(dir([basepath filesep sess(ii).name filesep '*Basler*avi']))
-        cd([basepath filesep sess(ii).name]);
-        fprintf('Computing tracking in %s folder \n',sess(ii).name);
-        tempTracking{count}= LED2Tracking([],'convFact',convFact,'roiTracking',...
-            roiTracking,'roiLED',roiLED,'forceReload',forceReload); % computing trajectory
-        trackFolder(count) = ii; 
-        count = count + 1;
+%% Basler tracking 
+if ~(optitrack)
+    cd(basepath); cd ..; upBasepath = pwd; cd(basepath);
+    if isempty(roisPath)
+        if exist([basepath filesep 'roiTracking.mat'],'file') || ...
+            exist([basepath filesep 'roiLED.mat'],'file')
+                roisPath = basepath;
+                load([roisPath filesep 'roiLED.mat'],'roiLED');
+                load([roisPath filesep 'roiTracking.mat'],'roiTracking');
+        elseif exist([upBasepath filesep 'roiTracking.mat'],'file') || ...
+            exist([upBasepath filesep 'roiLED.mat'],'file')
+                roisPath = upBasepath;
+                load([roisPath filesep 'roiLED.mat'],'roiLED');
+                load([roisPath filesep 'roiTracking.mat'],'roiTracking');
+        end   
     end
-end
-cd(basepath);
 
-%% Concatenate and sync timestamps
-ts = []; subSessions = []; maskSessions = [];
-if exist([basepath filesep strcat(sessionInfo.session.name,'.MergePoints.events.mat')],'file')
-    load(strcat(sessionInfo.session.name,'.MergePoints.events.mat'));
-    for ii = 1:length(trackFolder)
-        if strcmpi(MergePoints.foldernames{trackFolder(ii)},tempTracking{ii}.folder)
-            sumTs = tempTracking{ii}.timestamps + MergePoints.timestamps(trackFolder(ii),1);
-            subSessions = [subSessions; MergePoints.timestamps(trackFolder(ii),1:2)];
-            maskSessions = [maskSessions; ones(size(sumTs))*ii];
-            ts = [ts; sumTs];
-        else
-            error('Folders name does not match!!');
+    %% Find subfolder recordings
+    cd(basepath);
+    [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', true);
+    C = strsplit(sessionInfo.session.name,'_');
+    sess = dir(strcat(C{1},'_',C{2},'*')); % get session files
+    count = 1;
+    for ii = 1:size(sess,1)
+        if sess(ii).isdir && ~isempty(dir([basepath filesep sess(ii).name filesep '*Basler*avi']))
+            cd([basepath filesep sess(ii).name]);
+            fprintf('Computing tracking in %s folder \n',sess(ii).name);
+            tempTracking{count}= LED2Tracking([],'convFact',convFact,'roiTracking',...
+                roiTracking,'roiLED',roiLED,'forceReload',forceReload); % computing trajectory
+            trackFolder(count) = ii; 
+            count = count + 1;
         end
     end
-else
-    warning('No MergePoints file found. Concatenating timestamps...');
-    for ii = 1:length(trackFolder)
-        sumTs = max(ts)+ tempTracking{ii}.timestamps;
-        subSessions = [subSessions; [sumTs(1) sumTs(end)]];
-        ts = [ts; sumTs];
+    cd(basepath);
+
+    %% Concatenate and sync timestamps
+    ts = []; subSessions = []; maskSessions = [];
+    if exist([basepath filesep strcat(sessionInfo.session.name,'.MergePoints.events.mat')],'file')
+        load(strcat(sessionInfo.session.name,'.MergePoints.events.mat'));
+        for ii = 1:length(trackFolder)
+            if strcmpi(MergePoints.foldernames{trackFolder(ii)},tempTracking{ii}.folder)
+                sumTs = tempTracking{ii}.timestamps + MergePoints.timestamps(trackFolder(ii),1);
+                subSessions = [subSessions; MergePoints.timestamps(trackFolder(ii),1:2)];
+                maskSessions = [maskSessions; ones(size(sumTs))*ii];
+                ts = [ts; sumTs];
+            else
+                error('Folders name does not match!!');
+            end
+        end
+    else
+        warning('No MergePoints file found. Concatenating timestamps...');
+        for ii = 1:length(trackFolder)
+            sumTs = max(ts)+ tempTracking{ii}.timestamps;
+            subSessions = [subSessions; [sumTs(1) sumTs(end)]];
+            ts = [ts; sumTs];
+        end
     end
+
+    % Concatenating tracking fields...
+    x = []; y = []; folder = []; samplingRate = []; description = [];
+    for ii = 1:size(tempTracking,2) 
+        x = [x; tempTracking{ii}.position.x]; 
+        y = [y; tempTracking{ii}.position.y]; 
+        folder{ii} = tempTracking{ii}.folder; 
+        samplingRate = [samplingRate; tempTracking{ii}.samplingRate];  
+        description{ii} = tempTracking{ii}.description;
+    end
+
+    tracking.position.x = x;
+    tracking.position.y = y;
+    tracking.folders = folder;
+    tracking.samplingRate = samplingRate;
+    tracking.timestamps = ts;
+    tracking.events.subSessions =  subSessions;
+    tracking.events.subSessionsMask = maskSessions;
+
+
+%% OptiTrack 
+if optitrack
+    warning('this option has not yet been properly tested');
+   % it requieres that csv files have been generated with OptiTrack software and 
+   % saved inside sub-session folder 
+   
+    %% Get tracking in subfolder recordings
+    cd(basepath);
+    [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', true);
+    C = strsplit(sessionInfo.session.name,'_');
+    sess = dir(strcat(C{1},'_',C{2},'*')); % get session files
+    count = 1;
+    for ii = 1:size(sess,1)
+        if sess(ii).isdir && ~isempty(dir([basepath filesep sess(ii).name filesep '*.csv']))
+            cd([basepath filesep sess(ii).name]);
+            fprintf('Computing tracking in %s folder \n',sess(ii).name);
+            tempTracking{count} = bz_processConvertOptitrack2Behav(basename,'syncSampFq',sessionInfo.samplingRate);
+            trackFolder(count) = ii; 
+            count = count + 1;
+        end
+    end
+    cd(basepath);
+    
+    %% Concatenate and sync timestamps
+    ts = []; subSessions = []; maskSessions = [];
+    if exist([basepath filesep strcat(sessionInfo.session.name,'.MergePoints.events.mat')],'file')
+        load(strcat(sessionInfo.session.name,'.MergePoints.events.mat'));
+        for ii = 1:length(trackFolder)
+            if strcmpi(MergePoints.foldernames{trackFolder(ii)},tempTracking{ii}.folder)
+                sumTs = tempTracking{ii}.timestamps + MergePoints.timestamps(trackFolder(ii),1);
+                subSessions = [subSessions; MergePoints.timestamps(trackFolder(ii),1:2)];
+                maskSessions = [maskSessions; ones(size(sumTs))*ii];
+                ts = [ts; sumTs];
+            else
+                error('Folders names do not match!!');
+            end
+        end
+    else
+        warning('No MergePoints file found. Concatenating timestamps...');
+        for ii = 1:length(trackFolder)
+            sumTs = max(ts)+ tempTracking{ii}.timestamps;
+            subSessions = [subSessions; [sumTs(1) sumTs(end)]];
+            ts = [ts; sumTs];
+        end
+    end
+
+    %% Concatenating tracking fields...
+    x = []; y = []; folder = []; samplingRate = []; description = [];
+    for ii = 1:size(tempTracking,2) 
+        x = [x; tempTracking{ii}.position.x]; 
+        y = [y; tempTracking{ii}.position.y]; 
+        z = [z; tempTracking{ii}.position.z]; 
+        rx = [x; tempTracking{ii}.orientation.rx]; 
+        ry = [y; tempTracking{ii}.orientation.ry]; 
+        rz = [z; tempTracking{ii}.orientation.rz]; 
+        folder{ii} = tempTracking{ii}.folder; 
+        samplingRate = [samplingRate; tempTracking{ii}.samplingRate];  
+        description{ii} = tempTracking{ii}.description;
+    end
+
+    tracking.position.x = x;
+    tracking.position.y = y;
+    tracking.position.z = z;
+    tracking.orientation.rx = rx;
+    tracking.orientation.y = ry;
+    tracking.orientation.z = rz;    
+    tracking.folders = folder;
+    tracking.samplingRate = samplingRate;
+    tracking.timestamps = ts;
+    tracking.events.subSessions =  subSessions;
+    tracking.events.subSessionsMask = maskSessions;
+
 end
 
-% Concatenating tracking fields...
-x = []; y = []; folder = []; samplingRate = []; description = [];
-for ii = 1:size(tempTracking,2) 
-    x = [x; tempTracking{ii}.position.x]; 
-    y = [y; tempTracking{ii}.position.y]; 
-    folder{ii} = tempTracking{ii}.folder; 
-    samplingRate = [samplingRate; tempTracking{ii}.samplingRate];  
-    description{ii} = tempTracking{ii}.description;
-end
 
-tracking.position.x = x;
-tracking.position.y = y;
-tracking.folders = folder;
-tracking.samplingRate = samplingRate;
-tracking.timestamps = ts;
-tracking.events.subSessions =  subSessions;
-tracking.events.subSessionsMask = maskSessions;
-
+%% save tracking 
 [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true);
 if saveMat
     save([basepath filesep sessionInfo.FileName '.Tracking.Behavior.mat'],'tracking');
