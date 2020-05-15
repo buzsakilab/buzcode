@@ -1,30 +1,26 @@
 
-%% KilosortBatch
-% Manu Valero-BuzsakiLab 2019
-
 function sessionsPipeline(varargin)
 
 % expPipeline(varargin)
 
-% Pipeline processing for dat + xml data:
-%   1. Organizes folders data by sessions (session being all recording from same day).
+% Master script for launching the basic pre-processing of Intan recorded ephys data. 
+% Also makes premilinary descriptive analysis and figures as an overview of the session.
+
+%   1. Organizes data folders by sessions (sessions being all recordings from same day).
 %   2. Concatenate sessions data.
-%   3. Spike sort sessions by kilosort.
+%   3. Spike sort by kilosort.
 %   4. Autocluster.
 %   5. Makes a folder summary with spike-waveforms, autocorrelogram and spatial position; psth from analog-in inputs and
-%       psth around slow waves and ripples. It requires
-%       AnalysisBatchScript.
+%       psth around slow waves and ripples. It requires AnalysisBatchScript.m
+
 % INPUT
 %   <options>       optional list of property-value pairs (see table below)
 %   expPath        - Basepath for experiment. It contains all session
-%                       folders. If not provides, promt.
+%                       folders. If not provided, promt.
 %   analogCh       - List of analog channels with pulses to be detected (it support Intan Buzsaki Edition).
-%   forceSum       - Force make folder summary (overwrite, if necessary).
-%                       Default false.
-%   cleanArtifacts - Remove artifacts from dat file, by default, is there is
-%                       analogEv, is true
-%   analisysList   - Logical array to indicate summary analysis, according
-%                       to the following list: 
+%   forceSum       - Force make folder summary (overwrite, if necessary). Default false.
+%   cleanArtifacts - Remove artifacts from dat file. By default, if there is analogEv in folder, is true.
+%   analisysList   - Logical array to indicate analysis to perform, according to the following list: 
 %                           1. Spike-waveform, autocorrelogram and spatial position 
 %                           2. Psth from analog-in inputs
 %                           3. Slow-waves psth
@@ -32,10 +28,15 @@ function sessionsPipeline(varargin)
 %                           5. Theta, gamma and HFO profile. Theta and
 %                               gamma mod
 %                   Example: [1 1 1 1 1] or 'all' make all. Default 'all'    
-%   pullData       - Path for raw data. Look for not analized session to
-%                       copy to the main folder basepath. To do...
+%   pullData       - Path for raw data. Look for not analized session to copy to the main folder basepath. To do...
 %
-%   MV-BuzsakiLab 2019
+%   MManu Valero-BuzsakiLab 2019
+
+% TO DO:
+% - Verify that data format and alysis output are compatible with CellExplorer
+% - Include Kilosort2 support
+% - Improve auto-clustering routine 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Defaults and Parms
@@ -91,7 +92,7 @@ if ischar(analisysList)
 end
 
 %% Build sessions
-disp('Building session folders (It asumes session as all folder recordered same day)...');
+disp('Building session folders (It asumes session as all folders recorded same day)...');
 allFolder = dir(pwd);
 for ii = 1:length(allFolder)
     if strlength(allFolder(ii).name) > 12 && isfolder(allFolder(ii).name) % if looks like a data folder
