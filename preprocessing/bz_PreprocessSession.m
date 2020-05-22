@@ -1,20 +1,11 @@
+function  bz_PreprocessSession(varargin)
 
-function sessionsPipeline(varargin)
+%         bz_PreprocessSession(varargin)
 
-% expPipeline(varargin)
-
-% Master script for launching the basic pre-processing of Intan recorded ephys data.
-% Is meant to be run on a folder with multiple sesions from different
-% animals and organizes them into same-day recordings as a first step. 
-%%%%%%% EXPLAIN HERE NAME CONVENTION ASSUMED ...
-% Also makes premilinary descriptive analysis and figures as an overview of the session.
-
-%   1. Organizes data folders by sessions (sessions being all recordings from same day).
-%   2. Concatenate sessions data.
-%   3. Spike sort by kilosort.
-%   4. Autocluster.
-%   5. Makes a folder summary with spike-waveforms, autocorrelogram and spatial position; psth from analog-in inputs and
-%       psth around slow waves and ripples. It requires AnalysisBatchScript.m
+%   Master fucntion to run the basic pre-processing pipeline for an
+%   individual sessions. Is based on sessionsPipeline.m but in this case
+%   works on an individual session basis no in a folfer with multiple ones.
+% 
 
 % INPUTS
 %   <options>       optional list of property-value pairs (see table below)
@@ -36,9 +27,8 @@ function sessionsPipeline(varargin)
 %   pullData       - Path for raw data. Look for not analized session to copy to the main folder basepath. To do...
 %
 %  HISTORY: 
-%   - Manu Valero-BuzsakiLab 2019
-%   - Some reorganization, added state scoring and LFP creation, other minor changes: 5/20, AntonioFR
-%
+%     - Created based on sessionsPipeline: AntonioFR, 5/20
+
 %  TO DO:
 %   - Verify that data format and alysis output are compatible with CellExplorer
 %   - Include Kilosort2 support
@@ -69,13 +59,18 @@ cleanArtifacts = p.Results.cleanArtifacts;
 if ~exist('expPath') || isempty(expPath)
     expPath = uigetdir; % select folder
 end
-allpath = strsplit(genpath(expPath),';'); % all folders
-cd(allpath{1});
+cd(expPath);
 
 %% deals with xml.
+if strcmp(expPath(end),filesep)
+    expPath = expPath(1:end-1);
+end
+[~,basename] = fileparts(expPath);
+
 disp('Check xml...');
-if isempty(dir('global.xml')) 
+if isempty(dir('basename.xml')) && isempty(dir('global.xml'))
     disp('No xml global file! Looking for it...');
+    allpath = strsplit(genpath(expPath),';'); % all folders
     xmlFile = []; ii = 2;
     while isempty(xmlFile) && ii < size(allpath,2)
         disp(ii);
@@ -85,69 +80,21 @@ if isempty(dir('global.xml'))
     end
     if isempty(xmlFile)    
         [file, path] = uigetfile('*.xml','Select global xml file');
-        copyfile(strcat(path,file),'global.xml');
+        copyfile(strcat(path,file),'basename.xml');
     else
-        copyfile(strcat(xmlFile.folder,filesep,xmlFile.name),strcat(allpath{1},filesep,'global.xml'));
+        copyfile(strcat(xmlFile.folder,filesep,xmlFile.name),strcat(allpath{1},filesep,basename,'.xml'));
     end
-    cd(allpath{1});
-end
-
-%% deals with analysis list
-if ischar(analisysList)
-    if strcmpi(analisysList,'all')
-        analisysList = [1 1 1 1 1 1 1];
-        analisysList(2) = ~isempty(analogCh);
-    else
-        error('Analysis list format not recognized!');
-    end
-end
-
-%% Build sessions
-disp('Building session folders (It asumes session as all folders recorded same day)...');
-allFolder = dir(pwd);
-for ii = 1:length(allFolder)
-    if strlength(allFolder(ii).name) > 12 && isfolder(allFolder(ii).name) % if looks like a data folder
-        folderFiels = strsplit(allFolder(ii).name,'_');
-        if isempty(dir(strcat('*',folderFiels{2},'_','sess*'))) % if there is no session folder yet
-            mkdir(strcat(folderFiels{1},'_',folderFiels{2},'_','sess',num2str(size(dir('*sess*'),1) + 1))); % create folder
-        end
-        if ~contains(folderFiels{3},'sess') % if it is not a session folder
-            targetfoder = dir(strcat(folderFiels{1},'_',folderFiels{2},'_','sess*'));
-            movefile(strcat('*',folderFiels{2},'_',folderFiels{3}),targetfoder.name); % move to session folder
-        end
-    end
-end
-
-% If recordered with intan Buz Edit, change dat file name
-allpath = strsplit(genpath(expPath),';'); % all folders again
-for ii = 1:size(allpath,2)
-    if strlength(allpath{ii}) > 12 && isfolder(allpath{ii}) % if looks like a data folder
-        cd(allpath{ii});
-        if ~isempty(dir('amplifier_analogin_auxiliary_int16.dat')) % if recordered with intan Buz Edit
-            movefile('amplifier_analogin_auxiliary_int16.dat','amplifier.dat');
-            try  movefile('amplifier_analogin_auxiliary_int16.xml','amplifier.xml');
-                movefile('amplifier_analogin_auxiliary_int16.nrs','amplifier.nrs');
-            end
-        end
-    end
+    cd(expPath);
 end
 
 %% Concatenate sessions
-cd(allpath{1});
-allSess = dir('*_sess*');
+cd(expPath);
 disp('Concatenate session folders...');
-for ii = 1:size(allSess,1)
-    fprintf(' ** Concatenating session %3.i of %3.i... \n',ii, size(allSess,1));
-    cd(strcat(allSess(ii).folder,'\',allSess(ii).name));
-    delete(strcat(allSess(ii).name,'.xml'));% bring xml file
-    copyfile(strcat(allpath{1},'\global.xml'),strcat(allSess(ii).name,'.xml'),'f');
-    % [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true);
-    bz_ConcatenateDats(pwd,0,1); % concat files according to time of recording
-end
+bz_ConcatenateDats(pwd,0,1); % concat files according to time of recording
 
 %% Make SessionInfo
 [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  
-save(strcat(sessionInfo.session.name,'.sessionInfo.mat'),'sessionInfo');
+save(strcat(basename,'.sessionInfo.mat'),'sessionInfo');
 
 %% Remove stimulation artifacts
 if cleanArtifacts && ~isempty(analogCh)
@@ -168,9 +115,13 @@ if isempty(dir('*.lfp'))
 end
 
 %% Get brain states
-if stateScore %&& exist('StateScoreFigures','dir')~=7
+if stateScore 
     try 
-        SleepScoreMaster(pwd,'noPrompts',true,'ignoretime',pulses.intsPeriods); % try to sleep score
+        if exist('pulses','var')
+            SleepScoreMaster(pwd,'noPrompts',true,'ignoretime',pulses.intsPeriods); % try to sleep score
+        else
+            SleepScoreMaster(pwd,'noPrompts',true); % try to sleep score
+        end
     catch
         disp('Problem with SleepScore skyping...');
     end
@@ -179,8 +130,6 @@ end
 %% Kilosort concatenated sessions
 if spikeSort
     disp('Spike sort concatenated sessions...');
-    for ii = 1:size(allSess,1)
-        cd(strcat(allSess(ii).folder,'\',allSess(ii).name));
         if  isempty(dir('*Kilosort*')) % if not kilosorted yet
         fprintf(' ** Kilosorting session %3.i of %3.i... \n',ii, size(allSess,1));
             KiloSortWrapper;
@@ -195,17 +144,24 @@ if spikeSort
                 end
             end
         end
+end
+
+%% deals with analysis list
+if ischar(analisysList)
+    if strcmpi(analisysList,'all')
+        analisysList = [1 1 1 1 1 1 1];
+        analisysList(2) = ~isempty(analogCh);
+    else
+        error('Analysis list format not recognized!');
     end
 end
 
 %% BatchAnalysis
-for ii = 1:size(allSess,1)
     fprintf(' ** Summary %3.i of %3.i... \n',ii, size(allSess,1));
-    cd(strcat(allSess(ii).folder,'\',allSess(ii).name));
     if forceSum || (~isempty(dir('*Kilosort*')) && (isempty(dir('summ*')))) % is kilosorted but no summ
         disp('running summary analysis...');
         AnalysisBatchScript;         
     end
-end
 
 end
+
