@@ -38,7 +38,7 @@ function  bz_PreprocessSession(varargin)
 
 %% Defaults and Parms
 p = inputParser;
-addParameter(p,'expPath',[],@isdir);
+addParameter(p,'expPath',pwd,@isdir); % by default, current folder
 addParameter(p,'analogCh',[],@isnumeric);
 addParameter(p,'forceSum',false,@islogical);
 addParameter(p,'stateScore',true,@islogical);
@@ -68,7 +68,7 @@ end
 [~,basename] = fileparts(expPath);
 
 disp('Check xml...');
-if isempty(dir('basename.xml')) && isempty(dir('global.xml'))
+if isempty(dir([basename '.xml'])) && isempty(dir('global.xml'))
     disp('No xml global file! Looking for it...');
     allpath = strsplit(genpath(expPath),';'); % all folders
     xmlFile = []; ii = 2;
@@ -80,7 +80,7 @@ if isempty(dir('basename.xml')) && isempty(dir('global.xml'))
     end
     if isempty(xmlFile)    
         [file, path] = uigetfile('*.xml','Select global xml file');
-        copyfile(strcat(path,file),'basename.xml');
+        copyfile(strcat(path,file),[basename '.xml']);
     else
         copyfile(strcat(xmlFile.folder,filesep,xmlFile.name),strcat(allpath{1},filesep,basename,'.xml'));
     end
@@ -90,22 +90,24 @@ end
 %% Concatenate sessions
 cd(expPath);
 disp('Concatenate session folders...');
-bz_ConcatenateDats(pwd,0,1); % concat files according to time of recording
+bz_ConcatenateDats(pwd,0,1); % NAMES2SORT NOT FOUND!!!!! ERROR!!!
 
 %% Make SessionInfo
 [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  
 save(strcat(basename,'.sessionInfo.mat'),'sessionInfo');
+session = sessionTemplate(pwd,'showGUI',false); % 
+save([basename '.session.mat'],session);
 
 %% Remove stimulation artifacts
 if cleanArtifacts && ~isempty(analogCh)
     [pulses] = bz_getAnalogPulses('analogCh',analogCh);
-    cleanPulses(pulses.ints{1}(:),'ch',0:sessionInfo.nChannels-mod(sessionInfo.nChannels,16)-1);
+    cleanPulses(pulses.ints{1}(:),'ch',0:session.extracellular.nChannels-mod(session.extracellular.nChannels,16)-1);
 end
 
 %% Make LFP
 if isempty(dir('*.lfp'))
     try 
-        bz_LFPfromDat(pwd,'outFs',1250); % generating lfp
+        bz_LFPfromDat(pwd,'outFs',1250); % generating lfp, NOTE: THIS FUNCTION WILL GENERATE A SESSIONINFO FILE!! WE NEED TO FIX THIS
         disp('Making LFP file ...');
     catch
         disp('Problems with bz_LFPfromDat, resampling...');
@@ -145,6 +147,7 @@ if spikeSort
             end
         end
 end
+cell_metrics = ProcessCellMetrics('session', session);
 
 %% deals with analysis list
 if ischar(analisysList)
