@@ -71,8 +71,8 @@ AScost_p = p.Results.AScost_p;
 ASguess = p.Results.ASguess;
 MScost = p.Results.MScost;
 
-educatedGuess.logrates =  [2.0 2.25 0.9 1.5 1.0]; %HiGamma Burst Theta LowGamma Irregular10Hz
-educatedGuess.CVs =       [0.2 0.05 0.05 0.3 0.6];
+educatedGuess.logrates =  [2.0 2.25 0.9  1.5 1.0 0.5]; %HiGamma Burst Theta LowGamma Irregular10Hz ThetaDouble
+educatedGuess.CVs =       [0.2 0.05 0.05 0.3 0.6 0.05];
 
 numpad = p.Results.numpad;
 maxNmodes = p.Results.maxNmodes;
@@ -85,6 +85,10 @@ autoNmodes = p.Results.autoNmodes;
 Nestimatemethod = p.Results.Nestimatemethod;
 %lasso = p.Results.lasso; %lasso doesn't work because weights sum to 1...
 %%
+
+if strcmp(figfolder,'detectionfigures')
+    figfolder = [basePath,filesep,'DetectionFigures'];
+end
 % if length(ISIs)<minISIs
 %     return
 % end

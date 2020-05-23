@@ -101,8 +101,8 @@ allspikes.meanISI = cellfun(@(X) (X(1:end-1)+X(2:end))./2,allspikes.ISIs,'Unifor
 allspikes.CV2 = cellfun(@(X) 2.*abs(X(2:end)-X(1:end-1))./(X(2:end)+X(1:end-1)),allspikes.ISIs ,'UniformOutput',false);
 %Make sure times line up
 allspikes.times = cellfun(@(X) X(2:end-1),spikes.times,'UniformOutput',false);
-allspikes.ISIs = cellfun(@(X) X(1:end-1),allspikes.ISIs,'UniformOutput',false);
 allspikes.ISInp1 = cellfun(@(X) X(2:end),allspikes.ISIs,'UniformOutput',false);
+allspikes.ISIs = cellfun(@(X) X(1:end-1),allspikes.ISIs,'UniformOutput',false);
 %%
 for ss = 1:numstates
 %ss=1;
@@ -230,7 +230,8 @@ if ~isempty(cellclass)
         meandists.(statenames{ss}).(classnames{cl}).ISIdist = squeeze(nanmean(ISIhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:),1));
         meandists.(statenames{ss}).(classnames{cl}).CV2dist = squeeze(nanmean(CV2hist.(statenames{ss})(inclasscells{cl}&enoughspikes,:),1));
         meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:,:),1));
-        
+        meandists.(statenames{ss}).(classnames{cl}).Return = squeeze(nanmean(ISIhist.(statenames{ss}).return(:,:,inclasscells{cl}&enoughspikes),3));
+
         %Sorts
         sorttypes = {'rate','ISICV','CV2'};
         for tt = 1:length(sorttypes)
@@ -258,6 +259,8 @@ else
         meandists.(statenames{ss}).(classnames{cl}).ISIdist = squeeze(nanmean(ISIhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:),1));
         meandists.(statenames{ss}).(classnames{cl}).CV2dist = squeeze(nanmean(CV2hist.(statenames{ss})(inclasscells{cl}&enoughspikes,:),1));
         meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:,:),1));
+        meandists.(statenames{ss}).(classnames{cl}).Return = squeeze(nanmean(ISIhist.(statenames{ss}).return(:,:,inclasscells{cl}&enoughspikes),3));
+
 end
 
 
@@ -433,6 +436,7 @@ ISIstats.Jointhist = Jointhist;
 ISIstats.sorts = sorts;
 ISIstats.UID = spikes.UID;
 ISIstats.allspikes = allspikes;
+ISIstats.meandists = meandists;
 try
     ISIstats.cellinfo.regions = spikes.region;
 catch

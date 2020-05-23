@@ -345,18 +345,18 @@ if SHOWFIG
     %Sorting (and other plot-related things)
     switch p.Results.sorttype
         case 'pca'
-            [~,SCORE,~,~,EXP] = pca(cellpower);
+            [~,SCORE,~,~,EXP] = pca(ratepowercorr);
             [~,spikepowersort] = sort(SCORE(:,1));
 
-            [~,SCORE,~,~,EXP_phase] = pca(cellphasemag);
+            [~,SCORE,~,~,EXP_phase] = pca(spikephasemag);
             [~,spikephasesort] = sort(SCORE(:,1));
             sortname = 'PC1';
         case 'none'
             spikepowersort = 1:numcells;
         case 'fsort'
             fidx = interp1(freqs,1:nfreqs,sortf,'nearest'); 
-            [~,spikepowersort] = sort(cellpower(:,fidx));
-            [~,spikephasesort] = sort(cellphasemag(:,fidx));
+            [~,spikepowersort] = sort(ratepowercorr(:,fidx));
+            [~,spikephasesort] = sort(spikephasemag(:,fidx));
             sortname = [num2str(sortf) 'Hz Magnitude'];
         case 'rate'
             spkrt = cellfun(@length,spikes.times);
