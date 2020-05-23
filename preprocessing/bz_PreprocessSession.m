@@ -98,6 +98,12 @@ save(strcat(basename,'.sessionInfo.mat'),'sessionInfo');
 session = sessionTemplate(pwd,'showGUI',false); % 
 save([basename '.session.mat'],session);
 
+%% Get analog and digital pulses
+if  ~isempty(analogCh)
+    [pulses] = bz_getAnalogPulses('analogCh',analogCh);
+end
+    digitalIn = bz_getDigitalIn('all','fs',sessionInfo.rates.wideband); 
+
 %% Remove stimulation artifacts
 if cleanArtifacts && ~isempty(analogCh)
     [pulses] = bz_getAnalogPulses('analogCh',analogCh);
