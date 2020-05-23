@@ -168,7 +168,6 @@ switch spectype
             'downsampleout',downsampleout,'intervals',ints,'showprogress',showprogress);
         
         spec.amp = log10(abs(spec.data));
-        spec.phase = angle(spec.data);
 end
 
 
@@ -192,7 +191,6 @@ if IRASA
     spec.freqs = spec.freqs(validFreqInds);
     spec.amp = spec.amp(:,validFreqInds);
     spec.data = spec.data(:,validFreqInds);
-    spec.phase = spec.phase(:,validFreqInds);
     
     spec.IRASAsmooth = power4fit;
     
@@ -229,7 +227,7 @@ specslope.data = s(:,1);
 specslope.intercept = s(:,2);
 specslope.timestamps = spec.timestamps;
 specslope.specgram = spec.amp;
-specslope.phase = spec.phase;
+specslope.phase = angle(spec.data);
 specslope.samplingRate = 1./dt;
 
 specslope.detectionparms.winsize = winsize;
