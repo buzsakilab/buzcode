@@ -102,7 +102,9 @@ save([basename '.session.mat'],'session');
 if  ~isempty(analogCh)
     [pulses] = bz_getAnalogPulses('analogCh',analogCh);
 end
+if ~exist('digitalIn.mat')
     digitalIn = bz_getDigitalIn('all','fs',sessionInfo.rates.wideband); 
+end
 
 %% Remove stimulation artifacts
 if cleanArtifacts && ~isempty(analogCh)
