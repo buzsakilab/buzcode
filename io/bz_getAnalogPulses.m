@@ -38,7 +38,7 @@ addParameter(p,'data',[],@isnumeric)
 addParameter(p,'fs',30000,@isnumeric)
 addParameter(p,'offset',0,@isnumeric)
 addParameter(p,'filename',[],@isstring)
-addParameter(p,'periodLag',5,@isnumeric)
+addParameter(p,'periodLag',20,@isnumeric)
 addParameter(p,'manualThr',false,@islogical)
 addParameter(p,'groupPulses',false,@islogical)
 
@@ -84,7 +84,7 @@ if isempty(d) && isempty(filename)                                         % is 
         filename = 'analogin.dat';  
         try [amplifier_channels, notes, aux_input_channels, spike_triggers,...         
             board_dig_in_channels, supply_voltage_channels, frequency_parameters, board_adc_channels ] =...
-            read_Intan_RHD2000_file_2;
+            read_Intan_RHD2000_file_bz;
         catch
             disp('File ''info.rhd'' not found. (Type ''help <a href="matlab:help loadAnalog">loadAnalog</a>'' for details) ');
         end
