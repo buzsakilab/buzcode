@@ -39,7 +39,7 @@ function  bz_PreprocessSession(varargin)
 %% Defaults and Parms
 p = inputParser;
 addParameter(p,'expPath',pwd,@isdir); % by default, current folder
-addParameter(p,'analogCh',[],@isnumeric);
+addPardevameter(p,'analogCh',[],@isnumeric);
 addParameter(p,'forceSum',false,@islogical);
 addParameter(p,'stateScore',true,@islogical);
 addParameter(p,'spikeSort',true,@islogical);
