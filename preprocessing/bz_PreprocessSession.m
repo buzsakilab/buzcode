@@ -96,7 +96,7 @@ bz_ConcatenateDats(pwd,0,1); % NAMES2SORT NOT FOUND!!!!! ERROR!!!
 [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  
 save(strcat(basename,'.sessionInfo.mat'),'sessionInfo');
 session = sessionTemplate(pwd,'showGUI',false); % 
-save([basename '.session.mat'],session);
+save([basename '.session.mat'],'session');
 
 %% Get analog and digital pulses
 if  ~isempty(analogCh)
@@ -106,7 +106,6 @@ end
 
 %% Remove stimulation artifacts
 if cleanArtifacts && ~isempty(analogCh)
-    [pulses] = bz_getAnalogPulses('analogCh',analogCh);
     cleanPulses(pulses.ints{1}(:),'ch',0:session.extracellular.nChannels-mod(session.extracellular.nChannels,16)-1);
 end
 
