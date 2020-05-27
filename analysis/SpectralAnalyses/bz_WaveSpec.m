@@ -122,11 +122,11 @@ si = 1./samplingRate;
 
 %Restrict to intervals, with overhang to remove edge effects at transitions
 %(then remove later)
-overhang = (ncyc)./frange(1);
-overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
-keepIDX = InIntervals(lfp.timestamps,overint);
-lfp.data = lfp.data(keepIDX,:);
-lfp.timestamps = lfp.timestamps(keepIDX);
+ overhang = (ncyc)./frange(1);
+ overint = bsxfun(@(X,Y) X+Y,intervals,overhang.*[-1 1]);
+ keepIDX = InIntervals(lfp.timestamps,overint); 
+ lfp.data = lfp.data(keepIDX,:);
+ lfp.timestamps = lfp.timestamps(keepIDX);
 
 %%
 if ~isa(lfp.data,'single') || ~isa(lfp.data,'double')
