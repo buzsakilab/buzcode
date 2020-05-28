@@ -110,7 +110,12 @@ else
     load([basepath filesep aviFile '.mat'],'frames');
 end
 
-average_frame = rgb2gray(mean(frames,4));        % get average frames
+% get average frame
+average_frame = zeros(size(frames,1), size(frames,2));
+for ii = 1:size(frames,2)
+    average_frame = average_frame + double(rgb2gray(frames(:,:,:,ii)));
+end
+average_frame = average_frame/size(frames,4);
 
 % deal with the ROI for the tracking, if not provided but 
 cd(basepath); cd ..; upBasepath = pwd; cd(basepath);

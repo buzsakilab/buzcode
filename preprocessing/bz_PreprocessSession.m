@@ -16,7 +16,9 @@ function  bz_PreprocessSession(varargin)
 %   cleanArtifacts - Remove artifacts from dat file. By default, if there is analogEv in folder, is true.
 %   stateScore     - Run automatic brain state detection with SleepScoreMaster. Default true.
 %   spikeSort      - Run automatic spike sorting using Kilosort. Default true.
-%   analisysList   - Logical array to indicate analysis to perform, according to the following list: 
+%   getPos         - get tracking positions. Default true. 
+%   runAnalysis    - run summary analysis using AnalysisBatchScrip. Default false.
+%   analysisList   - Logical array to indicate analysis to perform, according to the following list: 
 %                           1. Spike-waveform, autocorrelogram and spatial position 
 %                           2. Psth from analog-in inputs
 %                           3. Slow-waves psth
@@ -43,7 +45,9 @@ addParameter(p,'analogCh',[],@isnumeric);
 addParameter(p,'forceSum',false,@islogical);
 addParameter(p,'stateScore',true,@islogical);
 addParameter(p,'spikeSort',true,@islogical);
-addParameter(p,'analisysList','all');
+addParameter(p,'getPos',true,@islogical);
+addParameter(p,'runAnalysis',false,@islogical);
+addParameter(p,'analysisList','all');
 addParameter(p,'cleanArtifacts',false,@islogical);
 % addParameter(p,'pullData',[],@isdir); To do... 
 parse(p,varargin{:});
@@ -53,7 +57,9 @@ analogCh = p.Results.analogCh;
 forceSum = p.Results.forceSum;
 stateScore = p.Results.stateScore;
 spikeSort = p.Results.spikeSort;
-analisysList = p.Results.analisysList;
+getPos = p.Results.getPos;
+runAnalysis = p.Results.runAnalysis;
+analysisList = p.Results.analysisList;
 cleanArtifacts = p.Results.cleanArtifacts;
 
 if ~exist('expPath') || isempty(expPath)
@@ -95,8 +101,12 @@ bz_ConcatenateDats(pwd,0,1); % NAMES2SORT NOT FOUND!!!!! ERROR!!!
 %% Make SessionInfo
 [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  
 save(strcat(basename,'.sessionInfo.mat'),'sessionInfo');
+try
 session = sessionTemplate(pwd,'showGUI',false); % 
 save([basename '.session.mat'],'session');
+catch
+    warning('it seems that CellExplorer is not on your path');
+end
 
 %% Get analog and digital pulses
 if  ~isempty(analogCh)
@@ -153,25 +163,32 @@ if spikeSort
                 end
             end
         end
+    cell_metrics = ProcessCellMetrics('session', session);
 end
-cell_metrics = ProcessCellMetrics('session', session);
+
+%% Get tracking positions 
+if getPos
+    getSessionTracking;
+end
 
 %% deals with analysis list
-if ischar(analisysList)
-    if strcmpi(analisysList,'all')
-        analisysList = [1 1 1 1 1 1 1];
-        analisysList(2) = ~isempty(analogCh);
+if ischar(analysisList)
+    if strcmpi(analysisList,'all')
+        analysisList = [1 1 1 1 1 1 1];
+        analysisList(2) = ~isempty(analogCh);
     else
         error('Analysis list format not recognized!');
     end
 end
 
 %% BatchAnalysis
+if runAnalysis
     fprintf(' ** Summary %3.i of %3.i... \n',ii, size(allSess,1));
     if forceSum || (~isempty(dir('*Kilosort*')) && (isempty(dir('summ*')))) % is kilosorted but no summ
         disp('running summary analysis...');
         AnalysisBatchScript;         
     end
+end
 
 end
 

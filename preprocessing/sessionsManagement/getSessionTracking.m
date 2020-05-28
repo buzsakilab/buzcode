@@ -94,21 +94,27 @@ if ~(optitrack)
     %% Find subfolder recordings
     cd(basepath);
     [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', true);
-    C = strsplit(sessionInfo.session.name,'_');
-    sess = dir(strcat(C{1},'_',C{2},'*')); % get session files
-    count = 1;
-    for ii = 1:size(sess,1)
-        if sess(ii).isdir && ~isempty(dir([basepath filesep sess(ii).name filesep '*Basler*avi']))
-            cd([basepath filesep sess(ii).name]);
-            fprintf('Computing tracking in %s folder \n',sess(ii).name);
-            tempTracking{count}= LED2Tracking([],'convFact',convFact,'roiTracking',...
-                roiTracking,'roiLED',roiLED,'forceReload',forceReload); % computing trajectory
-            trackFolder(count) = ii; 
-            count = count + 1;
+    %C = strsplit(sessionInfo.session.name,'_');
+    %sess = dir(strcat(C{1},'_',C{2},'*')); % get session files
+    if exist([basepath filesep strcat(sessionInfo.session.name,'.MergePoints.events.mat')],'file')
+        load(strcat(sessionInfo.session.name,'.MergePoints.events.mat'));
+        count = 1;
+        for ii = 1:size(MergePoints.foldernames,2)
+            %if sess(ii).isdir && ~isempty(dir([basepath filesep sess(ii).name filesep '*Basler*avi']))
+             if ~isempty(dir([basepath filesep MergePoints.foldernames{ii} filesep '*Basler*avi']))   
+                cd([basepath filesep MergePoints.foldernames{ii}]); %cd([basepath filesep sess(ii).name]);
+                fprintf('Computing tracking in %s folder \n',MergePoints.foldernames{ii});
+                 tempTracking{count}= LED2Tracking([],'convFact',convFact,'roiTracking',...
+                     roiTracking,'roiLED',roiLED,'forceReload',forceReload); % computing trajectory
+                 trackFolder(count) = ii; 
+                count = count + 1;
+            end
         end
+        cd(basepath);
+    else
+        error('missing MergePoints, quiting...');
     end
-    cd(basepath);
-
+    
     %% Concatenate and sync timestamps
     ts = []; subSessions = []; maskSessions = [];
     if exist([basepath filesep strcat(sessionInfo.session.name,'.MergePoints.events.mat')],'file')
@@ -157,23 +163,30 @@ if optitrack
    % it requieres that csv files have been generated with OptiTrack software and 
    % saved inside sub-session folder 
    
-    %% Get tracking in subfolder recordings
+    %% Get tracking in subfolder recordings    
     cd(basepath);
     [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', true);
-    C = strsplit(sessionInfo.session.name,'_');
-    sess = dir(strcat(C{1},'_',C{2},'*')); % get session files
-    count = 1;
-    for ii = 1:size(sess,1)
-        if sess(ii).isdir && ~isempty(dir([basepath filesep sess(ii).name filesep '*.csv']))
-            cd([basepath filesep sess(ii).name]);
-            fprintf('Computing tracking in %s folder \n',sess(ii).name);
-            tempTracking{count} = bz_processConvertOptitrack2Behav(basename,'syncSampFq',sessionInfo.samplingRate);
-            trackFolder(count) = ii; 
-            count = count + 1;
+    %C = strsplit(sessionInfo.session.name,'_');
+    %sess = dir(strcat(C{1},'_',C{2},'*')); % get session files
+    if exist([basepath filesep strcat(sessionInfo.session.name,'.MergePoints.events.mat')],'file')
+        load(strcat(sessionInfo.session.name,'.MergePoints.events.mat'));
+        count = 1;
+        for ii = 1:size(MergePoints.foldernames,2)
+            %if sess(ii).isdir && ~isempty(dir([basepath filesep sess(ii).name filesep '*Basler*avi']))
+             if ~isempty(dir([basepath filesep MergePoints.foldernames{ii} filesep '*Basler*avi']))   
+                cd([basepath filesep MergePoints.foldernames{ii}]); %cd([basepath filesep sess(ii).name]);
+                fprintf('Computing tracking in %s folder \n',MergePoints.foldernames{ii});
+                tempTracking{count} = bz_processConvertOptitrack2Behav(basename,'syncSampFq',sessionInfo.samplingRate);
+                trackFolder(count) = ii; 
+                count = count + 1;
+            end
         end
-    end
-    cd(basepath);
+        cd(basepath);
+    else
+        error('missing MergePoints, quiting...');
+    end    
     
+        
     %% Concatenate and sync timestamps
     ts = []; subSessions = []; maskSessions = [];
     if exist([basepath filesep strcat(sessionInfo.session.name,'.MergePoints.events.mat')],'file')

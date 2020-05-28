@@ -264,9 +264,9 @@ if analisysList(4)
         if isempty(dir('*.ripples.events.mat'))
             % ripples = bz_FindRipples(lfp.data,lfp.timestamps,'restrict',pulses.intsPeriods,'saveMat',true);
             
-            ripples = bz_FindRipples(bz_GetBestRippleChan(lfp.data),lfp.timestamps,'restrict',pulses.intsPeriods,...
+            ripples = bz_FindRipples(lfp.data(:,bz_GetBestRippleChan(lfp)),lfp.timestamps,'restrict',pulses.intsPeriods,...
               'noise',lfp.data(:,end),'saveMat',true);        
-            ripples = restrictEvents(ripples,pulses.intsPeriods);
+            ripples = restrictEvents(ripples,pulrses.intsPeriods);
             try ripples = rmfield(ripples,'detectorinfo'); end % remove field with the complete lfp
             fileRip = dir('*.ripples.events.mat'); save(fileRip.name,'ripples');
         else
