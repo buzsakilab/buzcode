@@ -64,7 +64,8 @@ function [t,x,y,vx,vy,ax,ay] = trajectory_kalman_filter(posx,posy,post,order,Q,R
 % Centre for the Biology of Memory
 % Norwegian University of Science and Technology
 %
-%
+% Modified by AntonioFR, 5/20
+
 
 % Default values. These are manually tuned for good performance
 if (nargin < 5)
@@ -74,11 +75,12 @@ if (nargin < 6)
     R = eye(2);
 end
 % Chop off any missing data in the start of session
-n = length(posx);
-lastmissing = min(find(isfinite(posx))) - 1;
-posx = posx(lastmissing+1:end);
-posy = posy(lastmissing+1:end);
-post = post(lastmissing+1:end);
+    n = length(posx);
+    lastmissing = min(find(isfinite(posx))) - 1;
+    posx = posx(lastmissing+1:end);
+    posy = posy(lastmissing+1:end);
+    postt = post(lastmissing+1:end);
+    removed = nan(lastmissing,1);
 % Run Kalman filter on the remaining samples
 missing = zeros(n,1);
 missing(isnan(posx)) = 1;
@@ -88,12 +90,21 @@ if (sum(missing))
     % with Kalman predicted positions, then augment with Kalman filtered
     % positions. Iterate ten times to allow the augmented data to converge.
     missing_index = find(missing);
-    [x,y,vx,vy,ax,ay] = kfilter(posx,posy,post,order,Q,R,1,missing);
+    [x,y,vx,vy,ax,ay] = kfilter(posx,posy,postt,order,Q,R,1,missing);
     for i = 1:10 
         posx(missing_index) = x(missing_index);
         posy(missing_index) = y(missing_index);
-        [x,y,vx,vy,ax,ay] = kfilter(posx,posy,post,order,Q,R,0);
+        [x,y,vx,vy,ax,ay] = kfilter(posx,posy,postt,order,Q,R,0);
     end 
+    
+    % append removed data as NaN
+    x = [removed;x];
+    y = [removed;y];
+    vx = [removed;vx];
+    vy = [removed;vy];
+    ax = [removed;ax];
+    ay = [removed;ay];
+    
 else
     % No missing data, get the MAP estimates from a single pass
     [x,y,vx,vy,ax,ay,mm] = kfilter(posx,posy,post,order,Q,R,0);
