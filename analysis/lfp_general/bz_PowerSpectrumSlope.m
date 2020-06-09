@@ -226,15 +226,15 @@ end
 specslope.data = s(:,1);
 specslope.intercept = s(:,2);
 specslope.timestamps = spec.timestamps;
-specslope.specgram = spec.amp;
-specslope.phase = angle(spec.data);
+specslope.specgram = single(spec.amp);
+specslope.phase = single(angle(spec.data));
 specslope.samplingRate = 1./dt;
 
 specslope.detectionparms.winsize = winsize;
 specslope.detectionparms.frange = frange;
 
 specslope.rsq = rsq';
-specslope.resid = yresid;
+specslope.resid = single(yresid);
 specslope.freqs = spec.freqs;
 
 specslope.channels = lfp.channels;
