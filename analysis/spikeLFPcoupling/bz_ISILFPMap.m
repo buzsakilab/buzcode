@@ -13,6 +13,10 @@ addParameter(p,'figfolder',false)
 addParameter(p,'figname',[])
 addParameter(p,'showfig',false,@islogical);
 addParameter(p,'forceRedetect',false,@islogical);
+addParameter(p,'dt',1);
+addParameter(p,'winsize',1);
+addParameter(p,'frange',[1 312]);
+addParameter(p,'nfreqs',150);
 
 parse(p,varargin{:})
 ints = p.Results.ints;
@@ -24,6 +28,10 @@ figfolder = p.Results.figfolder;
 figname = p.Results.figname;
 SHOWFIG = p.Results.showfig;
 forceRedetect = p.Results.forceRedetect;
+dt = p.Results.dt;
+winsize = p.Results.winsize;
+frange = p.Results.frange;
+nfreqs = p.Results.nfreqs;
 
 %% Load Header
 %Initiate Paths
@@ -119,10 +127,6 @@ for rr = 1:length(Regions)
         'basepath',basePath,'noPrompts',true,'downsample',downsamplefactor);
 
 %% Calculate Residuals
-dt = 1;
-winsize = 1;
-frange = [1 312];
-nfreqs = 150;
 [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,'spectype','fft',...
     'nfreqs',nfreqs,'showfig',false,'showprogress',false,'frange',frange);%,...
     %'saveMat',basePath,'saveName',['Chan',num2str(lfpchannel)],...
