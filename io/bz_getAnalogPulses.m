@@ -15,6 +15,7 @@ function [pulses] = bz_getAnalogPulses(varargin)
 % filename      File to get pulses from. Default, data file with folder
 %               name in current directory
 % manualThr     Check manually threslhold amplitude (default, false)
+% groupPulses   Group manually train of pulses (default, false)
 %
 %
 % OUTPUTS
@@ -37,8 +38,9 @@ addParameter(p,'data',[],@isnumeric)
 addParameter(p,'fs',30000,@isnumeric)
 addParameter(p,'offset',0,@isnumeric)
 addParameter(p,'filename',[],@isstring)
-addParameter(p,'periodLag',5,@isnumeric)
-addParameter(p,'manualThr',false,@islogical) %% to do!!!
+addParameter(p,'periodLag',20,@isnumeric)
+addParameter(p,'manualThr',false,@islogical)
+addParameter(p,'groupPulses',false,@islogical)
 
 parse(p, varargin{:});
 fs = p.Results.fs;
@@ -48,6 +50,7 @@ lag = p.Results.periodLag;
 manualThr = p.Results.manualThr;
 d = p.Results.data;
 analogCh = p.Results.analogCh;
+groupPulses = p.Results.groupPulses;
 
 sess = bz_getSessionInfo(pwd,'noPrompts',true);
 if exist([sess.FileName '.pulses.events.mat'],'file') 
@@ -81,7 +84,7 @@ if isempty(d) && isempty(filename)                                         % is 
         filename = 'analogin.dat';  
         try [amplifier_channels, notes, aux_input_channels, spike_triggers,...         
             board_dig_in_channels, supply_voltage_channels, frequency_parameters, board_adc_channels ] =...
-            read_Intan_RHD2000_file_2;
+            read_Intan_RHD2000_file_bz;
         catch
             disp('File ''info.rhd'' not found. (Type ''help <a href="matlab:help loadAnalog">loadAnalog</a>'' for details) ');
         end
@@ -102,6 +105,7 @@ if size(d,1) > size(d,2)
     d = d';
 end
 
+kk = 1;
 for jj = 1 : size(d,1)
     xt = linspace(1,length(d)/fs,length(d));
     fprintf(' ** Channel %3.i of %3.i... \n',jj, size(d,1));
@@ -110,22 +114,41 @@ for jj = 1 : size(d,1)
     end
     
     if ~manualThr
-        thr = 25*median(abs(d(jj,:))/0.6745); % computing threshold
+        thr = 20*median(abs(d(jj,:))/0.6745); % computing threshold
         if thr == 0 || ~any(d>thr)
             disp('Trying 5*std threshold...');
             d = d - mean(d);
-            thr = 5 * std(double(d(jj,:)));
+            thr = 4.5 * std(double(d(jj,:)));
         end
     else
         h = figure;
         plot(xt(1:100:end), d(1:100:end));
         xlabel('s'); ylabel('amp');
-        title('Select threshold with the mouse and press right click...');
+        title('Select threshold with the mouse and press left click...');
         [~,thr] = ginput(1);
         hold on
         plot([xt(1) xt(end)],[thr thr],'-r');
         pause(1);
         close(h);
+    end
+    
+    eventGroup = [];
+    if groupPulses
+        h = figure;
+        plot(xt(1:100:end), d(1:100:end));
+        hold on
+        xlabel('s'); ylabel('amp');
+        title('Group stimulation periods by pressing left click. Press enter when done.');
+        selecting = 1;
+        while selecting
+            [x,~] = ginput(2);
+            if ~isempty(x)
+                plot([x(1) x(2)],[thr thr]);
+                eventGroup = [eventGroup; x'];
+            else
+                selecting = 0;
+            end
+        end        
     end
     
     dBin = (d(jj,:)>thr); % binarize signal
@@ -169,6 +192,11 @@ for jj = 1 : size(d,1)
     end
     
     eventID{jj} = ones(size(dur{jj})) * jj;
+    if ~isempty(eventGroup)
+        for kk = 1:size(eventGroup,1)
+            eventID{jj}(pul{jj}(1,:) >= eventGroup(kk,1) & pul{jj}(1,:) <= eventGroup(kk,2)) = jj + size(d,1) + kk - 2;
+        end
+    end
     
     h=figure;
     subplot(1,size(d,1),jj);
@@ -180,12 +208,17 @@ for jj = 1 : size(d,1)
     if ~isempty(locsA)
         plot(locsA, ax(4),'o','MarkerFaceColor',[1 0 0],'MarkerEdgeColor','none','MarkerSize',3);
     end
+    if ~isempty(eventGroup)
+        for kk = 1:size(eventGroup,1)
+            plot([eventGroup(kk,1) eventGroup(kk,2)],[thr+100 thr+100],'LineWidth',10);
+        end
+    end
     xlabel('s'); ylabel('Amplitude (au)'); 
 end
 mkdir('Pulses');
 saveas(gca,'pulses\pulThr.png');
 
-if ~isempty(locsA) % if no pulses, not save anything...
+if ~isempty(locsA) % if no pulses, not save anything... 
     pulses.timestamps = cell2mat(pul)';
     pulses.amplitude = cell2mat(val)';
     pulses.duration = cell2mat(dur)';

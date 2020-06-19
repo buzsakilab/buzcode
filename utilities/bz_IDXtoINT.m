@@ -110,7 +110,7 @@ for ss = 1:numstates
             newname = strcat(statenames{ss},'state');
             IDX_new.statenames = statenames;
         else
-            newname = strcat('state',ss);
+            newname = strcat('state',num2str(ss));
         end
     end
     
