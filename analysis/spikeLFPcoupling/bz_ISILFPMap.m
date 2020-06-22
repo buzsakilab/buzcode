@@ -185,7 +185,7 @@ ISILFPMap.(Regions{rr}).SGorder = SGorder;
 ISILFPMap.(Regions{rr}).SGLength = SGLength;
 ISILFPMap.(Regions{rr}).SGnum = SGnum;
 %%
-if SHOWFIG || figfolder
+if SHOWFIG | figfolder
 figure
     for ss = 1:length(states)
         for tt = 1:length(celltypes)
