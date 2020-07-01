@@ -184,14 +184,13 @@ if IRASA
     end
     
     %Calculate the residual from the smoothed spectrum
-    %spec.osci = (spec.amp(:,validFreqInds))-(resampledData(:,validFreqInds));
+    spec.osci = (spec.amp(:,validFreqInds))-(resampledData(:,validFreqInds));
     power4fit = resampledData(:,validFreqInds);
     
     %Return the specgram to requested frequencies
     spec.freqs = spec.freqs(validFreqInds);
     spec.amp = spec.amp(:,validFreqInds);
     spec.data = spec.data(:,validFreqInds);
-    
     spec.IRASAsmooth = power4fit;
     
     clear resampledData
@@ -234,7 +233,7 @@ specslope.detectionparms.winsize = winsize;
 specslope.detectionparms.frange = frange;
 
 specslope.rsq = rsq';
-specslope.resid = single(yresid);
+specslope.resid = single(spec.osci);
 specslope.freqs = spec.freqs;
 
 specslope.channels = lfp.channels;
