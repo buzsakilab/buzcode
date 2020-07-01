@@ -82,6 +82,7 @@ if saveMat
     
     if exist(savename,'file') && ~REDETECT
         try
+            display(['Loading ',baseName,'.PowerSpectrumSlope',addName,'.lfp.mat'])
             load(savename)
             return
         catch
