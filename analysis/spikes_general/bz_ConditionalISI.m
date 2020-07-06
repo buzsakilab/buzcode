@@ -51,6 +51,8 @@ if iscell(spikes)
     all_ConditionalISI = cat(1,all_ConditionalISI{:});
     ConditionalISI = bz_CollapseStruct( all_ConditionalISI,3,'justcat',true);
     
+    %HERE! Fit all cells simultaneously? (ugh, but with separate
+    %parameters...)
     return
 end
 

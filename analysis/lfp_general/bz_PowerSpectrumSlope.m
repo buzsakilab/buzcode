@@ -232,6 +232,7 @@ specslope.samplingRate = 1./dt;
 
 specslope.detectionparms.winsize = winsize;
 specslope.detectionparms.frange = frange;
+specslope.detectionparms.detectiondate = datetime;
 
 specslope.rsq = rsq';
 specslope.resid = single(spec.osci);
