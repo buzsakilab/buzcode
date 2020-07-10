@@ -13,7 +13,7 @@ addParameter(p,'figfolder',false)
 addParameter(p,'figname',[])
 addParameter(p,'showfig',false,@islogical);
 addParameter(p,'forceRedetect',false,@islogical);
-addParameter(p,'dt',1);
+addParameter(p,'dt',0.25);
 addParameter(p,'winsize',1);
 addParameter(p,'frange',[1 312]);
 addParameter(p,'nfreqs',150);
@@ -122,7 +122,7 @@ for rr = 1:length(Regions)
         display('No Cells')
         continue
     end
-    downsamplefactor = 2;
+    downsamplefactor = 1;
     lfp = bz_GetLFP(inregionchan,... %note: may have to load separately here for RAM...
         'basepath',basePath,'noPrompts',true,'downsample',downsamplefactor);
 
@@ -159,6 +159,12 @@ for ff = 1:length(specslope.freqs)
                 'showfig',false,'ISIDist',false);
             %test(rr,ss,tt,ff,cc) = PopConditionalISIDist.MutInf;
             ISILFPMap.(Regions{rr}).(states{ss}).(celltypes{tt})(ff,cc) = PopConditionalISIDist.MutInf;
+            
+            [UnitsConditionalISIDist] = bz_ConditionalISI(spikes.times,fPower,...
+                'ints',ints.(states{ss}),...
+                'showfig',false,'ISIDist',false);
+            
+            ISILFPMap.(Regions{rr}).(states{ss}).AllUnits(ff,cc,:) = UnitsConditionalISIDist.MutInf;
             end
         end
     end
