@@ -8,7 +8,7 @@ function [ConditionalISI] = bz_ConditionalISI(spikes,conditionalvariable,varargi
 %Future: multiple conditional variables... (fit together)
 %%
 p = inputParser;
-addParameter(p,'ints',[0 inf])
+addParameter(p,'ints',[])
 addParameter(p,'normtype','percentile')
 addParameter(p,'minX',50)
 addParameter(p,'numISIbins',120)
@@ -64,15 +64,17 @@ ISIs.n = ISIs.n(1:end-1);
 
 %% Restrict ISIs and conditional variable to intervals
 conditionalvariable.dt = mode(diff(conditionalvariable.timestamps));
-inints = InIntervals(conditionalvariable.timestamps,ints);
-conditionalvariable.data = conditionalvariable.data(inints);
-conditionalvariable.timestamps = conditionalvariable.timestamps(inints);
 
+if ~isempty(ints)
+    inints = InIntervals(conditionalvariable.timestamps,ints);
+    conditionalvariable.data = conditionalvariable.data(inints);
+    conditionalvariable.timestamps = conditionalvariable.timestamps(inints);
 
-inints = InIntervals(ISIs.times,ints);
-ISIs.n = ISIs.n(inints);
-ISIs.np1 = ISIs.np1(inints);
-ISIs.times = ISIs.times(inints);
+    inints = InIntervals(ISIs.times,ints);
+    ISIs.n = ISIs.n(inints);
+    ISIs.np1 = ISIs.np1(inints);
+    ISIs.times = ISIs.times(inints);
+end
 
 if ~strcmp(normtype,'none')
     [conditionalvariable.data] = NormToInt(conditionalvariable.data,normtype);

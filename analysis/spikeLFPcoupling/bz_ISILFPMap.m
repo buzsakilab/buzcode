@@ -145,8 +145,14 @@ end
 
 %%
 clear fPower
+%Do inintervals outside the loop, for speed
+for ss = 1:length(states)
+    fPower.(states{ss}).timestamps = specslope.timestamps;
+    fPower.(states{ss}).idx = InIntervals(fPower.(states{ss}).timestamps,ints.(states{ss}));
+    fPower.(states{ss}).timestamps = fPower.(states{ss}).timestamps(fPower.(states{ss}).idx);
+end
+%%
 
-fPower.timestamps = specslope.timestamps;
 clear PopConditionalISIDist PopConditionalISIDist_phase PopConditionalISIDist_power
 for ff = 1:length(specslope.freqs)
 	bz_Counter(ff,length(specslope.freqs),'Freq')
@@ -154,22 +160,39 @@ for ff = 1:length(specslope.freqs)
         fPower.data = specslope.resid(:,ff,cc);
         for tt = 1:length(celltypes)
             for ss = 1:length(states)
-            [PopConditionalISIDist] = bz_ConditionalISI(popspikes.(Regions{rr}).(celltypes{tt}),fPower,...
-                'ints',ints.(states{ss}),...
-                'showfig',false,'ISIDist',false);
-            %test(rr,ss,tt,ff,cc) = PopConditionalISIDist.MutInf;
-            ISILFPMap.(Regions{rr}).(states{ss}).(celltypes{tt})(ff,cc) = PopConditionalISIDist.MutInf;
-            
-            [UnitsConditionalISIDist] = bz_ConditionalISI(spikes.times,fPower,...
-                'ints',ints.(states{ss}),...
-                'showfig',false,'ISIDist',false);
-            
-            ISILFPMap.(Regions{rr}).(states{ss}).AllUnits(ff,cc,:) = UnitsConditionalISIDist.MutInf;
+                %Nan Pad data to avoid having to use InIntervals
+                fPower.(states{ss}).data = fPower.data(fPower.(states{ss}).idx);
+                [ fPower.(states{ss}).data ] = NanPadJumps( fPower.(states{ss}).timestamps,...
+                    fPower.(states{ss}).data,2*dt);
+                %tic
+                [PopConditionalISIDist] = bz_ConditionalISI(popspikes.(Regions{rr}).(celltypes{tt}),fPower.(states{ss}),...
+                    'showfig',false,'ISIDist',false);%, 'ints',ints.(states{ss}));%,...
+                %test(rr,ss,tt,ff,cc) = PopConditionalISIDist.MutInf;
+                ISILFPMap.(Regions{rr}).(states{ss}).(celltypes{tt})(ff,cc) = PopConditionalISIDist.MutInf;
+
+                [UnitsConditionalISIDist] = bz_ConditionalISI(spikes.times,fPower.(states{ss}),...
+                    'showfig',false,'ISIDist',false);%,'ints',ints.(states{ss}));%,...
+
+                ISILFPMap.(Regions{rr}).(states{ss}).AllUnits(ff,cc,:) = UnitsConditionalISIDist.MutInf;
+                %toc
             end
         end
     end
     
 end
+
+%% Mean over all cells in region/cell type
+for ff = 1:length(specslope.freqs)
+    for cc = 1:length(inregionchan)
+        for tt = 1:length(celltypes)
+            for ss = 1:length(states)
+                ISILFPMap.(Regions{rr}).(states{ss}).Mean.(celltypes{tt})(ff,cc) = ...
+                    nanmean(ISILFPMap.(Regions{rr}).(states{ss}).AllUnits(ff,cc,CellClass.(celltypes{tt})&inregioncellIDX));
+            end 
+        end
+    end
+end
+
 
 
 %%
