@@ -5,7 +5,7 @@ defaultstates.ALL = [-Inf Inf];
 
 p = inputParser;
 addParameter(p,'ints',defaultstates)
-addParameter(p,'savecellinfo',false,@islogical)
+addParameter(p,'savechaninfo',false,@islogical)
 addParameter(p,'cellclass','AllCells');
 addParameter(p,'regions','sessionInfo');
 addParameter(p,'groups','sessionInfo');
@@ -21,7 +21,7 @@ addParameter(p,'nfreqs',150);
 parse(p,varargin{:})
 ints = p.Results.ints;
 cellclass = p.Results.cellclass;
-SAVECHANINFO = p.Results.savecellinfo;
+SAVECHANINFO = p.Results.savechaninfo;
 regions = p.Results.regions;
 groups = p.Results.groups;
 figfolder = p.Results.figfolder;

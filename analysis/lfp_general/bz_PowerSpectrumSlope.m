@@ -60,6 +60,7 @@ addParameter(p,'nfreqs',200)
 addParameter(p,'spectype','fft')
 addParameter(p,'ints',[0 inf])
 addParameter(p,'showprogress',false)
+addParameter(p,'suppressText',false)
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
@@ -73,6 +74,7 @@ nfreqs = p.Results.nfreqs;
 spectype = p.Results.spectype;
 ints = p.Results.ints;
 showprogress = p.Results.showprogress;
+suppressText = p.Results.suppressText;
 
 %%
 if saveMat
@@ -82,7 +84,9 @@ if saveMat
     
     if exist(savename,'file') && ~REDETECT
         try
-            display(['Loading ',baseName,'.PowerSpectrumSlope',addName,'.lfp.mat'])
+            if ~suppressText
+                display(['Loading ',baseName,'.PowerSpectrumSlope',addName,'.lfp.mat'])
+            end
             load(savename)
             return
         catch
