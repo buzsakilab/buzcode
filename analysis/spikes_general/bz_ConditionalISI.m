@@ -23,6 +23,8 @@ addParameter(p,'showfig',true)
 addParameter(p,'figname',[])
 addParameter(p,'basePath',pwd,@isstr)
 addParameter(p,'figfolder',false)
+addParameter(p,'Xbinoverlap',1)
+
 parse(p,varargin{:})
 ints = p.Results.ints;
 normtype = p.Results.normtype;
@@ -39,7 +41,7 @@ basePath = p.Results.basePath;
 figfolder = p.Results.figfolder;
 DO_ISIDist = p.Results.ISIDist;
 DO_MutInf = p.Results.MutInf;
-
+Xbinoverlap = p.Results.Xbinoverlap;
 %%
 baseName = bz_BasenameFromBasepath(basePath);
 
@@ -85,7 +87,8 @@ ISIs.x = interp1(conditionalvariable.timestamps,conditionalvariable.data,ISIs.ti
 %% Conditional Distribution/Rate, and MutInfo
 if DO_ISIDist
     [ ConditionalISI.Dist ] = ConditionalHist( [ISIs.x;ISIs.x],log10([ISIs.n;ISIs.np1]),...
-        'Xbounds',Xwin,'numXbins',numXbins,'Ybounds',logISIbounds,'numYbins',numISIbins,'minX',minX);
+        'Xbounds',Xwin,'numXbins',numXbins,'Ybounds',logISIbounds,'numYbins',numISIbins,'minX',minX,...
+        'Xbinoverlap',Xbinoverlap);
 
     ConditionalISI.Dist.Xocc = hist(conditionalvariable.data,ConditionalISI.Dist.Xbins);
     ConditionalISI.Dist.SpikeRate = ConditionalISI.Dist.Xhist./(ConditionalISI.Dist.Xocc.*conditionalvariable.dt.*2);
