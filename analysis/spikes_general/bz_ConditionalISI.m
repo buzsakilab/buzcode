@@ -91,6 +91,7 @@ if DO_ISIDist
         'Xbinoverlap',Xbinoverlap);
 
     ConditionalISI.Dist.Xocc = hist(conditionalvariable.data,ConditionalISI.Dist.Xbins);
+    ConditionalISI.Dist.Xocc = movsum(ConditionalISI.Dist.Xocc,Xbinoverlap.*2-1);
     ConditionalISI.Dist.SpikeRate = ConditionalISI.Dist.Xhist./(ConditionalISI.Dist.Xocc.*conditionalvariable.dt.*2);
 
     %Convert to prob density
