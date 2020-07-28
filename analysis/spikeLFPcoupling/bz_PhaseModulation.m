@@ -245,7 +245,11 @@ detectorParams = v2struct(intervals,samplingRate,method,plotting,numBins,...
 PhaseLockingData = v2struct(phasedistros,phasebins,...
     phasestats,spkphases,...
     detectorName, detectorParams);
+try
 PhaseLockingData.region = spikes.region;
+catch
+PhaseLockingData.region = [];
+end
 PhaseLockingData.UID = spikes.UID;
 PhaseLockingData.sessionName = spikes.sessionName;
 

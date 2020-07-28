@@ -96,13 +96,13 @@ end
 %% Concatenate sessions
 cd(expPath);
 disp('Concatenate session folders...');
-bz_ConcatenateDats(pwd,0,1); % NAMES2SORT NOT FOUND!!!!! ERROR!!!
+bz_ConcatenateDats(pwd,0,1);
 
 %% Make SessionInfo
 [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  
 save(strcat(basename,'.sessionInfo.mat'),'sessionInfo');
 try
-session = sessionTemplate(pwd,'showGUI',false); % 
+session = sessionTemplate(pwd,'showGUI',false); % look for rfh file - problem
 save([basename '.session.mat'],'session');
 catch
     warning('it seems that CellExplorer is not on your path');
@@ -150,7 +150,7 @@ end
 if spikeSort
     disp('Spike sort concatenated sessions...');
         if  isempty(dir('*Kilosort*')) % if not kilosorted yet
-        fprintf(' ** Kilosorting session %3.i of %3.i... \n',ii, size(allSess,1));
+        fprintf(' ** Kilosorting session %3.i of %3.i...');
             KiloSortWrapper;
             kilosortFolder = dir('*Kilosort*');
             try PhyAutoClustering(strcat(kilosortFolder.folder,'\',kilosortFolder.name)); % autoclustering
