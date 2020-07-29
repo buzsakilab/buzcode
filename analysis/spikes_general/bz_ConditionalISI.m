@@ -25,6 +25,7 @@ addParameter(p,'basePath',pwd,@isstr)
 addParameter(p,'figfolder',false)
 addParameter(p,'Xbinoverlap',1)
 
+
 parse(p,varargin{:})
 ints = p.Results.ints;
 normtype = p.Results.normtype;
@@ -58,12 +59,30 @@ if iscell(spikes)
     return
 end
 
-%%
+%% Calculate ISIs
 ISIs.n = diff(spikes);
 ISIs.times = spikes(2:end-1);
 ISIs.np1 = ISIs.n(2:end);
 ISIs.n = ISIs.n(1:end-1);
 
+%% If Conditional Variable is Intervals - make a state vector
+if strcmp(ints,'input')
+    %Structure with states.NAMEstate format
+    [ conditionalvariable ] = bz_INTtoIDX(conditionalvariable,'sf',100);
+    conditionalvariable.data = conditionalvariable.states;
+    
+    %One bin per state
+    ConditionalISI.states = conditionalvariable.statenames;
+    numXbins = length(ConditionalISI.states);
+    Xwin = [0.5 numXbins+0.5];
+    
+    
+    %Convert to all intervals to restrict spikes...
+    conditionalvariable.states = conditionalvariable.states>0;
+    conditionalvariable.statenames = {'AllInts'};
+    ints = bz_IDXtoINT(conditionalvariable);
+    ints = ints.AllIntsstate;
+end
 %% Restrict ISIs and conditional variable to intervals
 conditionalvariable.dt = mode(diff(conditionalvariable.timestamps));
 
