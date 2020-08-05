@@ -1189,9 +1189,9 @@ if FO.EegUpdateBoolean
     FO = updateEEG(FO);
 end
 FO = UpdateGUI(FO);
+set(FO.sax{1}, 'XLim', FO.lims);
 set(FO.max,'xticklabel',num2str(get(FO.max,'xtick')'));
 % set(FO.sax{end},'xticklabel',num2str(get(FO.sax{end},'xtick')'));
-set(FO.sax{1}, 'XLim', FO.lims);
 
 %set(FO.eax{end},'xticklabel',num2str(get(FO.eax{end},'xtick')'));
 
