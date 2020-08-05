@@ -114,7 +114,9 @@ end
 
 
 % Number of groups, number of bins, etc.
-if length(groups) == 1,
+if exist('numcells','var')
+    nGroups = numcells;
+elseif length(groups) == 1,
 	groups = ones(length(times),1);
 	nGroups = 1;
 else

@@ -1,4 +1,4 @@
-function [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
+function [specslope,spec] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %[specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt) calculates the
 %slope of the power spectrum, a metric of cortical state and E/I balance
 %see Gao, Peterson, Voytek 2016;  Waston, Ding, Buzsaki 2017
@@ -19,8 +19,9 @@ function [specslope] = bz_PowerSpectrumSlope(lfp,winsize,dt,varargin)
 %       'saveMat'   put your basePath here to save/load
 %                   baseName.PowerSpectrumSlope.lfp.mat  (default: false)
 %       'saveName'  add a string here to append to your saved name
-%                   i.e. 'saveName','_wav' will save as
-%                   baseName.PowerSpectrumSlope_wav.lfp.mat
+%                   i.e. bz_PowerSpectrumSlope(...,'saveName','_wav') will 
+%                   save as baseName.PowerSpectrumSlope_wav.lfp.mat
+%       'saveFolder'subfolder of basePath
 %       'Redetect'  (default: false) to force redetection even if saved
 %                   file exists
 %       'IRASA'     (default: true) use IRASA method to median-smooth power
@@ -50,6 +51,7 @@ p = inputParser;
 addParameter(p,'showfig',false,@islogical)
 addParameter(p,'saveMat',false)
 addParameter(p,'saveName',[])
+addParameter(p,'saveFolder',[])
 addParameter(p,'channels',[])
 addParameter(p,'frange',[4 100])
 addParameter(p,'Redetect',false)
@@ -57,10 +59,12 @@ addParameter(p,'IRASA',true)
 addParameter(p,'nfreqs',200)
 addParameter(p,'spectype','fft')
 addParameter(p,'ints',[0 inf])
+addParameter(p,'showprogress',false)
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
 addName = p.Results.saveName;
+saveFolder = p.Results.saveFolder;
 channels = p.Results.channels;
 frange = p.Results.frange;
 REDETECT = p.Results.Redetect;
@@ -68,12 +72,13 @@ IRASA = p.Results.IRASA;
 nfreqs = p.Results.nfreqs;
 spectype = p.Results.spectype;
 ints = p.Results.ints;
+showprogress = p.Results.showprogress;
 
 %%
 if saveMat
     basePath = saveMat;
     baseName = bz_BasenameFromBasepath(basePath);
-    savename = fullfile(basePath,[baseName,'.PowerSpectrumSlope',addName,'.lfp.mat']);
+    savename = fullfile(basePath,saveFolder,[baseName,'.PowerSpectrumSlope',addName,'.lfp.mat']);
     
     if exist(savename,'file') && ~REDETECT
         try
@@ -82,6 +87,10 @@ if saveMat
         catch
             display('error loading file... recalculating PSS')
         end
+    end
+    
+    if ~exist(fullfile(basePath,saveFolder),'dir')
+        mkdir(fullfile(basePath,saveFolder))
     end
 end
 
@@ -156,7 +165,7 @@ switch spectype
         downsampleout = round(lfp.samplingRate.*dt);
         dt = downsampleout/lfp.samplingRate; %actual dt another option is to do movmean on the amplitude...
         [spec] = bz_WaveSpec(lfp,'frange',frange,'nfreqs',nfreqs,'ncyc',winsize,...
-            'downsampleout',downsampleout,'intervals',ints);
+            'downsampleout',downsampleout,'intervals',ints,'showprogress',showprogress);
         
         spec.amp = log10(abs(spec.data));
 end
@@ -194,17 +203,22 @@ end
 rsq = zeros(size(spec.timestamps));
 s = zeros(length(spec.timestamps),2);
 yresid = zeros(length(spec.timestamps),length(spec.freqs));
+x = log10(spec.freqs);
 for tt = 1:length(spec.timestamps)
+    if showprogress && mod(tt,round(length(spec.timestamps)./100))==0
+        bz_Counter(round(100.*tt./length(spec.timestamps)),100,'TimeWindow %')
+    end
     %Fit the line
-    x = log10(spec.freqs);  y=power4fit(tt,:);
-    s(tt,:) = polyfit(x,y,1);
+    y=power4fit(tt,:);
+    winfit = polyfit(x,y,1); %note... can improve this using least squares method for all timepoints at once...
     %Calculate the residuals (from the full PS)
-    yfit =  s(tt,1) * x + s(tt,2);
+    yfit =  winfit(1) * x + winfit(2);
     yresid(tt,:) = spec.amp(tt,:) - yfit; %residual between "raw" PS line, not IRASA-smoothed
     %Calculate the rsquared value
     SSresid = sum(yresid(tt,:).^2);
     SStotal = (length(y)-1) * var(y);
     rsq(tt) = 1 - SSresid/SStotal;
+    s(tt,:) = winfit;
 end
 
 
@@ -213,6 +227,7 @@ specslope.data = s(:,1);
 specslope.intercept = s(:,2);
 specslope.timestamps = spec.timestamps;
 specslope.specgram = spec.amp;
+specslope.phase = angle(spec.data);
 specslope.samplingRate = 1./dt;
 
 specslope.detectionparms.winsize = winsize;

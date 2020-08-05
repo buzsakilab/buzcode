@@ -39,6 +39,7 @@ addParameter(p,'ints',defaultstates)
 addParameter(p,'savecellinfo',false,@islogical)
 addParameter(p,'basePath',pwd,@isstr)
 addParameter(p,'figfolder',false)
+addParameter(p,'figname',[])
 addParameter(p,'showfig',false,@islogical);
 addParameter(p,'cellclass',[]);
 addParameter(p,'forceRedetect',false,@islogical);
@@ -55,6 +56,7 @@ cellclass = p.Results.cellclass;
 basePath = p.Results.basePath;
 SAVECELLINFO = p.Results.savecellinfo;
 figfolder = p.Results.figfolder;
+figname = p.Results.figname;
 SHOWFIG = p.Results.showfig;
 forceRedetect = p.Results.forceRedetect;
 SHUFFLECV2 = p.Results.shuffleCV2;
@@ -99,6 +101,7 @@ allspikes.meanISI = cellfun(@(X) (X(1:end-1)+X(2:end))./2,allspikes.ISIs,'Unifor
 allspikes.CV2 = cellfun(@(X) 2.*abs(X(2:end)-X(1:end-1))./(X(2:end)+X(1:end-1)),allspikes.ISIs ,'UniformOutput',false);
 %Make sure times line up
 allspikes.times = cellfun(@(X) X(2:end-1),spikes.times,'UniformOutput',false);
+allspikes.ISInp1 = cellfun(@(X) X(2:end),allspikes.ISIs,'UniformOutput',false);
 allspikes.ISIs = cellfun(@(X) X(1:end-1),allspikes.ISIs,'UniformOutput',false);
 %%
 for ss = 1:numstates
@@ -227,7 +230,8 @@ if ~isempty(cellclass)
         meandists.(statenames{ss}).(classnames{cl}).ISIdist = squeeze(nanmean(ISIhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:),1));
         meandists.(statenames{ss}).(classnames{cl}).CV2dist = squeeze(nanmean(CV2hist.(statenames{ss})(inclasscells{cl}&enoughspikes,:),1));
         meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:,:),1));
-        
+        meandists.(statenames{ss}).(classnames{cl}).Return = squeeze(nanmean(ISIhist.(statenames{ss}).return(:,:,inclasscells{cl}&enoughspikes),3));
+
         %Sorts
         sorttypes = {'rate','ISICV','CV2'};
         for tt = 1:length(sorttypes)
@@ -255,6 +259,8 @@ else
         meandists.(statenames{ss}).(classnames{cl}).ISIdist = squeeze(nanmean(ISIhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:),1));
         meandists.(statenames{ss}).(classnames{cl}).CV2dist = squeeze(nanmean(CV2hist.(statenames{ss})(inclasscells{cl}&enoughspikes,:),1));
         meandists.(statenames{ss}).(classnames{cl}).Jointdist = squeeze(nanmean(Jointhist.(statenames{ss}).log(inclasscells{cl}&enoughspikes,:,:),1));
+        meandists.(statenames{ss}).(classnames{cl}).Return = squeeze(nanmean(ISIhist.(statenames{ss}).return(:,:,inclasscells{cl}&enoughspikes),3));
+
 end
 
 
@@ -263,7 +269,7 @@ end
 %[ccg,t] = CCG(statespiketimes,[],<options>)
 
 %%
-if SHOWFIG | figfolder
+if SHOWFIG || figfolder
 figure
     subplot(2,2,1)
         for cl = 1:numclasses
@@ -402,6 +408,9 @@ figure
 
 
 if figfolder
+    if ~isempty(figname)
+        baseName = figname;
+    end
     NiceSave(['ISIstats_',(statenames{ss})],figfolder,baseName);
 end
 
@@ -427,10 +436,11 @@ ISIstats.Jointhist = Jointhist;
 ISIstats.sorts = sorts;
 ISIstats.UID = spikes.UID;
 ISIstats.allspikes = allspikes;
+ISIstats.meandists = meandists;
 try
     ISIstats.cellinfo.regions = spikes.region;
 catch
-    display('No regions. Bummer dude.')
+    %display('No regions. Bummer dude.')
 end
 
 
