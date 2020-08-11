@@ -24,6 +24,7 @@ addParameter(p,'figname',[])
 addParameter(p,'basePath',pwd,@isstr)
 addParameter(p,'figfolder',false)
 addParameter(p,'Xbinoverlap',1)
+addParameter(p,'spikecondition',true)
 
 
 parse(p,varargin{:})
@@ -43,6 +44,7 @@ figfolder = p.Results.figfolder;
 DO_ISIDist = p.Results.ISIDist;
 DO_MutInf = p.Results.MutInf;
 Xbinoverlap = p.Results.Xbinoverlap;
+spikecondition = p.Results.spikecondition;
 %%
 baseName = bz_BasenameFromBasepath(basePath);
 
@@ -105,16 +107,24 @@ end
 ISIs.x = interp1(conditionalvariable.timestamps,conditionalvariable.data,ISIs.times,'nearest');
 %% Conditional Distribution/Rate, and MutInfo
 if DO_ISIDist
-    [ ConditionalISI.Dist ] = ConditionalHist( [ISIs.x;ISIs.x],log10([ISIs.n;ISIs.np1]),...
-        'Xbounds',Xwin,'numXbins',numXbins,'Ybounds',logISIbounds,'numYbins',numISIbins,'minX',minX,...
-        'Xbinoverlap',Xbinoverlap);
+    if DO_GammaFit || spikecondition
+        [ ConditionalISI.Dist ] = ConditionalHist( [ISIs.x;ISIs.x],log10([ISIs.n;ISIs.np1]),...
+            'Xbounds',Xwin,'numXbins',numXbins,'Ybounds',logISIbounds,'numYbins',numISIbins,'minX',minX,...
+            'Xbinoverlap',Xbinoverlap);
 
+        %Convert to prob density
+        ConditionalISI.Dist.pYX = ConditionalISI.Dist.pYX./mode(diff(ConditionalISI.Dist.Xbins));
+    else
+        [ ConditionalISI.Dist ] = ConditionalHist( [ISIs.x;ISIs.x],log10([ISIs.n;ISIs.np1]),...
+            'Xbounds',Xwin,'numXbins',numXbins,'Ybounds',logISIbounds,'numYbins',numISIbins,'minX',minX,...
+            'Xbinoverlap',Xbinoverlap,'conditionby',conditionalvariable.data);
+    end
+    
     ConditionalISI.Dist.Xocc = hist(conditionalvariable.data,ConditionalISI.Dist.Xbins);
     ConditionalISI.Dist.Xocc = movsum(ConditionalISI.Dist.Xocc,Xbinoverlap.*2-1);
     ConditionalISI.Dist.SpikeRate = ConditionalISI.Dist.Xhist./(ConditionalISI.Dist.Xocc.*conditionalvariable.dt.*2);
 
-    %Convert to prob density
-    ConditionalISI.Dist.pYX = ConditionalISI.Dist.pYX./mode(diff(ConditionalISI.Dist.Xbins));
+
 end
 
 if DO_MutInf

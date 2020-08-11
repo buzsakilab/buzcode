@@ -28,7 +28,7 @@ function [placeFieldStats] = bz_findPlaceFields1D(varargin)
 %                   (default = 0.0)
 %                   are considered noise and ignored (default = 0.50)
 %     'minPeak'     peaks smaller than this size are considered spurious
-%                   and ignored (default = 1 Hz)
+%                   and ignored (default = 2 Hz)
 %     'minPeak2nd'  for secondary place fields, peaks smaller than this 
 %                   percentage of maximum Firing Rate along the maze are
 %                   considered spurious and ignored (default 0.60)
