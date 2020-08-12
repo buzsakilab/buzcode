@@ -21,9 +21,13 @@ labelsdefault = 1:numdatagroups;
 p = inputParser;
 addParameter(p,'colors',colordefault)
 addParameter(p,'labels',labelsdefault)
+addParameter(p,'groupnumbers',labelsdefault)
+addParameter(p,'withpoints',true)
 parse(p,varargin{:})
 colors = p.Results.colors;
 labels = p.Results.labels;
+groupnumbers = p.Results.groupnumbers;
+withpoints = p.Results.withpoints;
 
 %% Reformat Data, calculate stats
 datagrouped = [];
@@ -43,10 +47,12 @@ for gg = 1:numdatagroups
 end
 %%
 
-boxplot(datagrouped,datagroups,'symbol','','colors',colors,'labels',labels)
+boxplot(datagrouped,datagroups,'symbol','','colors',colors,'labels',labels,'positions',groupnumbers)
 hold on
+if withpoints
 for gg = 1:numdatagroups
-    plot(gg.*ones(size(data{gg}))+0.025.*randn(size(data{gg})),data{gg},'.','color',colors(gg,:))
+    plot(groupnumbers(gg).*ones(size(data{gg}))+0.025.*randn(size(data{gg})),data{gg},'.','color',colors(gg,:))
+end
 end
 
 end
