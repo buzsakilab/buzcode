@@ -115,7 +115,7 @@ end
 %% Make LFP
 if isempty(dir('*.lfp'))
     try 
-        bz_LFPfromDat(pwd,'outFs',1250,'useGPU',true); % generating lfp, NOTE: THIS FUNCTION WILL GENERATE A SESSIONINFO FILE!! WE NEED TO FIX THIS
+        bz_LFPfromDat(pwd,'outFs',1250); % generating lfp, NOTE: THIS FUNCTION WILL GENERATE A SESSIONINFO FILE!! WE NEED TO FIX THIS
         disp('Making LFP file ...');
     catch
         disp('Problems with bz_LFPfromDat, resampling...');
