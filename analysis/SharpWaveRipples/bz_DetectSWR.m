@@ -1,3 +1,4 @@
+
 function [ripples] = bz_DetectSWR(Channels, varargin)
 % bz_DetectSWR    Detect Sharp Wave Ripple in epochs of continuous data. This
 %               code is designed for linear probes, with at least one shank

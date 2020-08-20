@@ -29,7 +29,7 @@ function [spkEventTimes] = bz_getRipSpikes(varargin)
 %                   or from current folder (if not)
 %     'UIDs'        A Mx1 boolean matrix with 1s for units to be considered
 %                   and 0s for units to be discarded.(M: number of units)
-%     'padding'     additional time after ripple end to still search for spikes. 
+%     'padding'     additional time before and after ripple end to still search for spikes. 
 %                   (default is 0.05 sec)
 %     'saveMat'   	Saves file, logical (default: true) 
 %
@@ -109,13 +109,16 @@ end
 
 % We will save spike times of different units in different ways:
 spkEventTimes = {};
+spkEventTimes.padding = padding;
+
 % 1. Absolute and relative time of spikes by unit and by ripple
 for unit = 1:length(spikes.UID)
     if UIDs(unit)
         for event = 1:length(timestamps)
             % Start and end of ripple
-            tini = timestamps(event,1);
+            tini = timestamps(event,1) - padding;
             tend = timestamps(event,2) + padding;
+            spkEventTimes.EventDuration(event,1) = tend-tini;
             % Spikes of this unit within this ripple interval
             tsUnitEvent = spikes.times{unit};
             tsUnitEvent = tsUnitEvent(tsUnitEvent>=tini & tsUnitEvent<=tend);
