@@ -99,6 +99,9 @@ switch normtype
         normdata = bsxfun(@(X,Y) X./Y,data,colmax);
     case 'percentile'
         sortdata = unique(sort(int_data(~isnan(int_data))));
+        if sum(isnan(int_data))==length(int_data)
+            sortdata = 0:0.1:1; %This is silly. And will fuck up if sortdata is all nan but data is not
+        end
         percentiles = linspace(0,1,length(sortdata));
         normdata = interp1(sortdata,percentiles,data,'nearest');
     case 'modZ'
