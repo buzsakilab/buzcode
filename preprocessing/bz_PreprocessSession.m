@@ -87,7 +87,7 @@ end
 %% Concatenate sessions
 cd(basepath);
 disp('Concatenate session folders...');
-bz_ConcatenateDats(pwd,0,1); % NAMES2SORT NOT FOUND!!!!! ERROR!!!
+bz_ConcatenateDats(pwd,0,1);
 
 %% Make SessionInfo
 % [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  
@@ -141,6 +141,8 @@ end
 if spikeSort
     disp('Spike sort concatenated sessions...');
         if  isempty(dir('*Kilosort*')) % if not kilosorted yet
+        fprintf(' ** Kilosorting session %3.i of %3.i...');
+
             KiloSortWrapper;
             kilosortFolder = dir('*Kilosort*');
             try PhyAutoClustering(strcat(kilosortFolder.folder,'\',kilosortFolder.name)); % autoclustering
