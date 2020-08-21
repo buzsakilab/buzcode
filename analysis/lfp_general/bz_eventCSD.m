@@ -158,9 +158,8 @@ if plotLFP
 
        
 elseif plotCSD  
-    
      cmax = max(max(CSD)); 
-   
+     taxis = (-(twin(1)/samplingRate):(1/samplingRate):(twin(2)/samplingRate))*1e3;
      figure;
      contourf(taxis,1:size(CSD,2),CSD',40,'LineColor','none');hold on;
      colormap jet; caxis([-cmax cmax]);
