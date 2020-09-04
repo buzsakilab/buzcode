@@ -131,7 +131,7 @@ function [rankStats] = bz_RankOrder(varargin)
 %                                        2 is sequence E A D
 %                                  
 %
-%  See also bz_getSpikesRank, bz_findPlaceFieldsTemplate
+%  See also bz_getSpikes, bz_findPlaceFieldsTemplate
 %
 %
 %
