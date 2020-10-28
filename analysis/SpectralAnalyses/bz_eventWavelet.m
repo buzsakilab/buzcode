@@ -113,7 +113,7 @@ for e = 1:length(events)
     lfp_temp(:,:,e) = data(events(e)-twin(1):events(e)+twin(2),1);
 end
 
-lfp_avg = nanmean(lfp_temp,3)*-1;
+lfp_avg = nanmean(lfp_temp,3);
 
 %% Whiten LFP
 
