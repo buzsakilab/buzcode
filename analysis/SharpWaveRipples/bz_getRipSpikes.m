@@ -82,7 +82,7 @@ saveMat = p.Results.saveMat;
 
 % Get session info
 basename = bz_BasenameFromBasepath(basepath);
-load([basepath filesep basename '.sessionInfo.mat']);
+load([basepath filesep basename '.session.mat']);
 
 % Default events, UIDs and spikes
 if isempty(spikes)
