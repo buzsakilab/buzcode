@@ -66,7 +66,7 @@ addParameter(p,'plotLFP',true,@islogical);
 addParameter(p,'whitening',true,@islogical);
 addParameter(p,'tsmth',0.0001,@isnumeric);
 addParameter(p,'waveDb',false,@islogical);
-addParameter(p,'frange',[50 200],@isnumeric);
+addParameter(p,'frange',[50 250],@isnumeric);
 addParameter(p,'nfreqs',100,@isnumeric);
 addParameter(p,'ncyc',5,@isnumeric);
 addParameter(p,'space','log');
