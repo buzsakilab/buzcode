@@ -160,8 +160,15 @@ else
     if any(getWaveforms)
         spkFiles = dir([basepath filesep '*.spk*']);
     end
-    kilosort_path = dir([basepath filesep '*kilosort*']);
-
+%     kilosort_path = dir([basepath filesep '*kilosort*']);
+    %Finding kilosort folder, case insensitive - added by EFO
+    temp = dir(basepath);
+    aux  = strfind(lower({temp.name}),lower('kilosort'));
+    fold_idx = find(cellfun(@(x) ~isempty(x),aux));
+    %in case of multiple folders, it's going to take the first one in the
+    %list
+    kilosort_path = temp(fold_idx(1));
+    
     if strcmpi(sortingMethod,'clu') || ~isempty(cluFiles) % LOADING FROM CLU/ RES
         fs = spikes.samplingRate; 
         disp('loading spikes from clu/res/spk files..')
@@ -342,13 +349,27 @@ else
         spike_cluster_index = readNPY(fullfile(kilosort_path.name, 'spike_clusters.npy'));
         spike_times = readNPY(fullfile(kilosort_path.name, 'spike_times.npy'));
         cluster_group = tdfread(fullfile(kilosort_path.name,'cluster_group.tsv'));
-        try
-            shanks = readNPY(fullfile(kilosort_path.name, 'shanks.npy')); % done
-        catch
-            shanks = ones(size(cluster_group.cluster_id));
-            warning('No shanks.npy file, assuming single shank!');
+        
+        %extracting shank information if it's kilosort2/phy2 output
+        if exist(fullfile(kilosort_path.name,'cluster_info.tsv'),'file')
+            cluster_info = tdfread(fullfile(kilosort_path.name,'cluster_info.tsv'));
+            if isfield(cluster_info,'ch') %if it has the channel field
+                clu_channels = cluster_info.ch;
+                shanks = zeros(size(clu_channels));
+                
+                for s = 1:length(sessionInfo.SpkGrps)
+                    temp1 = ismember(clu_channels,sessionInfo.SpkGrps(s).Channels);
+                    shanks(temp1) = s;
+                end
+            end
+        else %otherwise try to load shanks.npy from kilosort1/phy1
+            try
+                shanks = readNPY(fullfile(kilosort_path.name, 'shanks.npy')); % done
+            catch
+                shanks = ones(size(cluster_group.cluster_id));
+                warning('No shanks.npy file, assuming single shank!');
+            end
         end
-
         spikes.sessionName = sessionInfo.FileName;
         jj = 1;
         for ii = 1:length(cluster_group.group)
