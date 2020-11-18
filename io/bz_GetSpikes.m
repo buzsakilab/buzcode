@@ -414,7 +414,9 @@ else
                 if verbose
                     fprintf(' ** %3.i/%3.i for cluster %3.i/%3.i  \n',jj, length(spkTmp), ii, size(spikes.times,2));
                 end
-                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',round(spkTmp(jj)) - (wfWin),...
+                %updated by EFO on 18/11/2020, bz_LoadBinary needs offset input in
+                %samples and not in seconds
+                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',round(spkTmp(jj)*fs) - (wfWin),...
                     'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
             end
             wf = mean(wf,3);
@@ -424,7 +426,12 @@ else
             for jj = 1 : size(wf,2)          
                 wfF(:,jj) = filtfilt(hpFilt,wf(:,jj) - mean(wf(:,jj)));
             end
-            [~, maxCh] = max(abs(wfF(wfWin,:)));
+            %updated by EFO on 18/11/2020 to only get the max channel on
+            %the respective shank, avoiding getting waveform of a dead
+            %channel
+            shank_ch = sessionInfo.SpkGrps(spikes.shankID(ii)).Channels+1; %Channels are 0-based
+            [~, maxCh] = max(abs(wfF(wfWin,shank_ch)));
+            maxCh = shank_ch(maxCh);
             rawWaveform = detrend(wf(:,maxCh) - mean(wf(:,maxCh))); 
             filtWaveform = wfF(:,maxCh) - mean(wfF(:,maxCh));
             spikes.rawWaveform{ii} = rawWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); % keep only +- 1ms of waveform
