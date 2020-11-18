@@ -357,8 +357,8 @@ else
                 clu_channels = cluster_info.ch;
                 shanks = zeros(size(clu_channels));
                 
-                for s = 1:length(sessionInfo.SpkGrps)
-                    temp1 = ismember(clu_channels,sessionInfo.SpkGrps(s).Channels);
+                for s = 1:sessionInfo.spikeGroups.nGroups
+                    temp1 = ismember(clu_channels,sessionInfo.spikeGroups.groups{s});
                     shanks(temp1) = s;
                 end
             end
@@ -429,7 +429,7 @@ else
             %updated by EFO on 18/11/2020 to only get the max channel on
             %the respective shank, avoiding getting waveform of a dead
             %channel
-            shank_ch = sessionInfo.SpkGrps(spikes.shankID(ii)).Channels+1; %Channels are 0-based
+            shank_ch = sessionInfo.spikeGroups.groups{spikes.shankID(ii)}+1; %Channels are 0-based
             [~, maxCh] = max(abs(wfF(wfWin,shank_ch)));
             maxCh = shank_ch(maxCh);
             rawWaveform = detrend(wf(:,maxCh) - mean(wf(:,maxCh))); 
