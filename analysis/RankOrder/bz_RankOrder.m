@@ -131,7 +131,7 @@ function [rankStats] = bz_RankOrder(varargin)
 %                                        2 is sequence E A D
 %                                  
 %
-%  See also bz_getSpikesRank, bz_findPlaceFieldsTemplate
+%  See also bz_getSpikes, bz_findPlaceFieldsTemplate
 %
 %
 %
@@ -196,11 +196,11 @@ rankUnits = nan*ones(size(spkEventTimes.UnitEventRel));
 for event = 1:length(evtTimes)
     % Take into account just first spike
     if strcmp(timeSpike,'first')
-        units = unique(evtTimes{event}(3,:),'stable');
+        units = unique(evtTimes{event}(2,:),'stable');
     elseif strcmp(timeSpike,'mean')
         means = [];
-        for jj = unique(evtTimes{event}(3,:))
-            means  = [means [mean(evtTimes{event}(1,evtTimes{event}(3,:)==jj)); jj]];
+        for jj = unique(evtTimes{event}(2,:))
+            means  = [means [mean(evtTimes{event}(1,evtTimes{event}(2,:)==jj)); jj]];
         end
         if ~isempty(means)
             means = sortrows(means')';
