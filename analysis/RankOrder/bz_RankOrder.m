@@ -1,7 +1,8 @@
 function [rankStats] = bz_RankOrder(varargin)
-% [rankStats] = RankOrder()
+% [rankStats] = RankOrder(varargin)
+%
 %  Get rank order of spikes inside events from previously calculated 
-% bz_getSpikesRank structure. The 'corrEvents' output field structure shows
+% bz_getRipSpikes structure. The 'corrEvents' output field structure shows
 % rank correlation of each event with the selected 'templateType', and the
 % 'pvalEvents' field states how significantly different from chance is that
 % correlation, so presumably those events with low 'pvalEvents' will have a
@@ -81,7 +82,6 @@ function [rankStats] = bz_RankOrder(varargin)
 %
 %    =========================================================================
 %
-%
 % OUTPUTS
 %
 %    =========================================================================
@@ -130,13 +130,10 @@ function [rankStats] = bz_RankOrder(varargin)
 %                                  where 1 is sequence A B C D E F
 %                                        2 is sequence E A D
 %                                  
+%  See also bz_getRipSpikes, bz_findPlaceFieldsTemplate
 %
-%  See also bz_getSpikes, bz_findPlaceFieldsTemplate
-%
-%
-%
-%  Andrea Navas-Olive, 2019
 
+%  Andrea Navas-Olive, 2019. Antonio FR, 2020.  
 
 %% Parse inputs 
 p = inputParser;
