@@ -84,11 +84,6 @@ if isempty(dir([basename '.xml'])) && isempty(dir('global.xml'))
     cd(basepath);
 end
 
-%% Concatenate sessions
-cd(basepath);
-disp('Concatenate session folders...');
-bz_ConcatenateDats(pwd,0,1);
-
 %% Make SessionInfo
 % [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  
 % save(strcat(basename,'.sessionInfo.mat'),'sessionInfo');
@@ -99,13 +94,18 @@ catch
     warning('it seems that CellExplorer is not on your path');
 end
 
+%% Concatenate sessions
+cd(basepath);
+disp('Concatenate session folders...');
+bz_ConcatenateDats(pwd,0,1);
+
 %% Get analog and digital pulses
-if  ~isempty(analogCh)
-    [pulses] = bz_getAnalogPulses('analogCh',analogCh);
-end
-if ~exist('*digitalIn.mat')
-    digitalIn = bz_getDigitalIn('all','fs',session.extracellular.sr); 
-end
+% if  ~isempty(analogCh)
+%     [pulses] = bz_getAnalogPulses('analogCh',analogCh);
+% end
+% if ~exist('*digitalIn.mat')
+%     digitalIn = bz_getDigitalIn('all','fs',session.extracellular.sr); 
+% end
 
 %% Remove stimulation artifacts
 if cleanArtifacts && ~isempty(analogCh)

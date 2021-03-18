@@ -42,6 +42,7 @@ addParameter(p,'lfp',[],@isstruct);
 addParameter(p,'saveMat',true,@islogical);
 addParameter(p,'force',true,@islogical);
 addParameter(p,'passband',[30 300],@isnumeric)
+addParameter(p,'nICs',8,@isnumeric)
 
 parse(p,varargin{:});
 basepath = p.Results.basepath;
@@ -49,6 +50,7 @@ lfp = p.Results.lfp;
 saveMat = p.Results.saveMat;
 force = p.Results.force;
 passband = p.Results.passband;
+nICs = p.Results.nICs;
 
 % Deal with inputs
 prevBasepath = pwd;
@@ -73,7 +75,7 @@ lfpFilt = bz_Filter(lfp,'passband',passband,'order',4,'filter','butter');
 
 
 % Run runica
-[weights,sphere,meanvar,bias,signs,lrates,data,y] = runica(double(lfpFilt.data'),'pca',numel(lfp.channels));
+[weights,sphere,meanvar,bias,signs,lrates,data,y] = runica(double(lfpFilt.data'),'pca',nICs);
 
 ica.data = data';
 ica.timestamps = lfp.timestamps;
