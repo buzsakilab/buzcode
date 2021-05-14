@@ -98,7 +98,8 @@ end
 %% Get the XML
 try 
     %Look for xml/sessionInfo in topfolder
-    sessionInfo = bz_getSessionInfo(basepath,'noPrompts',true);
+    %sessionInfo = bz_getSessionInfo(basepath,'noPrompts',true);
+    load([basename '.session.mat']); % Peter's sessionInfo
 catch
     %If none exists, look for xml in any of the subpaths
     disp('No .xml or .sessionInfo in top folder, trying subfolders')
@@ -177,8 +178,13 @@ for ff = 1:length(datpaths.time)
     end
 end
 
+try 
+disp(['Calculating merge times based on wideband samplingRate of ',num2str(session.extracellular.sr),'Hz.'])
+transitiontimes_sec = transitiontimes_samp./session.extracellular.sr; %convert to seconds
+catch
 disp(['Calculating merge times based on wideband samplingRate of ',num2str(sessionInfo.rates.wideband),'Hz.'])
-transitiontimes_sec = transitiontimes_samp./sessionInfo.rates.wideband; %convert to seconds
+transitiontimes_sec = transitiontimes_samp./sessionInfo.rates.wideband; %convert to seconds    
+end
 
 %% Make the events.mat file that saves all the merge information
 % filesT.int == MergePoint.timestamps

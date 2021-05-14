@@ -6,6 +6,10 @@ function [] = LogScale( whichaxis,logbase,varargin)
 %   whichaxis   which axis did you log scale (can be 'x' 'y' or 'xy')
 %   logbase     base of the logarithm you used for your points (ex 10)
 %
+%Options
+%   'exp'
+%   'nohalf'
+%
 %EXAMPLE
 %   plot(log10(Xvals),Yvals)
 %   LogScale('x',10)

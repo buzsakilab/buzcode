@@ -20,6 +20,10 @@ function [ behavior ] = bz_ConcatenateBehavior( behaviorName, basePath, varargin
 %                   adjust to match the concatenation MergePoints
 %                   (note: this feature is not yet implemented, let me know
 %                   if you need it and we'll add it to the function...)
+%   'remerge'       remake the file
+%   'makeMergePoints'   if there are no .dat files, you can make a new 
+%                       MergePoints.events.mat file. If there are dat
+%                       files, please run bz_ConcatenateDats first.
 %
 %note: automatically adjusts behaviorName.timestamps and any fields in
 %behaviorName.ints to account for merge points. Any additional fields can 
@@ -30,10 +34,12 @@ function [ behavior ] = bz_ConcatenateBehavior( behaviorName, basePath, varargin
 p = inputParser;
 addParameter(p,'timefields',{});
 addParameter(p,'remerge',false);
+addParameter(p,'makeMergePoints',false);
 
 parse(p,varargin{:})
 
 timefields = p.Results.timefields;
+makeMergePoints = p.Results.makeMergePoints;
 REMERGE = p.Results.remerge;
 
 %% DEV
@@ -57,7 +63,18 @@ end
 %%
 %Load the mergepoints metadata file
 MergePoints = bz_LoadEvents(basePath,'MergePoints');
-if isempty(MergePoints)
+if makeMergePoints && isempty(MergePoints) 
+    d = dir(basePath);
+
+	MergePoints.foldernames = {d([d.isdir]).name};
+    MergePoints.foldernames(strcmp('.',MergePoints.foldernames)|strcmp('..',MergePoints.foldernames)) = [];
+    MergePoints.timestamps = zeros(length(MergePoints.foldernames),2);
+
+    eventsfilename = fullfile(basePath,[baseName,'.MergePoints.events.mat']);
+
+elseif makeMergePoints && ~isempty(MergePoints)
+    error(['You selected makeMergePoints, but there is already a mergepoints file... please delete the old one first'])
+elseif isempty(MergePoints) 
     error(['No MergePoints.events.mat file found in ',basePath])
 end
 
@@ -73,15 +90,20 @@ behaviorfilenames = cellfun(@(X,Y) fullfile(X,[Y,'.',behaviorName,'.behavior.mat
 %Check that all the subfolders, and which behavior files, exist
 existsubfolders = cellfun(@(X) logical(exist(X,'dir')),subfolders);
 existbehfiles = cellfun(@(X) logical(exist(X,'file')),behaviorfilenames);
-existbehfiles = find(existbehfiles);
-
-
-numsubfolders = length(subfolders);
 
 if any(~existbehfiles)
-    display(['Can''t find ',behaviorName,'.behavior.mat in ', MergePoints.foldernames(~existbehfiles),...
-        '.  Merging from ',MergePoints.foldernames(existbehfiles)])
+    display(['Can''t find ',behaviorName,'.behavior.mat in ', MergePoints.foldernames{~existbehfiles},...
+        '.  Merging from ',MergePoints.foldernames{existbehfiles}])
 end
+
+if makeMergePoints
+    MergePoints.foldernames(~existbehfiles) = [];
+    MergePoints.timestamps(~existbehfiles,:) = [];
+    
+end
+
+existbehfiles = find(existbehfiles);
+numsubfolders = length(subfolders);
 
 %%
 offsets = MergePoints.timestamps(:,1);
@@ -95,6 +117,18 @@ for ff = 1:length(existbehfiles)
     [subbeh,newbeh] = bz_Matchfields(subbeh,newbeh,'add');
 	subbeh(ff) = newbeh;
     
+    if makeMergePoints
+        firstlasttimepoints = subbeh(ff).timestamps([1 end])';
+        if ff==1
+            transitiontimes_sec = firstlasttimepoints;
+        else
+            transitiontimes_sec(ff,:) = firstlasttimepoints+...
+                transitiontimes_sec(ff-1,2)+(1./subbeh(ff).samplingRate);
+        end
+        MergePoints.firstlasttimpoints(ff,:) = firstlasttimepoints;
+        MergePoints.timestamps(ff,:) = transitiontimes_sec(ff,:);
+        offsets(thisidx) = MergePoints.timestamps(ff,1);
+    end
 	% Required fields: timestamps, data. Should prompt user for other
 	% timestamp fields.
 	subbeh(ff).timestamps = subbeh(ff).timestamps+offsets(thisidx);
@@ -113,6 +147,10 @@ end
 behavior = bz_CollapseStruct(subbeh,'match','justcat',true);
 
 tol = 1e-4; %tolerance for difference in sample rates
+if ~isfield(behavior,'samplingRate')
+    display('Your behavior has no samplingRate field... One will be provided based on diff(timestamps)')
+    behavior.samplingRate = mode(diff(behavior.timestamps));
+end
 if range(behavior.samplingRate)>tol
     warning('Sampling Rates are not the same...... taking the average')
 end
@@ -121,6 +159,14 @@ behavior.samplingRate = mean(behavior.samplingRate);
 behavior.MergeInfo.MergedFiles = behaviorfilenames(existbehfiles);
 behavior.MergeInfo.MergedDate = datetime('today');
 
+%%
+if makeMergePoints
+    MergePoints.filesmerged = behavior.MergeInfo.MergedFiles;
+    MergePoints.detectorinfo.detectorname = 'bz_ConcatenateBehavior';
+    MergePoints.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
+    %Saving MergePoints
+    save(eventsfilename,'MergePoints');
+end 
 
 %% Save the new behavior file
 eval([behaviorName,'=behavior;'])

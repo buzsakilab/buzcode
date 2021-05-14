@@ -26,7 +26,7 @@ thiseventwin = timepoint+FO.winsize.*[-0.5 0.5];
 hold(FO.viewwin,'off')
 %Plot The LFP
 ywinrange = bz_MultiLFPPlot(FO.data.lfp,'timewin',thiseventwin,'spikes',FO.data.spikes,...
-    'axhandle',FO.viewwin,'scaleLFP',FO.scaleLFP)
+    'axhandle',FO.viewwin,'scaleLFP',FO.scaleLFP);
 hold on
 
 %Plot the events

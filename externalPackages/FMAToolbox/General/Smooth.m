@@ -124,7 +124,7 @@ else
 
 	% Gaussian kernel
 	% 1) Vertical kernel
-	if vSize > maxSize, warning(['Kernel too large; using ' int2str(maxSize) ' points.']); end
+	%if vSize > maxSize, warning(['Kernel too large; using ' int2str(maxSize) ' points.']); end
 	vKernelSize = min([vSize maxSize]);
 	r = (-vKernelSize:vKernelSize)'/vKernelSize;
 	vKernelStdev = smooth(1)/vKernelSize;

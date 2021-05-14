@@ -10,6 +10,7 @@ function [ IDX,timestamps ] = bz_INTtoIDX(INT,varargin)
 %   'statenames'    cell array of state names (position correponds to state number)
 %   'sf'            desired sampling frequency of the output vector (default: 1s)
 %   'length'        desired length of the index vector (default: max end time)
+%   'noPrompts'     don't prompt user for state without name
 %
 %OUTPUT
 %   IDX:    [len x 1] vector of state indices, where states are identified by

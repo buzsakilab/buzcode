@@ -12,7 +12,15 @@ if iscell(struct1) & isempty(struct2)
     newstruct1 = struct1{1};
    for ss = 2:length(struct1)
        [newstruct1,newstruct2] = bz_Matchfields(newstruct1,struct1{ss},mode);
-       newstruct1(ss) = newstruct2;
+       try
+        newstruct1(ss) = newstruct2;
+       catch
+           catdim = bz_FindCatableDims({newstruct1,newstruct2});
+            if length(catdim)>1
+                catdim = catdim(2); %Change this to be the largest dimension
+            end
+            newstruct1 = cat(catdim,newstruct1,newstruct2);
+       end
    end
    return
 end

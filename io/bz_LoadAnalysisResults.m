@@ -63,22 +63,15 @@ if dataset
     for rr = 1:length(baseNames)
         thisAResults = bz_LoadAnalysisResults(basePaths{rr},analysisName);
         
+        if isempty(thisAResults)
+            baseNames{rr} = {};
+            continue
+        end
         %Add baseName to the cellinfo file. this could be for each unit....
         thisAResults.baseName = baseNames(rr);
         
         %Check if the new .mat has any additional fields
         if exist('analysisResults','var')    
-%             matfields = fieldnames(thiscellinfo);
-%             resultsfields = fieldnames(cellinfo);
-%             newfields = setdiff(matfields,resultsfields);
-%             if ~isempty(newfields)
-%                 for ff = 1:length(newfields)
-%                     cellinfo(1).(newfields{ff}) = []; 
-%                 end
-%                 FIELDMISMATCH=true;
-%             end
-% 
-%             cellinfo = orderfields(cellinfo,thiscellinfo);   
             [analysisResults,thisAResults] = bz_Matchfields(analysisResults,thisAResults,'remove');
         end
         

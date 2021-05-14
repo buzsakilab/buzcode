@@ -3,6 +3,7 @@ function [  ] = UnityLine( varargin )
 %Options
 %   'linetype'
 %   'linecolor'
+%   'negative'
 %%
 p = inputParser;
 addParameter(p,'linetype',':')

@@ -98,7 +98,13 @@ switch normtype
         colmax = max(int_data,[],1);
         normdata = bsxfun(@(X,Y) X./Y,data,colmax);
     case 'percentile'
+        %int_data = int_data+(1e-8.*randn(size(int_data))); %stupid hack
+        %for if there's lots of the same... need to apply the random addition to
+        %data as well...
         sortdata = unique(sort(int_data(~isnan(int_data))));
+        if sum(isnan(int_data))==length(int_data)
+            sortdata = 0:0.1:1; %This is silly. And will fuck up if sortdata is all nan but data is not
+        end
         percentiles = linspace(0,1,length(sortdata));
         normdata = interp1(sortdata,percentiles,data,'nearest');
     case 'modZ'

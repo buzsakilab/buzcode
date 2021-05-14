@@ -20,7 +20,8 @@ function [spikes] = bz_LoadPhy(varargin)
 % forceReload    -logical (default=false) to force loading from
 %                   res/clu/spk files
 % verbose        -logical (default=false)
-
+% nWaveforms     -# spikes to pull for max channel amplitude and average
+%                   waveform (scalar, default 1000)
 %
 % OUTPUTS
 %
@@ -57,10 +58,9 @@ addParameter(p,'nChannels',32,@isnumeric);
 addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'verbose',false,@islogical);
-
+addParameter(p,'nWaveforms',1000,@isnumeric);
 
 parse(p,varargin{:});
-
 basepath = p.Results.basepath;
 kilosort_path = p.Results.kilosort_path;
 getWave = p.Results.getWaveforms;
@@ -71,6 +71,7 @@ nChannels = p.Results.nChannels; % it will be overwritten if bz_getSessionInfo
 forceReload = p.Results.forceReload;
 noPrompts = p.Results.noPrompts;
 verbose = p.Results.verbose;
+nWaveforms = p.Results.nWaveforms;
 
 try [sessionInfo] = bz_getSessionInfo(basepath, 'noPrompts', noPrompts);
     fs = sessionInfo.rates.wideband;
@@ -114,7 +115,7 @@ else
 
     % get waveforms
     if getWave
-    nPull = 1000; % number of spikes to pull out
+    nPull = nWaveforms; % number of spikes to pull out
     wfWin = 0.008; % Larger size of waveform windows for filterning
     filtFreq = 500;
     hpFilt = designfilt('highpassiir','FilterOrder',3, 'PassbandFrequency',filtFreq,'PassbandRipple',0.1, 'SampleRate',fs);

@@ -1,4 +1,4 @@
-function [ INT ] = bz_IDXtoINT( IDX ,varargin)
+function [ INT,IDX_new ] = bz_IDXtoINT( IDX ,varargin)
 %bz_IDXtoINT(IDX) Converts state indices to state on/offsets
 %
 %INPUT
@@ -40,11 +40,13 @@ addParameter(p,'jumptol',2)
 parse(p,varargin{:})
 statenames = p.Results.statenames; 
 dt = p.Results.dt; 
+timestamps = p.Results.timestamps; 
 numstates = p.Results.numstates; 
 nameStates = p.Results.nameStates; 
 jumptol = p.Results.jumptol; 
 
 %%
+IDX_new = IDX; %Saving to pass through if new names;
 if isstruct(IDX)
     if isfield(IDX,'statenames')
         statenames = IDX.statenames;
@@ -58,9 +60,9 @@ if islogical(IDX)
     IDX = double(IDX); 
 end
 
-if exist('statenames','var')
+if ~isempty(statenames)
     numstates = length(statenames);
-elseif isempty('numstates')
+elseif isempty(numstates)
     numstates = max(IDX);
 end
 
@@ -76,9 +78,13 @@ if isrow(IDX)
 end
 %%
 
-if isempty(dt)
+if isempty(dt) && isempty(timestamps)
+    dt = 1;
+    timestamps = [1:length(IDX)]'*dt;
+elseif isempty(dt) && ~isempty(timestamps)
    dt = mode(diff(timestamps));
 end
+
 %For timestamps with breaks Fill in with state 0 and timestamp nan 
 if any(diff(timestamps)>(jumptol.*dt))
     jumps = find(diff(timestamps)>(jumptol.*dt));
@@ -107,8 +113,9 @@ for ss = 1:numstates
             usernamedstate = inputdlg(['What is the name of state ',num2str(ss),'?']);
             statenames{ss} = usernamedstate{1};
             newname = strcat(statenames{ss},'state');
+            IDX_new.statenames = statenames;
         else
-            newname = strcat('state',ss);
+            newname = strcat('state',num2str(ss));
         end
     end
     

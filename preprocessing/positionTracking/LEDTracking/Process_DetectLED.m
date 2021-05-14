@@ -22,7 +22,7 @@
 
 
 % Copyright (C) 2015 Adrien Peyrache, some inspiration from John D Long II
-% 2019 Manu Valero (added roi inputs)
+% 2019 Manu Valero (added roi inputs and average frame)
 %
 % This program is free software; you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -202,8 +202,10 @@ end
 catch
    keyboard
 end
+keyboard;
 %write result file
 dlmwrite([fbasename '.led'],whl,'\t')
 
 fprintf('\n\n')
 release(videoObj)
+end

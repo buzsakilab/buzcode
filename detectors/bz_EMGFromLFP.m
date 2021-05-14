@@ -16,7 +16,7 @@ function [EMGFromLFP] = bz_EMGFromLFP(basePath,varargin)
 %       'saveLocation'      - default: basePath
 %       'overwrite'         - true/false - overwrite saved EMGFromLFP.LFP.mat
 %                             default: false
-%       'samplingFrequency' - desired sampling rate for EMG output
+%       'samplingFrequency' - desired sampling rate for EMG output. default:2
 %       'noPrompts'     (default: false) prevents prompts about saving/adding metadata
 %       'fromDat'           -uses the .dat file instead of .lfp (default:false)
 %       
@@ -137,7 +137,7 @@ binScootSamps = round(Fs*binScootS); % must be integer, or error on line 190
 corrChunkSz = 20; %for batch-processed correlations
 
 
-%% Pick shanks to analyze
+%% Pick channels and to analyze
 % get spike groups,
 % pick every other one... unless specialshanks, in which case pick non-adjacent
 %This is potentially dangerous in combination with rejectChannels... i.e.
@@ -147,40 +147,39 @@ corrChunkSz = 20; %for batch-processed correlations
 % xcorrs_chs is a list of channels that will be loaded 
 % spkgrpstouse is a list of spike groups to find channels from 
 
-% get list of spike groups (aka shanks) that should be used
-usablechannels = [];
-spkgrpstouse = [];
-for gidx = 1:length(SpkGrps)
-    usableshankchannels{gidx} = setdiff(SpkGrps(gidx).Channels,rejectChannels);
-    usablechannels = cat(2,usablechannels,usableshankchannels{gidx});
-    if ~isempty(usableshankchannels{gidx})
-        spkgrpstouse = cat(2,spkgrpstouse,gidx);
-    end
-end
-
-% check for good/bad shanks and update here
-% spkgrpstouse = unique(cat(1,spkgrpstouse,specialshanks)); % this is redundant with taking all shanks.
-
-% get list of channels (1 from each good spike group)
-xcorr_chs = [];
-for gidx=1:length(usableshankchannels)
-    %Remove rejectChannels
-%     usableshankchannels = setdiff(SpkGrps(spkgrpstouse(i)).Channels,rejectChannels);
-        
-   %add first channel from shank (superficial) and last channel from shank (deepest)
-   if ~isempty(usableshankchannels{gidx})
-      xcorr_chs = [xcorr_chs, usableshankchannels{gidx}(1)]; % fast mode? 
-      if length(spkgrpstouse) == 1 % if only one shank, then use top, bottom, middle channels
-          xcorr_chs = [xcorr_chs, usableshankchannels{gidx}(round(end.*0.33)),...
-              usableshankchannels{gidx}(round(end.*0.66)), usableshankchannels{gidx}(end)]; 
-      end
-   end
-end
-xcorr_chs = unique([xcorr_chs,specialChannels]); 
-
-% If restrict channel case:
-if ~isempty(restrictChannels)
+if ~isempty(restrictChannels)    % If restrict channel case:
     xcorr_chs = restrictChannels;
+else
+    % get list of spike groups (aka shanks) that should be used
+    usablechannels = [];
+    spkgrpstouse = [];
+    for gidx = 1:length(SpkGrps)
+        usableshankchannels{gidx} = setdiff(SpkGrps(gidx).Channels,rejectChannels);
+        usablechannels = cat(2,usablechannels,usableshankchannels{gidx});
+        if ~isempty(usableshankchannels{gidx})
+            spkgrpstouse = cat(2,spkgrpstouse,gidx);
+        end
+    end
+
+    % check for good/bad shanks and update here
+    % spkgrpstouse = unique(cat(1,spkgrpstouse,specialshanks)); % this is redundant with taking all shanks.
+
+    % get list of channels (1 from each good spike group)
+    xcorr_chs = [];
+    for gidx=1:length(usableshankchannels)
+        %Remove rejectChannels
+    %     usableshankchannels = setdiff(SpkGrps(spkgrpstouse(i)).Channels,rejectChannels);
+
+       %add first channel from shank (superficial) and last channel from shank (deepest)
+       if ~isempty(usableshankchannels{gidx})
+          xcorr_chs = [xcorr_chs, usableshankchannels{gidx}(1)]; % fast mode? 
+          if length(spkgrpstouse) == 1 % if only one shank, then use top, bottom, middle channels
+              xcorr_chs = [xcorr_chs, usableshankchannels{gidx}(round(end.*0.33)),...
+                  usableshankchannels{gidx}(round(end.*0.66)), usableshankchannels{gidx}(end)]; 
+          end
+       end
+    end
+    xcorr_chs = unique([xcorr_chs,specialChannels]); 
 end
 
 %% Read and filter channel

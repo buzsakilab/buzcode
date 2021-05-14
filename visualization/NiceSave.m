@@ -1,5 +1,5 @@
 function [  ] = NiceSave(figname,figfolder,baseName,varargin)
-%NiceSave(figname,figfolder,baseName,figtype) formats the figure for best viewing
+%NiceSave(figname,figfolder,baseName,<options>) formats the figure for best viewing
 %and saves it as a .pdf in figfolder with name recname_figname.pdf
 %
 %INPUTS

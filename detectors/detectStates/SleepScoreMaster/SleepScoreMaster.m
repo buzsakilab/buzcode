@@ -11,6 +11,7 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %      Use the 'A' key in TheStateEditory to further refine thresholds as
 %      needed, and implement sticky thresholds.
 %
+%
 %INPUT 
 %   basePath        folder containing .xml and .lfp files.
 %                   basePath and files should be of the form:
