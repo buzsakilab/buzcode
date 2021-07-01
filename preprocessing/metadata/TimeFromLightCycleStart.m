@@ -29,7 +29,7 @@ disp(basename)
 
 savepath = fullfile(basepath,[basename '_SecondsFromLightsOn.mat']);
 
-% lightson = 06:00:00;
+% lightson = 07:00:00;
 lightsonhours_default = 6;
 lightsonminutes_default = 0;
 lightsonseconds_default = 0;

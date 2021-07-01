@@ -63,10 +63,6 @@ function SleepState = SleepScoreMaster(basePath,varargin)
 %                   signal
 %   'ThetaChannels' A vector list of channels that may be chosen for Theta
 %                   signal
-%   'MotionSource'  Source for the motion signal used.  'EMGfromLFP' or 
-%                   'Accelerometer'.  Default: EMGfromLFP
-%   'AccelerChans'  Channels devoted to motion/accelerometer.  Needed only
-%                   if the option 'MotionSource" has the value "Accelerometer' 
 %   'rejectChannels' A vector of channels to exclude from the analysis
 %   'saveLFP'       (default:true) to save SleepScoreLFP.lfp.mat file
 %   'noPrompts'     (default:false) an option to not prompt user of things
@@ -99,23 +95,23 @@ if ~exist('basePath','var')
 end
 
 %Separate datasetfolder and recordingname
-[datasetfolder,basename,extension] = fileparts(basePath);
-basename = [basename,extension]; % fileparts parses '.' into extension
+[datasetfolder,recordingname,extension] = fileparts(basePath);
+recordingname = [recordingname,extension]; % fileparts parses '.' into extension
 
 
 %% If there is no .lfp in basePath, choose (multiple?) folders within basePath.
 %Select from dataset folder - need to check if .xml/lfp exist
-if ~exist(fullfile(datasetfolder,basename,[basename,'.lfp']),'file') && ...
-    ~exist(fullfile(datasetfolder,basename,[basename,'.eeg']),'file')
+if ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.lfp']),'file') && ...
+    ~exist(fullfile(datasetfolder,recordingname,[recordingname,'.eeg']),'file')
     display(['no .lfp file in basePath, pick a selection of session folders',...
              'containing .lfp files'])
          %Find all basePaths within the topPath
-        [basePaths,basename] = bz_FindBasePaths(basePath,'select',true);    
+        [basePaths,recordingname] = bz_FindBasePaths(basePath,'select',true);    
 end
 
 %If multiple recordings, loop calling SleepScoreMaster with each
-numrecs = length(basename);
-if numrecs > 1 & iscell(basename)
+numrecs = length(recordingname);
+if numrecs > 1 & iscell(recordingname)
     display(['Multiple Recordings (',num2str(numrecs),')'])
     for rr = 1:numrecs
         multibasepath = basePaths{rr};
@@ -123,11 +119,11 @@ if numrecs > 1 & iscell(basename)
         close all
     end
     return
-elseif numrecs == 1 & iscell(basename)
-        basename = basename{1};
+elseif numrecs == 1 & iscell(recordingname)
+        recordingname = recordingname{1};
 end
 
-display(['Scoring Recording: ',basename]);
+display(['Scoring Recording: ',recordingname]);
 
 %% inputParse for Optional Inputs and Defaults
 p = inputParser;
@@ -144,8 +140,6 @@ addParameter(p,'NotchHVS',0)
 addParameter(p,'NotchTheta',0)
 addParameter(p,'SWChannels',0)
 addParameter(p,'ThetaChannels',0)
-addParameter(p,'MotionSource','EMGfromLFP')
-addParameter(p,'AccelerChans',[])
 addParameter(p,'rejectChannels',[]);
 addParameter(p,'noPrompts',true);
 addParameter(p,'stickytrigger',false);
@@ -167,8 +161,6 @@ NotchHVS = p.Results.NotchHVS;
 NotchTheta = p.Results.NotchTheta;
 SWChannels = p.Results.SWChannels;
 ThetaChannels = p.Results.ThetaChannels;
-MotionSource = p.Results.MotionSource;
-AccelerChans = p.Results.AccelerChans;
 rejectChannels = p.Results.rejectChannels;
 noPrompts = p.Results.noPrompts;
 stickytrigger = p.Results.stickytrigger;
@@ -177,19 +169,15 @@ winparms = p.Results.winparms;
 ignoreManual = p.Results.ignoreManual; 
 
 %% Database File Management 
-savefolder = fullfile(savedir,basename);
+savefolder = fullfile(savedir,recordingname);
 if ~exist(savefolder,'dir')
     mkdir(savefolder)
 end
 
-
-
-%try with data_var
-
 %Filenames of metadata and SleepState.states.mat file to save
-sessionmetadatapath = fullfile(basePath,[basename,'.SessionMetadata.mat']);
+sessionmetadatapath = fullfile(savefolder,[recordingname,'.SessionMetadata.mat']);
 %Buzcode outputs
-bz_sleepstatepath = fullfile(savefolder,[basename,'.SleepState.states.mat']);
+bz_sleepstatepath = fullfile(savefolder,[recordingname,'.SleepState.states.mat']);
 
 %% Check for existing Manual Scoring
 if exist(bz_sleepstatepath,'file') && ~overwrite && ~ignoreManual
@@ -233,19 +221,14 @@ if isempty(rejectChannels)
     display('No rejected channels - it''s recommended you identify noisy channels to ignore')
 end
 
-%% GET A MOTION SIGNAL
+%% CALCULATE EMG FROM HIGH-FREQUENCY COHERENCE
+% Load/Calculate EMG based on cross-shank correlations 
+% (high frequency correlation signal = high EMG).  
+% Schomburg E.W. Neuron 84, 470?485. 2014)
+EMGFromLFP = bz_EMGFromLFP(basePath,'overwrite',overwrite,...
+                                     'rejectChannels',rejectChannels,'noPrompts',noPrompts,...
+                                     'saveMat',savebool);
 
-switch lower(MotionSource)
-    case 'emgfromlfp'
-        % Load/Calculate EMG based on cross-shank correlations 
-        % (high frequency correlation signal = high EMG).  
-        % Schomburg E.W. Neuron 84, 470?485. 2014)
-        motion = bz_EMGFromLFP(basePath,'overwrite',overwrite,...
-                                             'rejectChannels',rejectChannels,'noPrompts',noPrompts,...
-                                             'saveMat',savebool);
-    case {'accelerometer','acceler','accel'}
-        motion = bz_GetAccelerometerMotion(basePath,AccelerChans,'OutputSampFreq',2); 
-end
 %% DETERMINE BEST SLOW WAVE AND THETA CHANNELS
 %Determine the best channels for Slow Wave and Theta separation.
 %Described in Watson et al 2016, with modifications
@@ -262,7 +245,7 @@ SleepScoreLFP = PickSWTHChannel(basePath,...
 %Calculate the scoring metrics: broadbandLFP, theta, EMG
 display('Quantifying metrics for state scoring')
 [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,SleepScoreLFP,motion,overwrite,...
+                                           basePath,SleepScoreLFP,EMGFromLFP,overwrite,...
                                            'onSticky',stickytrigger,'ignoretime',ignoretime,...
                                            'window',winparms(1),'smoothfact',winparms(2),...
                                            'IRASA',true,'ThIRASA',true);
@@ -277,7 +260,6 @@ display('Clustering States Based on EMG, SW, and TH LFP channels')
 detectionparms.userinputs = p.Results;
 detectionparms.MinTimeWindowParms = MinTimeWindowParms;
 detectionparms.SleepScoreMetrics = SleepScoreMetrics;
-detectionparms.MotionSource = MotionSource;
 
 % note and keep special version of original hists and threshs
 
@@ -298,8 +280,7 @@ if exist('ManScore','var')
 end
 
 %Saving SleepStates
-% save(bz_sleepstatepath,'SleepState');
-save(bz_sleepstatepath,'SleepState','-v7.3');
+save(bz_sleepstatepath,'SleepState');
 
 %% MAKE THE STATE SCORE OUTPUT FIGURE
 %ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
@@ -316,14 +297,14 @@ end
 display('Calculating/Saving Episodes')
 StatesToEpisodes(SleepState,basePath);
 
-display(['Sleep Score ',basename,': Complete!']);
+display(['Sleep Score ',recordingname,': Complete!']);
 
 %% PROMPT USER TO MANUALLY CHECK DETECTION WITH THESTATEEDITOR
 if ~noPrompts
     str = input('Would you like to check detection with TheStateEditor? [Y/N] ','s');
     switch str
         case {'Y','y',''}
-            TheStateEditor([basePath,filesep,basename])
+            TheStateEditor([basePath,filesep,recordingname])
         case {'N','n'}
         otherwise
             display('Unknown input..... you''ll have to load TheStateEditor on your own')

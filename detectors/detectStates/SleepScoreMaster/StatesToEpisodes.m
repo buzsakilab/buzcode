@@ -136,7 +136,7 @@ SleepStateEpisodes.detectorinfo.detectiondate = datestr(now,'yyyy-mm-dd');
 if exist('basePath','var')
     baseName = bz_BasenameFromBasepath(basePath);
     bz_sleepstateepisodespath = fullfile(basePath,[baseName,'.SleepStateEpisodes.states.mat']);
-    save(bz_sleepstateepisodespath,'SleepStateEpisodes','-v7.3');
+    save(bz_sleepstateepisodespath,'SleepStateEpisodes');
 end
 
 

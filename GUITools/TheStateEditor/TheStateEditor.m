@@ -385,7 +385,7 @@ else
         
         
         annotation('textbox',  'Position', [0.02, 0.65, 0.9, 0.07], 'string', ['\bf\fontsize{10}Choose a motion signal to use:'], 'EdgeColor', 'none');
-        mOptions = {'.EMGFromLFP.LFP.mat';'.AccelerometerMotion.mat';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from .mat file vector';'Load from TimeValue Pair .mat';'None'};
+        mOptions = {'.EMGFromLFP.LFP.mat';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from .mat file vector';'Load from TimeValue Pair .mat';'None'};
         mInput = uicontrol('style', 'popupmenu', 'string', mOptions );
         set(mInput, 'Units', 'normalized', 'Position', [0.37, 0.5, 0.62, 0.1]);
         
@@ -550,17 +550,6 @@ else
             case 'None'
                 motion = [];
                 MotionType = 'none';
-            case '.AccelerometerMotion.mat'
-                tpath = [baseName,'.AccelerometerMotion.mat'];
-                if ~exist(tpath,'file')
-                    error('No AccelerometerMotion.mat found.  You may need to run bz_GetAccelerometerMotion.m')
-                    return
-                end
-                accel = load(tpath);%should now have the EMG variable with fields 
-                
-                tos = fspec{1}.to;
-%                 motion = interp1(accel.motion.timestamps,accel.motion.data,tos,'nearest');                
-                motion = interp1(accel.motion.timestamps,accel.motion.data_var,tos,'nearest');                
             case 'Load From .whl file (head tracking)'
                 disp('Loading and preprocessing motion data from .whl file...');
                 motion = LoadFromWhl(baseName, fspec{1}.to);
@@ -586,27 +575,18 @@ else
                     end
                 end
                 meeg = abs(zscore(meeg')');
-                meeg = sum(meeg, 1);%summate across channels
-                
-%                 forder = 500;%create filter
-%                 forder = ceil(forder/2)*2;
-%                 EEGSR = eegFS;
-%                 lowband = 0.1;%bandpass low thresh
-%                 highband = 10;%bandpass high thresh
-%                 firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
-%                
-%                 meeg = filter2(firfiltb,  meeg);%filter data
-                
-                motion = reshape(meeg(1:(length(meeg) - mod(length(meeg), eegFS))), eegFS, []);
-                motion = mean(motion,1);
-                motion = movvar(motion,3);%show the variance across 3 points, not the raw value
-
+                meeg = sum(meeg, 1);
+                forder = 500;
+                forder = ceil(forder/2)*2;
+                EEGSR = eegFS;
+                lowband = 0.1;
+                highband = 1;
+                firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
+                meeg = filter2(firfiltb,  meeg);
+                motion = mean(reshape(meeg(1:(length(meeg) - mod(length(meeg), eegFS))), eegFS, []), 1);
                 if length(motion) == (length(fspec{1}.to) + 1)
                     motion = motion(1:(end - 1));
                 end
-                
-                
-                
                 MotionType = 'Channels (accelerometer)';
                 disp('Done.');
             case 'Load from eeg ch(s) (MEG)'
@@ -5405,16 +5385,16 @@ title({'Click in plots to reset X value of thresholds',...
 
 %middle plot: EMG amplitude
 ax2 = subplot(3,2,4,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
-bar(histsandthreshs.MotionHistBins,histsandthreshs.MotionHist)
-EMGline = plot(ax2,[histsandthreshs.MotionThresh histsandthreshs.MotionThresh],ylim(ax2),'r','tag','bw');
-xlabel('EMG/Accel/Motion, active WAKE vs REM/inactive)')
+bar(histsandthreshs.EMGhistbins,histsandthreshs.EMGhist)
+EMGline = plot(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2),'r','tag','bw');
+xlabel('EMG (300-600Hz Correlation, active WAKE vs REM/inactive)')
 ylabel('Counts (sec)')
 ResetToInitButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.92, 0.58, 0.08, 0.05]);
 set(ResetToInitButton_EMG,'Callback',@ResetToInitEMG);
 ResetToOrigButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.92, 0.53, 0.08, 0.05]);
 set(ResetToOrigButton_EMG,'Callback',@ResetToOrigEMG);
 StickyThreshCheck_EMG = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.48, 0.08, 0.05],...
-    'Value',histsandthreshs.stickyMotion);
+    'Value',histsandthreshs.stickyEMG);
 %set(StickyThreshCheck_EMG,'Callback',@SetStickyEMG);
 
 %bottom plot: Theta power
@@ -5434,26 +5414,26 @@ StickyThreshCheck_TH = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units
 %For 2d cluster plots
 broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
 thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
-Motion = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.motiondata;
+EMG = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.EMG;
 plotstates = interp1(FO.to,FO.States,SleepState.detectorinfo.detectionparms.SleepScoreMetrics.t_clus,'nearest');
 %right plot
 ax4 = subplot(2,2,1);hold on;
     for ss = 1:5
-        plot(ax4,broadbandSlowWave(plotstates==ss),Motion(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+        plot(ax4,broadbandSlowWave(plotstates==ss),EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
     swline2 = plot(histsandthreshs.swthresh*[1 1],ylim(ax4),'r','LineWidth',1);
-    EMGline2 = plot(histsandthreshs.swthresh*[0 1],histsandthreshs.MotionThresh*[1 1],'r','LineWidth',1);
-    xlabel('Broadband SW');ylabel('Motion')
+    EMGline2 = plot(histsandthreshs.swthresh*[0 1],histsandthreshs.EMGthresh*[1 1],'r','LineWidth',1);
+    xlabel('Broadband SW');ylabel('EMG')
     title('Isolate NREM')
     
     
 ax5 = subplot(2,2,3);hold on;
     for ss = [1 2 4 5]
-    plot(ax5,thratio(plotstates==ss),Motion(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+    plot(ax5,thratio(plotstates==ss),EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
-    xlabel('Narrowband Theta');ylabel('Motion')
-    thline2 = plot(histsandthreshs.THthresh*[1 1],histsandthreshs.MotionThresh*[0 1],'r','LineWidth',1);
-    EMGline3 = plot([0 1],histsandthreshs.MotionThresh*[1 1],'r','LineWidth',1);
+    xlabel('Narrowband Theta');ylabel('EMG')
+    thline2 = plot(histsandthreshs.THthresh*[1 1],histsandthreshs.EMGthresh*[0 1],'r','LineWidth',1);
+    EMGline3 = plot([0 1],histsandthreshs.EMGthresh*[1 1],'r','LineWidth',1);
     title('Isolate REM from WAKE')
 
 %RESCORE!
@@ -5549,12 +5529,7 @@ if ~histsandthreshsOK
     end
     
     if exist(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']),'file')
-        switch lower(SleepState.detectorinfo.detectionparms.userinputs.MotionSource)
-            case 'emgfromlfp'
-                e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
-            case 'accel'
-                e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
-        end
+        e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
     else
         loadgood = 0;%signify couldn't find preprocessed data
     end
@@ -5568,27 +5543,17 @@ if ~histsandthreshsOK
                 %answer = questdlg('Use Loaded Channels?','Yes','No, Auto select channgels for scoring');
                 SleepScoreMaster(basePath)
                 s = load(fullfile(basePath,[baseName '.SleepScoreLFP.LFP.mat']));
-                switch lower(SleepState.detectorinfo.detectionparms.userinputs.MotionSource)
-                    case 'emgfromlfp'
-                        e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
-                    case 'accel'
-                        e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
-                end
+                e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
             case {'No','Cancel'}
                 histsandthreshs = [];
                 return
         end
     end
 
-    switch lower(SleepState.detectorinfo.detectionparms.userinputs.MotionSource)
-        case 'emgfromlfp'
-            [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,s.SleepScoreLFP,e.EMGFromLFP,false);
-        case 'accel'
-            [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-                                           basePath,s.SleepScoreLFP,e.accel,false);
-    end
     
+    [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
+                                           basePath,s.SleepScoreLFP,e.EMGFromLFP,false);
+
     histsandthreshs = SleepScoreMetrics.histsandthreshs;
 
     SleepState.detectorinfo.detectionparms.SleepScoreMetrics = SleepScoreMetrics;
@@ -5625,12 +5590,12 @@ end
 % grab user-entered thresholds from GUI, for final input to DetermineStates
 swthresh = get(FO.AutoClusterFig.swline,'XData');
 swthresh = swthresh(1,1);
-MotionThresh = get(FO.AutoClusterFig.EMGline,'XData');
-MotionThresh = MotionThresh(1,1);
+EMGthresh = get(FO.AutoClusterFig.EMGline,'XData');
+EMGthresh = EMGthresh(1,1);
 THthresh = get(FO.AutoClusterFig.THline,'XData');
 THthresh = THthresh(1,1);
 FO.AutoScore.histsandthreshs.swthresh = swthresh;
-FO.AutoScore.histsandthreshs.MotionThresh = MotionThresh;
+FO.AutoScore.histsandthreshs.EMGthresh = EMGthresh;
 FO.AutoScore.histsandthreshs.THthresh = THthresh;
 
 FO.AutoScore.histsandthreshs.stickySW = FO.AutoClusterFig.stickySWbox.Value;
@@ -5652,18 +5617,18 @@ plotstates = interp1(stateidx.timestamps,stateidx.states,dp.SleepScoreMetrics.t_
 cla(FO.AutoClusterFig.ax4)
     for ss = 1:5
         plot(FO.AutoClusterFig.ax4,dp.SleepScoreMetrics.broadbandSlowWave(plotstates==ss),...
-            dp.SleepScoreMetrics.motiondata(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+            dp.SleepScoreMetrics.EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
     plot(FO.AutoClusterFig.ax4,swthresh.*[1 1],ylim(FO.AutoClusterFig.ax4),'r','LineWidth',1);
-    plot(FO.AutoClusterFig.ax4,[0 swthresh],MotionThresh.*[1 1],'r','LineWidth',1);
+    plot(FO.AutoClusterFig.ax4,[0 swthresh],EMGthresh.*[1 1],'r','LineWidth',1);
     
 cla(FO.AutoClusterFig.ax5)
     for ss = [1 2 4 5]
         plot(FO.AutoClusterFig.ax5,dp.SleepScoreMetrics.thratio(plotstates==ss),...
-            dp.SleepScoreMetrics.motiondata(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+            dp.SleepScoreMetrics.EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
-    plot(FO.AutoClusterFig.ax5,THthresh.*[1 1],[0 MotionThresh],'r','LineWidth',1);
-    plot(FO.AutoClusterFig.ax5,[0 1],MotionThresh.*[1 1],'r','LineWidth',1); 
+    plot(FO.AutoClusterFig.ax5,THthresh.*[1 1],[0 EMGthresh],'r','LineWidth',1);
+    plot(FO.AutoClusterFig.ax5,[0 1],EMGthresh.*[1 1],'r','LineWidth',1); 
 
 %Interpolate to match fspec{1}.to
 states = interp1(stateidx.timestamps,stateidx.states,FO.to,'nearest');
@@ -5689,8 +5654,8 @@ function ResetToOrigEMG(obj,ev)
 obj = findobj('tag','StateEditorMaster');
 FO = guidata(obj(end));
 baseName = FO.baseName;
-y = [0 max(FO.AutoScore.histsandthreshs_orig.MotionHist)];
-x = [FO.AutoScore.histsandthreshs_orig.MotionThresh FO.AutoScore.histsandthreshs_orig.MotionThresh];
+y = [0 max(FO.AutoScore.histsandthreshs_orig.EMGhist)];
+x = [FO.AutoScore.histsandthreshs_orig.EMGthresh FO.AutoScore.histsandthreshs_orig.EMGthresh];
 set(FO.AutoClusterFig.EMGline,'XData',x);
 end
 
@@ -5716,8 +5681,8 @@ function ResetToInitEMG(obj,ev)
 obj = findobj('tag','StateEditorMaster');
 FO = guidata(obj(end));
 baseName = FO.baseName;
-y = [0 max(FO.AutoClusterFig.histsandthreshs_init.MotionHist)];
-x = [FO.AutoClusterFig.histsandthreshs_init.MotionThresh FO.AutoClusterFig.histsandthreshs_init.MotionThresh];
+y = [0 max(FO.AutoClusterFig.histsandthreshs_init.EMGhist)];
+x = [FO.AutoClusterFig.histsandthreshs_init.EMGthresh FO.AutoClusterFig.histsandthreshs_init.EMGthresh];
 set(FO.AutoClusterFig.EMGline,'XData',x);
 end
 
