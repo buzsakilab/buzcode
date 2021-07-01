@@ -7,27 +7,38 @@ function [ ywinrange ] = bz_MultiLFPPlot( lfp,varargin )
 %       bz_MultiLFPPlot(lfp)
 %
 %INPUT
-%   lfp         a buzcode lfp structure. channels are assumed to be ordered
-%               from top to bottom
+%   lfp            A buzcode lfp structure. channels are assumed to be ordered
+%                    from top to bottom
 %   (optional)
-%   'channels'  subset/ordering of channels to plot (0-index a la neuroscope)
-%               default is to take the channels as ordered in lfp.channels
-%   'timewin'   only plot a subwindow of time
-%   'spikes'    a buzcode spikes struct to display spikes above the LFP
-%   'sortmetric'metric by which to sort the cells in the raster (eg FR)
-%   'cellgroups'{Ngroups} cell array of logical arrays of group members
-%   'plotcells' list of cell UIDs to plot (not implemented. sad.)
-%   'axhandle'  axes handle in which to put the plot
-%   'scaleLFP'  multiplicative factor to scale the y range of LFP
-%   'scalespikes' size of spike points (default:5)
-%   'spikeside' 'top' (default) or 'bottom'
-%   'LFPlabels' text labels for each LFP channel (default: channel number)
+%   'channels'    Subset/ordering of channels to plot (0-index a la neuroscope)
+%                     default is to take the channels as ordered in lfp.channels
+%   'timewin'     Only plot a subwindow of time
+%   'spikes'      A buzcode spikes struct to display spikes above the LFP
+%   'sortmetric'  Metric by which to sort the cells in the raster (eg FR)
+%   'cellgroups'  {Ngroups} cell array of logical arrays of group members
+%   'plotcells'   List of cell UIDs to plot (not implemented. sad.)
+%   'axhandle'    Axes handle in which to put the plot
+%   'scaleLFP'    Multiplicative factor to scale the y range of LFP
+%   'scalespikes'  Size of spike points (default:5)
+%   'spikeside'   Whether spikes are above or elow LFP: 'top' (default) or 'bottom'
+%   'LFPlabels'   Text labels for each LFP channel (default: channel number)
 %   'LFPmidpoints' (default: evenly spaced)
 %   'lfpcolor'
-%   'lfpwidth'
-%
+%   'lfplinewidth'
+%   'spikemarker'      Type of mark to use to show a spike.  Can either be
+%                        a matlab markertype, such as '.' or '*", or can be the
+%                        special case of "verticaltick" to make a
+%                        traditional raster.  Default: ".'
+%   'spikerasterscale' Relative size of spike raster compared to LFP plot D
+%                       default = 0.5, so spikes half as big as LFP
+%   'spikecolorscheme' Can be either a single color such as 'k' or 'r', or
+%                       can be the name of a color generator function such 
+%                       as 'RainbowColors'.  If the latter, must be a
+%                       function ending in "Colors".  Default 'k'
+%   
 %
 %DLevenstein 2017
+%BWatson 2020
 %% parse the inputs!
 channelsValidation = @(x) assert(isnumeric(x) || strcmp(x,'all'),...
     'channels must be numeric or "all"');
@@ -48,7 +59,10 @@ addParameter(p,'spikeside','top')
 addParameter(p,'LFPlabels',[])
 addParameter(p,'LFPmidpoints',[])
 addParameter(p,'lfpcolor','k')
-addParameter(p,'lfpwidth',0.5)
+addParameter(p,'lfplinewidth',0.5)
+addParameter(p,'spikemarker','.')
+addParameter(p,'spikerasterscale',0.5)
+addParameter(p,'spikecolorscheme','k')
 parse(p,varargin{:})
 timewin = p.Results.timewin;
 channels = p.Results.channels;
@@ -63,8 +77,12 @@ spikeside = p.Results.spikeside;
 LFPlabels = p.Results.LFPlabels;
 lfpmidpoints = p.Results.LFPmidpoints;
 lfpcolor = p.Results.lfpcolor;
-lfpwidth = p.Results.lfpwidth;
-
+lfplinewidth = p.Results.lfplinewidth;
+spikemarker = p.Results.spikemarker;
+spikerasterscale = p.Results.spikerasterscale;
+    spikerasterscale = spikerasterscale *2;
+spikecolorscheme = p.Results.spikecolorscheme;
+    
 if isempty(spikes)
     spikes = spikedefault;
 else
@@ -133,12 +151,13 @@ lfp.plotdata = (bsxfun(@(X,Y) X+Y,single(lfp.data(windex,chindex)).*scaleLFP,lfp
 
 switch spikeside
     case 'top'
-        spikeplotrange = [0 -lfpmidpoints(1)];
+        spikeplotrange = spikerasterscale * [0 -lfpmidpoints(1)];
     case 'bottom'
-        spikeplotrange = lfpmidpoints(end)+[1.5 0.5].*lfpmidpoints(1);  
+        spikeplotrange = [lfpmidpoints(end) + [1.5 0.5].*spikerasterscale * lfpmidpoints(1)];  
 end
 spikes.plotdata = spikes.spindices(winspikes,:);
 %spikes.plotdata(:,2) = (spikes.plotdata(:,2)./max(spikes.spindices(:,2))).*(diff(spikeplotrange));
+
 spikes.plotdata(:,2) = bz_NormToRange(spikes.plotdata(:,2),spikeplotrange);
 %% Do the plot
 ywinrange = fliplr(lfpmidpoints([1 end])+1.*[1 -1].*max(channelrange));
@@ -152,9 +171,43 @@ if ~isnan(spikes.spindices)
     
 end
 
-plot(ax,lfp.timestamps(windex),lfp.plotdata,'color',lfpcolor,'linewidth',lfpwidth)
+plot(ax,lfp.timestamps(windex),lfp.plotdata,'color',lfpcolor,'linewidth',lfplinewidth)
 hold on
-plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.','markersize',scalespikes)
+
+% single color spike plots
+% plot(ax,spikes.plotdata(:,1),spikes.plotdata(:,2),'k.','markersize',scalespikes)
+
+% spike plots with diff color per unit
+yperunit = unique(spikes.plotdata(:,2));
+numactiveunits = length(yperunit);
+
+colorperunit = ColorSchemeTranslator(numactiveunits,spikecolorscheme);
+
+for i = 1:numactiveunits
+    tspikeidxs = spikes.plotdata(:,2) == yperunit(i);
+    tspikes = spikes.plotdata(tspikeidxs,:);
+    switch spikemarker
+        case 'verticaltick'
+            ydiffperunit = abs(yperunit(2)-yperunit(1));
+            y1 = tspikes(:,2)-0.5*ydiffperunit;
+            y2 = tspikes(:,2)+0.5*ydiffperunit;
+            tscalespikes = scalespikes/5;%to equate to other scaling scheme
+            for ii = 1:size(tspikes,1); %for each spike
+                plot(ax,[tspikes(ii,1) tspikes(ii,1)],...
+                    [y1(ii),y2(ii)],...
+                    'color',colorperunit(i,:),...
+                    'linewidth',tscalespikes,...
+                    'marker','none');
+            end
+        otherwise            
+            plot(ax,tspikes(:,1),tspikes(:,2),...
+                'color',colorperunit(i,:),...
+                'marker',spikemarker,...
+                'linestyle','none',...
+                'markersize',scalespikes)
+    end
+end
+
 xlabel('t (s)')
 ylabel('LFP Channel')
 set(ax,'Ytick',fliplr(lfpmidpoints))
@@ -170,3 +223,59 @@ box off
 
 
 end
+
+
+
+function colorperunit = ColorSchemeTranslator(numactiveunits,spikecolorscheme);
+% makes a matrix of colors of spikes for each cell.  
+% one row per per cell, with 3 columns
+% reprsenting the R,G,B values for each cell's spikes
+
+if isstr(spikecolorscheme)
+    if length(spikecolorscheme)>6
+        if strcmp(spikecolorscheme(end-5:end),'Colors')
+            eval(['colorperunit = ' spikecolorscheme '(numactiveunits);'])
+        end
+    else
+        switch spikecolorscheme
+            case {'k','black'}
+                c = [0 0 0];
+            case {'w','white'}
+                c = [1 1 1];
+            case {'b','blue'}
+                c = [0 0 1];
+            case {'g','green'}
+                c = [0 1 0];
+            case {'r','red'}
+                c = [1 0 0];
+            case {'y','yellow'}
+                c = [1 1 0];
+            case {'m','magenta'}
+                c = [1 0 1];
+            case {'c','cyan'}
+                c = [0 1 1];
+            otherwise
+                warning('!!Unable to parse spikecolorscheme input')
+                c = [0 0 0];
+                colorperunit = repmat(c,[numactiveunits 1]);
+        end
+        colorperunit = repmat(c,[numactiveunits 1]);
+    end
+elseif isnumeric(spikecolorscheme)
+    if prod(size(spikecolorscheme)) == 3
+        spikecolorscheme = spikecolorscheme(:)';
+        colorperunit = repmat(spikecolorscheme,[numactiveunits 1]);
+    elseif size(spikecolorscheme,2) == 3
+        colorperunit = spikecolorscheme;
+    elseif size(spikecolorscheme,1) == 3
+        colorperunit = spikecolorscheme';
+    else
+        warning('Unable to parse spikecolorscheme input')
+        c = [0 0 0];
+        colorperunit = repmat(c,[numactiveunits 1]);
+    end
+end
+
+
+end
+

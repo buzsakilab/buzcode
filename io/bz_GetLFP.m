@@ -24,9 +24,12 @@ function [lfp] = bz_GetLFP(varargin)
 %                           the LFP file (default is [0 inf])
 %    'downsample'         -factor to downsample the LFP (i.e. 'downsample',5
 %                           will load a 1250Hz .lfp file at 250Hz)
+%    'restrict'           - specification of time, in seconds, to load data
+%                            from.  Given as [start end] bracketed pair.
+%                            Default: no restriction, all lfp time loaded
 %    'noPrompts'          -logical (default) to supress any user prompts
 %    'fromDat'            -option to load directly from .dat file (default:false)
-%
+
 %  OUTPUT
 %
 %    lfp             struct of lfp data. Can be a single struct or an array
@@ -74,8 +77,8 @@ addParameter(p,'intervals',[],@isnumeric)
 addParameter(p,'restrict',[],@isnumeric)
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'downsample',1,@isnumeric);
-addParameter(p,'saveMat',false,@islogical);
-addParameter(p,'forceReload',false,@islogical);
+% addParameter(p,'saveMat',false,@islogical);
+% addParameter(p,'forceReload',false,@islogical);
 addParameter(p,'noPrompts',false,@islogical);
 addParameter(p,'fromDat',false,@islogical);
 
