@@ -1,5 +1,5 @@
 function [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
-    basePath,SleepScoreLFP,EMG,overwrite,varargin)
+    basePath,SleepScoreLFP,motion,overwrite,varargin)
 %StateID(LFP,thLFP,EMG,sf_LFP,sf_EMG,figloc,WSEpisodes)
 %   Detailed explanation goes here
 %
@@ -35,9 +35,9 @@ ThIRASA = p.Results.ThIRASA;
 
 %This is the sticky trigger passed through to DetermineStates via histsandthreshs
 if onSticky
-    stickySW = true; stickyTH=false; stickyEMG=true;
+    stickySW = true; stickyTH=false; stickyMotion=true;
 else
-    stickySW = false; stickyTH=false; stickyEMG=false;
+    stickySW = false; stickyTH=false; stickyMotion=false;
 end
 %% Buzcode name of the SleepScoreMetrics.LFP.mat file
 %Depreciated
@@ -105,7 +105,7 @@ sf_LFP = SleepScoreLFP.sf/downsamplefactor;
 noverlap = window-1; %1s dt
 
 if strcmp(SWweights,'PSS')
-    display('Calculating SW Mertric using Power Spectrum Slope')
+    display('Calculating SW Metric using Power Spectrum Slope')
     %Put the LFP in the right structure format
     lfp.data = swLFP;
     lfp.timestamps = t_LFP;
@@ -127,7 +127,7 @@ if strcmp(SWweights,'PSS')
     totz = NormToInt(abs(sum(zFFTspec,2)),'modZ');
     badtimes = find(totz>3);
 else
-    display(['Calculating SW Mertric using ',SleepScoreLFP.params.SWWeightsName])
+    display(['Calculating SW Metric using ',SleepScoreLFP.params.SWWeightsName])
 
     freqlist = logspace(0,2,100);
     [swFFTspec,swFFTfreqs,t_clus] = spectrogram(single(swLFP),window*sf_LFP,noverlap*sf_LFP,freqlist,sf_LFP);
@@ -219,19 +219,27 @@ end
 broadbandSlowWave = bz_NormToRange(broadbandSlowWave,[0 1]);
 thratio = bz_NormToRange(thratio,[0 1]);
  
-%% EMG
-dtEMG = 1/EMG.samplingFrequency;
-EMG.smoothed = smooth(EMG.data,smoothfact/dtEMG,'moving');
+%% Motion: EMG or Accel as of 6/2021
+
+switch lower(motion.detectorName)
+    case {'bz_emgfromlfp','emgfromlfp'}      
+        dtmotion = 1/motion.samplingFrequency;
+        motion.smoothed = smooth(motion.data,smoothfact/dtmotion,'moving');
+    case 'accelerometer'
+        dtmotion = 1/motion.OutputSampFreq;
+%         motion.smoothed = smooth(motion.data,smoothfact/dtmotion,'moving');
+        motion.smoothed = smooth(motion.data_var,smoothfact/dtmotion,'moving');
+end
 
 %remove any t_clus before/after t_emg
-prEMGtime = t_clus<EMG.timestamps(1) | t_clus>EMG.timestamps(end);
-broadbandSlowWave(prEMGtime) = []; thratio(prEMGtime) = []; t_clus(prEMGtime) = [];
+prMotiontime = t_clus<motion.timestamps(1) | t_clus>motion.timestamps(end);
+broadbandSlowWave(prMotiontime) = []; thratio(prMotiontime) = []; t_clus(prMotiontime) = [];
 
 %interpolate to FFT time points;
-EMG = interp1(EMG.timestamps,EMG.smoothed,t_clus,'nearest');
+motiondata = interp1(motion.timestamps,motion.smoothed,t_clus,'nearest');
 
 %Min/Max Normalize
-EMG = bz_NormToRange(EMG,[0 1]);
+motiondata = bz_NormToRange(motiondata,[0 1]);
 
 
 %% BELOW IS GETTING HISTOGRAMS AND THRESHOLDS FOR SCORING IN         %%
@@ -263,35 +271,35 @@ swthresh = betweenpeaks(diploc);
 NREMtimes = (broadbandSlowWave >swthresh);
 
 
-%% Then Divide EMG
+%% Then Divide Motion
 numpeaks = 1;
 numbins = 12;
-if sum(isnan(EMG))>0
-   error('EMG seems to have NaN values...') 
+if sum(isnan(motiondata))>0
+   error('Motion seems to have NaN values...') 
 end
 
 while numpeaks ~=2
     %[EMGhist,EMGhistbins]= hist(EMG(NREMtimes==0),numbins); 
-    [EMGhist,EMGhistbins]= hist(EMG,numbins); %changed back 6/18/19
+    [MotionHist,MotionHistBins]= hist(motiondata,numbins); %changed back 6/18/19
 
-    [PKS,LOCS] = findpeaks_SleepScore([0 EMGhist],'NPeaks',2);
+    [PKS,LOCS] = findpeaks_SleepScore([0 MotionHist],'NPeaks',2);
     LOCS = sort(LOCS)-1;
     numbins = numbins+1;
     numpeaks = length(LOCS);
     
     if numpeaks ==100
-        display('Something is wrong with your EMG')
+        display('Something is wrong with your Motion Signal')
         return
     end
 end
 
-EMGdiptest = bz_hartigansdiptest(EMG);
-betweenpeaks = EMGhistbins(LOCS(1):LOCS(2));
-[dip,diploc] = findpeaks_SleepScore(-EMGhist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
+Motiondiptest = bz_hartigansdiptest(motiondata);
+betweenpeaks = MotionHistBins(LOCS(1):LOCS(2));
+[dip,diploc] = findpeaks_SleepScore(-MotionHist(LOCS(1):LOCS(2)),'NPeaks',1,'SortStr','descend');
 
-EMGthresh = betweenpeaks(diploc);
+MotionThresh = betweenpeaks(diploc);
 
-MOVtimes = (broadbandSlowWave(:)<swthresh & EMG(:)>EMGthresh);
+MOVtimes = (broadbandSlowWave(:)<swthresh & motiondata(:)>MotionThresh);
 
 
 %% Then Divide Theta (During NonMoving)
@@ -336,16 +344,16 @@ if length(PKS)==2
 
     THthresh = betweenpeaks(diploc);
 
-    REMtimes = (broadbandSlowWave<swthresh & EMG<EMGthresh & thratio>THthresh);
+    REMtimes = (broadbandSlowWave<swthresh & motiondata<MotionThresh & thratio>THthresh);
 else
     display('No bimodal dip found in theta. Use TheStateEditor to manually select your threshold (hotkey: A)')
     THthresh = 0;
 %     REMtimes =(broadbandSlowWave<swthresh & EMG<EMGthresh);
 end
 
-histsandthreshs = v2struct(swhist,swhistbins,swthresh,EMGhist,EMGhistbins,...
-    EMGthresh,THhist,THhistbins,THthresh,...
-    stickySW,stickyTH,stickyEMG);
+histsandthreshs = v2struct(swhist,swhistbins,swthresh,MotionHist,MotionHistBins,...
+    MotionThresh,THhist,THhistbins,THthresh,...
+    stickySW,stickyTH,stickyMotion);
 
 %% Ouput Structure: StateScoreMetrics
 LFPparams = SleepScoreLFP.params;
@@ -353,9 +361,9 @@ WindowParams.window = window;
 WindowParams.smoothwin = smoothfact;
 THchanID = SleepScoreLFP.THchanID; SWchanID = SleepScoreLFP.SWchanID;
 
-SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,EMG,...
+SleepScoreMetrics = v2struct(broadbandSlowWave,thratio,motiondata,...
     t_clus,badtimes,badtimes_TH,histsandthreshs,LFPparams,WindowParams,THchanID,SWchanID,...
-    recordingname,THdiptest,EMGdiptest,SWdiptest);
+    recordingname,THdiptest,Motiondiptest,SWdiptest);
 %save(matfilename,'SleepScoreMetrics');
 
 StatePlotMaterials = v2struct(t_clus,swFFTfreqs,swFFTspec,thFFTfreqs,thFFTspec);
