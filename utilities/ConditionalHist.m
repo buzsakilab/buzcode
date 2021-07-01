@@ -89,7 +89,7 @@ Yedges(1) = -inf;Yedges(end) = inf;
 
 %First calculate the marginal probability of X
 [Xhist,~,XbinID] = histcounts(X,Xedges);
-
+Xhist = movsum(Xhist,Xbinoverlap.*2-1); %overlab = number of bins on each side
 
 %Then calculate the joint probabilty of X and Y
 if length(Ybins) ==1
@@ -100,6 +100,7 @@ elseif isempty(Y)
     XYhist = nan(length(Xbins),length(Ybins));
 else
     [XYhist] = hist3([X,Y],{Xbins,Ybins});
+    XYhist = movsum(XYhist,Xbinoverlap.*2-1,'omitnan');
 end
 
 % Conditional probability of Y given X
@@ -107,13 +108,15 @@ if isempty(conditionby)
     Xhist4norm = Xhist;
 else
     Xhist4norm = histcounts(conditionby,Xedges);
+    Xhist4norm = movsum(Xhist4norm,Xbinoverlap.*2-1,'omitnan');
 end
 Xhist4norm(Xhist4norm<=minX) = nan; %Remove bins that don't have enough sampling
 pYX = bsxfun(@(x,y) x./y,XYhist,Xhist4norm');
 
 %Mean Y given X
 for xx = 1:length(Xbins)
-    meanYX(xx) = nanmean(Y(XbinID==xx));
+    inxbins = XbinID>(xx-Xbinoverlap) & XbinID<(xx+Xbinoverlap);
+    meanYX(xx) = nanmean(Y(inxbins));
     meanYX(isnan(Xhist4norm)) = nan;
 end
 
