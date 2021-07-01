@@ -66,7 +66,7 @@ addParameter(p,'plotLFP',true,@islogical);
 addParameter(p,'whitening',true,@islogical);
 addParameter(p,'tsmth',0.0001,@isnumeric);
 addParameter(p,'waveDb',false,@islogical);
-addParameter(p,'frange',[50 250],@isnumeric);
+addParameter(p,'frange',[50 200],@isnumeric);
 addParameter(p,'nfreqs',100,@isnumeric);
 addParameter(p,'ncyc',5,@isnumeric);
 addParameter(p,'space','log');
@@ -113,7 +113,7 @@ for e = 1:length(events)
     lfp_temp(:,:,e) = data(events(e)-twin(1):events(e)+twin(2),1);
 end
 
-lfp_avg = nanmean(lfp_temp,3);
+lfp_avg = nanmean(lfp_temp,3)*-1;
 
 %% Whiten LFP
 

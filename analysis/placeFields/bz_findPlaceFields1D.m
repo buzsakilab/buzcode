@@ -28,7 +28,7 @@ function [placeFieldStats] = bz_findPlaceFields1D(varargin)
 %                   (default = 0.0)
 %                   are considered noise and ignored (default = 0.50)
 %     'minPeak'     peaks smaller than this size are considered spurious
-%                   and ignored (default = 2 Hz)
+%                   and ignored (default = 1 Hz)
 %     'minPeak2nd'  for secondary place fields, peaks smaller than this 
 %                   percentage of maximum Firing Rate along the maze are
 %                   considered spurious and ignored (default 0.60)
@@ -83,7 +83,7 @@ addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'firingMapsAvg',{},@isstruct);
 addParameter(p,'threshold',0.2,@isnumeric);
 addParameter(p,'minSize',0.05,@isnumeric);
-addParameter(p,'maxSize',0.60,@isnumeric);
+addParameter(p,'maxSize',0.50,@isnumeric);
 addParameter(p,'minPeak',2,@isnumeric);
 addParameter(p,'minPeak2nd',0.6,@isnumeric);
 addParameter(p,'sepEdge',0.0,@isnumeric);
@@ -277,29 +277,9 @@ for unit = 1:length(firingMaps.rateMaps)
         if c==1, title(['                                                                  Cell ' num2str(unit)]); end
         %ylim([0,12])
     end
-    if ~exist([basepath filesep 'newPCs'])
-        mkdir(basepath,'newPCs');
-    end
+    mkdir(basepath,'newPCs')
     saveas(gcf,[basepath,filesep,'newPCs',filesep ,'cell_' num2str(unit) '.png'],'png');
     close all;
-end
-
-for c = 1:length(firingMaps.rateMaps{1})
-    figure;
-    set(gcf,'Position',[100 -100 2500 1200]);
-    for unit = 1:length(firingMaps.rateMaps)
-    subplot(7,ceil(length(firingMaps.rateMaps)/7),unit);
-        plot(firingMaps.rateMaps{unit}{c},'k');
-        if sum(firingMaps.rateMaps{unit}{c})>0
-            hold on
-            for ii = 1:size(mapStats{unit}{c}.field,2)
-                plot(find(mapStats{unit}{c}.field(:,ii)),firingMaps.rateMaps{unit}{c}(mapStats{unit}{c}.field(:,ii)==1),'linewidth',2)
-                plot([1 1]*mapStats{unit}{c}.x(ii),[0 firingMaps.rateMaps{unit}{c}(mapStats{unit}{c}.x(ii)==1)],'--k')
-            end
-        end
-        set(gca,'XTickLabel',[]);
-    end
-    saveas(gcf,[basepath,filesep,'newPCs',filesep ,'map_' num2str(c) '.png'],'png');
 end
  
 end

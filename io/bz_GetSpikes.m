@@ -160,15 +160,8 @@ else
     if any(getWaveforms)
         spkFiles = dir([basepath filesep '*.spk*']);
     end
-%     kilosort_path = dir([basepath filesep '*kilosort*']);
-    %Finding kilosort folder, case insensitive - added by EFO
-    temp = dir(basepath);
-    aux  = strfind(lower({temp.name}),lower('kilosort'));
-    fold_idx = find(cellfun(@(x) ~isempty(x),aux));
-    %in case of multiple folders, it's going to take the first one in the
-    %list
-    kilosort_path = temp(fold_idx(1));
-    
+    kilosort_path = dir([basepath filesep '*kilosort*']);
+
     if strcmpi(sortingMethod,'clu') || ~isempty(cluFiles) % LOADING FROM CLU/ RES
         fs = spikes.samplingRate; 
         disp('loading spikes from clu/res/spk files..')
@@ -349,27 +342,13 @@ else
         spike_cluster_index = readNPY(fullfile(kilosort_path.name, 'spike_clusters.npy'));
         spike_times = readNPY(fullfile(kilosort_path.name, 'spike_times.npy'));
         cluster_group = tdfread(fullfile(kilosort_path.name,'cluster_group.tsv'));
-        
-        %extracting shank information if it's kilosort2/phy2 output
-        if exist(fullfile(kilosort_path.name,'cluster_info.tsv'),'file')
-            cluster_info = tdfread(fullfile(kilosort_path.name,'cluster_info.tsv'));
-            if isfield(cluster_info,'ch') %if it has the channel field
-                clu_channels = cluster_info.ch;
-                shanks = zeros(size(clu_channels));
-                
-                for s = 1:sessionInfo.spikeGroups.nGroups
-                    temp1 = ismember(clu_channels,sessionInfo.spikeGroups.groups{s});
-                    shanks(temp1) = s;
-                end
-            end
-        else %otherwise try to load shanks.npy from kilosort1/phy1
-            try
-                shanks = readNPY(fullfile(kilosort_path.name, 'shanks.npy')); % done
-            catch
-                shanks = ones(size(cluster_group.cluster_id));
-                warning('No shanks.npy file, assuming single shank!');
-            end
+        try
+            shanks = readNPY(fullfile(kilosort_path.name, 'shanks.npy')); % done
+        catch
+            shanks = ones(size(cluster_group.cluster_id));
+            warning('No shanks.npy file, assuming single shank!');
         end
+
         spikes.sessionName = sessionInfo.FileName;
         jj = 1;
         for ii = 1:length(cluster_group.group)
@@ -414,9 +393,7 @@ else
                 if verbose
                     fprintf(' ** %3.i/%3.i for cluster %3.i/%3.i  \n',jj, length(spkTmp), ii, size(spikes.times,2));
                 end
-                %updated by EFO on 18/11/2020, bz_LoadBinary needs offset input in
-                %samples and not in seconds
-                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',round(spkTmp(jj)*fs) - (wfWin),...
+                wf = cat(3,wf,bz_LoadBinary([sessionInfo.session.name '.dat'],'offset',round(spkTmp(jj)) - (wfWin),...
                     'samples',(wfWin * 2)+1,'frequency',sessionInfo.rates.wideband,'nChannels',sessionInfo.nChannels));
             end
             wf = mean(wf,3);
@@ -426,12 +403,7 @@ else
             for jj = 1 : size(wf,2)          
                 wfF(:,jj) = filtfilt(hpFilt,wf(:,jj) - mean(wf(:,jj)));
             end
-            %updated by EFO on 18/11/2020 to only get the max channel on
-            %the respective shank, avoiding getting waveform of a dead
-            %channel
-            shank_ch = sessionInfo.spikeGroups.groups{spikes.shankID(ii)}+1; %Channels are 0-based
-            [~, maxCh] = max(abs(wfF(wfWin,shank_ch)));
-            maxCh = shank_ch(maxCh);
+            [~, maxCh] = max(abs(wfF(wfWin,:)));
             rawWaveform = detrend(wf(:,maxCh) - mean(wf(:,maxCh))); 
             filtWaveform = wfF(:,maxCh) - mean(wfF(:,maxCh));
             spikes.rawWaveform{ii} = rawWaveform(wfWin-(0.002*fs):wfWin+(0.002*fs)); % keep only +- 1ms of waveform

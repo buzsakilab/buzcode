@@ -75,10 +75,8 @@ order = p.Results.orderKalmanVel;
 % number of conditions
   if iscell(positions)
      conditions = length(positions); 
-  else
+  elseif isvector(positions)
      conditions = 1;
-     temp{1} = positions;
-     positions = temp;
   end
   %%% TODO: conditions label
   
@@ -133,19 +131,13 @@ firingMaps.params.maxGap = maxGap;
 firingMaps.params.mode = mode;
 firingMaps.params.maxDistance = maxDistance;
 
-
-
 for unit = 1:length(spikes.times)
     for c = 1:conditions
     firingMaps.rateMaps{unit,1}{c} = map{unit}{c}.z;
     firingMaps.countMaps{unit,1}{c} = map{unit}{c}.count;
     firingMaps.occupancy{unit,1}{c} = map{unit}{c}.time;
-    %Get the x bins back in units of meters...
-    firingMaps.xbins{unit,1}{c} = map{unit}{c}.x .* ...
-        (max(positions{c}(:,2))-min(positions{c}(:,2))) + min(positions{c}(:,2));
     end
 end
-
 
 if saveMat
    save([firingMaps.sessionName '.firingMapsAvg.cellinfo.mat'],'firingMaps'); 

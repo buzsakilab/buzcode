@@ -143,13 +143,12 @@ if plotLFP
     contourf(taxis,1:size(CSD,2),CSD',40,'LineColor','none');hold on;
     colormap jet; caxis([-cmax cmax]);
     set(gca,'YDir','reverse');xlabel('time (s)');ylabel('channel');title('CSD'); 
-    %plot([0 0],[1 size(CSD,2)],'--k');hold on;
-    set(gca,'visible','off');
+    plot([0 0],[1 size(CSD,2)],'--k');hold on;
     
     subplot(1,2,2);
     for ch=1:size(lfp_avg,2)
         offset = 400*(ch-1);
-        sh_tmp = 2e0*(lfp_avg(:,ch)) + offset;
+        sh_tmp = 1e0*(lfp_avg(:,ch)) + offset;
         plot(taxis,sh_tmp,'k','LineWidth',1.5); hold on;
         clear sh_tmp
     end
@@ -159,8 +158,9 @@ if plotLFP
 
        
 elseif plotCSD  
+    
      cmax = max(max(CSD)); 
-     taxis = (-(twin(1)/samplingRate):(1/samplingRate):(twin(2)/samplingRate))*1e3;
+   
      figure;
      contourf(taxis,1:size(CSD,2),CSD',40,'LineColor','none');hold on;
      colormap jet; caxis([-cmax cmax]);

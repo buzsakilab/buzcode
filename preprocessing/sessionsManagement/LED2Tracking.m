@@ -29,8 +29,6 @@ function [tracking] = LED2Tracking(aviFile,varargin)
 %                   provided try to extract ttl pulses from digitalIn
 %                   channel 1. If it fails, gives video time.
 %   saveMat        - default true
-%   artifactThreshold - max allow movements per frame (in cm, default 3).
-%                   Disabled if not convFact is provided.
 % 
 % OUTPUT
 %       - tracking.behaviour output structure, with the fields:
@@ -45,19 +43,18 @@ function [tracking] = LED2Tracking(aviFile,varargin)
 %   
 %
 %   Manu Valero 2019
-% TO DO: Generalize for non-T maze behaviour
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Defaults and Parms
 p = inputParser;
 addParameter(p,'basepath',pwd,@isstr);
 addParameter(p,'fs',30,@isnumeric);
-addParameter(p,'artifactThreshold',10,@isnumeric);
+addParameter(p,'artThr',3,@isnumeric);
 addParameter(p,'convFact',[],@isnumeric); % 0.1149
 addParameter(p,'roiTracking',[],@ismatrix);
 addParameter(p,'roiLED',[],@ismatrix);
 addParameter(p,'forceReload',false,@islogical)
-addParameter(p,'saveFrames',true,@islogical)
+addParameter(p,'saveFrames',false,@islogical)
 addParameter(p,'verbose',false,@islogical);
 addParameter(p,'thresh',.98,@isnumeric)
 addParameter(p,'bazlerTTL',[],@isnumeric)
@@ -67,7 +64,7 @@ addParameter(p,'saveMat',true,@islogical);
 parse(p,varargin{:});
 basepath = p.Results.basepath;
 fs = p.Results.fs;
-artifactThreshold = p.Results.artifactThreshold;
+artThr = p.Results.artThr;
 convFact = p.Results.convFact;
 roiTracking = p.Results.roiTracking;
 roiLED = p.Results.roiLED;
@@ -97,25 +94,13 @@ if ~exist('aviFile') || isempty(aviFile)
         return
     end
 end
-% attention, for now it only loads the red channel from the video!!
+
+disp('Get frames...')
 if ~exist([basepath filesep aviFile '.mat'],'file') && ~forceReload
-    disp('Get average frame...');
     videoObj = VideoReader([aviFile '.avi']);   % get video
-    numFrames = get(videoObj, 'NumFrames');
-    clear temp
-    batches = 1:2000:numFrames;
-    batches = [batches numFrames+1];
-    frames.r = [];
     tic
-    f = waitbar(0,'Getting frames...');
-    for ii = 1:length(batches)-1
-        waitbar(ii/length(batches),f)
-        temp_frames = read(videoObj,[batches(ii) batches(ii+1)-1]);        % get all frames
-        frames.r = cat(3,frames.r,squeeze(temp_frames(:,:,1,:)));          % collect red, add new nested variable for blue and green if needed
-    end
-    close(f)
+    frames = read(videoObj,[1 Inf]);            % get all frames
     toc
-    
     if saveFrames
         disp('Saving frames...');
         save([basepath filesep aviFile '.mat'],'frames','-v7.3');
@@ -126,9 +111,13 @@ else
 end
 
 % get average frame
-average_frame = mean(frames.r,3);                                          % get average frames
+average_frame = zeros(size(frames,1), size(frames,2));
+for ii = 1:size(frames,2)
+    average_frame = average_frame + double(rgb2gray(frames(:,:,:,ii)));
+end
+average_frame = average_frame/size(frames,4);
 
-% deal with the ROI for the tracking 
+% deal with the ROI for the tracking, if not provided but 
 cd(basepath); cd ..; upBasepath = pwd; cd(basepath);
 if exist([basepath filesep 'roiTracking.mat'],'file')
     load([basepath filesep 'roiTracking.mat'],'roiTracking');
@@ -137,12 +126,11 @@ elseif exist([upBasepath filesep 'roiTracking.mat'],'file')
     disp('ROI tracking from master folder... copying locally...');
     save([basepath filesep 'roiTracking.mat'],'roiTracking');
 elseif isempty(roiTracking)
-    roiTracking = [1 1 size(frames.r,2) size(frames.r,2) 1 ;1 size(frames.r,1) size(frames.r,1) 1 1 ]';
+    roiTracking = [1 1 size(frames,2) size(frames,2) 1 ;1 size(frames,1) size(frames,1) 1 1 ]';
 elseif ischar(roiTracking) && strcmpi(roiTracking,'manual')
     disp('Draw ROI for tracking...');
     h1 = figure;
     imshow(average_frame);
-    title('Draw ROI for tracking... (include all posible locations)','FontWeight','normal');
     roi = drawpolygon;
     roiTracking = [roi.Position; roi.Position(1,:)];
     save([basepath filesep 'roiTracking.mat'],'roiTracking');
@@ -167,16 +155,15 @@ elseif ischar(roiLED) && strcmpi(roiLED,'manual')
 end
 
 if isempty(convFact)                             % if convFact not provided, normalize to 1 along the longest axis
-    convFact = 1/max([size(frames.r,1) size(frames.r,2)]);
-    artifactThreshold = Inf;
+    convFact = 1/max([size(frames,1) size(frames,2)]);
 end
-xMaze = [0 size(frames.r,2) * convFact];
-yMaze = [0 size(frames.r,1) * convFact];
+xMaze = [0 size(frames,2) * convFact];
+yMaze = [0 size(frames,1) * convFact];
 
 % save ROI figure
 h1 = figure;
 hold on
-imagesc(xMaze, yMaze,average_frame); colormap gray; caxis([0 4*mean(average_frame(:))]);
+imagesc(xMaze, yMaze,average_frame); colormap gray
 set(gca,'YDir','normal', 'TickDir','out');
 p = plot(roiTracking(:,1)*convFact, roiTracking(:,2)*convFact,'r','LineWidth',2);
 axis tight
@@ -189,15 +176,13 @@ if ~verbose
 end
 
 %% DETECT LED POSITION
-bw = uint8(poly2mask(roiTracking(:,1),roiTracking(:,2),size(frames.r,1),size(frames.r,2)));
+bw = uint8(poly2mask(roiTracking(:,1),roiTracking(:,2),size(frames,1),size(frames,2)));
 disp('Detect LED position...');
 thr_fr = thresh * 255;
 if ~verbose
     tic
-    f = waitbar(0,'Detecting LED position...');
-    for ii = 1:size(frames.r,3)
-        waitbar(ii/size(frames.r,3),f)
-        fr = frames.r(:,:,ii).*bw;
+    parfor ii = 1:size(frames,4)
+        fr = frames(:,:,1,ii).*bw;
         bin_fr = imbinarize(double(fr),thr_fr); %
         bin_fr = bwareafilt(bin_fr,[10 300]);
         stats_fr = regionprops(bin_fr);
@@ -212,14 +197,13 @@ if ~verbose
             Rr_y(ii) = NaN;
         end
     end
-    close(f)
     toc
 else
     h1 = figure;
     hold on
     tic
-    for ii = 1:size(frames.r,3)
-        fr = frames.r(:,:,ii).*bw;
+    for ii = 1:size(frames,4)
+        fr = frames(:,:,1,ii).*bw;
         bin_fr = imbinarize(double(fr),thr_fr); %
         bin_fr = bwareafilt(bin_fr,[10 300]);
         stats_fr = regionprops(bin_fr);
@@ -244,14 +228,14 @@ end
 
 pos = [Rr_x; Rr_y]';
 
-%% postprocessing of LED position 
-pos = pos * convFact;                                   % cm or normalized
-art = find(sum(abs(diff(pos))>artifactThreshold,2))+1;  % remove artefacs as movement > 10cm/frame
+%% detect LED 
+pos = pos * convFact;                                       % cm or normalized
+art = find(sum(abs(diff(pos))>artThr,2))+1;  % remove artefacs as movement > 10cm/frame
 pos(art,:) = NaN;
 
-xt = linspace(0,size(pos,1)/fs,size(pos,1));            % kalman filter
+xt = linspace(0,size(pos,1)/fs,size(pos,1));                % kalman filter
 [t,x,y,vx,vy,ax,ay] = trajectory_kalman_filter(pos(:,1)',pos(:,2)',xt,0);
-art = find(sum(abs(diff([x y]))>artifactThreshold,2))+1;
+art = find(sum(abs(diff([x y]))>artThr,2))+1;
 art = [art - 2 art - 1 art art + 1 art + 2];
 x(art(:)) = NaN; y(art(:)) = NaN;
 F = fillmissing([x y],'linear');
@@ -329,7 +313,7 @@ elseif abs(length(x)-length(bazlerTtl)) > 15 * 1 && size(digitalIn.timestampsOn,
         length(bazlerTtl) - length(x));
     f1 = figure;
     hold on
-    imagesc(xMaze, yMaze,average_frame); colormap gray; caxis([0 4*mean(average_frame(:))]); axis tight
+    imagesc(xMaze, yMaze,average_frame); colormap gray; caxis([0 .7]);
     set(gca,'Ydir','reverse');
    
     lReward = digitalIn.timestampsOn{3}(1);
@@ -373,7 +357,7 @@ tracking.folder = fbasename;
 tracking.sync.sync = sync;
 tracking.sync.timestamps = pul;
 tracking.samplingRate = fs;
-tracking.avFrame.r = average_frame;
+tracking.avFrame.rgb = mean(frames,4);
 tracking.avFrame.xSize = xMaze;
 tracking.avFrame.ySize = yMaze;
 tracking.roi.roiTracking = roiTracking;

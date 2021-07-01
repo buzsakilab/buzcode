@@ -124,6 +124,8 @@ for bnd = 1:length(phaserange)-1
     filtered_phase(bnd) = bz_Filter(lfp,'passband',phaserange(bnd:bnd+1),'filter',filterType,'order',filterOrder,'channels',phaseCh);
 end
 
+
+
 %% Extracting amplitude with different methods and selecting
 for ch = 1:length(ampChans)
     comod = zeros(length(amprange)-1,length(filtered_phase),length(ampChans));

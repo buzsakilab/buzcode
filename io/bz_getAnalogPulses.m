@@ -2,8 +2,8 @@
 function [pulses] = bz_getAnalogPulses(varargin)
 % [pul, val, dur] = bz_getAnalogPulses(varargin)
 %
-% Find square pulses. If not argument it provide, it tries to find pulses
-% in intan analog-in file.
+% Find square pulses. If not argument it provided it tries to find pulses
+% in intan analog in file.
 %
 % <OPTIONALS>
 % analogCh      List of analog channels with pulses to be detected (it support Intan Buzsaki Edition).
@@ -16,7 +16,6 @@ function [pulses] = bz_getAnalogPulses(varargin)
 %               name in current directory
 % manualThr     Check manually threslhold amplitude (default, false)
 % groupPulses   Group manually train of pulses (default, false)
-% basepath      Path with analog data files to get pulses from.
 %
 %
 % OUTPUTS
@@ -34,15 +33,14 @@ function [pulses] = bz_getAnalogPulses(varargin)
 
 % Parse options
 p = inputParser;
-addParameter(p,'analogCh',[],@isnumeric);
-addParameter(p,'data',[],@isnumeric);
-addParameter(p,'fs',30000,@isnumeric);
-addParameter(p,'offset',0,@isnumeric);
-addParameter(p,'filename',[],@isstring);
-addParameter(p,'periodLag',20,@isnumeric);
-addParameter(p,'manualThr',false,@islogical);
-addParameter(p,'groupPulses',false,@islogical);
-addParameter(p,'basepath',pwd,@ischar);
+addParameter(p,'analogCh',[],@isnumeric)
+addParameter(p,'data',[],@isnumeric)
+addParameter(p,'fs',30000,@isnumeric)
+addParameter(p,'offset',0,@isnumeric)
+addParameter(p,'filename',[],@isstring)
+addParameter(p,'periodLag',20,@isnumeric)
+addParameter(p,'manualThr',false,@islogical)
+addParameter(p,'groupPulses',false,@islogical)
 
 parse(p, varargin{:});
 fs = p.Results.fs;
@@ -53,15 +51,11 @@ manualThr = p.Results.manualThr;
 d = p.Results.data;
 analogCh = p.Results.analogCh;
 groupPulses = p.Results.groupPulses;
-basepath = p.Results.basepath;
 
-prevPath = pwd;
-cd(basepath);
-
-filetarget = split(pwd,filesep); filetarget = filetarget{end};
-if exist([filetarget '.pulses.events.mat'],'file') 
+sess = bz_getSessionInfo(pwd,'noPrompts',true);
+if exist([sess.FileName '.pulses.events.mat'],'file') 
     disp('Pulses already detected! Loading file.');
-    load([filetarget '.pulses.events.mat']);
+    load([sess.FileName '.pulses.events.mat']);
     return
 end
 
@@ -71,7 +65,7 @@ if isempty(d) && isempty(filename)                                         % is 
     if exist('analogin.dat','file') == 2
         f=dir('analogin.dat');
     end
-    if isempty(f) || f.bytes == 0                                          % if analogin is empty or doesn't exist
+    if isempty(f) || f.bytes == 0                                              % if analogin is empty or doesn't exist
         disp('analogin.dat file is empty or does not exist, was the recording made in Intan Buzsaki edition?');
         f = dir('*amplifier*.dat');                                        % is exist amplifier
         if isempty(f)
@@ -80,11 +74,10 @@ if isempty(d) && isempty(filename)                                         % is 
         else
             filename = f.name;
         end
-        
-        parameters = LoadParameters(pwd); % read xml
+        nCh = sess.nChannels;
         disp('Loading file...');
         tic
-        d = bz_LoadBinary(filename, 'frequency', fs, 'nChannels', parameters.nChannels,'channels',analogCh+1);
+        d = bz_LoadBinary(filename, 'frequency', fs, 'nChannels', nCh,'channels',analogCh+1);
         toc
     else
         disp('Loading analogin.dat...');
@@ -225,7 +218,6 @@ end
 mkdir('Pulses');
 saveas(gca,'pulses\pulThr.png');
 
-filetarget = split(pwd,filesep); filetarget = filetarget{end};
 if ~isempty(locsA) % if no pulses, not save anything... 
     pulses.timestamps = cell2mat(pul)';
     pulses.amplitude = cell2mat(val)';
@@ -233,10 +225,9 @@ if ~isempty(locsA) % if no pulses, not save anything...
     pulses.intsPeriods = cell2mat(stimPer);
     pulses.eventID = cell2mat(eventID)';
     disp('Saving locally...');
-    save([filetarget '.pulses.events.mat'],'pulses');
+    save([sess.FileName '.pulses.events.mat'],'pulses');
 else
     pulses = [];
 end
  
-cd(prevPath);
 end

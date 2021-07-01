@@ -60,7 +60,6 @@ addParameter(p,'nfreqs',200)
 addParameter(p,'spectype','fft')
 addParameter(p,'ints',[0 inf])
 addParameter(p,'showprogress',false)
-addParameter(p,'suppressText',false)
 parse(p,varargin{:})
 SHOWFIG = p.Results.showfig;
 saveMat = p.Results.saveMat;
@@ -74,7 +73,6 @@ nfreqs = p.Results.nfreqs;
 spectype = p.Results.spectype;
 ints = p.Results.ints;
 showprogress = p.Results.showprogress;
-suppressText = p.Results.suppressText;
 
 %%
 if saveMat
@@ -84,9 +82,6 @@ if saveMat
     
     if exist(savename,'file') && ~REDETECT
         try
-            if ~suppressText
-                display(['Loading ',baseName,'.PowerSpectrumSlope',addName,'.lfp.mat'])
-            end
             load(savename)
             return
         catch
@@ -189,13 +184,14 @@ if IRASA
     end
     
     %Calculate the residual from the smoothed spectrum
-    spec.osci = (spec.amp(:,validFreqInds))-(resampledData(:,validFreqInds));
+    %spec.osci = (spec.amp(:,validFreqInds))-(resampledData(:,validFreqInds));
     power4fit = resampledData(:,validFreqInds);
     
     %Return the specgram to requested frequencies
     spec.freqs = spec.freqs(validFreqInds);
     spec.amp = spec.amp(:,validFreqInds);
     spec.data = spec.data(:,validFreqInds);
+    
     spec.IRASAsmooth = power4fit;
     
     clear resampledData
@@ -230,16 +226,15 @@ end
 specslope.data = s(:,1);
 specslope.intercept = s(:,2);
 specslope.timestamps = spec.timestamps;
-specslope.specgram = single(spec.amp);
-specslope.phase = single(angle(spec.data));
+specslope.specgram = spec.amp;
+specslope.phase = angle(spec.data);
 specslope.samplingRate = 1./dt;
 
 specslope.detectionparms.winsize = winsize;
 specslope.detectionparms.frange = frange;
-specslope.detectionparms.detectiondate = datetime;
 
 specslope.rsq = rsq';
-specslope.resid = single(spec.osci);
+specslope.resid = yresid;
 specslope.freqs = spec.freqs;
 
 specslope.channels = lfp.channels;

@@ -69,7 +69,6 @@ for ff = 1:length(fields)
             structout.(currentfield) = cat(catdim,structin(:).(currentfield));
         catch
             display(['Failed to concatenate field ',currentfield])
-            %keyboard
         end
     elseif (isstring(structin(1).(currentfield))||ischar(structin(1).(currentfield))) & NEST %For string in field
         structout.(currentfield) = {structin(:).(currentfield)};
@@ -84,7 +83,7 @@ for ff = 1:length(fields)
         structout.(currentfield) = cat(catdim(1),structin(:).(currentfield));
         catch
              display(['Failed to concatenate field ',currentfield])
-           % keyboard
+%            keyboard
 %             continue
          end
 	end

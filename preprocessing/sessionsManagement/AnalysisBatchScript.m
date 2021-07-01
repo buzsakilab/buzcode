@@ -30,6 +30,11 @@
 mkdir('SummaryFigures'); % create folder
 close all
 
+if ~exist('analisysList') % this variable is 
+    analisysList = [1 1 1 1 1 1 1];
+    analisysList(2) = ~isempty(analogCh);
+end
+
 % manually adjust analog pulse detection
 if ~isempty(analogCh)
 	[pulses] = bz_getAnalogPulses('analogCh',analogCh,'manualThr',true,'groupPulses',true);
@@ -38,83 +43,83 @@ else
 end
 
 %% 1. Spike-waveform, ACG, spatial position and CCG
+if analisysList(1)
+    try
+        disp('Spike-waveform, ACG and cluster location...');
+        spikes = bz_LoadPhy('noPrompts',true,'verbose',true,'nWaveforms',200);
 
-try
-    disp('Spike-waveform, ACG and cluster location...');
-    spikes = bz_LoadPhy('noPrompts',true,'verbose',true,'nWaveforms',200);
+        % plot spikes summary
+        disp('Plotting spikes summary...');
+        if exist('chanMap.mat','file')
+            load('chanMap.mat','xcoords','ycoords');
+            xcoords = xcoords - min(xcoords); xcoords = xcoords/max(xcoords);
+            ycoords = ycoords - min(ycoords); ycoords = ycoords/max(ycoords); 
+        else
+            xcoords = NaN;
+            ycoords = NaN;
+        end
+        figure
+        for jj = 1:size(spikes.UID,2)
+            fprintf(' **Spikes from unit %3.i/ %3.i \n',jj, size(spikes.UID,2)); %\n
+            dur = 0.08;
+            set(gcf,'Position',[100 -100 2500 1200])
+            subplot(7,ceil(size(spikes.UID,2)/7),jj); % autocorrelogram
+            ccg=CCG(spikes.times,[],'binSize',0.001,'duration',0.08);
+            xt = linspace(-dur/2*1000,dur/2*1000,size(ccg,1));
+            area(xt,ccg(:,jj,jj),'LineStyle','none');
+            try 
+                xt2 = linspace(dur/3*1000+5,dur/2*1000+5+80,size(spikes.filtWaveform{jj},1)); % waveform
+                spk = spikes.filtWaveform{jj} - min(spikes.filtWaveform{jj}); spk = spk/max(spk) * max(ccg(:,jj,jj));
+                hold on
+                plot(xt2,spk)
 
-    % plot spikes summary
-    disp('Plotting spikes summary...');
-    if exist('chanMap.mat','file')
-        load('chanMap.mat','xcoords','ycoords');
-        xcoords = xcoords - min(xcoords); xcoords = xcoords/max(xcoords);
-        ycoords = ycoords - min(ycoords); ycoords = ycoords/max(ycoords); 
-    else
-        xcoords = NaN;
-        ycoords = NaN;
-    end
-    figure
-    for jj = 1:size(spikes.UID,2)
-        fprintf(' **Spikes from unit %3.i/ %3.i \n',jj, size(spikes.UID,2)); %\n
-        dur = 0.08;
+                plot((xcoords*30) + dur/2*1000+5+60, ycoords*max(ccg(:,jj,jj)),'.','color',[.8 .8 .8],'MarkerSize',5); % plotting xml
+                plot((xcoords(find(spikes.maxWaveformCh(jj)==sessionInfo.channels))*30) + dur/2*1000+5+60,...
+                    ycoords(find(spikes.maxWaveformCh(jj)==sessionInfo.channels))*max(ccg(:,jj,jj)),'.','color',[.1 .1 .1],'MarkerSize',10); % plotting xml
+            end
+            title(num2str(jj),'FontWeight','normal','FontSize',10);
+            if jj == 1
+                ylabel('Counts/ norm');
+            elseif jj == size(spikes.UID,2)
+                xlabel('Time (100 ms /1.5ms)');
+            else
+                set(gca,'YTick',[],'XTick',[]);
+            end
+        end
+        saveas(gcf,'SummaryFigures\spikes.png');
+        
+        win = [-0.3 0.3];
+        disp('Plotting CCG...');
+        figure;
         set(gcf,'Position',[100 -100 2500 1200])
-        subplot(7,ceil(size(spikes.UID,2)/7),jj); % autocorrelogram
-        ccg=CCG(spikes.times,[],'binSize',0.001,'duration',0.08);
-        xt = linspace(-dur/2*1000,dur/2*1000,size(ccg,1));
-        area(xt,ccg(:,jj,jj),'LineStyle','none');
-        try 
-            xt2 = linspace(dur/3*1000+5,dur/2*1000+5+80,size(spikes.filtWaveform{jj},1)); % waveform
-            spk = spikes.filtWaveform{jj} - min(spikes.filtWaveform{jj}); spk = spk/max(spk) * max(ccg(:,jj,jj));
+        [allCcg, t] = CCG(spikes.times,[],'binSize',0.005,'duration',0.6);
+        indCell = [1:size(allCcg,2)];
+        for jj = 1:size(spikes.UID,2)
+            fprintf(' **CCG from unit %3.i/ %3.i \n',jj, size(spikes.UID,2)); %\n
+            subplot(7,ceil(size(spikes.UID,2)/7),jj);
+            cc = zscore(squeeze(allCcg(:,jj,indCell(indCell~=jj)))',[],2); % get crosscorr
+            imagesc(t,1:max(indCell)-1,cc)
+            set(gca,'YDir','normal'); colormap jet; caxis([-abs(max(cc(:))) abs(max(cc(:)))])
             hold on
-            plot(xt2,spk)
+            zmean = mean(zscore(squeeze(allCcg(:,jj,indCell(indCell~=jj)))',[],2));
+            zmean = zmean - min(zmean); zmean = zmean/max(zmean) * (max(indCell)-1) * std(zmean);
+            plot(t, zmean,'k','LineWidth',2);
+            xlim([win(1) win(2)]); ylim([0 max(indCell)-1]);
+            title(num2str(jj),'FontWeight','normal','FontSize',10);
 
-            plot((xcoords*30) + dur/2*1000+5+60, ycoords*max(ccg(:,jj,jj)),'.','color',[.8 .8 .8],'MarkerSize',5); % plotting xml
-            plot((xcoords(find(spikes.maxWaveformCh(jj)==sessionInfo.channels))*30) + dur/2*1000+5+60,...
-                ycoords(find(spikes.maxWaveformCh(jj)==sessionInfo.channels))*max(ccg(:,jj,jj)),'.','color',[.1 .1 .1],'MarkerSize',10); % plotting xml
+            if jj == 1
+                ylabel('Cell');
+            elseif jj == size(spikes.UID,2)
+                xlabel('Time (s)');
+            else
+                set(gca,'YTick',[],'XTick',[]);
+            end
         end
-        title(num2str(jj),'FontWeight','normal','FontSize',10);
-        if jj == 1
-            ylabel('Counts/ norm');
-        elseif jj == size(spikes.UID,2)
-            xlabel('Time (100 ms /1.5ms)');
-        else
-            set(gca,'YTick',[],'XTick',[]);
-        end
+        saveas(gcf,'SummaryFigures\CrossCorr.png'); 
+    catch
+        warning('Error on Spike-waveform, autocorrelogram and cluster location! ');
     end
-    saveas(gcf,'SummaryFigures\spikes.png');
-
-    win = [-0.3 0.3];
-    disp('Plotting CCG...');
-    figure;
-    set(gcf,'Position',[100 -100 2500 1200])
-    [allCcg, t] = CCG(spikes.times,[],'binSize',0.005,'duration',0.6);
-    indCell = [1:size(allCcg,2)];
-    for jj = 1:size(spikes.UID,2)
-        fprintf(' **CCG from unit %3.i/ %3.i \n',jj, size(spikes.UID,2)); %\n
-        subplot(7,ceil(size(spikes.UID,2)/7),jj);
-        cc = zscore(squeeze(allCcg(:,jj,indCell(indCell~=jj)))',[],2); % get crosscorr
-        imagesc(t,1:max(indCell)-1,cc)
-        set(gca,'YDir','normal'); colormap jet; caxis([-abs(max(cc(:))) abs(max(cc(:)))])
-        hold on
-        zmean = mean(zscore(squeeze(allCcg(:,jj,indCell(indCell~=jj)))',[],2));
-        zmean = zmean - min(zmean); zmean = zmean/max(zmean) * (max(indCell)-1) * std(zmean);
-        plot(t, zmean,'k','LineWidth',2);
-        xlim([win(1) win(2)]); ylim([0 max(indCell)-1]);
-        title(num2str(jj),'FontWeight','normal','FontSize',10);
-
-        if jj == 1
-            ylabel('Cell');
-        elseif jj == size(spikes.UID,2)
-            xlabel('Time (s)');
-        else
-            set(gca,'YTick',[],'XTick',[]);
-        end
-    end
-    saveas(gcf,'SummaryFigures\CrossCorr.png'); 
-catch
-    warning('Error on Spike-waveform, autocorrelogram and cluster location! ');
 end
-
 
 %% 2. Psth and CSD from analog-in inputs
 if analisysList(2)
@@ -464,15 +469,6 @@ end
 %         warning('It has not been possible to run the behaviour code...');
 %     end
 % end
-allFolders = dir(pwd); 
-for ii = 1:length(allFolders)
-    if contains((allFolders(ii).name),'sess')
-        cd([allFolders(ii).folder filesep allFolders(ii).name]);
-        try getSessionArmChoice('forceRun',true); 
-        catch
-            disp('skipped!!');
-        end
-    end
-end
+
 %%%%
 % 

@@ -88,7 +88,7 @@ if isempty(tracking) || isempty(armChoice) || isempty(digitalIn)
 end
 
 % get components
-average_frame  = tracking.avFrame.r;        % get average frames
+average_frame  = rgb2gray(tracking.avFrame.rgb);        % get average frames
 xMaze = tracking.avFrame.xSize;
 yMaze = tracking.avFrame.ySize;
 x = tracking.position.x;
@@ -111,7 +111,7 @@ else
     scatter(x,y,3,t,'filled','MarkerEdgeColor','none','MarkerFaceAlpha',.5); colormap jet
     caxis([t(1) t(end)]);
     xlim([xMaze]); ylim([yMaze]);
-    title('Draw a polyline following animal trajectory (first turn right)...','FontWeight','normal');
+    title('Draw a polyline following animal trajectory...','FontWeight','normal');
     maze = drawpolyline;
     maze = [maze.Position; maze.Position(1,:)];
     editLOI = 'true';
