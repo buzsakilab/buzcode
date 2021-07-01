@@ -145,6 +145,18 @@ if saveMat
    save([basepath filesep basename '.placeFieldTemplate.mat'], 'placeFieldTemplate'); 
 end
 
+figure;
+for c = 1:length(firingMaps.rateMaps{1})
+    subplot(1,length(firingMaps.rateMaps{1}),c);
+    colorL = colormap(jet(length(placeFieldTemplate.Peak{1})));
+    for i = 1:length(placeFieldTemplate.Peak{1})
+        unit = placeFieldTemplate.Peak{c}(i,2);
+        plot(ZeroToOne(firingMaps.rateMaps{unit}{c}),'color',colorL(i,:));hold on;
+    end
+    xlim([0 50]);
+end
+saveas(gcf,[basepath,filesep,'newPCs',filesep ,'placeFieldTemplate.png'],'png');
+
 
 
 end

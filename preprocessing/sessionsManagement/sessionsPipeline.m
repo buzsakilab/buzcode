@@ -23,16 +23,7 @@ function sessionsPipeline(varargin)
 %   analogCh       - List of analog channels with pulses to be detected (it support Intan Buzsaki Edition).
 %   forceSum       - Force make folder summary (overwrite, if necessary). Default false.
 %   cleanArtifacts - Remove artifacts from dat file. By default, if there is analogEv in folder, is true.
-%   stateScore     - Run automatic brain state detection with SleepScoreMaster. Default true.
-%   spikeSort      - Run automatic spike sorting using Kilosort. Default true.
-%   analisysList   - Logical array to indicate analysis to perform, according to the following list: 
-%                           1. Spike-waveform, autocorrelogram and spatial position 
-%                           2. Psth from analog-in inputs
-%                           3. Slow-waves psth
-%                           4. Ripples psh
-%                           5. Theta, gamma and HFO profile. Theta and
-%                               gamma mod
-%                   Example: [1 1 1 1 1] or 'all' make all. Default 'all'    
+%   spikeSort      - Run automatic spike sorting using Kilosort. Default true.  
 %   pullData       - Path for raw data. Look for not analized session to copy to the main folder basepath. To do...
 %
 %  HISTORY: 
@@ -51,7 +42,7 @@ p = inputParser;
 addParameter(p,'expPath',[],@isdir);
 addParameter(p,'analogCh',[],@isnumeric);
 addParameter(p,'forceSum',false,@islogical);
-addParameter(p,'stateScore',true,@islogical);
+addParameter(p,'stateScore',false,@islogical);
 addParameter(p,'spikeSort',true,@islogical);
 addParameter(p,'analisysList','all');
 addParameter(p,'cleanArtifacts',false,@islogical);
@@ -90,16 +81,6 @@ if isempty(dir('global.xml'))
         copyfile(strcat(xmlFile.folder,filesep,xmlFile.name),strcat(allpath{1},filesep,'global.xml'));
     end
     cd(allpath{1});
-end
-
-%% deals with analysis list
-if ischar(analisysList)
-    if strcmpi(analisysList,'all')
-        analisysList = [1 1 1 1 1 1 1];
-        analisysList(2) = ~isempty(analogCh);
-    else
-        error('Analysis list format not recognized!');
-    end
 end
 
 %% Build sessions
@@ -146,25 +127,21 @@ for ii = 1:size(allSess,1)
 end
 
 %% Make SessionInfo
-[sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  
-save(strcat(sessionInfo.session.name,'.sessionInfo.mat'),'sessionInfo');
+% [sessionInfo] = bz_getSessionInfo(pwd, 'noPrompts', true); sessionInfo.rates.lfp = 1250;  
+% save(strcat(sessionInfo.session.name,'.sessionInfo.mat'),'sessionInfo');
+session = sessionTemplate(pwd,'showGUI',false);
 
 %% Remove stimulation artifacts
 if cleanArtifacts && ~isempty(analogCh)
     [pulses] = bz_getAnalogPulses('analogCh',analogCh);
-    cleanPulses(pulses.ints{1}(:),'ch',0:sessionInfo.nChannels-mod(sessionInfo.nChannels,16)-1);
+    cleanPulses(pulses.ints{1}(:));
 end
 
 %% Make LFP
 if isempty(dir('*.lfp'))
-    try 
-        bz_LFPfromDat(pwd,'outFs',1250); % generating lfp
-        disp('Making LFP file ...');
-    catch
-        disp('Problems with bz_LFPfromDat, resampling...');
-        ResampleBinary(strcat(sessionInfo.session.name,'.dat'),strcat(sessionInfo.session.name,'.lfp'),...
-        sessionInfo.nChannels,1,sessionInfo.rates.wideband/sessionInfo.rates.lfp);
-    end
+    filename = split(pwd,'\'); filename = filename{end};
+    ResampleBinary(strcat(filename,'.dat'),strcat(filename,'.lfp'),...
+        session.extracellular.nChannels,1, session.extracellular.sr/session.extracellular.srLfp);
 end
 
 %% Get brain states
@@ -204,7 +181,7 @@ for ii = 1:size(allSess,1)
     cd(strcat(allSess(ii).folder,'\',allSess(ii).name));
     if forceSum || (~isempty(dir('*Kilosort*')) && (isempty(dir('summ*')))) % is kilosorted but no summ
         disp('running summary analysis...');
-        AnalysisBatchScript;         
+        sessionSummary;         
     end
 end
 

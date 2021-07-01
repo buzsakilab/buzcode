@@ -81,12 +81,12 @@ if ~(optitrack)
         if exist([basepath filesep 'roiTracking.mat'],'file') || ...
             exist([basepath filesep 'roiLED.mat'],'file')
                 roisPath = basepath;
-                load([roisPath filesep 'roiLED.mat'],'roiLED');
+                try load([roisPath filesep 'roiLED.mat'],'roiLED'); end
                 load([roisPath filesep 'roiTracking.mat'],'roiTracking');
         elseif exist([upBasepath filesep 'roiTracking.mat'],'file') || ...
             exist([upBasepath filesep 'roiLED.mat'],'file')
                 roisPath = upBasepath;
-                load([roisPath filesep 'roiLED.mat'],'roiLED');
+                try load([roisPath filesep 'roiLED.mat'],'roiLED'); end
                 load([roisPath filesep 'roiTracking.mat'],'roiTracking');
         end   
     end

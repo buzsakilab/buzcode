@@ -1,7 +1,8 @@
 function [rankStats] = bz_RankOrder(varargin)
-% [rankStats] = RankOrder()
+% [rankStats] = RankOrder(varargin)
+%
 %  Get rank order of spikes inside events from previously calculated 
-% bz_getSpikesRank structure. The 'corrEvents' output field structure shows
+% bz_getRipSpikes structure. The 'corrEvents' output field structure shows
 % rank correlation of each event with the selected 'templateType', and the
 % 'pvalEvents' field states how significantly different from chance is that
 % correlation, so presumably those events with low 'pvalEvents' will have a
@@ -81,7 +82,6 @@ function [rankStats] = bz_RankOrder(varargin)
 %
 %    =========================================================================
 %
-%
 % OUTPUTS
 %
 %    =========================================================================
@@ -130,13 +130,10 @@ function [rankStats] = bz_RankOrder(varargin)
 %                                  where 1 is sequence A B C D E F
 %                                        2 is sequence E A D
 %                                  
+%  See also bz_getRipSpikes, bz_findPlaceFieldsTemplate
 %
-%  See also bz_getSpikesRank, bz_findPlaceFieldsTemplate
-%
-%
-%
-%  Andrea Navas-Olive, 2019
 
+%  Andrea Navas-Olive, 2019. Antonio FR, 2020.  
 
 %% Parse inputs 
 p = inputParser;
@@ -196,11 +193,11 @@ rankUnits = nan*ones(size(spkEventTimes.UnitEventRel));
 for event = 1:length(evtTimes)
     % Take into account just first spike
     if strcmp(timeSpike,'first')
-        units = unique(evtTimes{event}(3,:),'stable');
+        units = unique(evtTimes{event}(2,:),'stable');
     elseif strcmp(timeSpike,'mean')
         means = [];
-        for jj = unique(evtTimes{event}(3,:))
-            means  = [means [mean(evtTimes{event}(1,evtTimes{event}(3,:)==jj)); jj]];
+        for jj = unique(evtTimes{event}(2,:))
+            means  = [means [mean(evtTimes{event}(1,evtTimes{event}(2,:)==jj)); jj]];
         end
         if ~isempty(means)
             means = sortrows(means')';
