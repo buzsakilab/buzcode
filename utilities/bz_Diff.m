@@ -1,4 +1,4 @@
-function derivative = Diff(samples,timestamps,varargin)
+function derivative = bz_Diff(samples,timestamps,varargin)
 
 %Diff - Differentiate.
 %
