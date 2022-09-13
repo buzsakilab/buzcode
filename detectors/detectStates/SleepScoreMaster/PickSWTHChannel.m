@@ -490,7 +490,9 @@ subplot(5,1,3)
         axis xy
         plot(t_FFT,bz_NormToRange(thratio,log2(thFFTfreqs([1 end]))),'k','Linewidth',0.1)
         LogScale_ss('y',2)
-        caxis([min(mu)-2.5*max(sig) max(mu)+2.5*max(sig)])
+        try
+            caxis([min(mu)-2.5*max(sig) max(mu)+2.5*max(sig)])
+        catch
         ylim([log2(thFFTfreqs(1)) log2(thFFTfreqs(end))+0.2])
         ylabel({'LFP - FFT','f (Hz)'})
         title(['Theta Channel: ',num2str(THchanID)]);
