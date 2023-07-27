@@ -22,7 +22,7 @@
    If you think this program is anal, you're right.  Use the MATLAB wrapper instead.
  */
 
-
+#include <string.h>
 #include "mex.h"
 #include "matrix.h"
 #include <stdlib.h>
