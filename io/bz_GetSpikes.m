@@ -167,7 +167,11 @@ else
     fold_idx = find(cellfun(@(x) ~isempty(x),aux));
     %in case of multiple folders, it's going to take the first one in the
     %list
-    kilosort_path = temp(fold_idx(1));
+    if ~isempty(fold_idx)
+        kilosort_path = temp(fold_idx(1));
+    else
+        kilosort_path = [];
+    end
     
     if strcmpi(sortingMethod,'clu') || ~isempty(cluFiles) % LOADING FROM CLU/ RES
         fs = spikes.samplingRate; 
