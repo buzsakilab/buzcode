@@ -6,6 +6,7 @@ function [ normdata ] = bz_NormToRange(data,range,databounds)
 %   data        the data you want to normalize
 %   range       [min max] you would like to normalize it to.
 %               use 'ylim' to normalize to min/max of current plot (default)
+%               or [fracmax] to set at some fraction of the max of current plot
 %   databounds  [min max] of the data (optional)
 %
 %OUTPUTS

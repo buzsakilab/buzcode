@@ -5,25 +5,29 @@ buzpath = pwd;
 
 addpath(genpath('externalPackages'))
 
+%ISSUE here with catalina... this fixed it:
+%https://www.mathworks.com/matlabcentral/answers/512901-mex-xcodebuild-error-sdk-macosx10-15-4-cannot-be-located
 compilefma % compiles FMAToolbox
 
+cd(buzpath);
 try
-cd(['externalPackages' filesep 'FilterM' filesep ''])
+    cd(['externalPackages' filesep 'FilterM' filesep ''])
 catch
     display('Please navigate to your local buzcode main directory')
 end
 
 if isunix | ismac
     mex('CFLAGS="\$CFLAGS -std=c99"', 'FilterX.c') % the above line fails with newer compilers but this works
-    cd(['..' filesep '..'])
+    cd(buzpath);
 elseif ispc
     mex -O FilterX.c
-    cd(['..' filesep '..'])  
+    cd(buzpath);
 end
+
 try
 cd(['externalPackages' filesep 'chronux_2_12' filesep 'locfit' filesep 'Source'])
 compile % compiles chronux
-cd(['..' filesep '..' filesep '..' filesep '..' filesep ''])
+cd(buzpath);
 catch
     warning('CHRONUX DIDN''T COMPILE. sad.')
     cd(buzpath);
@@ -33,9 +37,18 @@ cd(['externalPackages' filesep 'xmltree-2.0' filesep '@xmltree' filesep 'private
 mex -O xml_findstr.c
 cd(['..' filesep '..' filesep '..' filesep '..'])
 
-cd(['analysis' filesep 'spikes' filesep 'correlation' filesep ''])
+cd(['analysis' filesep 'monosynapticPairs' filesep ])
 mex -O CCGHeart.c
-cd(['..' filesep '..' filesep '..'])
+cd(['..' filesep '..'])
+
+cd(['externalPackages' filesep 'fastBSpline'])
+CompileMexFiles
+cd(['..' filesep '..'])
+
+cd(['externalPackages' filesep 'CONVNFFT'])
+convnfft_install
+cd(['..' filesep '..'])
+
 
 % below is incomplete
 % below adds buzcode to the matlab path and saves

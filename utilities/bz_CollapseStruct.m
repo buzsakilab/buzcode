@@ -50,7 +50,11 @@ for ff = 1:length(fields)
         %bz_Matchfields
        %structout.(currentfield) = cat(1,structin(:).(currentfield));
        structout.(currentfield) = bz_Matchfields({structin(:).(currentfield)},[],'remove');
+       try
        structout.(currentfield) = bz_CollapseStruct(structout.(currentfield),dim,combine,true);
+       catch
+           keyboard
+       end
        continue
     elseif iscell(structin(1).(currentfield)) & NEST %For cell array in field
         if strcmp(dim,'match')
@@ -65,6 +69,7 @@ for ff = 1:length(fields)
             structout.(currentfield) = cat(catdim,structin(:).(currentfield));
         catch
             display(['Failed to concatenate field ',currentfield])
+            %keyboard
         end
     elseif (isstring(structin(1).(currentfield))||ischar(structin(1).(currentfield))) & NEST %For string in field
         structout.(currentfield) = {structin(:).(currentfield)};
@@ -79,13 +84,16 @@ for ff = 1:length(fields)
         structout.(currentfield) = cat(catdim(1),structin(:).(currentfield));
         catch
              display(['Failed to concatenate field ',currentfield])
-%            keyboard
+           % keyboard
 %             continue
          end
 	end
 
     
-        if ~isfield(structout,currentfield)
+        if ~exist('structout','var')
+            structout = [];
+            continue
+        elseif ~isfield(structout,currentfield)
             continue
         end
     switch combine

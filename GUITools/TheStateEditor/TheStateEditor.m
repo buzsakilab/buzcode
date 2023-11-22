@@ -189,11 +189,6 @@ suffix = [];
 %         end
 
 
-
-
-
-
-
 if ~exist('supressGUI', 'var')
     supressGUI = 0;
 end
@@ -379,13 +374,12 @@ else
         
         inputFig = figure('Position', [280   453   550   250], 'MenuBar', 'none', 'numbertitle', 'off', 'name', [baseName, ' channel selection']);
         warning('off', 'MATLAB:hg:default_child_strategy:IllegalPermutation')
-        annotation('textbox',  'Position', [0.02, 0.87, 0.9, 0.07], 'string', ['\bf\fontsize{10}Please choose up to 3 eeg channels (base 0, nCh = ', int2str(nCh), '):'], 'EdgeColor', 'none');
+        annotation('textbox',  'Position', [0.02, 0.87, 0.9, 0.07], 'string', ['\bf\fontsize{10}Please choose up to 6 eeg channels (base 0, nCh = ', int2str(nCh), '):'], 'EdgeColor', 'none');
         Channels1 = uicontrol('style', 'edit', 'FontSize', 10, 'Units', 'Normalized', 'Position', [0.37, 0.75, 0.45, 0.08],'String',defaultchans);
         set(Channels1, 'HorizontalAlignment', 'left');
-        
-        
+                
         annotation('textbox',  'Position', [0.02, 0.65, 0.9, 0.07], 'string', ['\bf\fontsize{10}Choose a motion signal to use:'], 'EdgeColor', 'none');
-        mOptions = {'.EMGFromLFP.LFP.mat';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from .mat file vector';'Load from TimeValue Pair .mat';'None'};
+        mOptions = {'.EMGFromLFP.LFP.mat';'.AccelerometerMotion.mat';'Load From .whl file (head tracking)';'Load from eeg ch(s) (accelerometer/motion pad)';'Load from eeg ch(s) (MEG)';'Load from .mat file vector';'Load from TimeValue Pair .mat';'None'};
         mInput = uicontrol('style', 'popupmenu', 'string', mOptions );
         set(mInput, 'Units', 'normalized', 'Position', [0.37, 0.5, 0.62, 0.1]);
         
@@ -406,6 +400,8 @@ else
         mChs = get(mChannels1, 'string');
         
        
+%!        UPDATE EEG TOO
+        
         clf(inputFig);
         close(inputFig);
         if answer1 == 0;
@@ -550,6 +546,17 @@ else
             case 'None'
                 motion = [];
                 MotionType = 'none';
+            case '.AccelerometerMotion.mat'
+                tpath = [baseName,'.AccelerometerMotion.mat'];
+                if ~exist(tpath,'file')
+                    error('No AccelerometerMotion.mat found.  You may need to run bz_GetAccelerometerMotion.m')
+                    return
+                end
+                accel = load(tpath);%should now have the EMG variable with fields 
+                
+                tos = fspec{1}.to;
+%                 motion = interp1(accel.motion.timestamps,accel.motion.data,tos,'nearest');                
+                motion = interp1(accel.motion.timestamps,accel.motion.data_var,tos,'nearest');                
             case 'Load From .whl file (head tracking)'
                 disp('Loading and preprocessing motion data from .whl file...');
                 motion = LoadFromWhl(baseName, fspec{1}.to);
@@ -575,18 +582,27 @@ else
                     end
                 end
                 meeg = abs(zscore(meeg')');
-                meeg = sum(meeg, 1);
-                forder = 500;
-                forder = ceil(forder/2)*2;
-                EEGSR = eegFS;
-                lowband = 0.1;
-                highband = 1;
-                firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
-                meeg = filter2(firfiltb,  meeg);
-                motion = mean(reshape(meeg(1:(length(meeg) - mod(length(meeg), eegFS))), eegFS, []), 1);
+                meeg = sum(meeg, 1);%summate across channels
+                
+%                 forder = 500;%create filter
+%                 forder = ceil(forder/2)*2;
+%                 EEGSR = eegFS;
+%                 lowband = 0.1;%bandpass low thresh
+%                 highband = 10;%bandpass high thresh
+%                 firfiltb = fir1(forder,[lowband/EEGSR*2,highband/EEGSR*2]);
+%                
+%                 meeg = filter2(firfiltb,  meeg);%filter data
+                
+                motion = reshape(meeg(1:(length(meeg) - mod(length(meeg), eegFS))), eegFS, []);
+                motion = mean(motion,1);
+                motion = movvar(motion,3);%show the variance across 3 points, not the raw value
+
                 if length(motion) == (length(fspec{1}.to) + 1)
                     motion = motion(1:(end - 1));
                 end
+                
+                
+                
                 MotionType = 'Channels (accelerometer)';
                 disp('Done.');
             case 'Load from eeg ch(s) (MEG)'
@@ -791,7 +807,7 @@ switch nCh
         position.lax = [0.0500    0.940    0.8000    0.0500];
         position.sax{1} = [0.05         0.62          0.8         0.31];
         position.sax{2} = [0.05         0.3          0.8         0.31];
-        position.MP = [0.05         0.195          0.8          0.07];
+        position.MP =     [0.05         0.195          0.8          0.07];
         position.eax{1} =  [0.05         0.105         0.8          0.06];
         position.eax{2} =  [0.05         0.04          0.8          0.06];
         position.eegCh{1} =    [0.81, 0.069, 0.1, 0.1];
@@ -842,6 +858,81 @@ switch nCh
         end
         %         annotation('textarrow',[0.02 0.02],[0.14 0.14],'string','\fontsize{10} EEG (m.V.)', ...
         %             'HeadStyle','none','LineStyle', 'none', 'TextRotation',90);
+    case {4 5 6}  
+        saxtotalht = 0.67;
+        saxspace = 0.005;
+        saxht = (saxtotalht-saxspace*(nCh-1))/nCh;
+        saxtop = 0.95;
+        saxbottom = saxtop-(nCh*saxht+[nCh-1]*saxspace);
+        
+        position.lax = [0.0500    0.955    0.8000    0.045];
+        
+        for q = 1:nCh
+            position.sax{q} = [0.0500    saxtop-[(q*saxht)+((q-1)*saxspace)] 0.8000    saxht];
+        end
+        
+%         position.sax{1} = [0.0500    saxtop-saxht      0.8000    saxht];
+%         position.sax{2} = [0.0500    saxtop-(2*saxht+saxspace)    0.8000    saxht];
+%         position.sax{3} = [0.0500    saxtop-(3*saxht+2*saxspace)    0.8000    saxht];
+%         position.sax{4} = [0.0500    saxtop-(4*saxht+3*saxspace)    0.8000    saxht];
+        
+        motionheight = 0.05;
+        motionbottom = saxbottom-saxspace-motionheight;
+        position.MP = [0.05  motionbottom   0.8  motionheight];
+        
+        eegtop = motionbottom-0.015;
+        eegbottom = 0.012;%hardcode so text can fit.
+        eegheight = (eegtop-eegbottom-saxspace*(nCh-1))/nCh;
+        
+        for q = 1:nCh
+            position.eax{q} = [0.05  eegtop-eegheight*q-saxspace*(q-1)  0.8  eegheight];
+        end
+%         position.eax{1} = [0.05  eegtop-eegheight               0.8  eegheight];%eeg voltage plots
+%         position.eax{2} = [0.05  eegtop-eegheight*2-saxspace    0.8  eegheight];
+%         position.eax{3} = [0.05  eegtop-eegheight*3-saxspace*2  0.8  eegheight];
+%         position.eax{4} = [0.05  eegtop-eegheight*4-saxspace*3  0.8  eegheight];
+        position.eegWidth = [0.05, eegtop-eegheight/4, 0.05, 0.01];%text stating eeg width
+        
+        for q=1:nCh
+            position.eegCh{q} = [0.8200    eegtop-eegheight*(q-0.25)-saxspace*(q-1)   0.01    0.01];
+        end
+%         position.eegCh{1} = [0.8200    eegtop-eegheight*.75                0.01    0.01];%eeg channel numbers on rights of eeg plots 
+%         position.eegCh{2} = [0.8200    eegtop-eegheight*1.75-saxspace     0.01    0.01];
+%         position.eegCh{3} = [0.8200    eegtop-eegheight*2.75-saxspace*2   0.01    0.01];
+%         position.eegCh{4} = [0.8200    eegtop-eegheight*3.75-saxspace*3   0.01    0.01];
+        for q = 1:nCh
+            ta = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
+            eval(['a' num2str(q) '=ta;'])
+        end
+%         a1 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
+%         a2 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
+%         a3 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
+%         a4 = annotation('textbox', 'Units', 'Normalized', 'EdgeColor', 'none');
+        
+        if iscell(FO.Chs)
+            for q=1:nCh
+                eval(['ta = a' num2str(q) ';']);
+                set(ta, 'String', ['\bf\color{black}\fontsize{11}Ch', FO.Chs{q}], 'Position', [-0.0050    saxtop-saxht*(q-1)-saxspace*q*2    0.1000    0.01]);
+            end            
+%             set(a1, 'String', ['\bf\color{black}\fontsize{11}Ch', FO.Chs{1}], 'Position', [-0.0050    saxtop-saxspace*2    0.1000    0.01]);
+%             set(a2, 'String', ['\bf\color{black}\fontsize{11}Ch', FO.Chs{2}], 'Position', [-0.0050    saxtop-saxht-saxspace*4    0.1000    0.01]);
+%             set(a3, 'String', ['\bf\color{black}\fontsize{11}Ch', FO.Chs{3}], 'Position', [-0.0050    saxtop-saxht*2-saxspace*6    0.1000    0.01]);
+%             set(a4, 'String', ['\bf\color{black}\fontsize{11}Ch', FO.Chs{4}], 'Position', [-0.0050    saxtop-saxht*3-saxspace*8    0.1000    0.01]);
+        else
+            for q=1:nCh
+                eval(['ta = a' num2str(q) ';']);
+                set(ta, 'String', ['\bf\color{black}\fontsize{11}Ch', int2str(FO.Chs(q))], 'Position', [-0.0050    saxtop-saxht*(q-1)-saxspace*q*2    0.1000    0.01]);
+            end
+%             set(a1, 'String', ['\bf\color{black}\fontsize{11}Ch', int2str(FO.Chs(1))], 'Position', [-0.0050    saxtop-saxspace*2    0.1000    0.01]);
+%             set(a2, 'String', ['\bf\color{black}\fontsize{11}Ch', int2str(FO.Chs(2))], 'Position', [-0.0050    saxtop-saxht-saxspace*4    0.1000    0.01]);
+%             set(a3, 'String', ['\bf\color{black}\fontsize{11}Ch', int2str(FO.Chs(3))], 'Position', [-0.0050    saxtop-saxht*2-saxspace*6    0.1000    0.01]);
+%             set(a4, 'String', ['\bf\color{black}\fontsize{11}Ch', int2str(FO.Chs(4))], 'Position', [-0.0050    saxtop-saxht*3-saxspace*8    0.1000    0.01]);
+        end
+        %         annotation('textarrow',[0.02 0.02],[0.14 0.14],'string','\fontsize{10} EEG (m.V.)', ...
+        %             'HeadStyle','none','LineStyle', 'none', 'TextRotation',90);
+    otherwise
+        disp('May only input up to 4 channels')
+        return
 end
 FO.xplotLims = [0.0500, 0.85];
 
@@ -929,9 +1020,6 @@ for I = 1:5 %sets up the states plot
     FO.SM(rows{I}, f, :) = repmat(colors.states{I}, [1, length(f), 1]);
 end
 
-
-
-
 FO.lax = axes('Position', position.lax);
 
 FO.ilab = image(FO.to, 1:(size(FO.SM, 1)), FO.SM);
@@ -943,8 +1031,6 @@ setAxesZoomMotion(FO.zoomL, FO.lax, 'horizontal');
 
 FO.panL = pan;
 setAxesPanMotion(FO.panL, FO.lax, 'horizontal');
-
-
 
 
 for i = 1:nCh
@@ -981,19 +1067,17 @@ MP(~isnan(MP)) = zscore(MP(~isnan(MP)));
 FO.max = axes('Position', position.MP);
 if ~isempty(MP)
     FO.Mplot = plot(FO.to, MP, '-k');
-    ylabel('Motion (z.s.)');
+    ylabel('Motion ZS');
     set(FO.Mplot, 'HitTest', 'off');
     ylim([prctile(MP(~isnan(MP)), 1), prctile(MP(~isnan(MP)), 99)]);
+    xlim([1 FO.to(end)])
     FO.zoomM = zoom;
     setAxesZoomMotion(FO.zoomM, FO.max, 'horizontal');
     FO.panM = pan;
     setAxesPanMotion(FO.panM, FO.max, 'horizontal');
     yl = get(FO.max, 'YLim');
     xl = get(FO.max, 'XLim');
-    
 end
-
-
 
 p = get(FO.max, 'Position');
 FO.mMidline = annotation('line', [p(1) + p(3)/2, p(1) + p(3)/2], [p(2), p(2) + p(4)], 'LineStyle', '--', 'Color', 'k');
@@ -1172,7 +1256,7 @@ end
 FO.eegYLim = [min(a(:, 1)), max(a(:, 2))];
 
 
-%% BW speeding things up... didn't change anything above to be safe
+%% speeding things up... didn't change anything above to be safe
 setappdata(FO.fig,'unsmoothedSpec',FO.unsmoothedSpec)
 setappdata(FO.fig,'spec',FO.spec)
 setappdata(FO.fig,'eeg',FO.eeg)
@@ -1189,9 +1273,9 @@ if FO.EegUpdateBoolean
     FO = updateEEG(FO);
 end
 FO = UpdateGUI(FO);
+% set(FO.sax{1}, 'XLim', FO.lims);
 set(FO.max,'xticklabel',num2str(get(FO.max,'xtick')'));
 % set(FO.sax{end},'xticklabel',num2str(get(FO.sax{end},'xtick')'));
-set(FO.sax{1}, 'XLim', FO.lims);
 
 %set(FO.eax{end},'xticklabel',num2str(get(FO.eax{end},'xtick')'));
 
@@ -1234,7 +1318,6 @@ switch e.Key
         else
             for i = 1:FO.nCh
                 axes(FO.sax{i});
-                
             end
             
             if isempty(FO.startLocation)
@@ -1383,7 +1466,10 @@ switch e.Key
         obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); 
         FO = ResetStateAxisClicabilityByCheckboxStatus(FO);
     case 'r'
-        set(FO.sax{1}, 'XLim', FO.lims);
+        for q = 1:length(FO.sax)
+            set(FO.sax{q}, 'XLim', FO.lims);
+        end
+%         set(FO.sax{1}, 'XLim', FO.lims);      
     case 's'
         saveStates;
         obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); 
@@ -1411,7 +1497,6 @@ switch e.Key
             case 6
                 delta = 5;
         end
-        
         
         FO.eegDisplaySeconds = FO.eegDisplaySeconds - delta;
         guidata(FO.fig, FO); 
@@ -1813,7 +1898,14 @@ switch(clickloc)
                                 if X1 < FO.lims(1)
                                     X1 = FO.lims(1);
                                 end
-                                set(FO.sax{1}, 'XLim', [X1, X2]);
+                                
+                            newrange = [X1, X2];
+                            for idx = 1:length(FO.sax)
+                                set(FO.sax{idx}, 'XLim', newrange);  %action step: set axis1, if there are other axes, updateEEG will set any other axes to match it
+                            end
+                            set(FO.max, 'XLim', newrange);
+                            set(FO.lax, 'XLim', newrange);
+
                         end
                     case 'Double'
                         switch(button)
@@ -1836,39 +1928,51 @@ switch(clickloc)
                                 if X1 < FO.lims(1)
                                     X1 = FO.lims(1);
                                 end
-                                set(FO.sax{1}, 'XLim', [X1, X2]);
+                                newrange = [X1, X2];
+                                for idx = 1:length(FO.sax)
+                                    set(FO.sax{idx}, 'XLim', newrange);  %action step: set axis1, if there are other axes, updateEEG will set any other axes to match it
+                                end
+                                set(FO.max, 'XLim', newrange);
+                                set(FO.lax, 'XLim', newrange);
+
                         end
-                    case 'Hold'
-                        switch(button)
-                            case 'normal'
-                                if FO.EegUpdateBoolean
-                                    FO = updateEEG(FO);
-                                end
-                                set(gcf, 'Pointer', 'circle');
-                                point1 = get(gcf,'CurrentPoint');    % button down detected
-%                                 finalRect = rbbox;                   % return figure units
-                                point2 = get(gcf,'CurrentPoint');    % button up detected
-                                point1 = point1(1,1);
-                                point2 = point2(1,1);
-                                d1 = (point1 - FO.xplotLims(1))./diff(FO.xplotLims);
-                                d2 = (point2 - FO.xplotLims(1))./diff(FO.xplotLims);
-                                xl = get(FO.sax{1}, 'XLim');
-                                pointTo1 = xl(1) + (diff(xl)*d1);
-                                pointTo2 = xl(1) + (diff(xl)*d2);
-                                if pointTo1 > pointTo2
-                                    p = pointTo2;
-                                    pointTo2 = pointTo1;
-                                    pointTo1 = p;
-                                end
-                                if pointTo1 < FO.lims(1)
-                                    pointTo1 = FO.lims(1);
-                                end
-                                if pointTo2 > FO.lims(2)
-                                    pointTo2 = FO.lims(2);
-                                end
-                                set(gcf, 'Pointer', 'crosshair');
-                                set(FO.sax{1}, 'XLim', [pointTo1, pointTo2]);
-                        end
+%                     case 'Hold'
+%                         switch(button)
+%                             case 'normal'
+%                                 if FO.EegUpdateBoolean
+%                                     FO = updateEEG(FO);
+%                                 end
+%                                 set(gcf, 'Pointer', 'circle');
+%                                 point1 = get(gcf,'CurrentPoint');    % button down detected
+% %                                 finalRect = rbbox;                   % return figure units
+%                                 point2 = get(gcf,'CurrentPoint');    % button up detected
+%                                 point1 = point1(1,1);
+%                                 point2 = point2(1,1);
+%                                 d1 = (point1 - FO.xplotLims(1))./diff(FO.xplotLims);
+%                                 d2 = (point2 - FO.xplotLims(1))./diff(FO.xplotLims);
+%                                 xl = get(FO.sax{1}, 'XLim');
+%                                 pointTo1 = xl(1) + (diff(xl)*d1);
+%                                 pointTo2 = xl(1) + (diff(xl)*d2);
+%                                 if pointTo1 > pointTo2
+%                                     p = pointTo2;
+%                                     pointTo2 = pointTo1;
+%                                     pointTo1 = p;
+%                                 end
+%                                 if pointTo1 < FO.lims(1)
+%                                     pointTo1 = FO.lims(1);
+%                                 end
+%                                 if pointTo2 > FO.lims(2)
+%                                     pointTo2 = FO.lims(2);
+%                                 end
+%                                 set(gcf, 'Pointer', 'crosshair');
+%                                 
+%                                 newrange = [pointTo1, pointTo2];
+%                                 for idx = 1:length(FO.sax)
+%                                     set(FO.sax{idx}, 'XLim', newrange);  %action step: set axis1, if there are other axes, updateEEG will set any other axes to match it
+%                                 end
+%                                 set(FO.max, 'XLim', newrange);
+% %                                 set(FO.sax{1}, 'XLim', [pointTo1, pointTo2]);
+%                         end
                 end
                 
             case 'Browse'
@@ -1878,7 +1982,15 @@ switch(clickloc)
                 switch(clickType)
                     case 'Single'
                         if (((pointTo) - diff(xl)/2) >= FO.lims(1)) & (((pointTo) + diff(xl)/2) <= FO.lims(2))
-                            set(FO.sax{1}, 'XLim', [((pointTo) - diff(xl)/2), ((pointTo) + diff(xl)/2)]);
+                            newx = [((pointTo) - diff(xl)/2), ((pointTo) + diff(xl)/2)];
+%                             set(FO.sax{1}, 'XLim', newx);
+
+                            for idx = 1:length(FO.sax)
+                                set(FO.sax{idx}, 'XLim', newx);  
+                            end
+                            set(FO.max, 'XLim', newx);
+                            set(FO.lax, 'XLim', newx);
+
                         end
                     case 'Hold'
                         if FO.EegUpdateBoolean
@@ -1886,7 +1998,8 @@ switch(clickloc)
                         end
                         c = holdC;
                         d = (c(1) - FO.xplotLims(1))./diff(FO.xplotLims);
-                        xl = get(FO.sax{1}, 'XLim');
+                        thisax = gca;
+                        xl = get(thisax, 'XLim');
                         pointTo = xl(1) + (diff(xl)*d);
                         origin = xl;
                         while isClicking == 1
@@ -1895,17 +2008,24 @@ switch(clickloc)
                             d = (c(1) - FO.xplotLims(1))./diff(FO.xplotLims);
                             newPoint = xl(1) + (diff(xl)*d);
                             delta = pointTo - newPoint;
-                            set(FO.max,'xticklabel',num2str(get(FO.max,'xtick')'));
+%                             set(FO.max,'xticklabel',num2str(get(FO.max,'xtick')'));
 %                             set(FO.sax{end},'xticklabel',num2str(get(FO.sax{end},'xtick')'));
                             if ((origin(1) + delta) >= FO.lims(1)) & ((origin(2) + delta) <= FO.lims(2))
-                                set(FO.sax{1}, 'XLim', [origin(1) + delta, origin(2) + delta]);
+                                set(thisax, 'XLim', [origin(1) + delta, origin(2) + delta]);
                             end
-                            set(FO.max,'xticklabel',num2str(get(FO.max,'xtick')'));
+%                             set(FO.max,'xticklabel',num2str(get(FO.max,'xtick')'));
 %                             set(FO.sax{end},'xticklabel',num2str(get(FO.sax{end},'xtick')'));
                             
                             pause(0.01);
                         end
                         set(gcf, 'Pointer', 'hand');
+                        newx = get(thisax,'XLim');
+                        for idx = 1:length(FO.sax)
+                            set(FO.sax{idx}, 'XLim', newx);  
+                        end
+                        set(FO.max, 'XLim', newx);
+                        set(FO.lax, 'XLim', newx);
+
                         if FO.EegUpdateBoolean
                             FO = updateEEG(FO,mean(get(FO.sax{1}, 'XLim')));
                         end
@@ -2007,7 +2127,15 @@ switch(clickloc)
                 switch(clickType)
                     case 'Single'
                         if (((pointTo) - diff(xl)/2) >= FO.lims(1)) & (((pointTo) + diff(xl)/2) <= FO.lims(2))
-                            set(FO.eax{1}, 'XLim', [((pointTo) - diff(xl)/2), ((pointTo) + diff(xl)/2)]);
+                            newx = [((pointTo) - diff(xl)/2), ((pointTo) + diff(xl)/2)];
+%                             set(FO.eax{1}, 'XLim', [((pointTo) - diff(xl)/2), ((pointTo) + diff(xl)/2)]);
+                            
+                            for idx = 1:length(FO.sax)
+                                set(FO.sax{idx}, 'XLim', newx);  
+                            end
+                            set(FO.max, 'XLim', newx);
+                            set(FO.lax, 'XLim', newx);
+                            
                         end
                     case 'Hold'
                         c = holdC;
@@ -2024,13 +2152,22 @@ switch(clickloc)
                             delta = pointTo - newPoint;
                             
                             if ((origin(1) + delta) >= FO.lims(1)) & ((origin(2) + delta) <= FO.lims(2))
-                                set(FO.eax{1}, 'XLim', [origin(1) + delta, origin(2) + delta]);
+                                newx = [origin(1) + delta, origin(2) + delta];
+%                                 set(FO.eax{1}, 'XLim', [origin(1) + delta, origin(2) + delta]);
+                                for idx = 1:length(FO.sax)
+                                    set(FO.sax{idx}, 'XLim', newx);  
+                                end
+                                set(FO.max, 'XLim', newx);
+                                set(FO.lax, 'XLim', newx);
+                            
+                            
                             end
-                            set(FO.eax{end},'xticklabel',num2str(get(FO.eax{end},'xtick')'));
                             pause(0.025);
                         end
                         
+                        set(FO.eax{end},'xticklabel',num2str(get(FO.eax{end},'xtick')'));
                         set(gcf, 'Pointer', 'hand');
+                        
                 end
         end
         pointTo = mean(get(FO.eax{1}, 'XLim'));
@@ -2048,37 +2185,6 @@ switch(clickloc)
         pointTo = round(pointTo);
         
         FO = ChangeThisStateAssigmnent_Setup(FO,pointTo);
-%         states = FO.States;
-%         ds = logical(abs(diff(states)));%find state switches with 1's
-%         ds = cat(2,ds,0);%pad
-%         %find start
-%         spanstart = find(ds(1:pointTo)>0,1,'last')+1;
-%         if isempty(spanstart)
-%             spanstart = 1;
-%         end
-%         if spanstart<1
-%             spanstart = 1;
-%         end
-%         %find end
-%         spanend = find(ds(pointTo:end)>0,1,'first') + pointTo-1;
-%         if isempty(spanend)
-%             spanend = length(states);;
-%         end
-%         if spanend>length(states)
-%             spanend = length(states);
-%         end
-% 
-%         set(FO.actionDisp, 'String', {'\fontsize{12}\bfCurrent Action:', ' ', '\fontsize{20}Choose New State (1-5)'});
-%         
-%         set(FO.actionDisp, 'String', {'\fontsize{12}\bfCurrent Action:', ' ', '\fontsize{20}Browse'});
-
-        
-%         button = lastButton;
-        % execute state switching:
-            %find span occupying this click
-            %ask user what to change it to with 1-5 input
-            %if anything else just run the defkey='c' code
-
 end
 % obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
 % disp('after obj')    
@@ -2148,7 +2254,16 @@ switch scrollLoc
             if X1 < FO.lims(1)
                 X1 = FO.lims(1);
             end
-            set(FO.sax{1}, 'XLim', [X1, X2]);
+            
+            
+            newx = [X1, X2];           
+            for idx = 1:length(FO.sax)
+                set(FO.sax{idx}, 'XLim', newx);  
+            end
+            set(FO.max, 'XLim', newx);
+            set(FO.lax, 'XLim', newx);
+%             set(FO.sax{1}, 'XLim', [X1, X2]);
+            
         else
             xl = xl*0.75;
             X1 = ((pointTo) - diff(xl)/2);
@@ -2161,7 +2276,13 @@ switch scrollLoc
                 X1 = X1 - (X2 - FO.lims(2));
                 X2 = FO.lims(2);
             end
-            set(FO.sax{1}, 'XLim', [X1, X2]);
+            newx = [X1, X2];           
+            for idx = 1:length(FO.sax)
+                set(FO.sax{idx}, 'XLim', newx);  
+            end
+            set(FO.max, 'XLim', newx);
+            set(FO.lax, 'XLim', newx);
+%             set(FO.sax{1}, 'XLim', [X1, X2]);
         end
     case 1
         if src.VerticalScrollCount > 0
@@ -2270,7 +2391,6 @@ if isempty(FO.startLine)
     end
     
     FO.startLocation = location;
-%     guidata(FO.fig, FO); 
     
 else    
     
@@ -2283,21 +2403,6 @@ else
     FO.startLocation = [];
     FO.startLine = {};
     set(gcf, 'Name', ['States: ', FO.baseName, ' - Default']);
-    
-%     guidata(FO.fig, FO); 
-
-    
-%     FO.currAction = 'Browse';
-%     if ~isempty(FO.startLine)
-%         for i = 1:length(FO.startLine)
-%             delete(FO.startLine{i});
-%         end
-%         FO.startLine = {};
-% 
-%     end
-%     set(gcf, 'Name', ['States: ', FO.baseName, ' - Default']);
-
-%     obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); 
 end
 % FO = UpdateText(FO);
 guidata(FO.fig, FO); 
@@ -2524,7 +2629,7 @@ idx.states = interp1(FO.to,FO.States,idx.timestamps,'nearest');
 
 
 %Make a buzcode-style ints structure (should wrap this into IDXtoINT.mat)
-ints = bz_IDXtoINT(idx,'nameStates',true);
+[ints,idx] = bz_IDXtoINT(idx,'nameStates',true);
 
 
 switch STATESFILETYPE
@@ -2544,19 +2649,23 @@ switch STATESFILETYPE
 
         %Save histsandthreshs... different depending on whether AutoScore was
         %used or not
-        HistAndThreshAlready_Bool = 0;
-        if isfield(FO,'AutoScore')
+        HistAndThreshNew_Bool = 0;
+        if isfield(FO,'AutoScore') %If autoscoring was updated (new thresholds)
             if isfield(FO.AutoScore,'histsandthreshs')
-                HistAndThreshAlready_Bool = 1;
+                HistAndThreshNew_Bool = 1;
             end
         end
-        if HistAndThreshAlready_Bool
+        if HistAndThreshNew_Bool
             histsandthreshs = FO.AutoScore.histsandthreshs;
         else
-            answer = questdlg({'We usually save hisograms and thresholds for sleep autoscoring, but they are not here... Regenerate them?'});
-            switch answer
-                case 'Yes'
-                    histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath);
+            try %If autoscoring wasn't updated but histsandthreshs exist
+                histsandthreshs = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.histsandthreshs;
+            catch
+                answer = questdlg({'We usually save histograms and thresholds for sleep autoscoring, but they are not here... Regenerate them?'});
+                switch answer
+                    case 'Yes'
+                        histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath);
+                end
             end
         end
         if exist('histsandthreshs','var')
@@ -2593,105 +2702,6 @@ b = msgbox(['Saved work to ', baseName, '.SleepState.states.mat']);
 saved = 1;
 uiwait(b);
 
-% 
-% global answer1
-% saved = 0;
-% name = [];
-% name = FO.baseName;
-% name = [name '-states'];
-% 
-% answer1 = 0;
-% FO.saveFig = figure('Position', [382   353   438   200]);
-% tx1 = annotation('textbox',  'Position', [0.02, 0.8, 0.5, 0.1], 'string', 'Please Enter File Name:', 'EdgeColor', 'none');
-% name1 = uicontrol('style', 'edit', 'string', name, 'FontSize', 10, 'Units', 'Normalized', 'Position', [0.37, 0.78, 0.5, 0.12]);
-% set(name1, 'HorizontalAlignment', 'left');
-% 
-% incEvents = uicontrol('style', 'checkbox', 'string', 'Include Event Times');
-% set(incEvents, 'Units', 'normalized', 'Position', [0.1, 0.6, 0.35, 0.1], 'Value', 1);
-% 
-% incTransitions = uicontrol('style', 'checkbox', 'string', 'Include Transition Times (higher resolution than state vector)');
-% set(incTransitions, 'Units', 'normalized', 'Position', [0.1, 0.48, 0.72, 0.1], 'Value', 1);
-% 
-% incHist = uicontrol('style', 'checkbox', 'string', 'Include History of Changes');
-% set(incHist, 'Units', 'normalized', 'Position', [0.1, 0.36, 0.35, 0.1], 'Value', 1);
-% 
-% saveb = uicontrol('style', 'pushbutton', 'string', 'Save', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 1;');
-% set(saveb, 'Units', 'normalized', 'Position', [0.4, 0.1, 0.25, 0.2], 'FontSize', 12);
-% 
-% cancelb = uicontrol('style', 'pushbutton', 'string', 'Cancel', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 0;');
-% set(cancelb, 'Units', 'normalized', 'Position', [0.7, 0.1, 0.25, 0.2], 'FontSize', 12);
-% 
-% uiwait(FO.saveFig);
-% fileName = get(name1, 'string');
-% includeH = get(incHist, 'Value');
-% includeEvents = get(incEvents, 'Value');
-% incTransitions = get(incTransitions, 'Value');
-% 
-% close(FO.saveFig);
-% obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-% if answer1 == 0
-%     return;
-% else
-%     oldFile = 0;
-%     try
-%         p = fopen([fileName, '.mat']);
-%         fclose(p);
-%         oldFile = 1;
-%     catch
-%         oldFie = 0;
-%         
-%     end
-%     if oldFile == 1
-%         choice = questdlg([fileName, '.mat already exists, do you wish to overwrite?']);
-%         if strcmpi(choice, 'Yes');
-%             delete([fileName, '.mat']);
-%         else
-%             return;
-%         end
-%     end
-%     
-%     states = FO.States;
-%     events = FO.Events;
-%     
-%     toSave = [' ''states'','];
-%     if includeEvents == 1
-%         toSave = [toSave, ' ''events'','];
-%     end
-%     
-%     if includeEvents == 1
-%         if ~isempty(FO.TransHistoryTracker)
-%             transitions = FO.Transitions(FO.TransHistoryTracker == 1, :);
-%         else
-%             transitions = [];
-%         end
-%         toSave = [toSave, ' ''transitions'','];
-%     end
-%     
-%     if includeH
-%         history.stateHistory = FO.stateHistory;
-%         history.newStates = FO.newStates;
-%         history.stateHistoryNum = FO.stateHistoryNum;
-%         toSave = [toSave, ' ''history'','];
-%     end
-%     
-%     try
-%         eval(['save(fileName, ', toSave(1:(end - 1)), ');']);
-%         b = msgbox(['Saved work to ', fileName, '.mat']);
-%         saved = 1;
-%         uiwait(b);
-%         FO.madeChanges = 0;
-%         guidata(FO.fig, FO); 
-%     catch
-%         b = msgbox(['Warning, failed to save ', fileName, '.mat']);
-%         saved = 0;
-%         uiwait(b);
-%         
-%     end
-%     
-%     
-% end
-% 
-% guidata(FO.fig, FO); 
 end
 
 
@@ -2846,138 +2856,6 @@ modifyStates(1, FO.States, 0);
 guidata(obj, FO); 
 end
 
-% 
-% function LoadStatesAutoNoMsgs
-% % global answer1;
-% % answer1 = 0;
-% % FO.loadFig = figure('Position', [382   353   438   200], 'Name', 'Load');
-% % warn1 = {'\color{red}\fontsize{12}Warning: \color{black}Loading files will overwrite current work.'};
-% % tx1 = annotation('textbox',  'Position', [0.02, 0.9, 0.9, 0.1], 'string', warn1 , 'EdgeColor', 'none');
-% 
-% % loadStates = uicontrol('style', 'checkbox', 'string', 'Load State Vector (if ''.states'' field exists)');
-% % set(loadStates, 'Units', 'normalized', 'Position', [0.1, 0.71, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
-% % 
-% % loadEvents = uicontrol('style', 'checkbox', 'string', 'Load Event Matrix (if ''.events'' field exists)');
-% % set(loadEvents, 'Units', 'normalized', 'Position', [0.1, 0.51, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
-% % 
-% % loadTransitions =  uicontrol('style', 'checkbox', 'string', 'Load Transition Matrix (if ''.transitions'' field exists)');
-% % set(loadTransitions, 'Units', 'normalized', 'Position', [0.1, 0.31, 0.72, 0.15], 'Value', 1, 'FontSize', 10);
-% % 
-% % loadb = uicontrol('style', 'pushbutton', 'string', 'Load ''.mat'' File', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 1;');
-% % set(loadb, 'Units', 'normalized', 'Position', [0.25, 0.06, 0.4, 0.2], 'FontSize', 12);
-% % 
-% % cancelb = uicontrol('style', 'pushbutton', 'string', 'Cancel', 'Callback', 'global answer1; uiresume(gcbf); answer1 = 0;');
-% % set(cancelb, 'Units', 'normalized', 'Position', [0.7, 0.06, 0.25, 0.2], 'FontSize', 12);
-% % uiwait(FO.loadFig);
-% % 
-% % loadStates = get(loadStates, 'Value');
-% % loadEvents = get(loadEvents, 'Value');
-% % loadTransitions = get(loadTransitions, 'Value');
-% loadStates = 1;
-% loadEvents = 1;
-% loadTransitions = 1;
-% 
-% % close(FO.loadFig);
-% obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-% % if answer1 == 0
-% %     return;
-% % else
-% %     
-% %     [name, path] = uigetfile('*mat', 'Choose a state vector to load:');
-% %     
-% %     if name == 0
-% %         return;
-% %     end
-%     
-%     path = cd;
-%     name = [FO.baseName '-states.mat'];
-%     newS = load(fullfile(path, name));
-%     
-%     if ~isstruct(newS)
-%         warndlg('Input must be a structure with fields ''.states'', ''.events'' and/or ''.transitions''.')
-%         return;
-%     end
-%     
-%     loaded = {};
-%     if isfield(newS, 'States')
-%         st = 'States';
-%     else
-%         st = 'states';
-%     end
-%     
-%     if loadStates == 1    
-%         if isfield(newS, st)
-% 
-%             if sum(size(FO.States) == size(newS.(st))) ~= 2
-%                 b = msgbox({'Error: states field must be a 1xN vector file', 'where N == the number of bins.'});
-%                 uiwait(b);
-%                 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-%                 return;
-%             end
-% 
-%             FO.States = newS.(st);
-% %             loaded{end + 1} = 'states vector';
-%         end
-%     end
-%     
-%     if loadEvents == 1    
-%         if isfield(newS, 'events')
-%             events = newS.events;
-%             if size(events, 2) ~= 2 & ~isempty(events)
-%                 b = msgbox({'Error: events field must be a Nx2 matrix file', 'where N == the number of events.'});
-%                 uiwait(b);
-%                 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-%                 return;
-%             end
-% 
-%             FO.Events = events;
-% %             loaded{end + 1} = 'event matrix';
-%         end
-%     end
-%     
-%     
-%     if loadTransitions == 1
-%         if isfield(newS, 'transitions')
-%             transitions = newS.transitions;
-%             if size(transitions, 2) ~= 3 & ~isempty(transitions)
-%                 b = msgbox({'Error: transitions field must be a Nx3 matrix file', 'where N == the number of transitions.'});
-%                 uiwait(b);
-%                 obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-%                 return;
-%             end
-%             
-%             FO.Transitions = transitions;
-% %             loaded{end + 1} = 'transition matrix';
-%         end
-%     end
-% % end
-% 
-% % successMsg = ['Found and loaded '];
-% % 
-% % for i = 1:length(loaded)
-% %     successMsg = [successMsg, loaded{i}, ', '];
-% % end
-% % successMsg = [successMsg(1:(end - 2)), '.'];
-% 
-% guidata(FO.fig, FO); 
-% % b = msgbox(successMsg);
-% % uiwait(b);
-% 
-% EN = FO.eventNum;
-% if isempty(FO.Events)
-%     FO = updateEventLines(FO,[]);
-% else
-%     FO = updateEventLines(FO,FO.Events(FO.Events(:, 1) == EN, 2));
-% end
-% if isfield(newS,'states')
-%     modifyStates(1, newS.(st), 0);
-% end
-% obj = findobj('tag','StateEditorMaster');  FO = guidata(obj); ;
-% FO.madeChanges = 0;
-% guidata(FO.fig, FO); 
-% end
-
-
 
 function out = convWithIn(sp, win1)
 %function out = convWith(sp, win1) - win1 convtrimmed with collumns of sp
@@ -3020,7 +2898,7 @@ switch action
         h = ['\fontsize{42}', int2str(FO.eventNum)];
         set(FO.actionDisp, 'String', {'\fontsize{12}\bfCurrent Action:', 'Delete event:', h});
     case 'Zoom'
-        set(FO.actionDisp, 'String', {'\fontsize{12}\bfCurrent Action:', ' ', '\fontsize{20}Zooming', '\fontsize{20}about'});
+        set(FO.actionDisp, 'String', {'\fontsize{12}\bfCurrent Action:', ' ', '\fontsize{20}', '\fontsize{20}about'});
         set(gcf,'Pointer','cross');
     case 'FreqResize'
         set(FO.actionDisp, 'String', {'\fontsize{12}\bfCurrent Action:', ' ', '\fontsize{20}Rescale Frequencies'});
@@ -3185,7 +3063,10 @@ switch get(FO.overlayDisp, 'Value')
         if isempty(SleepState.detectorinfo.detectionparms.SleepScoreMetrics)
             disp('No SleepScoreMetrics to Overlay')
         else
-            broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
+            for i = 1:length(FO.overlayLines)
+                delete(FO.overlayLines{i})
+            end
+            FO.overlayLines = {};broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
             thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
             over_timestamps = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.t_clus;
             chans = FO.Chs;
@@ -3688,8 +3569,15 @@ if (n2 <= xmax) && n2 > 0
         newx = [FO.lims(2) - diff(newx), FO.lims(2)];
     end
     
-    set(FO.sax{1}, 'XLim', newx);
-    axes(FO.sax{1});
+    for idx = 1:length(FO.sax)
+        set(FO.sax{idx}, 'XLim', newx);  
+    end
+    set(FO.max, 'XLim', newx);
+    set(FO.lax, 'XLim', newx);
+
+%     set(FO.sax{1}, 'XLim', newx);
+%     axes(FO.sax{1});
+    
     FO = UpdateGUI(FO);
     if FO.EegUpdateBoolean
         FO = updateEEG(FO);
@@ -3730,6 +3618,8 @@ for idx = 1:length(FO.sax)
     set(FO.sax{idx}, 'XLim', newrange);  %action step: set axis1, if there are other axes, updateEEG will set any other axes to match it
 %     axes(FO.sax{idx});
 end
+set(FO.max, 'XLim', newrange);
+set(FO.lax, 'XLim', newrange);
 
 set(FO.gotosecondbox, 'String', '');
 
@@ -3764,6 +3654,8 @@ end
 for idx = 1:length(FO.sax)
     set(FO.sax{idx}, 'XLim', newrange);  %action step: set axis1, if there are other axes, updateEEG will set any other axes to match it
 end
+set(FO.max, 'XLim', newrange);
+set(FO.lax, 'XLim', newrange);
 
 set(FO.gotosecondbox, 'String', '');
 
@@ -3791,6 +3683,8 @@ end
 for idx = 1:length(FO.sax)
     set(FO.sax{idx}, 'XLim', newrange);  %action step: set axis1, if there are other axes, updateEEG will set any other axes to match it
 end
+set(FO.max, 'XLim', newrange);
+set(FO.lax, 'XLim', newrange);
 
 set(FO.gotosecondbox, 'String', '');
 
@@ -5305,7 +5199,6 @@ if detectnameAvailBool
 else
     disp('No Detector name recorded or found')
 end
-        
 
 if paramsAvailBool 
     %DL: this seems weird to me... 
@@ -5372,7 +5265,12 @@ ResetToInitButton_sw = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units
 set(ResetToInitButton_sw,'Callback',@ResetToInitSw);
 ResetToOrigButton_sw = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.92, 0.82, 0.08, 0.05]);
 set(ResetToOrigButton_sw,'Callback',@ResetToOrigSw);
-StickyThreshCheck_sw = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.77, 0.08, 0.05],...
+
+SetThreshText_sw = uicontrol('style','text','String','Set Thresh','Units','normalized','Position',[0.92, 0.76, 0.08, 0.05]);
+SetThreshEditBox_sw = uicontrol('style','edit','Units','normalized','Position',[0.92, 0.74, 0.08, 0.04]);
+set(SetThreshEditBox_sw,'Callback',@TextEditSw);
+
+StickyThreshCheck_sw = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.69, 0.08, 0.05],...
     'Value',histsandthreshs.stickySW);
 %set(StickyThreshCheck_sw,'Callback',@SetStickySw);
 
@@ -5381,16 +5279,21 @@ title({'Click in plots to reset X value of thresholds',...
 
 %middle plot: EMG amplitude
 ax2 = subplot(3,2,4,'ButtonDownFcn',@ClickSetsLineXIn);hold on;
-bar(histsandthreshs.EMGhistbins,histsandthreshs.EMGhist)
-EMGline = plot(ax2,[histsandthreshs.EMGthresh histsandthreshs.EMGthresh],ylim(ax2),'r','tag','bw');
-xlabel('EMG (300-600Hz Correlation, active WAKE vs REM/inactive)')
+bar(histsandthreshs.MotionHistBins,histsandthreshs.MotionHist)
+EMGline = plot(ax2,[histsandthreshs.MotionThresh histsandthreshs.MotionThresh],ylim(ax2),'r','tag','bw');
+xlabel('EMG/Accel/Motion, active WAKE vs REM/inactive)')
 ylabel('Counts (sec)')
 ResetToInitButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units', 'normalized', 'Position',  [0.92, 0.58, 0.08, 0.05]);
 set(ResetToInitButton_EMG,'Callback',@ResetToInitEMG);
 ResetToOrigButton_EMG = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.92, 0.53, 0.08, 0.05]);
 set(ResetToOrigButton_EMG,'Callback',@ResetToOrigEMG);
-StickyThreshCheck_EMG = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.48, 0.08, 0.05],...
-    'Value',histsandthreshs.stickyEMG);
+
+SetThreshText_EMG = uicontrol('style','text','String','Set Thresh','Units','normalized','Position',[0.92, 0.47, 0.08, 0.05]);
+SetThreshEditBox_EMG = uicontrol('style','edit','Units','normalized','Position',[0.92, 0.45, 0.08, 0.04]);
+set(SetThreshEditBox_EMG,'Callback',@TextEditEMG);
+
+StickyThreshCheck_EMG = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.40, 0.08, 0.05],...
+    'Value',histsandthreshs.stickyMotion);
 %set(StickyThreshCheck_EMG,'Callback',@SetStickyEMG);
 
 %bottom plot: Theta power
@@ -5403,33 +5306,38 @@ ResetToInitButton_TH = uicontrol('style', 'pushbutton', 'String', 'Init', 'Units
 set(ResetToInitButton_TH,'Callback',@ResetToInitTH);
 ResetToOrigButton_TH = uicontrol('style', 'pushbutton', 'String', 'Orig', 'Units', 'normalized', 'Position',  [0.92, 0.23, 0.08, 0.05]);
 set(ResetToOrigButton_TH,'Callback',@ResetToOrigTH);
-StickyThreshCheck_TH = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.18, 0.08, 0.05],...
+
+SetThreshText_TH = uicontrol('style','text','String','Set Thresh','Units','normalized','Position',[0.92, 0.17, 0.08, 0.05]);
+SetThreshEditBox_TH = uicontrol('style','edit','Units','normalized','Position',[0.92, 0.15, 0.08, 0.04]);
+set(SetThreshEditBox_TH,'Callback',@TextEditTH);
+
+StickyThreshCheck_TH = uicontrol('style', 'checkbox', 'String', 'Sticky', 'Units', 'normalized', 'Position',  [0.92, 0.10, 0.08, 0.05],...
     'Value',histsandthreshs.stickyTH);
 %set(StickyThreshCheck_TH,'Callback',@SetStickyTH);
 
 %For 2d cluster plots
 broadbandSlowWave = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.broadbandSlowWave;
 thratio = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.thratio;
-EMG = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.EMG;
+Motion = SleepState.detectorinfo.detectionparms.SleepScoreMetrics.motiondata;
 plotstates = interp1(FO.to,FO.States,SleepState.detectorinfo.detectionparms.SleepScoreMetrics.t_clus,'nearest');
 %right plot
 ax4 = subplot(2,2,1);hold on;
     for ss = 1:5
-        plot(ax4,broadbandSlowWave(plotstates==ss),EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+        plot(ax4,broadbandSlowWave(plotstates==ss),Motion(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
     swline2 = plot(histsandthreshs.swthresh*[1 1],ylim(ax4),'r','LineWidth',1);
-    EMGline2 = plot(histsandthreshs.swthresh*[0 1],histsandthreshs.EMGthresh*[1 1],'r','LineWidth',1);
-    xlabel('Broadband SW');ylabel('EMG')
+    EMGline2 = plot(histsandthreshs.swthresh*[0 1],histsandthreshs.MotionThresh*[1 1],'r','LineWidth',1);
+    xlabel('Broadband SW');ylabel('Motion')
     title('Isolate NREM')
     
     
 ax5 = subplot(2,2,3);hold on;
     for ss = [1 2 4 5]
-    plot(ax5,thratio(plotstates==ss),EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+        plot(ax5,thratio(plotstates==ss),Motion(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
-    xlabel('Narrowband Theta');ylabel('EMG')
-    thline2 = plot(histsandthreshs.THthresh*[1 1],histsandthreshs.EMGthresh*[0 1],'r','LineWidth',1);
-    EMGline3 = plot([0 1],histsandthreshs.EMGthresh*[1 1],'r','LineWidth',1);
+    xlabel('Narrowband Theta');ylabel('Motion')
+    thline2 = plot(histsandthreshs.THthresh*[1 1],histsandthreshs.MotionThresh*[0 1],'r','LineWidth',1);
+    EMGline3 = plot([0 1],histsandthreshs.MotionThresh*[1 1],'r','LineWidth',1);
     title('Isolate REM from WAKE')
 
 %RESCORE!
@@ -5469,7 +5377,7 @@ if ~bool
 end
 
 % guidata update is done after output
-guidata(FO.fig,FO)
+guidata(AutoClusterFig.fig,AutoClusterFig)
 
 end
 
@@ -5482,7 +5390,6 @@ lo = findobj('parent',obj,'type','line','tag','bw');
 set(lo,'XData',[newx newx])
 
 end
-
 
 function histsandthreshs = SSHistogramsAndThresholds_In(baseName,basePath)
 % Get initial histograms and thresholds as calculated by SleepScoreMaster.m
@@ -5525,7 +5432,12 @@ if ~histsandthreshsOK
     end
     
     if exist(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']),'file')
-        e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+        switch lower(SleepState.detectorinfo.detectionparms.userinputs.MotionSource)
+            case 'emgfromlfp'
+                e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+            case 'accel'
+                e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+        end
     else
         loadgood = 0;%signify couldn't find preprocessed data
     end
@@ -5539,17 +5451,27 @@ if ~histsandthreshsOK
                 %answer = questdlg('Use Loaded Channels?','Yes','No, Auto select channgels for scoring');
                 SleepScoreMaster(basePath)
                 s = load(fullfile(basePath,[baseName '.SleepScoreLFP.LFP.mat']));
-                e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+                switch lower(SleepState.detectorinfo.detectionparms.userinputs.MotionSource)
+                    case 'emgfromlfp'
+                        e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+                    case 'accel'
+                        e = load(fullfile(basePath,[baseName '.EMGFromLFP.LFP.mat']));
+                end
             case {'No','Cancel'}
                 histsandthreshs = [];
                 return
         end
     end
 
-    
-    [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
+    switch lower(SleepState.detectorinfo.detectionparms.userinputs.MotionSource)
+        case 'emgfromlfp'
+            [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
                                            basePath,s.SleepScoreLFP,e.EMGFromLFP,false);
-
+        case 'accel'
+            [SleepScoreMetrics,StatePlotMaterials] = ClusterStates_GetMetrics(...
+                                           basePath,s.SleepScoreLFP,e.accel,false);
+    end
+    
     histsandthreshs = SleepScoreMetrics.histsandthreshs;
 
     SleepState.detectorinfo.detectionparms.SleepScoreMetrics = SleepScoreMetrics;
@@ -5586,12 +5508,12 @@ end
 % grab user-entered thresholds from GUI, for final input to DetermineStates
 swthresh = get(FO.AutoClusterFig.swline,'XData');
 swthresh = swthresh(1,1);
-EMGthresh = get(FO.AutoClusterFig.EMGline,'XData');
-EMGthresh = EMGthresh(1,1);
+MotionThresh = get(FO.AutoClusterFig.EMGline,'XData');
+MotionThresh = MotionThresh(1,1);
 THthresh = get(FO.AutoClusterFig.THline,'XData');
 THthresh = THthresh(1,1);
 FO.AutoScore.histsandthreshs.swthresh = swthresh;
-FO.AutoScore.histsandthreshs.EMGthresh = EMGthresh;
+FO.AutoScore.histsandthreshs.MotionThresh = MotionThresh;
 FO.AutoScore.histsandthreshs.THthresh = THthresh;
 
 FO.AutoScore.histsandthreshs.stickySW = FO.AutoClusterFig.stickySWbox.Value;
@@ -5613,18 +5535,18 @@ plotstates = interp1(stateidx.timestamps,stateidx.states,dp.SleepScoreMetrics.t_
 cla(FO.AutoClusterFig.ax4)
     for ss = 1:5
         plot(FO.AutoClusterFig.ax4,dp.SleepScoreMetrics.broadbandSlowWave(plotstates==ss),...
-            dp.SleepScoreMetrics.EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+            dp.SleepScoreMetrics.motiondata(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
     plot(FO.AutoClusterFig.ax4,swthresh.*[1 1],ylim(FO.AutoClusterFig.ax4),'r','LineWidth',1);
-    plot(FO.AutoClusterFig.ax4,[0 swthresh],EMGthresh.*[1 1],'r','LineWidth',1);
+    plot(FO.AutoClusterFig.ax4,[0 swthresh],MotionThresh.*[1 1],'r','LineWidth',1);
     
 cla(FO.AutoClusterFig.ax5)
     for ss = [1 2 4 5]
         plot(FO.AutoClusterFig.ax5,dp.SleepScoreMetrics.thratio(plotstates==ss),...
-            dp.SleepScoreMetrics.EMG(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
+            dp.SleepScoreMetrics.motiondata(plotstates==ss),'.','color',FO.colors.states{ss},'markersize',1)
     end
-    plot(FO.AutoClusterFig.ax5,THthresh.*[1 1],[0 EMGthresh],'r','LineWidth',1);
-    plot(FO.AutoClusterFig.ax5,[0 1],EMGthresh.*[1 1],'r','LineWidth',1); 
+    plot(FO.AutoClusterFig.ax5,THthresh.*[1 1],[0 MotionThresh],'r','LineWidth',1);
+    plot(FO.AutoClusterFig.ax5,[0 1],MotionThresh.*[1 1],'r','LineWidth',1); 
 
 %Interpolate to match fspec{1}.to
 states = interp1(stateidx.timestamps,stateidx.states,FO.to,'nearest');
@@ -5650,8 +5572,8 @@ function ResetToOrigEMG(obj,ev)
 obj = findobj('tag','StateEditorMaster');
 FO = guidata(obj(end));
 baseName = FO.baseName;
-y = [0 max(FO.AutoScore.histsandthreshs_orig.EMGhist)];
-x = [FO.AutoScore.histsandthreshs_orig.EMGthresh FO.AutoScore.histsandthreshs_orig.EMGthresh];
+y = [0 max(FO.AutoScore.histsandthreshs_orig.MotionHist)];
+x = [FO.AutoScore.histsandthreshs_orig.MotionThresh FO.AutoScore.histsandthreshs_orig.MotionThresh];
 set(FO.AutoClusterFig.EMGline,'XData',x);
 end
 
@@ -5677,8 +5599,8 @@ function ResetToInitEMG(obj,ev)
 obj = findobj('tag','StateEditorMaster');
 FO = guidata(obj(end));
 baseName = FO.baseName;
-y = [0 max(FO.AutoClusterFig.histsandthreshs_init.EMGhist)];
-x = [FO.AutoClusterFig.histsandthreshs_init.EMGthresh FO.AutoClusterFig.histsandthreshs_init.EMGthresh];
+y = [0 max(FO.AutoClusterFig.histsandthreshs_init.MotionHist)];
+x = [FO.AutoClusterFig.histsandthreshs_init.MotionThresh FO.AutoClusterFig.histsandthreshs_init.MotionThresh];
 set(FO.AutoClusterFig.EMGline,'XData',x);
 end
 
@@ -5689,6 +5611,30 @@ baseName = FO.baseName;
 y = [0 max(FO.AutoClusterFig.histsandthreshs_init.THhist)];
 x = [FO.AutoClusterFig.histsandthreshs_init.THthresh FO.AutoClusterFig.histsandthreshs_init.THthresh];
 set(FO.AutoClusterFig.THline,'XData',x);
+end
+
+function TextEditSw(obj,ev)
+%lets editbox input determine SW thresh
+newx = str2num(get(obj,'string'));
+g = guidata(obj);
+set(g.swline,'XData',[newx newx])
+set(obj,'String',[])
+end
+
+function TextEditEMG(obj,ev)
+%lets editbox input determine EMG thresh
+newx = str2num(get(obj,'string'));
+g = guidata(obj);
+set(g.EMGline,'XData',[newx newx])
+set(obj,'String',[])
+end
+
+function TextEditTH(obj,ev)
+%lets editbox input determine Theta ratio thresh
+newx = str2num(get(obj,'string'));
+g = guidata(obj);
+set(g.THline,'XData',[newx newx])
+set(obj,'String',[])
 end
 
 % function SetStickySw(obj,ev)

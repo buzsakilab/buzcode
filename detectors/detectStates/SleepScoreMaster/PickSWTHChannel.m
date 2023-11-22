@@ -17,6 +17,7 @@ addParameter(p,'window',2);
 addParameter(p,'SHOWFIG',false);
 addParameter(p,'smoothfact',15);
 addParameter(p,'IRASA',true);
+addParameter(p,'thIRASA',true);
 addParameter(p,'downsamplefactor',5);
 
 parse(p,varargin{:})
@@ -26,6 +27,7 @@ ignoretime = p.Results.ignoretime;
 window = p.Results.window; 
 smoothfact = p.Results.smoothfact; 
 IRASA = p.Results.IRASA; 
+thIRASA = p.Results.thIRASA; 
 SHOWFIG = p.Results.SHOWFIG; 
 downsamplefactor = p.Results.downsamplefactor; 
 
@@ -116,16 +118,18 @@ end
 Par = bz_getSessionInfo(basePath,'noPrompts',noPrompts);
 nChannels = Par.nChannels;
 
-%Remove spike groups requirement DL9/3/19
+%Remove spike groups requirement DL9/3/19 - returned 12/11/19...
+%Should make this optional - move to SSM main f'n
 % if isfield(Par,'SpkGrps')
 %     SpkGrps = Par.SpkGrps;
+%     %display('Looking at all channels in SpikeGroups')
 % elseif isfield(Par,'AnatGrps')
 %     SpkGrps = Par.AnatGrps;
 %     display('No SpikeGroups, Using AnatomyGroups')
 % else
-%     display('No SpikeGroups...')
+%     display('No SpikeGroups... checking all channels')
 % end
-
+% 
 % spkgroupchannels = [SpkGrps.Channels];
 % 
 % try %In case some channels are in AnatGrps but not SpkGrps
@@ -134,7 +138,8 @@ nChannels = Par.nChannels;
 % catch
 % end
 
-if sum(SWChannels)>0 && sum(ThetaChannels)>0%use all channels unless SWChannels and ThetaChannels are specified... if both specified then we know those are the only good ones
+%use all channels unless SWChannels and ThetaChannels are specified... if both specified then we know those are the only good ones
+if sum(SWChannels)>0 && sum(ThetaChannels)>0
     goodchannels = union(SWChannels,ThetaChannels);
     badchannels = setdiff(Par.channels,goodchannels);
     rejectchannels = union(rejectchannels,badchannels);
@@ -247,10 +252,10 @@ parfor idx = 1:numThetaChannels;
     %Progress Counter
     bz_Counter(idx,numThetaChannels,'TH Channels')
 
-    if IRASA && strcmp(SWweights,'PSS') %(new way... peak above 1/f)
+    if thIRASA && strcmp(SWweights,'PSS') %(new way... peak above 1/f)
         
         [specslope,~] = bz_PowerSpectrumSlope(allLFP,window,window-noverlap,...
-            'channels',ThetaChannels(idx),'frange',f_all,'nfreqs',100,'IRASA',IRASA);
+            'channels',ThetaChannels(idx),'frange',f_all,'nfreqs',100,'IRASA',thIRASA);
         specdt = 1./specslope.samplingRate;
         t_FFT = specslope.timestamps;
         thFFTspec = specslope.resid';
@@ -485,7 +490,9 @@ subplot(5,1,3)
         axis xy
         plot(t_FFT,bz_NormToRange(thratio,log2(thFFTfreqs([1 end]))),'k','Linewidth',0.1)
         LogScale_ss('y',2)
-        caxis([min(mu)-2.5*max(sig) max(mu)+2.5*max(sig)])
+        try
+            caxis([min(mu)-2.5*max(sig) max(mu)+2.5*max(sig)])
+        catch
         ylim([log2(thFFTfreqs(1)) log2(thFFTfreqs(end))+0.2])
         ylabel({'LFP - FFT','f (Hz)'})
         title(['Theta Channel: ',num2str(THchanID)]);

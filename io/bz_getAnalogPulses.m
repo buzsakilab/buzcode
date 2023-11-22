@@ -2,8 +2,8 @@
 function [pulses] = bz_getAnalogPulses(varargin)
 % [pul, val, dur] = bz_getAnalogPulses(varargin)
 %
-% Find square pulses. If not argument it provided it tries to find pulses
-% in intan analog in file.
+% Find square pulses. If not argument it provide, it tries to find pulses
+% in intan analog-in file.
 %
 % <OPTIONALS>
 % analogCh      List of analog channels with pulses to be detected (it support Intan Buzsaki Edition).
@@ -15,6 +15,8 @@ function [pulses] = bz_getAnalogPulses(varargin)
 % filename      File to get pulses from. Default, data file with folder
 %               name in current directory
 % manualThr     Check manually threslhold amplitude (default, false)
+% groupPulses   Group manually train of pulses (default, false)
+% basepath      Path with analog data files to get pulses from.
 %
 %
 % OUTPUTS
@@ -32,13 +34,15 @@ function [pulses] = bz_getAnalogPulses(varargin)
 
 % Parse options
 p = inputParser;
-addParameter(p,'analogCh',[],@isnumeric)
-addParameter(p,'data',[],@isnumeric)
-addParameter(p,'fs',30000,@isnumeric)
-addParameter(p,'offset',0,@isnumeric)
-addParameter(p,'filename',[],@isstring)
-addParameter(p,'periodLag',5,@isnumeric)
-addParameter(p,'manualThr',false,@islogical) %% to do!!!
+addParameter(p,'analogCh',[],@isnumeric);
+addParameter(p,'data',[],@isnumeric);
+addParameter(p,'fs',30000,@isnumeric);
+addParameter(p,'offset',0,@isnumeric);
+addParameter(p,'filename',[],@isstring);
+addParameter(p,'periodLag',20,@isnumeric);
+addParameter(p,'manualThr',false,@islogical);
+addParameter(p,'groupPulses',false,@islogical);
+addParameter(p,'basepath',pwd,@ischar);
 
 parse(p, varargin{:});
 fs = p.Results.fs;
@@ -48,11 +52,16 @@ lag = p.Results.periodLag;
 manualThr = p.Results.manualThr;
 d = p.Results.data;
 analogCh = p.Results.analogCh;
+groupPulses = p.Results.groupPulses;
+basepath = p.Results.basepath;
 
-sess = bz_getSessionInfo(pwd,'noPrompts',true);
-if exist([sess.FileName '.pulses.events.mat'],'file') 
+prevPath = pwd;
+cd(basepath);
+
+filetarget = split(pwd,filesep); filetarget = filetarget{end};
+if exist([filetarget '.pulses.events.mat'],'file') 
     disp('Pulses already detected! Loading file.');
-    load([sess.FileName '.pulses.events.mat']);
+    load([filetarget '.pulses.events.mat']);
     return
 end
 
@@ -62,7 +71,7 @@ if isempty(d) && isempty(filename)                                         % is 
     if exist('analogin.dat','file') == 2
         f=dir('analogin.dat');
     end
-    if isempty(f) || f.bytes == 0                                              % if analogin is empty or doesn't exist
+    if isempty(f) || f.bytes == 0                                          % if analogin is empty or doesn't exist
         disp('analogin.dat file is empty or does not exist, was the recording made in Intan Buzsaki edition?');
         f = dir('*amplifier*.dat');                                        % is exist amplifier
         if isempty(f)
@@ -71,17 +80,18 @@ if isempty(d) && isempty(filename)                                         % is 
         else
             filename = f.name;
         end
-        nCh = sess.nChannels;
+        
+        parameters = LoadParameters(pwd); % read xml
         disp('Loading file...');
         tic
-        d = bz_LoadBinary(filename, 'frequency', fs, 'nChannels', nCh,'channels',analogCh+1);
+        d = bz_LoadBinary(filename, 'frequency', fs, 'nChannels', parameters.nChannels,'channels',analogCh+1);
         toc
     else
         disp('Loading analogin.dat...');
         filename = 'analogin.dat';  
         try [amplifier_channels, notes, aux_input_channels, spike_triggers,...         
             board_dig_in_channels, supply_voltage_channels, frequency_parameters, board_adc_channels ] =...
-            read_Intan_RHD2000_file_2;
+            read_Intan_RHD2000_file_bz;
         catch
             disp('File ''info.rhd'' not found. (Type ''help <a href="matlab:help loadAnalog">loadAnalog</a>'' for details) ');
         end
@@ -102,6 +112,7 @@ if size(d,1) > size(d,2)
     d = d';
 end
 
+kk = 1;
 for jj = 1 : size(d,1)
     xt = linspace(1,length(d)/fs,length(d));
     fprintf(' ** Channel %3.i of %3.i... \n',jj, size(d,1));
@@ -110,22 +121,41 @@ for jj = 1 : size(d,1)
     end
     
     if ~manualThr
-        thr = 25*median(abs(d(jj,:))/0.6745); % computing threshold
+        thr = 20*median(abs(d(jj,:))/0.6745); % computing threshold
         if thr == 0 || ~any(d>thr)
             disp('Trying 5*std threshold...');
             d = d - mean(d);
-            thr = 5 * std(double(d(jj,:)));
+            thr = 4.5 * std(double(d(jj,:)));
         end
     else
         h = figure;
         plot(xt(1:100:end), d(1:100:end));
         xlabel('s'); ylabel('amp');
-        title('Select threshold with the mouse and press right click...');
+        title('Select threshold with the mouse and press left click...');
         [~,thr] = ginput(1);
         hold on
         plot([xt(1) xt(end)],[thr thr],'-r');
         pause(1);
         close(h);
+    end
+    
+    eventGroup = [];
+    if groupPulses
+        h = figure;
+        plot(xt(1:100:end), d(1:100:end));
+        hold on
+        xlabel('s'); ylabel('amp');
+        title('Group stimulation periods by pressing left click. Press enter when done.');
+        selecting = 1;
+        while selecting
+            [x,~] = ginput(2);
+            if ~isempty(x)
+                plot([x(1) x(2)],[thr thr]);
+                eventGroup = [eventGroup; x'];
+            else
+                selecting = 0;
+            end
+        end        
     end
     
     dBin = (d(jj,:)>thr); % binarize signal
@@ -169,6 +199,11 @@ for jj = 1 : size(d,1)
     end
     
     eventID{jj} = ones(size(dur{jj})) * jj;
+    if ~isempty(eventGroup)
+        for kk = 1:size(eventGroup,1)
+            eventID{jj}(pul{jj}(1,:) >= eventGroup(kk,1) & pul{jj}(1,:) <= eventGroup(kk,2)) = jj + size(d,1) + kk - 2;
+        end
+    end
     
     h=figure;
     subplot(1,size(d,1),jj);
@@ -180,21 +215,28 @@ for jj = 1 : size(d,1)
     if ~isempty(locsA)
         plot(locsA, ax(4),'o','MarkerFaceColor',[1 0 0],'MarkerEdgeColor','none','MarkerSize',3);
     end
+    if ~isempty(eventGroup)
+        for kk = 1:size(eventGroup,1)
+            plot([eventGroup(kk,1) eventGroup(kk,2)],[thr+100 thr+100],'LineWidth',10);
+        end
+    end
     xlabel('s'); ylabel('Amplitude (au)'); 
 end
 mkdir('Pulses');
 saveas(gca,'pulses\pulThr.png');
 
-if ~isempty(locsA) % if no pulses, not save anything...
+filetarget = split(pwd,filesep); filetarget = filetarget{end};
+if ~isempty(locsA) % if no pulses, not save anything... 
     pulses.timestamps = cell2mat(pul)';
     pulses.amplitude = cell2mat(val)';
     pulses.duration = cell2mat(dur)';
     pulses.intsPeriods = cell2mat(stimPer);
     pulses.eventID = cell2mat(eventID)';
     disp('Saving locally...');
-    save([sess.FileName '.pulses.events.mat'],'pulses');
+    save([filetarget '.pulses.events.mat'],'pulses');
 else
     pulses = [];
 end
  
+cd(prevPath);
 end

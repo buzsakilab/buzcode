@@ -49,9 +49,10 @@ if dataset
         select = false;
     end
     [basePaths,baseNames] = bz_FindBasePaths(basePath,'select',select);
-    
+    empties = false(size(baseNames));
     %Only Keep baseNames passed in 
     if ~isempty(baseNames_keep)
+        baseNames_keep(cellfun(@isempty,baseNames_keep)) = [];
         keepbaseNames = ismember(baseNames,baseNames_keep);
         baseNames = baseNames(keepbaseNames);
         basePaths = basePaths(keepbaseNames);
@@ -62,8 +63,18 @@ if dataset
     for rr = 1:length(baseNames)
         thiscellinfo = bz_LoadCellinfo(basePaths{rr},cellinfoName);
         
+        if isempty(thiscellinfo)
+            empties(rr) = true;
+            baseNames{rr} = {};
+            continue
+        end
         %Add baseName to the cellinfo file. this could be for each unit....
+        try
         thiscellinfo.baseName = repmat(baseNames(rr),size(thiscellinfo.UID));
+        catch
+        end
+        
+
         
         %Check if the new .mat has any additional fields
         if exist('cellinfo','var')    
@@ -89,6 +100,7 @@ if dataset
     end
     
     if catall
+        cellinfo(empties) = [];
         cellinfo = bz_CollapseStruct(cellinfo,'match','justcat',true);
     end
     

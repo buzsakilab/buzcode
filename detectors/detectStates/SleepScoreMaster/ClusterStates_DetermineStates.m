@@ -37,7 +37,7 @@ v2struct(histsandthreshs)%Expand and get values out of these fields
 %TheStateEditor or 'stickytrigger',true in SleepScoreMaster via GetMetrics
 if ~exist('stickySW','var'); stickySW = false; end
 if ~exist('stickyTH','var'); stickyTH = false; end
-if ~exist('stickyEMG','var'); stickyEMG = false; end
+if ~exist('stickyMotion','var'); stickyMotion = false; end
 
 
 [~,~,~,~,NREMtimes] = bz_BimodalThresh(broadbandSlowWave(:),'startbins',15,...
@@ -46,10 +46,10 @@ if ~exist('stickyEMG','var'); stickyEMG = false; end
 [~,~,~,~,hightheta] = bz_BimodalThresh(thratio(:),'startbins',15,...
     'setthresh',THthresh,'diptest',false,'Schmidt',stickyTH,'0Inf',true);
 
-[~,~,~,~,highEMG] = bz_BimodalThresh(EMG(:),'startbins',15,...
-    'setthresh',EMGthresh,'diptest',false,'Schmidt',stickyEMG,'0Inf',true);
+[~,~,~,~,highMotion] = bz_BimodalThresh(motiondata(:),'startbins',15,...
+    'setthresh',MotionThresh,'diptest',false,'Schmidt',stickyMotion,'0Inf',true);
 
-REMtimes = (~NREMtimes & ~highEMG & hightheta);
+REMtimes = (~NREMtimes & ~highMotion & hightheta);
 
 %ACTIVE/QUIET WAKE:
 WAKEtimes = ~NREMtimes & ~REMtimes;
@@ -131,7 +131,4 @@ INT = bz_IDXtoINT(IDX);
 ints = INT;
 idx = IDX;
 
-
-
 end
-
