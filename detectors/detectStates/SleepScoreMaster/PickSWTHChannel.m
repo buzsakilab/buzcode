@@ -180,7 +180,7 @@ peakTH = zeros(numThetaChannels,1);
 %% Get info to allow to pick SW channel
 %parfor_progress(numSWChannels);
 %tstart = tic;
-parfor idx = 1:numSWChannels;
+parfor idx = 1:numSWChannels
     %Progress Counter
 %     timespent=toc(tstart);
 %     percdone = parfor_progress;
@@ -247,7 +247,7 @@ SWfreqlist = SWfreqlist(1,:);
 %% Get info to allow to pick Theta channel
 %parfor_progress(numSWChannels);
 %tstart = tic;
-parfor idx = 1:numThetaChannels;
+parfor idx = 1:numThetaChannels
 %channum = 1;
     %Progress Counter
     bz_Counter(idx,numThetaChannels,'TH Channels')
@@ -450,7 +450,8 @@ normTHspec = bz_NormToRange(THmeanspec,[0 numusedchannels.*0.6]);
         axis xy; hold on
         plot(t_FFT,bz_NormToRange(broadbandSlowWave,log2(swFFTfreqs([1 end]))),'k','Linewidth',0.1)
         LogScale_ss('y',2)
-        caxis([min(mu)-2*max(sig) max(mu)+2*max(sig)])
+        disp([min(mu)-2*max(sig) max(mu)+2*max(sig)]);
+        % caxis([min(mu)-2*max(sig) max(mu)+2*max(sig)])
         ylim([log2(swFFTfreqs(1)) log2(swFFTfreqs(end))+0.2])
         xlim(t_FFT([1,end]))
         
