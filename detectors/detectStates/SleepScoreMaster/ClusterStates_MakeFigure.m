@@ -8,7 +8,7 @@ v2struct(SleepState.detectorinfo.detectionparms.SleepScoreMetrics.histsandthresh
 
 %
 states = {SleepState.ints.WAKEstate,SleepState.ints.NREMstate,SleepState.ints.REMstate};
-% EMG = motiondata;
+EMG = motiondata;
 
 %%
 %Figure locations
@@ -21,8 +21,10 @@ end
 [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
 if sum(isinf(log10(thFFTspec(:))))==0
     [~,mu_th,sig_th] = zscore(log10(thFFTspec)');
+    disp('im in the if')
 else %For Theta over PSS (ThIRASA)
-    [~,mu_th,sig_th] = zscore((thFFTspec)');
+    [~,mu_th,sig_th] = zscore(thFFTspec);
+    disp('im in the else')
 end
 
 viewwin  =[t_clus(1) t_clus(end)];
@@ -47,8 +49,7 @@ clusterfig = figure('visible','off');
         axis xy
         set(gca,'YTick',(log2([1 2 4 8 16 32 64 128])))
         set(gca,'YTickLabel',{'1','2','4','8','16','32','64','128'})
-        clim([3.5 6.5])
-        clim(double([min(mu_th)-2*max(sig_th) max(mu_th)+2*max(sig_th)]))
+        caxis(double([min(mu_th)-2*max(sig_th) max(mu_th)+2*max(sig_th)]))
         xlim(viewwin)
         %colorbar('east')
         ylim([log2(thFFTfreqs(1)) log2(thFFTfreqs(end))+0.2])
