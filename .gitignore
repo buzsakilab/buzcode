@@ -10,7 +10,7 @@ $RECYCLE.BIN/
 
 # Compiled source 
 *.mexa64
-*.mexw64
+# *.mexw64
 *.asv
 *.mexmaci64
 *.mexaci64
