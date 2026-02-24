@@ -148,7 +148,7 @@ addParameter(p,'MotionSource','EMGfromLFP')
 addParameter(p,'AccelerChans',[])
 addParameter(p,'rejectChannels',[]);
 addParameter(p,'noPrompts',true);
-addParameter(p,'stickytrigger',false);
+addParameter(p,'stickytrigger',true);
 addParameter(p,'saveLFP',true);
 addParameter(p,'winparms',[2 15]);
 addParameter(p,'ignoreManual',false)
@@ -303,8 +303,10 @@ save(bz_sleepstatepath,'SleepState','-v7.3');
 
 %% MAKE THE STATE SCORE OUTPUT FIGURE
 %ClusterStates_MakeFigure(stateintervals,stateIDX,figloc,SleepScoreMetrics,StatePlotMaterials);
+% ClusterStates_MakeFigure_km(SleepState,basePath,noPrompts);
+
 try
-    ClusterStates_MakeFigure(SleepState,basePath,noPrompts);
+    ClusterStates_MakeFigure_km(SleepState,basePath,noPrompts);
     disp('Figures Saved to StateScoreFigures')
 catch
     disp('Figure making error')

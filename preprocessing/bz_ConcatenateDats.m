@@ -137,10 +137,11 @@ end
 
 %% Get the XML
 try 
-    %Look for xml/sessionInfo in topfolder
-    %sessionInfo = bz_getSessionInfo(basepath,'noPrompts',true);
+    % Look for xml/sessionInfo in topfolder
+    sessionInfo = bz_getSessionInfo(basepath,'noPrompts',true);
     load([basename '.session.mat']); % Peter's sessionInfo
 catch
+    
     %If none exists, look for xml in any of the subpaths
     disp('No .xml or .sessionInfo in top folder, trying subfolders')
     for ff = 1:length(recordingnames)
@@ -263,7 +264,7 @@ for odidx = 1:length(otherdattypes)
         catstring = ['! copy /b ', cs, ' ',newpaths.(otherdattypes{odidx})];
     end
 
-    
+
     eval(catstring)%execute concatenation
 
     % Check that size of resultant .dat is equal to the sum of the components
