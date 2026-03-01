@@ -9,6 +9,7 @@ Desktop.ini
 $RECYCLE.BIN/
 
 # Compiled source 
+*.mex*
 *.mexa64
 *.mexw64
 *.asv
