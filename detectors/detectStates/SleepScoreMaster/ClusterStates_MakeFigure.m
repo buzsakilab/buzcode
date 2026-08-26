@@ -21,10 +21,8 @@ end
 [zFFTspec,mu,sig] = zscore(log10(swFFTspec)');
 if sum(isinf(log10(thFFTspec(:))))==0
     [~,mu_th,sig_th] = zscore(log10(thFFTspec)');
-    disp('im in the if')
 else %For Theta over PSS (ThIRASA)
-    [~,mu_th,sig_th] = zscore(thFFTspec);
-    disp('im in the else')
+    [~,mu_th,sig_th] = zscore((thFFTspec)');
 end
 
 viewwin  =[t_clus(1) t_clus(end)];
@@ -36,28 +34,30 @@ clusterfig = figure('visible','off');
         axis xy
         set(gca,'YTick',(log2([1 2 4 8 16 32 64 128])))
         set(gca,'YTickLabel',{'1','2','4','8','16','32','64','128'})
-        clim([3.5 6.5])
-        clim(double([min(mu)-2*max(sig) max(mu)+2*max(sig)]))
+        % clim([3.5 6.5])
+        clim(double([min(mu)-1.5*max(sig) max(mu)+1.5*max(sig)]))
         xlim(viewwin)
         colorbar('east')
         ylim([log2(swFFTfreqs(1)) log2(swFFTfreqs(end))+0.2])
         set(gca,'XTickLabel',{})
         ylabel({'swLFP','f (Hz)'})
         title([recordingname,': State Scoring Results']);
+
 	subplot(8,1,3)
         imagesc(t_clus,log2(thFFTfreqs),log10(thFFTspec))
         axis xy
         set(gca,'YTick',(log2([1 2 4 8 16 32 64 128])))
         set(gca,'YTickLabel',{'1','2','4','8','16','32','64','128'})
-        caxis(double([min(mu_th)-2*max(sig_th) max(mu_th)+2*max(sig_th)]))
+        % clim([3.5 6.5])
+        clim(double([min(mu_th)-1.5*max(sig_th) max(mu_th)+1.5*max(sig_th)]))
         xlim(viewwin)
-        %colorbar('east')
+        % colorbar('east')
         ylim([log2(thFFTfreqs(1)) log2(thFFTfreqs(end))+0.2])
         ylabel({'thLFP','f (Hz)'})
         set(gca,'XTickLabel',{})
         
     subplot(8,1,4)
-        %plot(t_clus,-IDX,'LineWidth',2)
+        % plot(t_clus,-IDX,'LineWidth',2)
         hold on
         plot(states{1}',-1*ones(size(states{1}))','k','LineWidth',8)
         plot(states{2}',-2*ones(size(states{2}))','b','LineWidth',8)
@@ -71,7 +71,7 @@ clusterfig = figure('visible','off');
    	subplot(6,1,4)
         hold on
         plot(t_clus,broadbandSlowWave,'k')
-        %plot(synchtimes',thresh*ones(size(synchtimes))','r')
+        % plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('SW')
         box on
         ylim([0 1])
@@ -81,7 +81,7 @@ clusterfig = figure('visible','off');
    	subplot(6,1,5)
         hold on
         plot(t_clus,thratio,'k')
-        %plot(synchtimes',thresh*ones(size(synchtimes))','r')
+        % plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('Theta')
         box on
         ylim([0 1])
@@ -91,7 +91,7 @@ clusterfig = figure('visible','off');
    	subplot(6,1,6)
         hold on
         plot(t_clus,EMG,'k')
-        %plot(synchtimes',thresh*ones(size(synchtimes))','r')
+        % plot(synchtimes',thresh*ones(size(synchtimes))','r')
         ylabel('EMG')
         box on
         ylim([0 1])
@@ -125,14 +125,14 @@ end
         xlabel('Broadband Slow Wave')
         title('Step 1: Broadband for NREM')
         
-
-	subplot(3,2,3)
+    subplot(3,2,3)
         hold on
-        bar(EMGhistbins(EMGhistbins>EMGthresh),EMGhist(EMGhistbins>EMGthresh),'FaceColor','k','barwidth',0.9,'linewidth',1)
-        bar(EMGhistbins(EMGhistbins<=EMGthresh),EMGhist(EMGhistbins<=EMGthresh),'FaceColor',0.9*[1 1 1],'barwidth',0.9,'linewidth',1)
-        plot([EMGthresh EMGthresh],[0 max(EMGhist)],'r','LineWidth',1)
+        bar(MotionHistBins(MotionHistBins>MotionThresh),MotionHist(MotionHistBins>MotionThresh),'FaceColor','k','barwidth',0.9,'linewidth',1)
+        bar(MotionHistBins(MotionHistBins<=MotionThresh),MotionHist(MotionHistBins<=MotionThresh),'FaceColor',0.9*[1 1 1],'barwidth',0.9,'linewidth',1)
+        plot([MotionThresh MotionThresh],[0 max(MotionHist)],'r','LineWidth',1)
         xlabel('EMG')
         title('Step 2: EMG for Muscle Tone')
+
 	subplot(3,2,5)
         hold on
         bar(THhistbins(THhistbins>=THthresh),THhist(THhistbins>=THthresh),'FaceColor','r','barwidth',0.9,'linewidth',1)
@@ -149,11 +149,11 @@ end
        % hold on
         plot(broadbandSlowWave(IDX==3,1),EMG(IDX==3),'b.','markersize',0.1)
         hold on
-        plot(broadbandSlowWave(EMG>EMGthresh & IDX==1,1),EMG(EMG>EMGthresh & IDX==1),'k.','markersize',0.1)
-        plot(broadbandSlowWave(EMG<EMGthresh & IDX==1|IDX==5,1),EMG(EMG<EMGthresh & IDX==1|IDX==5),...
+        plot(broadbandSlowWave(EMG>MotionThresh & IDX==1,1),EMG(EMG>MotionThresh & IDX==1),'k.','markersize',0.1)
+        plot(broadbandSlowWave(EMG<MotionThresh & IDX==1|IDX==5,1),EMG(EMG<MotionThresh & IDX==1|IDX==5),...
             '.','Color',0.8*[1 1 1],'markersize',0.1)
         plot(swthresh*[1 1],get(gca,'ylim'),'r','LineWidth',1)
-        plot(swthresh*[0 1],EMGthresh*[1 1],'r','LineWidth',1)
+        plot(swthresh*[0 1],MotionThresh*[1 1],'r','LineWidth',1)
         xlabel('Broadband SW');ylabel('EMG')
         
 %[map,C] = hist3([thratio(NREMtimes==0,1),EMG(NREMtimes==0)],[40 40]);
@@ -167,8 +167,8 @@ end
         hold on
         plot(thratio(IDX==5,1),EMG(IDX==5,1),'r.','markersize',0.1)
         xlabel('Narrowband Theta');ylabel('EMG')
-        plot(THthresh*[1 1],EMGthresh*[0 1],'r','LineWidth',1)
-        plot([0 1],EMGthresh*[1 1],'r','LineWidth',1)
+        plot(THthresh*[1 1],MotionThresh*[0 1],'r','LineWidth',1)
+        plot([0 1],MotionThresh*[1 1],'r','LineWidth',1)
 
 saveas(gcf,[figloc,recordingname,'_SSCluster2D'],'jpeg')
 %saveas(gcf,['/Users/dlevenstein/Code Library/SleepScoreDevelopment/StateScoreFigures/','ThetaEMGExample'],'jpeg')
@@ -200,8 +200,8 @@ end
         title('Step 1: Broadband for NREM')
 	subplot(3,3,4)
         hold on
-        bar(EMGhistbins,EMGhist,'FaceColor','none','barwidth',0.9,'linewidth',2)
-        plot([EMGthresh EMGthresh],[0 max(EMGhist)],'r')
+        bar(MotionHistBins,MotionHist,'FaceColor','none','barwidth',0.9,'linewidth',2)
+        plot([MotionThresh MotionThresh],[0 max(MotionHist)],'r')
         xlabel('EMG')
         title('Step 2: EMG for Muscle Tone')
 	subplot(3,3,7)
