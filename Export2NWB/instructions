@@ -1,3 +1,5 @@
 # the files here export cell-explorer outputs to the NWB format for data publication
 # examples are provided for neuropixels and sinaps recordings with different behavior variables (space vs. odors)
 # the file cell_metrics_2_nwb also contains a sub-routine to export to DANDI
+
+# let me know if you need anything
