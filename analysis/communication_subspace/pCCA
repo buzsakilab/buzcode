@@ -1,0 +1,23 @@
+https://github.com/joaqgonzar/pCCA-Hippocampus
+
+#Installation:
+pip install partial_CCA
+
+#Usage in Python:
+import numpy as np
+from partial_CCA import PartialCCA
+
+# Generate dummy data: 100 samples, 20 neurons in X, 15 in Y, 5 in Z
+X = np.random.randn(100, 20)
+Y = np.random.randn(100, 15)
+Z = np.random.randn(100, 5)
+
+# Initialize and fit the model
+model = PartialCCA()
+model.fit(X, Y, Z)
+
+# Transform data into canonical components
+proj_x, proj_y = model.transform(X, Y)
+
+# Get canonical correlations
+print(model.canonical_correlations_)
