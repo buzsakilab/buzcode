@@ -1,0 +1,3 @@
+# preprocessing pipeline for neuropixels
+# https://github.com/Sid-Rafilson-1617/ecephys_spike_sorting/tree/main/ecephys_spike_sorting/scripts/buzsaki_preprocessing_pipeline
+# handles single and multi probe configs
