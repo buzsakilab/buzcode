@@ -1,2 +1,74 @@
-# Sam's Poorman Gaussian Process Latent Variable Model: 
-# https://github.com/samdeoxys1/poor-man-GPLVM/tree/main
+# Sam's Jump Latent Variable Model: 
+
+# https://github.com/samdeoxys1/jumplvm
+git clone https://github.com/samdeoxys1/jumplvm.git
+cd jumplvm
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install .
+
+import numpy as np
+import jax.numpy as jnp
+import jax.random as jr
+import jlvm
+import matplotlib.pyplot as plt
+
+# initialize model
+n_neuron = 30
+model=jlvm.PoissonGPLVMJump1D(n_neuron,n_latent_bin=100,movement_variance=1,tuning_lengthscale=10.) # can modify the hyperparameters
+
+#### additional hyperparameters and their default values
+# param_prior_std=1 (L2 penalty of the weights)
+# p_move_to_jump=0.01 (Transition probability from continuous to fragmented dynamics)
+# p_jump_to_move=0.01 (Transition probability from fragmented to continuous dynamics)
+# w_init_mean=0, w_init_variance=1 (mean and variance of the Gaussian initialization of the basis weights)
+
+# simulate some data
+
+T = 1000
+state_l, spk = model.sample(T)
+y = spk # data for fitting is n_time x n_neuron; binned spike counts
+
+# fit the model
+em_res=model.fit_em(y,key=jr.PRNGKey(3),
+                    n_iter=20,
+                      log_posterior_init=None,ma_neuron=None,ma_latent=None,n_time_per_chunk=10000
+                   )
+
+# monitor training
+plt.plot(em_res['log_marginal_l'])
+
+# to decode (potentially) new data
+decode_res = model.decode_latent(y)
+
+### useful variables:
+
+# tuning curves
+model.tuning # n_neuron x n_latent_bin
+
+# latent posterior
+decode_res['posterior_latent_marg'] # n_time x n_latent_bin
+# dynamics posterior
+decode_res['posterior_dynamics_marg'] # n_time x 2
+
+# jump probability
+decode_res['posterior_dynamics_marg'][:,1]
+# continuous probability = 1 - jump probability
+decode_res['posterior_dynamics_marg'][:,0]
+
+# posterior transition probability, p(x_k+1|x_k,O_1:T), x: latent or dynamics, O: observations (spikes)
+decode_res['p_transition_latent'] # n_latent_bin x n_latent_bin
+decode_res['p_transition_dynamics'] # n_dynamics x n_dynamics
+
+
+# after fitting one can also decode without temporal dynamics, using Naive Bayes
+decode_res_nb = model.decode_latent_naive_bayes(y)
+
+# NB latent posterior
+decode_res_nb['posterior_latent']
+
+# Order the neurons based on latent tuning
+import jlvm.utils as ut
+sort_to_return = ut.post_fit_sort_neuron(em_res) # em_res is from model.fit_em, or constructed from: em_res = {'tuning':model_fit.tuning}
+argsort = sort_to_return['argsort'] # this can be used to order the neurons for rasterplots
